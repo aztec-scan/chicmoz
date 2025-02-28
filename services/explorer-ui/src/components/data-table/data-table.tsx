@@ -15,7 +15,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { DataTablePagination } from "~/components/data-table/data-table-pagination.tsx";
 import {
   Table,
@@ -60,6 +60,8 @@ export function DataTable<TData, TValue>({
       rowSelection,
       columnFilters,
     },
+    autoResetExpanded: false,
+    autoResetPageIndex: false,
     enableRowSelection: true,
     enableExpanding: true,
     enableSubRowSelection: true,
@@ -81,7 +83,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4 bg-white rounded-lg p-5">
-      { title && <h3 className="ml-0.5">{title}</h3> }
+      {title && <h3 className="ml-0.5">{title}</h3>}
       <div className="min-w-full">
         {isLoading && <Loader amount={10} />}
         {!isLoading && (
@@ -125,9 +127,8 @@ function DataTableHeader<TData, TValue>({
                     onDoubleClick: () => header.column.resetSize(),
                     onMouseDown: header.getResizeHandler(),
                     onTouchStart: header.getResizeHandler(),
-                    className: `resizer ${
-                      table.options.columnResizeDirection
-                    } ${header.column.getIsResizing() ? "isResizing" : ""}`,
+                    className: `resizer ${table.options.columnResizeDirection
+                      } ${header.column.getIsResizing() ? "isResizing" : ""}`,
                   }}
                 />
               </TableHead>
