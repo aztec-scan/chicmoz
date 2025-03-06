@@ -9,7 +9,6 @@ interface Props {
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
-  togglePendingTxCallback?: () => void;
 }
 
 // TODO: Maybe make this a generic component
@@ -19,7 +18,6 @@ export const BlocksTable: FC<Props> = ({
   isLoading,
   error,
   disableSizeSelector,
-  togglePendingTxCallback
 }) => {
   if (error) { return <p className="text-red-500">{error.message}</p>; }
 
