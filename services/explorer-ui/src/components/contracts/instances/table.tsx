@@ -18,8 +18,8 @@ export const ContractInstancesTable: FC<Props> = ({
   error,
   showContractVersions,
 }) => {
-  if (!contracts) return <div>No data</div>;
-  if (error) return <p className="text-red-500">{error.message}</p>;
+  if (!contracts) { return <div>No data</div>; }
+  if (error) { return <p className="text-red-500">{error.message}</p>; }
   let cols = contractsTableColumns;
   if (!showContractVersions) {
     cols = contractsTableColumns.filter((column) => {
@@ -28,12 +28,14 @@ export const ContractInstancesTable: FC<Props> = ({
   }
   return (
     <section className="relative mx-auto w-full transition-all">
-      <DataTable
-        isLoading={isLoading}
-        title={title}
-        data={contracts}
-        columns={cols}
-      />
+      <div className="space-y-4 bg-white rounded-lg p-5">
+        {title && <h3 className="ml-0.5">{title}</h3>}
+        <DataTable
+          isLoading={isLoading}
+          data={contracts}
+          columns={cols}
+        />
+      </div>
     </section>
   );
 };
