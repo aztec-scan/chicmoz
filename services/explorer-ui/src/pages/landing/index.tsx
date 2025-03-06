@@ -17,9 +17,9 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
+import { mapLatestBlocks, mapLatestTxEffects } from "~/lib/map-for-table";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { mapLatestBlocks, mapLatestTxEffects } from "./util";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();

@@ -1,12 +1,6 @@
-import {
-  type ChicmozL2TxEffectDeluxe,
-  type ChicmozL2BlockLight,
-} from "@chicmoz-pkg/types";
+import { type ChicmozL2BlockLight, type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
 import { blockSchema } from "~/components/blocks/blocks-schema";
-import {
-  getTxEffectTableObj,
-  type TxEffectTableSchema,
-} from "~/components/tx-effects/tx-effects-schema";
+import { getTxEffectTableObj, type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
 
 export const mapLatestBlocks = (latestBlocks?: ChicmozL2BlockLight[]) => {
   if (!latestBlocks) {
