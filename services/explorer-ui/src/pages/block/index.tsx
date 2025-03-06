@@ -7,9 +7,9 @@ import {
   useLatestBlocks,
   useSubTitle,
 } from "~/hooks";
+import { mapLatestBlocks } from "~/lib/map-for-table";
 import { formatDuration } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { parseLatestBlocks } from "./util";
 
 export const Blocks: FC = () => {
   useSubTitle(routes.blocks.children.index.title);
@@ -51,7 +51,7 @@ export const Blocks: FC = () => {
       </div>
       <div className="rounded-lg shadow-lg">
         <BlocksTable
-          blocks={parseLatestBlocks(latestBlocks)}
+          blocks={mapLatestBlocks(latestBlocks)}
           isLoading={isLoading}
           error={error}
         />

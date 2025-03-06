@@ -8,8 +8,8 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
+import { mapLatestTxEffects } from "~/lib/map-for-table";
 import { routes } from "~/routes/__root";
-import { mapLatestTxEffects } from "../landing/util";
 
 export const TxEffects: FC = () => {
   useSubTitle(routes.txEffects.children.index.title);
