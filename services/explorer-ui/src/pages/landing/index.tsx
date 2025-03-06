@@ -1,15 +1,11 @@
-import { useMemo, type FC } from "react";
+import { type FC } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
-import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
-import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   HealthStatus,
   useAvarageBlockTime,
   useAvarageFees,
-  useGetLatestTxEffects,
   useLatestBlocks,
-  usePendingTxs,
   useSubTitle,
   useSystemHealth,
   useTotalContracts,
@@ -17,9 +13,10 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
-import { mapLatestBlocks, mapLatestTxEffects } from "~/lib/map-for-table";
+import { mapLatestBlocks } from "~/lib/map-for-table";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
+import { TxEffectTableLanding } from "./tx-effect-table-landing";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();
@@ -57,38 +54,6 @@ export const Landing: FC = () => {
 
   useSubTitle(latestBlocks?.[0]?.height.toString() ?? routes.home.title);
 
-  const {
-    data: latestTxEffectsData,
-    isLoading: isLoadingTxEffects,
-    error: txEffectsError,
-  } = useGetLatestTxEffects();
-
-  const { data: pendingTxs } = usePendingTxs();
-
-  const latestTxEffectsWithPending = useMemo(() => {
-    if (!latestTxEffectsData) {
-      return [];
-    }
-    if (!latestBlocks) {
-      return [];
-    }
-    const disguisedPendingTxs =
-      pendingTxs?.reduce((acc, tx) => {
-        if (!latestTxEffectsData.some((effect) => effect.txHash === tx.hash)) {
-          acc.push({
-            txHash: tx.hash,
-            transactionFee: -1,
-            blockNumber: -1,
-            timestamp: tx.birthTimestamp ?? 0,
-          });
-        }
-        return acc;
-      }, [] as TxEffectTableSchema[]) ?? [];
-    return [
-      ...disguisedPendingTxs,
-      ...mapLatestTxEffects(latestTxEffectsData, latestBlocks),
-    ];
-  }, [pendingTxs, latestTxEffectsData, latestBlocks]);
 
   const averageBlockTimeFormatted = formatDuration(
     Number(avarageBlockTime) / 1000,
@@ -104,8 +69,8 @@ export const Landing: FC = () => {
     loadingAvarageFees ||
     loadingAmountContracts ||
     loadingAmountContracts24h ||
-    loadingAvarageBlockTime ||
-    isLoadingTxEffects;
+    loadingAvarageBlockTime;
+
   const isThereAnyComponentData =
     (latestBlocks?.length ?? 0) > 0 ||
     !!totalTxEffects ||
@@ -183,13 +148,7 @@ export const Landing: FC = () => {
               />
             </div>
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
-              <TxEffectsTable
-                title="Latest TX-Effects"
-                txEffects={latestTxEffectsWithPending}
-                isLoading={isLoadingTxEffects}
-                error={txEffectsError}
-                disableSizeSelector={true}
-              />
+              <TxEffectTableLanding latestBlocks={latestBlocks} />
             </div>
           </div>
         </>
