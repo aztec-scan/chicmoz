@@ -1,6 +1,10 @@
 import { ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { HexString, type ChicmozL2Block } from "@chicmoz-pkg/types";
+import {
+  ChicmozL2BlockFinalizationStatus,
+  HexString,
+  type ChicmozL2Block,
+} from "@chicmoz-pkg/types";
 import { v4 as uuidv4 } from "uuid";
 import {
   archive,
@@ -21,10 +25,10 @@ import {
   txEffect,
 } from "../../../database/schema/l2block/index.js";
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
-import { ensureFinalizationStatusStored } from "./add_l1_data.js";
+import { ensureL1FinalizationIsStored } from "./add_l1_data.js";
 
 export const store = async (
-  block: ChicmozL2Block
+  block: ChicmozL2Block,
 ): Promise<{
   finalizationUpdate: ChicmozL2BlockFinalizationUpdateEvent | null;
 }> => {
@@ -155,7 +159,7 @@ export const store = async (
 
     // Insert txEffects and create junction entries
     for (const [i, txEff] of Object.entries(block.body.txEffects)) {
-      if (isNaN(Number(i))) throw new Error("Invalid txEffect index");
+      if (isNaN(Number(i))) {throw new Error("Invalid txEffect index");}
       await dbTx.insert(txEffect).values({
         txHash: txEff.txHash,
         bodyId,
@@ -182,22 +186,34 @@ export const store = async (
           value: pdw.value,
         });
       }
-      if (block.finalizationStatus.valueOf() >= 0) {
-        await db() // NOTE: purposly not using dbTx, it should always be stored
-          .insert(l2BlockFinalizationStatusTable)
-          .values({
-            l2BlockHash: block.hash,
-            l2BlockNumber: block.height,
-            status: block.finalizationStatus,
-          })
-          .onConflictDoNothing();
-      }
+      await ensureFinalizationStatusStored(
+        block.hash,
+        block.height,
+        block.finalizationStatus,
+      );
     }
-    const finalizationUpdate = await ensureFinalizationStatusStored(
+    const finalizationUpdate = await ensureL1FinalizationIsStored(
       block.hash,
       block.height,
-      block.archive.root
+      block.archive.root,
     );
     return { finalizationUpdate };
   });
+};
+
+export const ensureFinalizationStatusStored = async (
+  l2BlockHash: HexString,
+  l2BlockNumber: bigint,
+  status: ChicmozL2BlockFinalizationStatus,
+): Promise<void> => {
+  if (status.valueOf() >= 0) {
+    await db()
+      .insert(l2BlockFinalizationStatusTable)
+      .values({
+        l2BlockHash,
+        l2BlockNumber,
+        status,
+      })
+      .onConflictDoNothing();
+  }
 };

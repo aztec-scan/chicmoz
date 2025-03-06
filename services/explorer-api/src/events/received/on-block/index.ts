@@ -11,6 +11,7 @@ import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
+import { ensureFinalizationStatusStored } from "../../../svcs/database/controllers/l2block/store.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
@@ -27,7 +28,7 @@ const hackyLogBlock = (b: L2Block) => {
   const logString = blockString
     .split(":")
     .map((v) => {
-      if (v.length > 200 && v.includes(",")) return truncateString(v);
+      if (v.length > 200 && v.includes(",")) {return truncateString(v);}
 
       return v;
     })
@@ -59,7 +60,7 @@ const onBlock = async ({
   } catch (e) {
     logger.error(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `Failed to parse block ${blockNumber}: ${(e as Error)?.stack ?? e}`
+      `Failed to parse block ${blockNumber}: ${(e as Error)?.stack ?? e}`,
     );
     hackyLogBlock(b);
     return;
@@ -71,14 +72,14 @@ const onBlock = async ({
 
 const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
   logger.info(
-    `🧢 Storing block ${parsedBlock.height} (hash: ${parsedBlock.hash})`
+    `🧢 Storing block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
   );
   const storeRes = await controllers.l2Block
     .store(parsedBlock)
     .catch(async (e) => {
       if (haveRetried) {
         throw new Error(
-          `Failed to store block ${parsedBlock.height} after retry: ${e}`
+          `Failed to store block ${parsedBlock.height} after retry: ${e}`,
         );
       }
       const shouldRetry = await handleDuplicateBlockError(
@@ -86,12 +87,20 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
         `block ${parsedBlock.height}`,
         async () => {
           logger.warn(
-            `Deleting block ${parsedBlock.height} (hash: ${parsedBlock.hash})`
+            `Deleting block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
           );
           await deleteL2BlockByHeight(parsedBlock.height);
-        }
+        },
       );
-      if (shouldRetry) return storeBlock(parsedBlock, true);
+      if (shouldRetry) {
+        return storeBlock(parsedBlock, true);
+      } else {
+        await ensureFinalizationStatusStored( // NOTE: this is currently assuming that the error is a duplicate error
+          parsedBlock.hash,
+          parsedBlock.height,
+          parsedBlock.finalizationStatus,
+        );
+      }
     });
   await emit.l2BlockFinalizationUpdate(storeRes?.finalizationUpdate ?? null);
 };

@@ -66,7 +66,7 @@ export const addL1L2BlockProposed = async (
   };
 };
 
-export const ensureFinalizationStatusStored = async (
+export const ensureL1FinalizationIsStored = async (
   l2BlockHash: ChicmozL2Block["hash"],
   l2BlockNumber: ChicmozL2Block["height"],
   archiveRoot: string,
