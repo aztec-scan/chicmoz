@@ -30,6 +30,7 @@ import {
   generateVerifyInstancePayload,
   generateVerifyInstanceUrl,
 } from "@chicmoz-pkg/contract-verification";
+import { ChicmozL2ContractInstanceDeployerMetadata } from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { callExplorerApi } from "./explorer-api.js";
@@ -45,7 +46,7 @@ export const logAndWaitForTx = async (tx: SentTx, additionalInfo: string) => {
   logger.info(`📫 TX ${hash} (${additionalInfo})`);
   const receipt = await tx.wait();
   logger.info(
-    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`
+    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
   );
   return receipt;
 };
@@ -76,23 +77,23 @@ export const getNewSchnorrAccount = async ({
     pxe,
     secretKey,
     deriveSigningKey(secretKey),
-    salt
+    salt,
   );
   logger.info(
     `    Schnorr account created ${schnorrAccount
       .getAddress()
-      .toString()} (${accountName})`
+      .toString()} (${accountName})`,
   );
   const { address } = await schnorrAccount.getCompleteAddress();
   logger.info(`    Deploying Schnorr account to network... (${accountName})`);
   await logAndWaitForTx(
     schnorrAccount.deploy(),
-    `Deploying account ${accountName}`
+    `Deploying account ${accountName}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
   const wallet = await schnorrAccount.getWallet();
   logger.info(
-    `    🔐 Schnorr account created at: ${address.toString()} (${accountName})`
+    `    🔐 Schnorr account created at: ${address.toString()} (${accountName})`,
   );
   return { schnorrAccount, wallet, address };
 };
@@ -123,10 +124,10 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
   const contractClasses = await Promise.all(
     contractClassLogs
       .filter((log) =>
-        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log.data)
+        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log.data),
       )
       .map((log) => ContractClassRegisteredEvent.fromLog(log.data))
-      .map((e) => e.toContractClassPublic())
+      .map((e) => e.toContractClassPublic()),
   );
 
   return contractClasses[0]?.id.toString();
@@ -155,7 +156,7 @@ export const deployContract = async <T extends Contract>({
     ? `(🍏 also, a new contract class was added: ${newClassId})`
     : `(🍎 attached classId: ${deployedContract.instance.contractClassId.toString()})`;
   logger.info(
-    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`
+    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );
   if (broadcastWithWallet) {
     await broadcastFunctions({
@@ -179,29 +180,29 @@ export const broadcastFunctions = async ({
     if (fn.functionType === FunctionType.PRIVATE) {
       const selector = await FunctionSelector.fromNameAndParameters(
         fn.name,
-        fn.parameters
+        fn.parameters,
       );
       await logAndWaitForTx(
         (
           await broadcastPrivateFunction(wallet, contract.artifact, selector)
         ).send(),
-        `Broadcasting private function ${fn.name}`
+        `Broadcasting private function ${fn.name}`,
       );
     }
     if (fn.functionType === FunctionType.UNCONSTRAINED) {
       const selector = await FunctionSelector.fromNameAndParameters(
         fn.name,
-        fn.parameters
+        fn.parameters,
       );
       await logAndWaitForTx(
         (
           await broadcastUnconstrainedFunction(
             wallet,
             contract.artifact,
-            selector
+            selector,
           )
         ).send(),
-        `Broadcasting unconstrained function ${fn.name}`
+        `Broadcasting unconstrained function ${fn.name}`,
       );
     }
   }
@@ -210,16 +211,16 @@ export const broadcastFunctions = async ({
 export const publicDeployAccounts = async (
   sender: Wallet,
   accountsToDeploy: Wallet[],
-  pxe: PXE
+  pxe: PXE,
 ) => {
   const notPubliclyDeployedAccounts = await Promise.all(
     accountsToDeploy.map(async (a) => {
       const address = a.getAddress();
       const contractMetadata = await pxe.getContractMetadata(address);
       return contractMetadata;
-    })
+    }),
   ).then((results) =>
-    results.filter((result) => !result.isContractPubliclyDeployed)
+    results.filter((result) => !result.isContractPubliclyDeployed),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
@@ -233,14 +234,14 @@ export const publicDeployAccounts = async (
         notPubliclyDeployedAccounts.map(async (contractMetadata) => {
           if (!contractMetadata.contractInstance) {
             logger.warn(
-              `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`
+              `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
             );
             return undefined;
           }
           return (
             await deployInstance(sender, contractMetadata.contractInstance)
           ).request();
-        })
+        }),
       )
     ).filter((call) => call !== undefined) as FunctionCall[]),
   ];
@@ -252,12 +253,12 @@ export const registerContractClassArtifact = async (
   contractLoggingName: string,
   artifactObj: { default: NoirCompiledContract } | NoirCompiledContract,
   contractClassId: string,
-  version: number
+  version: number,
 ) => {
   const url = generateVerifyArtifactUrl(
     EXPLORER_API_URL,
     contractClassId,
-    version
+    version,
   );
   const postData = JSON.stringify(generateVerifyArtifactPayload(artifactObj));
   await callExplorerApi({
@@ -270,35 +271,29 @@ export const registerContractClassArtifact = async (
 
 export const verifyContractInstanceDeployment = async ({
   contractLoggingName,
-  artifactObj,
   contractInstanceAddress,
-  publicKeysString,
-  deployer,
-  salt,
-  args,
+  verifyArgs,
+  deployerMetadata,
 }: {
   contractLoggingName: string;
-  artifactObj: { default: NoirCompiledContract } | NoirCompiledContract;
   contractInstanceAddress: string;
-  publicKeysString: string;
-  deployer: string;
-  salt: string;
-  args: string[];
+  verifyArgs: Parameters<typeof generateVerifyInstancePayload>[0];
+  deployerMetadata?: Omit<
+    ChicmozL2ContractInstanceDeployerMetadata,
+    "address" | "uploadedAt"
+  >;
 }) => {
   const url = generateVerifyInstanceUrl(
     EXPLORER_API_URL,
-    contractInstanceAddress
+    contractInstanceAddress,
   );
 
-  const postData = JSON.stringify(
-    generateVerifyInstancePayload({
-      publicKeysString,
-      deployer,
-      salt,
-      constructorArgs: args,
-      artifactObj,
-    })
-  );
+  const postData = JSON.stringify({
+    verifiedDeploymentArguments: generateVerifyInstancePayload(
+      verifyArgs,
+    ),
+    deployerMetadata,
+  });
   await callExplorerApi({
     loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
     urlStr: url,

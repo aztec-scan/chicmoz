@@ -46,4 +46,8 @@ export const TxEffectsAPI = {
     );
     return validateResponse(chicmozL2BlockSchema.shape.height, response.data);
   },
+  getLatestTxEffects: async (): Promise<ChicmozL2TxEffectDeluxe[]> => {
+    const response = await client.get(aztecExplorer.getL2TxEffects);
+    return validateResponse(z.array(chicmozL2TxEffectDeluxeSchema), response.data);
+  }
 };

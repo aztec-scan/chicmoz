@@ -23,6 +23,9 @@ export enum ChicmozL2BlockFinalizationStatus {
   L1_MINED_PROVEN = 5,
 }
 
+export const FIRST_FINALIZATION_STATUS =
+  ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED;
+
 export const LAST_FINALIZATION_STATUS =
   ChicmozL2BlockFinalizationStatus.L1_MINED_PROVEN;
 

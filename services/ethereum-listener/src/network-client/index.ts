@@ -1,6 +1,6 @@
 import { IBackOffOptions, backOff } from "exponential-backoff";
 import { logger } from "../logger.js";
-import { getLatestHeight, initClient } from "./client.js";
+import { getLatestFinalizedHeight, initClient } from "./client.js";
 export { watchContractsEvents } from "./client.js";
 
 const backOffOptions: Partial<IBackOffOptions> = {
@@ -9,7 +9,7 @@ const backOffOptions: Partial<IBackOffOptions> = {
   retry: (e, attemptNumber: number) => {
     logger.warn(e);
     logger.info(
-      `🤡 We'll allow some errors during start-up, retrying attempt ${attemptNumber}...`
+      `🤡 We'll allow some errors during start-up, retrying attempt ${attemptNumber}...`,
     );
     return true;
   },
@@ -18,7 +18,7 @@ const backOffOptions: Partial<IBackOffOptions> = {
 export const init = async () => {
   initClient();
   const l1BlockNumber = await backOff(async () => {
-    return await getLatestHeight();
+    return await getLatestFinalizedHeight();
   }, backOffOptions);
   logger.info(`ETH: initialized, currently on height ${l1BlockNumber}`);
 };

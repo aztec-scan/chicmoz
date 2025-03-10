@@ -19,17 +19,19 @@ export const BlocksTable: FC<Props> = ({
   error,
   disableSizeSelector,
 }) => {
-  if (error) return <p className="text-red-500">{error.message}</p>;
+  if (error) { return <p className="text-red-500">{error.message}</p>; }
 
   return (
     <section className="relative mx-0 w-full transition-all">
-      <DataTable
-        isLoading={isLoading}
-        title={title}
-        data={blocks ?? []}
-        columns={BlockTableColumns}
-        disableSizeSelector={disableSizeSelector}
-      />
+      <div className="space-y-4 bg-white rounded-lg p-5">
+        {title && <h3 className="ml-0.5">{title}</h3>}
+        <DataTable
+          isLoading={isLoading}
+          data={blocks ?? []}
+          columns={BlockTableColumns}
+          disableSizeSelector={disableSizeSelector}
+        />
+      </div>
     </section>
   );
 };

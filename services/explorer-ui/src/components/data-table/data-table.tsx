@@ -31,14 +31,12 @@ import { Loader } from "../loader";
 
 interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
-  title?: string;
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   disableSizeSelector?: boolean;
 }
 export function DataTable<TData, TValue>({
   isLoading,
-  title,
   columns,
   data,
   disableSizeSelector,
@@ -60,6 +58,8 @@ export function DataTable<TData, TValue>({
       rowSelection,
       columnFilters,
     },
+    autoResetExpanded: false,
+    autoResetPageIndex: false,
     enableRowSelection: true,
     enableExpanding: true,
     enableSubRowSelection: true,
@@ -80,8 +80,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4 bg-white rounded-lg p-5">
-      { title && <h3 className="ml-0.5">{title}</h3> }
+    <>
       <div className="min-w-full">
         {isLoading && <Loader amount={10} />}
         {!isLoading && (
@@ -96,7 +95,7 @@ export function DataTable<TData, TValue>({
         table={table}
         disableSizeSelector={disableSizeSelector}
       />
-    </div>
+    </>
   );
 }
 
@@ -125,9 +124,8 @@ function DataTableHeader<TData, TValue>({
                     onDoubleClick: () => header.column.resetSize(),
                     onMouseDown: header.getResizeHandler(),
                     onTouchStart: header.getResizeHandler(),
-                    className: `resizer ${
-                      table.options.columnResizeDirection
-                    } ${header.column.getIsResizing() ? "isResizing" : ""}`,
+                    className: `resizer ${table.options.columnResizeDirection
+                      } ${header.column.getIsResizing() ? "isResizing" : ""}`,
                   }}
                 />
               </TableHead>

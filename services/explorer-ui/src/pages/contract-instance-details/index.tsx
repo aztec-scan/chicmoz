@@ -6,7 +6,6 @@ import { TabsSection } from "./tabs-section";
 import {
   getContractData,
   getVerifiedContractInstanceDeploymentData,
-  tempVerifiedContractInstanceData,
 } from "./util";
 
 export const ContractInstanceDetails: FC = () => {
@@ -25,11 +24,8 @@ export const ContractInstanceDetails: FC = () => {
   if (error) return <div>Error</div>;
   if (!contractInstanceDetails) return <div>No data</div>;
 
-  // const verfiedData = getVerifiedContractInstanceData(contractInstanceDetails);
-  const mockedVerfiedData = tempVerifiedContractInstanceData();
-  const verifiedDeploymentData = getVerifiedContractInstanceDeploymentData(
-    contractInstanceDetails
-  );
+  const { verifiedDeploymentArguments, deployerMetadata } =
+    getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
 
   return (
     <div className="mx-auto px-[70px] max-w-[1440px]">
@@ -50,8 +46,8 @@ export const ContractInstanceDetails: FC = () => {
       </div>
       <div className="mt-5">
         <TabsSection
-          verifiedDeploymentData={verifiedDeploymentData}
-          contactDetailsData={mockedVerfiedData.DeployerDetails}
+          verifiedDeploymentData={verifiedDeploymentArguments}
+          deployerMetadata={deployerMetadata}
         />
       </div>
     </div>

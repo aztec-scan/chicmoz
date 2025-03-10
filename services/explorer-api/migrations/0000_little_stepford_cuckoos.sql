@@ -191,13 +191,26 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (
 	CONSTRAINT "l2_contract_instance_deployed_address_unique" UNIQUE("address")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "l2_contract_instance_verified_deployment" (
+CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployer_metadata" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"address" varchar(66) NOT NULL,
+	"contract_identifier" varchar NOT NULL,
+	"details" varchar NOT NULL,
+	"creator_name" varchar NOT NULL,
+	"creator_contact" varchar NOT NULL,
+	"app_url" varchar NOT NULL,
+	"repo_url" varchar NOT NULL,
+	"uploaded_at" timestamp DEFAULT now() NOT NULL,
+	"reviewed_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "l2_contract_instance_verified_deployment_arguments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"address" varchar(66) NOT NULL,
 	"publicKeys" varchar NOT NULL,
 	"deployer" varchar(66) NOT NULL,
 	"salt" varchar(66) NOT NULL,
-	"constructor_args" varchar NOT NULL
+	"constructor_args" jsonb NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_private_function" (
@@ -429,7 +442,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "l2_contract_instance_verified_deployment" ADD CONSTRAINT "l2_contract_instance_verified_deployment_address_l2_contract_instance_deployed_address_fk" FOREIGN KEY ("address") REFERENCES "public"."l2_contract_instance_deployed"("address") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "l2_contract_instance_deployer_metadata" ADD CONSTRAINT "l2_contract_instance_deployer_metadata_address_l2_contract_instance_deployed_address_fk" FOREIGN KEY ("address") REFERENCES "public"."l2_contract_instance_deployed"("address") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "l2_contract_instance_verified_deployment_arguments" ADD CONSTRAINT "l2_contract_instance_verified_deployment_arguments_address_l2_contract_instance_deployed_address_fk" FOREIGN KEY ("address") REFERENCES "public"."l2_contract_instance_deployed"("address") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

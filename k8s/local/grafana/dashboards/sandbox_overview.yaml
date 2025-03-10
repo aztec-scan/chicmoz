@@ -25,19 +25,52 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 3,
+      "id": 2,
       "links": [],
       "panels": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "ae5es4xn8ny0we"
+            "uid": "aaaaaaaaaaaaaa"
           },
           "description": "TODO: automate translation of finalization-status",
           "fieldConfig": {
             "defaults": {
               "color": {
-                "mode": "thresholds"
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
               },
               "mappings": [],
               "thresholds": {
@@ -46,18 +79,6 @@ data:
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "yellow",
-                    "value": 30
-                  },
-                  {
-                    "color": "orange",
-                    "value": 70
-                  },
-                  {
-                    "color": "red",
-                    "value": 90
                   }
                 ]
               }
@@ -70,27 +91,26 @@ data:
             "x": 0,
             "y": 0
           },
-          "id": 3,
+          "id": 5,
           "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
           "pluginVersion": "11.3.0-pre",
           "targets": [
             {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aaaaaaaaaaaaaa"
+              },
               "editorMode": "code",
               "format": "table",
               "rawQuery": true,
@@ -150,7 +170,7 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
@@ -212,7 +232,7 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
@@ -274,7 +294,7 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
@@ -336,7 +356,7 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
@@ -398,7 +418,7 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
@@ -459,12 +479,12 @@ data:
             }
           ],
           "title": "L2-block finalization status",
-          "type": "stat"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "ae5es4xn8ny0we"
+            "uid": "aaaaaaaaaaaaaa"
           },
           "fieldConfig": {
             "defaults": {
@@ -525,13 +545,13 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
               "hide": false,
               "rawQuery": true,
-              "rawSql": "SELECT \n  l1_block_number as finalized_height,\n  to_timestamp(l1_block_timestamp) AS timestamp_date,\n  is_finalized\nFROM l1_generic_contract_event\nWHERE is_finalized IS TRUE\nORDER BY l1_block_timestamp DESC LIMIT 50",
+              "rawSql": "SELECT \n  l1_block_number as finalized_height,\n  l1_block_timestamp,\n  is_finalized\nFROM l1_generic_contract_event\nWHERE is_finalized IS TRUE\nORDER BY l1_block_timestamp DESC LIMIT 50",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -572,13 +592,13 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
               "hide": false,
               "rawQuery": true,
-              "rawSql": "SELECT\n  l1_block_number as pending_height,\n  to_timestamp(l1_block_timestamp) AS timestamp_date,\n  is_finalized\nFROM l1_generic_contract_event\nWHERE is_finalized IS FALSE\nORDER BY l1_block_timestamp DESC LIMIT 50",
+              "rawSql": "SELECT\n  l1_block_number as pending_height,\n  l1_block_timestamp,\n  is_finalized\nFROM l1_generic_contract_event\nWHERE is_finalized IS FALSE\nORDER BY l1_block_timestamp DESC LIMIT 50",
               "refId": "B",
               "sql": {
                 "columns": [
@@ -623,7 +643,7 @@ data:
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "ae5es4xn8ny0we"
+            "uid": "aaaaaaaaaaaaaa"
           },
           "fieldConfig": {
             "defaults": {
@@ -704,24 +724,16 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "builder",
               "format": "time_series",
-              "rawSql": "SELECT \"l1BlockNumber\", \"l2BlockNumber\", \"l1BlockTimestamp\" AS \"time\" FROM \"l1L2BlockProposed\" ORDER BY \"l1BlockTimestamp\" DESC LIMIT 50 ",
+              "rawSql": "SELECT \"l2BlockNumber\" AS \"L2 block number proposed on L1\", \"l1BlockTimestamp\" AS \"time\" FROM \"l1L2BlockProposed\" ORDER BY \"l1BlockTimestamp\" DESC LIMIT 50 ",
               "refId": "A",
               "sql": {
                 "columns": [
                   {
-                    "parameters": [
-                      {
-                        "name": "\"l1BlockNumber\"",
-                        "type": "functionParameter"
-                      }
-                    ],
-                    "type": "function"
-                  },
-                  {
+                    "alias": "\"L2 block number proposed on L1\"",
                     "parameters": [
                       {
                         "name": "\"l2BlockNumber\"",
@@ -762,15 +774,68 @@ data:
                 "orderByDirection": "DESC"
               },
               "table": "\"l1L2BlockProposed\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "aaaaaaaaaaaaaa"
+              },
+              "editorMode": "builder",
+              "format": "time_series",
+              "hide": false,
+              "rawSql": "SELECT \"l2BlockNumber\" AS \"L2 block number proven on L1\", \"l1BlockTimestamp\" AS \"time\" FROM \"l1L2ProofVerified\" ORDER BY \"l1BlockTimestamp\" DESC LIMIT 50 ",
+              "refId": "B",
+              "sql": {
+                "columns": [
+                  {
+                    "alias": "\"L2 block number proven on L1\"",
+                    "parameters": [
+                      {
+                        "name": "\"l2BlockNumber\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "alias": "\"time\"",
+                    "parameters": [
+                      {
+                        "name": "\"l1BlockTimestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": "\"l1BlockTimestamp\"",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "DESC"
+              },
+              "table": "\"l1L2ProofVerified\""
             }
           ],
-          "title": "Panel Title",
+          "title": "L2 seen from L1",
           "type": "timeseries"
         },
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "ae5es4xn8ny0we"
+            "uid": "aaaaaaaaaaaaaa"
           },
           "description": "(limit 50)",
           "fieldConfig": {
@@ -870,13 +935,13 @@ data:
             {
               "datasource": {
                 "type": "grafana-postgresql-datasource",
-                "uid": "ae5es4xn8ny0we"
+                "uid": "aaaaaaaaaaaaaa"
               },
               "editorMode": "code",
               "format": "table",
               "hide": false,
               "rawQuery": true,
-              "rawSql": "WITH events AS (\n    SELECT \n        event_name, \n        l1_block_number,\n        to_timestamp(l1_block_timestamp) AS timestamp_date\n    FROM l1_generic_contract_event\n)\nSELECT event_name, l1_block_number,\n  COALESCE(\n    CASE \n      WHEN timestamp_date IS NULL\n      THEN 'NOT SEEN'\n\n      WHEN age(NOW(), timestamp_date) < interval '0 minute' \n      THEN 'future!'\n\n      WHEN age(NOW(), timestamp_date) < interval '1 hour' \n      THEN concat(extract(minute from age(NOW(), timestamp_date)), ' minutes ago')\n\n      WHEN age(NOW(), timestamp_date) < interval '1 day'\n      THEN concat(extract(hour from age(NOW(), timestamp_date)), ' hours ago')\n\n      ELSE concat(extract(day from age(NOW(), timestamp_date)), ' days ago')\n    END, \n    'NOT SEEN'\n  ) AS last_seen_readable,\n  timestamp_date\nFROM events\nORDER BY timestamp_date DESC LIMIT 50\n",
+              "rawSql": "WITH events AS (\n    SELECT \n        event_name, \n        l1_block_number,\n        l1_block_timestamp\n    FROM l1_generic_contract_event\n)\nSELECT event_name, l1_block_number,\n  COALESCE(\n    CASE \n      WHEN l1_block_timestamp IS NULL\n      THEN 'NOT SEEN'\n\n      WHEN age(NOW(), l1_block_timestamp) < interval '0 minute' \n      THEN 'future!'\n\n      WHEN age(NOW(), l1_block_timestamp) < interval '1 hour' \n      THEN concat(extract(minute from age(NOW(), l1_block_timestamp)), ' minutes ago')\n\n      WHEN age(NOW(), l1_block_timestamp) < interval '1 day'\n      THEN concat(extract(hour from age(NOW(), l1_block_timestamp)), ' hours ago')\n\n      ELSE concat(extract(day from age(NOW(), l1_block_timestamp)), ' days ago')\n    END, \n    'NOT SEEN'\n  ) AS last_seen_readable,\n  l1_block_timestamp\nFROM events\nORDER BY l1_block_timestamp DESC LIMIT 50\n",
               "refId": "A",
               "sql": {
                 "columns": [
@@ -909,7 +974,7 @@ data:
         "list": []
       },
       "time": {
-        "from": "now-5m",
+        "from": "now-30m",
         "to": "now"
       },
       "timepicker": {},

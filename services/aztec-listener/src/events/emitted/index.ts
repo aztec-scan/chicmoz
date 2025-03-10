@@ -17,13 +17,15 @@ import { onL2RpcNodeAlive } from "./on-node-alive.js";
 
 export const onBlock = async (
   block: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus
+  finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ) => {
   const height = Number(block.header.globalVariables.blockNumber);
+  const finalizationStatusStr =
+    ChicmozL2BlockFinalizationStatus[finalizationStatus];
   logger.info(
-    `🦊 publishing block ${height} (hash: ${(
+    `🦊 publishing (${finalizationStatusStr}) block ${height} (hash: ${(
       await block.hash()
-    ).toString()})...`
+    ).toString()})...`,
   );
   const blockStr = block.toString();
   await publishMessage("NEW_BLOCK_EVENT", {
@@ -35,7 +37,7 @@ export const onBlock = async (
 
 export const onCatchupBlock = async (
   block: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus
+  finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ) => {
   const blockStr = block.toString();
   await publishMessage("CATCHUP_BLOCK_EVENT", {
@@ -47,7 +49,7 @@ export const onCatchupBlock = async (
 // TODO: onCatchupRequestFromExplorerApi
 
 export const onPendingTxs = async (txs: TxHash[]) => {
-  if (!txs || txs.length === 0) return;
+  if (!txs || txs.length === 0) {return;}
 
   await publishMessage("PENDING_TXS_EVENT", {
     txs: txs.map((tx) => {
@@ -75,7 +77,7 @@ export const onL2RpcNodeError = (
   rpcNodeError: Omit<
     ChicmozL2RpcNodeError,
     "rpcUrl" | "count" | "createdAt" | "lastSeenAt"
-  >
+  >,
 ) => {
   let event;
   try {

@@ -1,3 +1,4 @@
+import { chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema } from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export type VerifyArtifactPayload = {
@@ -8,13 +9,17 @@ export type IsTokenArtifactResult = {
   contractName: string;
   details: string;
 };
-export const verifyInstanceDeploymentPayloadSchema = z.object({
-  stringifiedArtifactJson: z.string().optional(),
-  publicKeysString: z.string(),
-  salt: z.string(),
-  deployer: z.string(),
-  constructorArgs: z.string().array(),
-});
+
+export const verifyInstanceDeploymentPayloadSchema = z.lazy(() =>
+  z.object({
+    ...chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema.omit({
+      id: true,
+      address: true,
+    }).shape,
+    stringifiedArtifactJson: z.string().optional(),
+  }),
+);
+
 export type VerifyInstanceDeploymentPayload = z.infer<
   typeof verifyInstanceDeploymentPayloadSchema
 >;

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { CopyableText } from "../copy-text";
+import { BlockStatusBadge } from "../block-status-badge";
 
 interface KeyValueRowProps {
   label: string;
@@ -17,6 +18,7 @@ enum DisplayType {
   LINK = "link",
   HEX = "hex",
   EXTERNAL_LINK = "external-link",
+  BADGE = "badge",
 }
 
 export const KeyValueRow: FC<KeyValueRowProps> = ({
@@ -27,18 +29,18 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   extLink,
 }) => {
   let displayType = DisplayType.TEXT;
-  if (link) displayType = DisplayType.LINK;
-  else if (label === "data") displayType = DisplayType.TEXTAREA;
-  else if (value.startsWith("0x")) displayType = DisplayType.HEX;
-  else if (extLink) displayType = DisplayType.EXTERNAL_LINK;
+  if (link) { displayType = DisplayType.LINK; }
+  else if (label === "data") { displayType = DisplayType.TEXTAREA; }
+  else if (value.startsWith("0x")) { displayType = DisplayType.HEX; }
+  else if (extLink) { displayType = DisplayType.EXTERNAL_LINK; }
+  else if (label.includes("status")) { displayType = DisplayType.BADGE; }
 
   const commonTextClasses = "text-sm flex-grow text-end justify-end";
   return (
     <div
       key={label}
-      className={`flex items-center gap-2 py-3 ${
-        !isLast ? "border-b border-gray-200" : ""
-      }`}
+      className={`flex items-center gap-2 py-3 ${!isLast ? "border-b border-gray-200" : ""
+        }`}
     >
       <span className="text-gray-600 w-1/3">{label}</span>
       {displayType === DisplayType.TEXT && (
@@ -56,7 +58,11 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
       {displayType === DisplayType.HEX && (
         <span className={commonTextClasses}>
           <CopyableText
-            text={truncateHashString(value)}
+            text={
+              value.startsWith("0x") && !value.includes(", ")
+                ? truncateHashString(value)
+                : value
+            }
             toCopy={value}
             additionalClassesIcon="justify-end"
           />
@@ -75,6 +81,11 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
       )}
       {displayType === DisplayType.TEXTAREA && (
         <CopyableText text={value} toCopy={value} textArea />
+      )}
+      {displayType === DisplayType.BADGE && (
+        <div className={commonTextClasses}>
+          <BlockStatusBadge status={Number(value)} />
+        </div>
       )}
     </div>
   );

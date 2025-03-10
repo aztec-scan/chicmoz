@@ -1,13 +1,18 @@
-import { Contract, DeploySentTx, waitForPXE } from "@aztec/aztec.js";
+import {
+  AztecAddress,
+  Contract,
+  DeploySentTx,
+  waitForPXE,
+} from "@aztec/aztec.js";
+import { TokenContract } from "@aztec/noir-contracts.js/Token";
+import * as tokenContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_contract-Token" assert { type: "json" };
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
 import {
   deployContract,
   logAndWaitForTx,
-  registerContractClassArtifact,
+  verifyContractInstanceDeployment,
 } from "./utils/index.js";
-import { TokenContract } from "@aztec/noir-contracts.js/Token";
-import * as tokenContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_contract-Token" assert { type: "json" };
 
 export async function run() {
   logger.info("===== TOKEN CONTRACT =====");
@@ -19,27 +24,48 @@ export async function run() {
   const tokenAdmin = namedWallets.alice.getAddress();
 
   const contractLoggingName = "Token Contract";
+  const constructorArgs: [AztecAddress, string, string, number] = [
+    tokenAdmin,
+    "lol",
+    "LOL",
+    9,
+  ];
   const tokenContract = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<TokenContract> => {
       return TokenContract.deploy(
         deployerWallet,
-        tokenAdmin,
-        "lol",
-        "LOL",
-        9
+        constructorArgs[0],
+        constructorArgs[1],
+        constructorArgs[2],
+        constructorArgs[3],
       ).send();
     },
     node: getAztecNodeClient(),
   });
 
-  registerContractClassArtifact(
+  verifyContractInstanceDeployment({
     contractLoggingName,
-    tokenContractArtifactJson,
-    tokenContract.instance.contractClassId.toString(),
-    tokenContract.instance.version
-  ).catch((err) => {
-    logger.error(err);
+    contractInstanceAddress: tokenContract.address.toString(),
+    verifyArgs: {
+      artifactObj: tokenContractArtifactJson,
+      publicKeysString: tokenContract.instance.publicKeys.toString(),
+      deployer: tokenContract.instance.deployer.toString(),
+      salt: tokenContract.instance.salt.toString(),
+      constructorArgs: constructorArgs.map((arg) => arg.toString()),
+    },
+    deployerMetadata: {
+      contractIdentifier: contractLoggingName,
+      details: "Token contract",
+      creatorName: "Event Cannon",
+      creatorContact:
+        "email: test@test.com, discord: test#1234, telegram: @test",
+      appUrl: "https://aztec.network",
+      repoUrl: "https://github.com/AztecProtocol/aztec-packages",
+      reviewedAt: new Date(),
+    },
+  }).catch((err) => {
+    logger.error(`Failed to verify contract instance deployment: ${err}`);
   });
 
   await Promise.all([
@@ -47,19 +73,19 @@ export async function run() {
       tokenContract.methods
         .mint_to_public(namedWallets.alice.getAddress(), 1000)
         .send(),
-      "Mint to Alice"
+      "Mint to Alice",
     ),
     logAndWaitForTx(
       tokenContract.methods
         .mint_to_public(namedWallets.bob.getAddress(), 1000)
         .send(),
-      "Mint to Bob"
+      "Mint to Bob",
     ),
     logAndWaitForTx(
       tokenContract.methods
         .mint_to_public(namedWallets.charlie.getAddress(), 1000)
         .send(),
-      "Mint to Charlie"
+      "Mint to Charlie",
     ),
   ]);
   const [balanceAlice, balanceBob, balanceCharlie] = await Promise.all([
@@ -83,19 +109,19 @@ export async function run() {
   const aliceContract = (await Contract.at(
     tokenContract.address,
     TokenContract.artifact,
-    namedWallets.alice
+    namedWallets.alice,
   )) as TokenContract;
 
   const bobsTokenContract = (await Contract.at(
     tokenContract.address,
     TokenContract.artifact,
-    namedWallets.bob
+    namedWallets.bob,
   )) as TokenContract;
 
   const charliesTokenContract = (await Contract.at(
     tokenContract.address,
     TokenContract.artifact,
-    namedWallets.charlie
+    namedWallets.charlie,
   )) as TokenContract;
 
   let bobNonce = 0;
@@ -105,10 +131,10 @@ export async function run() {
         namedWallets.bob.getAddress(),
         namedWallets.alice.getAddress(),
         100,
-        bobNonce
+        bobNonce,
       )
       .send(),
-    "Public transfer from Alice to Bob"
+    "Public transfer from Alice to Bob",
   );
   bobNonce++;
 
@@ -130,7 +156,7 @@ export async function run() {
     charliesTokenContract.methods
       .transfer_to_private(namedWallets.alice.getAddress(), 100)
       .send(),
-    "Public to private transfer from Charlie to Alice"
+    "Public to private transfer from Charlie to Alice",
   );
 
   let aliceNonce = 0;
@@ -140,10 +166,10 @@ export async function run() {
         namedWallets.alice.getAddress(),
         namedWallets.bob.getAddress(),
         100,
-        aliceNonce
+        aliceNonce,
       )
       .send(),
-    "Private transfer from Bob to Alice"
+    "Private transfer from Bob to Alice",
   );
   aliceNonce++;
 

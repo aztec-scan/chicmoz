@@ -8,4 +8,5 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
+    - ./sp_testnet/postgres-config.yaml
     - ./sp_testnet/deployment.yaml

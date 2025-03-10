@@ -13,7 +13,6 @@ manifests:
     - k8s/local/grafana/dashboards/sandbox_overview.yaml
   helm:
     releases:
-      # GRAFANA
       - name: grafana
         version: 11.3.26
         remoteChart: grafana

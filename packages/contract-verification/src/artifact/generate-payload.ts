@@ -1,8 +1,8 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
-import { VerifyArtifactPayload } from "types.js";
+import { VerifyArtifactPayload } from "../types.js";
 
 export const generateVerifyArtifactPayload = (
-  artifactObj: { default: NoirCompiledContract } | NoirCompiledContract
+  artifactObj: { default: NoirCompiledContract } | NoirCompiledContract,
 ): VerifyArtifactPayload => {
   const artifactJson = (artifactObj as { default: NoirCompiledContract })
     .default
@@ -17,5 +17,5 @@ export const generateVerifyArtifactPayload = (
 export const generateVerifyArtifactUrl = (
   apiBaseUrl: string,
   contractClassId: string,
-  version: number
+  version: number,
 ) => `${apiBaseUrl}/l2/contract-classes/${contractClassId}/versions/${version}`;

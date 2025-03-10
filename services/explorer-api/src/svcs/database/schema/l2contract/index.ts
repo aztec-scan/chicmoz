@@ -7,6 +7,7 @@ import {
   jsonb,
   pgTable,
   primaryKey,
+  timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -34,16 +35,16 @@ export const l2ContractInstanceDeployed = pgTable(
     initializationHash: generateFrColumn("initialization_hash").notNull(),
     deployer: generateAztecAddressColumn("deployer").notNull(),
     masterNullifierPublicKey: generateConcatFrPointColumn(
-      "masterNullifierPublicKey"
+      "masterNullifierPublicKey",
     ).notNull(),
     masterIncomingViewingPublicKey: generateConcatFrPointColumn(
-      "masterIncomingViewingPublicKey"
+      "masterIncomingViewingPublicKey",
     ).notNull(),
     masterOutgoingViewingPublicKey: generateConcatFrPointColumn(
-      "masterOutgoingViewingPublicKey"
+      "masterOutgoingViewingPublicKey",
     ).notNull(),
     masterTaggingPublicKey: generateConcatFrPointColumn(
-      "masterTaggingPublicKey"
+      "masterTaggingPublicKey",
     ).notNull(),
   },
   (t) => ({
@@ -55,7 +56,7 @@ export const l2ContractInstanceDeployed = pgTable(
         l2ContractClassRegistered.version,
       ],
     }).onDelete("cascade"),
-  })
+  }),
 );
 
 export const l2ContractClassRegistered = pgTable(
@@ -78,11 +79,31 @@ export const l2ContractClassRegistered = pgTable(
       name: "contract_class_id_version",
       columns: [t.contractClassId, t.version],
     }),
-  })
+  }),
 );
 
-export const l2ContractInstanceVerifiedDeployment = pgTable(
-  "l2_contract_instance_verified_deployment",
+export const l2ContractInstanceDeployerMetadataTable = pgTable(
+  "l2_contract_instance_deployer_metadata",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    address: generateAztecAddressColumn("address")
+      .notNull()
+      .references(() => l2ContractInstanceDeployed.address, {
+        onDelete: "cascade",
+      }),
+    contractIdentifier: varchar("contract_identifier").notNull(),
+    details: varchar("details").notNull(),
+    creatorName: varchar("creator_name").notNull(),
+    creatorContact: varchar("creator_contact").notNull(),
+    appUrl: varchar("app_url").notNull(),
+    repoUrl: varchar("repo_url").notNull(),
+    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+    reviewedAt: timestamp("reviewed_at"),
+  },
+);
+
+export const l2ContractInstanceVerifiedDeploymentArguments = pgTable(
+  "l2_contract_instance_verified_deployment_arguments",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     address: generateAztecAddressColumn("address")
@@ -93,13 +114,17 @@ export const l2ContractInstanceVerifiedDeployment = pgTable(
     publicKeysString: varchar("publicKeys").notNull(),
     deployer: generateAztecAddressColumn("deployer").notNull(),
     salt: generateFrColumn("salt").notNull(),
-    constructorArgs: varchar("constructor_args").notNull(),
-  }
+    constructorArgs: jsonb("constructor_args").notNull(),
+  },
 );
 
 export const l2ContractInstanceDeployedRelations = relations(
   l2ContractInstanceDeployed,
-  ({ one }) => ({
+  ({ one, many }) => ({
+    deployerMetadata: many(l2ContractInstanceDeployerMetadataTable),
+    verifiedDeploymentArguments: one(
+      l2ContractInstanceVerifiedDeploymentArguments,
+    ),
     contractClass: one(l2ContractClassRegistered, {
       fields: [
         l2ContractInstanceDeployed.contractClassId,
@@ -110,7 +135,7 @@ export const l2ContractInstanceDeployedRelations = relations(
         l2ContractClassRegistered.version,
       ],
     }),
-  })
+  }),
 );
 
 export const l2PrivateFunction = pgTable(
@@ -119,16 +144,16 @@ export const l2PrivateFunction = pgTable(
     contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
     unconstrainedFunctionsArtifactTreeRoot: generateFrColumn(
-      "unconstrained_functions_artifact_tree_root"
+      "unconstrained_functions_artifact_tree_root",
     ).notNull(),
     privateFunctionTreeSiblingPath: jsonb(
-      "private_function_tree_sibling_path"
+      "private_function_tree_sibling_path",
     ).notNull(),
     privateFunctionTreeLeafIndex: bigint("private_function_tree_leaf_index", {
       mode: "number",
     }).notNull(),
     artifactFunctionTreeSiblingPath: jsonb(
-      "artifact_function_tree_sibling_path"
+      "artifact_function_tree_sibling_path",
     ).notNull(),
     artifactFunctionTreeLeafIndex: bigint("artifact_function_tree_leaf_index", {
       mode: "number",
@@ -137,10 +162,10 @@ export const l2PrivateFunction = pgTable(
       mode: "number",
     }).notNull(),
     privateFunction_metadataHash: generateFrColumn(
-      "private_function_metadata_hash"
+      "private_function_metadata_hash",
     ).notNull(),
     privateFunction_vkHash: generateFrColumn(
-      "private_function_vk_hash"
+      "private_function_vk_hash",
     ).notNull(),
     privateFunction_bytecode: bufferType("private_function_bytecode").notNull(),
   },
@@ -149,7 +174,7 @@ export const l2PrivateFunction = pgTable(
       name: "private_function_contract_class",
       columns: [t.contractClassId, t.privateFunction_selector_value],
     }),
-  })
+  }),
 );
 
 export const l2UnconstrainedFunction = pgTable(
@@ -158,23 +183,23 @@ export const l2UnconstrainedFunction = pgTable(
     contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
     privateFunctionsArtifactTreeRoot: generateFrColumn(
-      "private_functions_artifact_tree_root"
+      "private_functions_artifact_tree_root",
     ).notNull(),
     artifactFunctionTreeSiblingPath: jsonb(
-      "artifact_function_tree_sibling_path"
+      "artifact_function_tree_sibling_path",
     ).notNull(),
     artifactFunctionTreeLeafIndex: bigint("artifact_function_tree_leaf_index", {
       mode: "number",
     }).notNull(),
     unconstrainedFunction_selector_value: bigint(
       "unconstrained_function_selector_value",
-      { mode: "number" }
+      { mode: "number" },
     ).notNull(),
     unconstrainedFunction_metadataHash: generateFrColumn(
-      "unconstrained_function_metadata_hash"
+      "unconstrained_function_metadata_hash",
     ).notNull(),
     unconstrainedFunction_bytecode: bufferType(
-      "unconstrained_function_bytecode"
+      "unconstrained_function_bytecode",
     ).notNull(),
   },
   (t) => ({
@@ -182,7 +207,7 @@ export const l2UnconstrainedFunction = pgTable(
       name: "unconstrained_function_contract_class",
       columns: [t.contractClassId, t.unconstrainedFunction_selector_value],
     }),
-  })
+  }),
 );
 
 export const l2ContractClassRegisteredRelations = relations(
@@ -191,19 +216,19 @@ export const l2ContractClassRegisteredRelations = relations(
     instances: many(l2ContractInstanceDeployed),
     privateFunctions: many(l2PrivateFunction),
     unconstrainedFunctions: many(l2UnconstrainedFunction),
-  })
+  }),
 );
 
 export const l2PrivateFunctionRelations = relations(
   l2PrivateFunction,
   ({ many }) => ({
     contractClass: many(l2ContractClassRegistered),
-  })
+  }),
 );
 
 export const l2UnconstrainedFunctionRelations = relations(
   l2UnconstrainedFunction,
   ({ many }) => ({
     contractClass: many(l2ContractClassRegistered),
-  })
+  }),
 );

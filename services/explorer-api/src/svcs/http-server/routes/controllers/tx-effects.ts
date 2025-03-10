@@ -11,6 +11,23 @@ import {
   txEffectResponseArray,
 } from "./utils/index.js";
 
+export const openapi_GET_L2_TX_EFFECTS = {
+  "/l2/txEffects": {
+    get: {
+      summary: "Get all transaction effects",
+      responses: txEffectResponseArray,
+    },
+  },
+};
+
+export const GET_L2_TX_EFFECTS = asyncHandler(async (_req, res) => {
+  // TODO: this should be extended to enable querying for block-height ranges
+  const txEffectsData = await dbWrapper.getLatest(["l2", "txEffects"], () =>
+    db.l2TxEffect.getLatestTxEffects()
+  );
+  res.status(200).send(txEffectsData);
+});
+
 export const openapi_GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT = {
   "/l2/blocks/{blockHeight}/txEffects": {
     get: {

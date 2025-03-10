@@ -23,17 +23,17 @@ export type ChicmozL2ContractInstanceDeployedEvent = z.infer<
   typeof chicmozL2ContractInstanceDeployedEventSchema
 >;
 
-export const chicmozL2ContractInstanceVerifiedDeploymentInfoSchema = z.object({
+export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema = z.object({
   id: z.string().uuid().optional(),
   address: aztecAddressSchema,
   salt: frSchema,
   deployer: aztecAddressSchema,
   publicKeysString: z.string(),
-  constructorArgs: z.string(),
+  constructorArgs: z.string().array(),
 });
 
-export type ChicmozL2ContractInstanceVerifiedDeploymentInfoSchema = z.infer<
-  typeof chicmozL2ContractInstanceVerifiedDeploymentInfoSchema
+export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer<
+  typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema
 >;
 
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({

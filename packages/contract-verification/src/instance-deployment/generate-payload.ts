@@ -1,5 +1,8 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
-import { VerifyInstanceDeploymentPayload } from "types.js";
+import {
+  VerifyInstanceDeploymentPayload,
+  verifyInstanceDeploymentPayloadSchema,
+} from "../types.js";
 
 export const generateVerifyInstancePayload = ({
   publicKeysString,
@@ -23,7 +26,7 @@ export const generateVerifyInstancePayload = ({
   if (salt.length !== 66) {
     throw new Error(`Invalid salt length: ${salt.length}`);
   }
-  return {
+  return verifyInstanceDeploymentPayloadSchema.parse({
     publicKeysString,
     deployer,
     salt,
@@ -32,13 +35,13 @@ export const generateVerifyInstancePayload = ({
       ? JSON.stringify(
           (artifactObj as { default: NoirCompiledContract }).default
             ? (artifactObj as { default: NoirCompiledContract }).default
-            : artifactObj
+            : artifactObj,
         )
       : undefined,
-  };
+  });
 };
 
 export const generateVerifyInstanceUrl = (
   apiBaseUrl: string,
-  address: string
-) => `${apiBaseUrl}/l2/contract-instances/${address}/verified-deployment`;
+  address: string,
+) => `${apiBaseUrl}/l2/contract-instances/${address}`;

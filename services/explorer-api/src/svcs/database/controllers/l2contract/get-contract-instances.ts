@@ -6,7 +6,8 @@ import { l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
-  l2ContractInstanceVerifiedDeployment,
+  l2ContractInstanceDeployerMetadataTable,
+  l2ContractInstanceVerifiedDeploymentArguments,
 } from "../../schema/l2contract/index.js";
 import { getBlocksWhereRange } from "../utils.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
@@ -25,8 +26,11 @@ export const getL2DeployedContractInstances = async ({
     .select({
       instance: getTableColumns(l2ContractInstanceDeployed),
       class: getContractClassRegisteredColumns(includeArtifactJson),
-      verifiedDeploymentInfo: getTableColumns(
-        l2ContractInstanceVerifiedDeployment
+      verifiedDeploymentArguments: getTableColumns(
+        l2ContractInstanceVerifiedDeploymentArguments,
+      ),
+      deployerMetadata: getTableColumns(
+        l2ContractInstanceDeployerMetadataTable,
       ),
     })
     .from(l2ContractInstanceDeployed)
@@ -35,22 +39,31 @@ export const getL2DeployedContractInstances = async ({
       and(
         eq(
           l2ContractInstanceDeployed.contractClassId,
-          l2ContractClassRegistered.contractClassId
+          l2ContractClassRegistered.contractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,
-          l2ContractClassRegistered.version
-        )
-      )
+          l2ContractClassRegistered.version,
+        ),
+      ),
     )
     .leftJoin(
-      l2ContractInstanceVerifiedDeployment,
+      l2ContractInstanceVerifiedDeploymentArguments,
       and(
         eq(
           l2ContractInstanceDeployed.address,
-          l2ContractInstanceVerifiedDeployment.address
-        )
-      )
+          l2ContractInstanceVerifiedDeploymentArguments.address,
+        ),
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceDeployerMetadataTable,
+      and(
+        eq(
+          l2ContractInstanceDeployed.address,
+          l2ContractInstanceDeployerMetadataTable.address,
+        ),
+      ),
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .where(whereRange)
@@ -61,7 +74,8 @@ export const getL2DeployedContractInstances = async ({
     return parseDeluxe({
       contractClass: r.class,
       instance: r.instance,
-      verifiedDeploymentInfo: r.verifiedDeploymentInfo,
+      verifiedDeploymentArguments: r.verifiedDeploymentArguments,
+      deployerMetadata: r.deployerMetadata,
     });
   });
 
@@ -70,14 +84,17 @@ export const getL2DeployedContractInstances = async ({
 
 export const getL2DeployedContractInstancesByBlockHash = async (
   blockHash: HexString,
-  includeArtifactJson?: boolean
+  includeArtifactJson?: boolean,
 ): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
   const result = await db()
     .select({
       instance: getTableColumns(l2ContractInstanceDeployed),
       class: getContractClassRegisteredColumns(includeArtifactJson),
-      verifiedDeploymentInfo: getTableColumns(
-        l2ContractInstanceVerifiedDeployment
+      verifiedDeploymentArguments: getTableColumns(
+        l2ContractInstanceVerifiedDeploymentArguments,
+      ),
+      deployerMetadata: getTableColumns(
+        l2ContractInstanceDeployerMetadataTable,
       ),
     })
     .from(l2ContractInstanceDeployed)
@@ -86,22 +103,31 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       and(
         eq(
           l2ContractInstanceDeployed.contractClassId,
-          l2ContractClassRegistered.contractClassId
+          l2ContractClassRegistered.contractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,
-          l2ContractClassRegistered.version
-        )
-      )
+          l2ContractClassRegistered.version,
+        ),
+      ),
     )
     .leftJoin(
-      l2ContractInstanceVerifiedDeployment,
+      l2ContractInstanceVerifiedDeploymentArguments,
       and(
         eq(
           l2ContractInstanceDeployed.address,
-          l2ContractInstanceVerifiedDeployment.address
-        )
-      )
+          l2ContractInstanceVerifiedDeploymentArguments.address,
+        ),
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceDeployerMetadataTable,
+      and(
+        eq(
+          l2ContractInstanceDeployed.address,
+          l2ContractInstanceDeployerMetadataTable.address,
+        ),
+      ),
     )
     .where(eq(l2ContractInstanceDeployed.blockHash, blockHash))
     .orderBy(desc(l2ContractInstanceDeployed.version));
@@ -110,21 +136,25 @@ export const getL2DeployedContractInstancesByBlockHash = async (
     return parseDeluxe({
       contractClass: r.class,
       instance: r.instance,
-      verifiedDeploymentInfo: r.verifiedDeploymentInfo,
+      verifiedDeploymentArguments: r.verifiedDeploymentArguments,
+      deployerMetadata: r.deployerMetadata,
     });
   });
 };
 
 export const getL2DeployedContractInstancesByContractClassId = async (
   contractClassId: string,
-  includeArtifactJson?: boolean
+  includeArtifactJson?: boolean,
 ): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
   const result = await db()
     .select({
       instance: getTableColumns(l2ContractInstanceDeployed),
       class: getContractClassRegisteredColumns(includeArtifactJson),
-      verifiedDeploymentInfo: getTableColumns(
-        l2ContractInstanceVerifiedDeployment
+      verifiedDeploymentArguments: getTableColumns(
+        l2ContractInstanceVerifiedDeploymentArguments,
+      ),
+      deployerMetadata: getTableColumns(
+        l2ContractInstanceDeployerMetadataTable,
       ),
     })
     .from(l2ContractInstanceDeployed)
@@ -133,22 +163,31 @@ export const getL2DeployedContractInstancesByContractClassId = async (
       and(
         eq(
           l2ContractInstanceDeployed.contractClassId,
-          l2ContractClassRegistered.contractClassId
+          l2ContractClassRegistered.contractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,
-          l2ContractClassRegistered.version
-        )
-      )
+          l2ContractClassRegistered.version,
+        ),
+      ),
     )
     .leftJoin(
-      l2ContractInstanceVerifiedDeployment,
+      l2ContractInstanceVerifiedDeploymentArguments,
       and(
         eq(
           l2ContractInstanceDeployed.address,
-          l2ContractInstanceVerifiedDeployment.address
-        )
-      )
+          l2ContractInstanceVerifiedDeploymentArguments.address,
+        ),
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceDeployerMetadataTable,
+      and(
+        eq(
+          l2ContractInstanceDeployed.address,
+          l2ContractInstanceDeployerMetadataTable.address,
+        ),
+      ),
     )
     .where(eq(l2ContractInstanceDeployed.contractClassId, contractClassId))
     .orderBy(desc(l2ContractInstanceDeployed.version))
@@ -158,7 +197,8 @@ export const getL2DeployedContractInstancesByContractClassId = async (
     return parseDeluxe({
       contractClass: r.class,
       instance: r.instance,
-      verifiedDeploymentInfo: r.verifiedDeploymentInfo,
+      verifiedDeploymentArguments: r.verifiedDeploymentArguments,
+      deployerMetadata: r.deployerMetadata,
     });
   });
 };

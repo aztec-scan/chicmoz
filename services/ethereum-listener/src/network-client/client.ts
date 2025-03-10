@@ -6,7 +6,13 @@ import {
   chicmozL1L2ValidatorSchema,
   getL1NetworkId,
 } from "@chicmoz-pkg/types";
-import { PublicClient, createPublicClient, defineChain, webSocket } from "viem";
+import {
+  PublicClient,
+  createPublicClient,
+  defineChain,
+  http,
+  webSocket,
+} from "viem";
 import { foundry, mainnet, sepolia } from "viem/chains";
 import {
   ETHEREUM_HTTP_RPC_URL,
@@ -18,11 +24,21 @@ import { logger } from "../logger.js";
 import { getL1Contracts } from "./contracts/index.js";
 export { startContractWatchers as watchContractsEvents } from "./contracts/index.js";
 
-let publicClient: PublicClient | undefined = undefined;
+let publicWsClient: PublicClient | undefined = undefined;
+let publicHttpClient: PublicClient | undefined = undefined;
 
-export const getPublicClient = () => {
-  if (!publicClient) throw new Error("Client not initialized");
-  return publicClient;
+export const getPublicWsClient = () => {
+  if (!publicWsClient) {
+    throw new Error("Client not initialized");
+  }
+  return publicWsClient;
+};
+
+export const getPublicHttpClient = () => {
+  if (!publicHttpClient) {
+    throw new Error("Client not initialized");
+  }
+  return publicHttpClient;
 };
 
 export const initClient = () => {
@@ -46,18 +62,24 @@ export const initClient = () => {
       },
     },
   });
-  publicClient = createPublicClient({
+  publicWsClient = createPublicClient({
     chain,
     transport: webSocket(),
   });
+  publicHttpClient = createPublicClient({ chain, transport: http() });
 };
 
-export const getLatestHeight = async () => {
-  return await getPublicClient().getBlockNumber();
+export const getLatestFinalizedHeight = async () => {
+  const block = await getPublicHttpClient().getBlock({
+    blockTag: "finalized",
+  });
+  //const latest = await getPublicHttpClient().getBlockNumber();
+  //logger.info(`Two blocks: latest=${latest}, finalized=${block.number}`);
+  return block.number;
 };
 
 export const getBlock = async (blockNumber: number) => {
-  return await getPublicClient().getBlock({
+  return await getPublicHttpClient().getBlock({
     blockNumber: BigInt(blockNumber),
   });
 };
@@ -67,21 +89,23 @@ const json = (param: unknown): string => {
     param,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     (_key, value) => (typeof value === "bigint" ? value.toString() : value),
-    2
+    2,
   );
 };
 
 export const emitRandomizedChangeWithinRandomizedTime = async (
   depth: number,
-  oldValues: ChicmozL1L2Validator
+  oldValues: ChicmozL1L2Validator,
 ) => {
-  if (depth === 0) return;
+  if (depth === 0) {
+    return;
+  }
   const rand = Math.random();
   const sleepTime = 30000;
   logger.info(
     `ATTESTER ${oldValues.attester} - DEPTH ${depth} - SLEEP ${
       sleepTime / 1000
-    }s`
+    }s`,
   );
   await new Promise((resolve) => setTimeout(resolve, sleepTime));
   let newValues = oldValues;
@@ -129,8 +153,10 @@ export const emitRandomizedChangeWithinRandomizedTime = async (
 export const queryStakingStateAndEmitUpdates = async () => {
   // TODO: this entire function should be replaced with a watch on the contract (and some initial state query)
   const l1Contracts = await getL1Contracts();
-  if (!l1Contracts) throw new Error("Contracts not initialized");
-  const attesterCount = await getPublicClient().readContract({
+  if (!l1Contracts) {
+    throw new Error("Contracts not initialized");
+  }
+  const attesterCount = await getPublicHttpClient().readContract({
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     address: l1Contracts.rollup.address as `0x${string}`,
     abi: RollupAbi,
@@ -139,14 +165,14 @@ export const queryStakingStateAndEmitUpdates = async () => {
   logger.info(`Active attester count: ${attesterCount.toString()}`);
   if (attesterCount > 0) {
     for (let i = 0; i < attesterCount; i++) {
-      const attester = await getPublicClient().readContract({
+      const attester = await getPublicHttpClient().readContract({
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         address: l1Contracts.rollup.address as `0x${string}`,
         abi: RollupAbi,
         functionName: "getAttesterAtIndex",
         args: [BigInt(i)],
       });
-      const attesterInfo = await getPublicClient().readContract({
+      const attesterInfo = await getPublicHttpClient().readContract({
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         address: l1Contracts.rollup.address as `0x${string}`,
         abi: RollupAbi,
@@ -158,7 +184,7 @@ export const queryStakingStateAndEmitUpdates = async () => {
         chicmozL1L2ValidatorSchema.parse({
           ...attesterInfo,
           attester,
-        })
+        }),
       );
     }
   } else {
@@ -186,16 +212,16 @@ export const queryStakingStateAndEmitUpdates = async () => {
           chicmozL1L2ValidatorSchema.parse({
             ...attesterInfo,
             attester: attesterInfo.attester,
-          })
+          }),
         );
       }
       for (const attesterInfo of mockedAttesters) {
         await emitRandomizedChangeWithinRandomizedTime(
           100,
-          chicmozL1L2ValidatorSchema.parse(attesterInfo)
+          chicmozL1L2ValidatorSchema.parse(attesterInfo),
         ).catch((e) => {
           logger.error(
-            `Randomized change emission failed: ${(e as Error).stack}`
+            `Randomized change emission failed: ${(e as Error).stack}`,
           );
         });
       }

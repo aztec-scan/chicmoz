@@ -39,6 +39,7 @@ const updateTxEffects = (
       blockHeight: block.height,
       timestamp: block.header.globalVariables.timestamp,
     });
+    return effect;
   });
   queryClient.setQueryData(
     queryKeyGenerator.txEffectsByBlockHeight(block.height),

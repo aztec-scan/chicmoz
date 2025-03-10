@@ -25,6 +25,9 @@ spec:
                 name: postgres-config-global
             - configMapRef:
                 name: postgres-config-aztec-listener-sp-testnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
       containers:
         - image: aztec-listener:latest
           resources:

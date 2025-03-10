@@ -1,0 +1,986 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devnet-overview
+  namespace: chicmoz-prod
+data:
+  devnet-overview.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 2,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "kkkkkkkkkkkkkk"
+          },
+          "description": "TODO: automate translation of finalization-status",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "id": 5,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.0-pre",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT \n    lfs.l2_block_hash,\n    lfs.\"timestamp\",\n    lb.height as l2_seen_proposed\nFROM \"l2BlockFinalizationStatus\" lfs\nLEFT JOIN \"l2Block\" lb ON lfs.l2_block_hash = lb.hash\nWHERE lfs.status = 0\nORDER BY lfs.\"timestamp\" DESC\nLIMIT 50",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l2_block_hash",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "status",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "\"timestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "status"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                }
+              },
+              "table": "\"l2BlockFinalizationStatus\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT \n    lfs.l2_block_hash,\n    lfs.\"timestamp\",\n    lb.height as l2_seen_proven\nFROM \"l2BlockFinalizationStatus\" lfs\nLEFT JOIN \"l2Block\" lb ON lfs.l2_block_hash = lb.hash\nWHERE lfs.status = 1\nORDER BY lfs.\"timestamp\" DESC\nLIMIT 50",
+              "refId": "B",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l2_block_hash",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "status",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "\"timestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "status"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                }
+              },
+              "table": "\"l2BlockFinalizationStatus\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT \n    lfs.l2_block_hash,\n    lfs.\"timestamp\",\n    lb.height as l1_seen_proposed\nFROM \"l2BlockFinalizationStatus\" lfs\nLEFT JOIN \"l2Block\" lb ON lfs.l2_block_hash = lb.hash\nWHERE lfs.status = 2\nORDER BY lfs.\"timestamp\" DESC\nLIMIT 50",
+              "refId": "C",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l2_block_hash",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "status",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "\"timestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "status"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                }
+              },
+              "table": "\"l2BlockFinalizationStatus\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT \n    lfs.l2_block_hash,\n    lfs.\"timestamp\",\n    lb.height as l1_seen_proven\nFROM \"l2BlockFinalizationStatus\" lfs\nLEFT JOIN \"l2Block\" lb ON lfs.l2_block_hash = lb.hash\nWHERE lfs.status = 3\nORDER BY lfs.\"timestamp\" DESC\nLIMIT 50",
+              "refId": "D",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l2_block_hash",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "status",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "\"timestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "status"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                }
+              },
+              "table": "\"l2BlockFinalizationStatus\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT \n    lfs.l2_block_hash,\n    lfs.\"timestamp\",\n    lb.height as l1_mined_proposed\nFROM \"l2BlockFinalizationStatus\" lfs\nLEFT JOIN \"l2Block\" lb ON lfs.l2_block_hash = lb.hash\nWHERE lfs.status = 4\nORDER BY lfs.\"timestamp\" DESC\nLIMIT 50",
+              "refId": "E",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l2_block_hash",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "status",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "\"timestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "status"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                }
+              },
+              "table": "\"l2BlockFinalizationStatus\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT \n    lfs.l2_block_hash,\n    lfs.\"timestamp\",\n    lb.height as l1_mined_proven\nFROM \"l2BlockFinalizationStatus\" lfs\nLEFT JOIN \"l2Block\" lb ON lfs.l2_block_hash = lb.hash\nWHERE lfs.status = 5\nORDER BY lfs.\"timestamp\" DESC\nLIMIT 50",
+              "refId": "F",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l2_block_hash",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "status",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "\"timestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "status"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                }
+              },
+              "table": "\"l2BlockFinalizationStatus\""
+            }
+          ],
+          "title": "L2-block finalization status",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "kkkkkkkkkkkkkk"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 30
+                  },
+                  {
+                    "color": "orange",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "11.3.0-pre",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT \n  l1_block_number as finalized_height,\n  l1_block_timestamp,\n  is_finalized\nFROM l1_generic_contract_event\nWHERE is_finalized IS TRUE\nORDER BY l1_block_timestamp DESC LIMIT 50",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l1_block_number",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "l1_block_timestamp",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "l1_block_timestamp"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "DESC"
+              },
+              "table": "l1_generic_contract_event"
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT\n  l1_block_number as pending_height,\n  l1_block_timestamp,\n  is_finalized\nFROM l1_generic_contract_event\nWHERE is_finalized IS FALSE\nORDER BY l1_block_timestamp DESC LIMIT 50",
+              "refId": "B",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "l1_block_number",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "l1_block_timestamp",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "l1_block_timestamp"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "DESC"
+              },
+              "table": "l1_generic_contract_event"
+            }
+          ],
+          "title": "L1 block finalization status",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "kkkkkkkkkkkkkk"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "id": 1,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.0-pre",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "builder",
+              "format": "time_series",
+              "rawSql": "SELECT \"l2BlockNumber\" AS \"L2 block number proposed on L1\", \"l1BlockTimestamp\" AS \"time\" FROM \"l1L2BlockProposed\" ORDER BY \"l1BlockTimestamp\" DESC LIMIT 50 ",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "alias": "\"L2 block number proposed on L1\"",
+                    "parameters": [
+                      {
+                        "name": "\"l2BlockNumber\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "alias": "\"time\"",
+                    "parameters": [
+                      {
+                        "name": "\"l1BlockTimestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": [
+                      "\"l1BlockTimestamp\""
+                    ],
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "DESC"
+              },
+              "table": "\"l1L2BlockProposed\""
+            },
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "builder",
+              "format": "time_series",
+              "hide": false,
+              "rawSql": "SELECT \"l2BlockNumber\" AS \"L2 block number proven on L1\", \"l1BlockTimestamp\" AS \"time\" FROM \"l1L2ProofVerified\" ORDER BY \"l1BlockTimestamp\" DESC LIMIT 50 ",
+              "refId": "B",
+              "sql": {
+                "columns": [
+                  {
+                    "alias": "\"L2 block number proven on L1\"",
+                    "parameters": [
+                      {
+                        "name": "\"l2BlockNumber\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "alias": "\"time\"",
+                    "parameters": [
+                      {
+                        "name": "\"l1BlockTimestamp\"",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": "\"l1BlockTimestamp\"",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "DESC"
+              },
+              "table": "\"l1L2ProofVerified\""
+            }
+          ],
+          "title": "L2 seen from L1",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "kkkkkkkkkkkkkk"
+          },
+          "description": "(limit 50)",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "event_name"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 552
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "l1_block_timestamp"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 194
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "l1_block_number"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 190
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "id": 2,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "frameIndex": 1,
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "l1_block_number"
+              }
+            ]
+          },
+          "pluginVersion": "11.3.0-pre",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "kkkkkkkkkkkkkk"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "WITH events AS (\n    SELECT \n        event_name, \n        l1_block_number,\n        l1_block_timestamp\n    FROM l1_generic_contract_event\n)\nSELECT event_name, l1_block_number,\n  COALESCE(\n    CASE \n      WHEN l1_block_timestamp IS NULL\n      THEN 'NOT SEEN'\n\n      WHEN age(NOW(), l1_block_timestamp) < interval '0 minute' \n      THEN 'future!'\n\n      WHEN age(NOW(), l1_block_timestamp) < interval '1 hour' \n      THEN concat(extract(minute from age(NOW(), l1_block_timestamp)), ' minutes ago')\n\n      WHEN age(NOW(), l1_block_timestamp) < interval '1 day'\n      THEN concat(extract(hour from age(NOW(), l1_block_timestamp)), ' hours ago')\n\n      ELSE concat(extract(day from age(NOW(), l1_block_timestamp)), ' days ago')\n    END, \n    'NOT SEEN'\n  ) AS last_seen_readable,\n  l1_block_timestamp\nFROM events\nORDER BY l1_block_timestamp DESC LIMIT 50\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Latest L1-events",
+          "type": "table"
+        }
+      ],
+      "preload": false,
+      "refresh": "5s",
+      "schemaVersion": 40,
+      "tags": [],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Aztecscan Devnet Overview",
+      "uid": "eee8u0qsy7mkgb",
+      "version": 1,
+      "weekStart": ""
+    }

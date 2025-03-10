@@ -19,19 +19,21 @@ type WatchEventFunction = (
       logs: (Log & {
         eventName: string | null;
         args: Record<string, unknown> | null;
-      })[]
+      })[],
     ) => void;
     onError: (e: Error) => void;
     fromBlock: bigint;
-  }
+  },
 ) => UnwatchCallback;
 
 type ContractEventMap = Record<string, WatchEventFunction>;
 
 const watchRollupL2BlockProposed = async ({
   contracts,
+  latestHeight,
 }: {
   contracts: AztecContracts;
+  latestHeight: bigint;
 }): Promise<UnwatchCallback> => {
   const { fromBlock, updateHeight, storeHeight } =
     await dbControllers.inMemoryHeightTracker({
@@ -39,6 +41,7 @@ const watchRollupL2BlockProposed = async ({
       contractAddress: contracts.rollup.address,
       eventName: "L2BlockProposed",
       isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+      latestHeight,
     });
   const callbacks = l2BlockProposedEventCallbacks({
     isFinalized: WATCH_DEFAULT_IS_FINALIZED,
@@ -54,8 +57,10 @@ const watchRollupL2BlockProposed = async ({
 
 export const watchRollupL2ProofVerified = async ({
   contracts,
+  latestHeight,
 }: {
   contracts: AztecContracts;
+  latestHeight: bigint;
 }): Promise<UnwatchCallback> => {
   const { fromBlock, updateHeight, storeHeight } =
     await dbControllers.inMemoryHeightTracker({
@@ -63,6 +68,7 @@ export const watchRollupL2ProofVerified = async ({
       contractAddress: contracts.rollup.address,
       eventName: "L2ProofVerified",
       isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+      latestHeight,
     });
   const callbacks = l2ProofVerifiedEventCallbacks({
     isFinalized: WATCH_DEFAULT_IS_FINALIZED,
@@ -78,8 +84,10 @@ export const watchRollupL2ProofVerified = async ({
 
 export const watchAllContractsEvents = async ({
   contracts,
+  latestHeight,
 }: {
   contracts: AztecContracts;
+  latestHeight: bigint;
 }): Promise<UnwatchCallback> => {
   const genericUnwatches = await Promise.all(
     (Object.entries(contracts) as [keyof AztecContracts, AztecContract][]).map(
@@ -88,6 +96,7 @@ export const watchAllContractsEvents = async ({
           await watchContractEventsGeneric({
             name,
             contract,
+            latestHeight,
           }),
         ];
 
@@ -95,15 +104,17 @@ export const watchAllContractsEvents = async ({
           logger.info(`Unwatching events for ${name}`);
           unwatches.forEach((unwatch) => unwatch());
         };
-      }
-    )
+      },
+    ),
   );
 
   const unwatchRollupL2BlockProposed = await watchRollupL2BlockProposed({
     contracts,
+    latestHeight,
   });
   const unwatchRollupL2ProofVerified = await watchRollupL2ProofVerified({
     contracts,
+    latestHeight,
   });
 
   return () => {
@@ -119,12 +130,14 @@ export const watchAllContractsEvents = async ({
 export const watchContractEventsGeneric = async <T extends AztecContract>({
   name,
   contract,
+  latestHeight,
 }: {
   name: string;
   contract: T;
+  latestHeight: bigint;
 }): Promise<UnwatchCallback> => {
   const eventNames = contract.abi.filter(
-    (item) => item.type === "event" && typeof item.name === "string"
+    (item) => item.type === "event" && typeof item.name === "string",
   );
   const watchEvents = contract.watchEvent as unknown as ContractEventMap;
 
@@ -136,6 +149,7 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
           contractAddress: contract.address,
           eventName: (event as { name: string }).name + "(generic)",
           isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+          latestHeight,
         });
       const eventName = (event as { name: string }).name;
       return watchEvents[eventName](
@@ -154,9 +168,9 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
               storeHeight,
             });
           },
-        }
+        },
       );
-    })
+    }),
   );
 
   return () => unwatches.forEach((unwatch) => unwatch());

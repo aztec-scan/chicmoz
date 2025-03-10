@@ -7,30 +7,24 @@ import {
   chicmozL2ContractInstanceDeluxeSchema,
 } from "@chicmoz-pkg/types";
 import { getTableColumns } from "drizzle-orm";
-import { VERIFIED_CONTRACT_INSTANCES_CONTACT } from "../../../../environment.js";
 import { l2ContractClassRegistered } from "../../schema/index.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const parseDeluxe = ({
   contractClass,
   instance,
-  verifiedInfo,
-  verifiedDeploymentInfo,
+  deployerMetadata,
+  verifiedDeploymentArguments,
 }: {
   contractClass: any;
   instance: any;
-  verifiedInfo?: any;
-  verifiedDeploymentInfo?: any;
+  deployerMetadata?: any;
+  verifiedDeploymentArguments?: any;
 }): ChicmozL2ContractInstanceDeluxe => {
   return chicmozL2ContractInstanceDeluxeSchema.parse({
     ...contractClass,
-    verifiedInfo:
-      verifiedInfo ??
-      VERIFIED_CONTRACT_INSTANCES_CONTACT.find(
-        (info) => info.address === instance.address
-      ) ??
-      undefined,
-    verifiedDeploymentInfo: verifiedDeploymentInfo ?? undefined,
+    deployerMetadata: deployerMetadata ?? undefined,
+    verifiedDeploymentArguments: verifiedDeploymentArguments ?? undefined,
     blockHash: instance.blockHash,
     packedBytecode: Buffer.from(contractClass.packedBytecode),
     address: instance.address,
@@ -48,10 +42,10 @@ export const parseDeluxe = ({
 };
 
 export const getContractClassRegisteredColumns = (
-  includeArtifactJson?: boolean
+  includeArtifactJson?: boolean,
 ) => {
   const { artifactJson, ...columns } = getTableColumns(
-    l2ContractClassRegistered
+    l2ContractClassRegistered,
   );
   return {
     ...columns,

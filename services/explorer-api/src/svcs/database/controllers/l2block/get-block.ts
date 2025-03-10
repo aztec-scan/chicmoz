@@ -1,11 +1,13 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   ChicmozL2BlockLight,
+  FIRST_FINALIZATION_STATUS,
   HexString,
   chicmozL2BlockLightSchema,
 } from "@chicmoz-pkg/types";
 import { and, asc, desc, eq, getTableColumns } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
+import { logger } from "../../../../logger.js";
 import {
   archive,
   body,
@@ -61,27 +63,32 @@ export const getBlocks = async ({
 };
 
 export const getBlock = async (
-  heightOrHash: bigint | HexString
+  heightOrHash: bigint | HexString,
 ): Promise<ChicmozL2BlockLight | null> => {
   const res = await _getBlocks(
     typeof heightOrHash === "bigint"
       ? { height: heightOrHash, getType: GetTypes.BlockHeight }
-      : { hash: heightOrHash, getType: GetTypes.BlockHash }
+      : { hash: heightOrHash, getType: GetTypes.BlockHash },
   );
-  if (res.length === 0) return null;
+  if (res.length === 0) {
+    return null;
+  }
   return res[0];
 };
 
 type GetBlocksArgs = GetBlocksByHeight | GetBlocksByHash | GetBlocksByRange;
 
 const _getBlocks = async (
-  args: GetBlocksArgs
+  args: GetBlocksArgs,
 ): Promise<ChicmozL2BlockLight[]> => {
   const whereRange =
     args.getType === GetTypes.Range ? getBlocksWhereRange(args) : undefined;
 
-  if (args.getType === GetTypes.BlockHeight)
-    if (args.height < -1) throw new Error("Invalid height");
+  if (args.getType === GetTypes.BlockHeight) {
+    if (args.height < -1) {
+      throw new Error("Invalid height");
+    }
+  }
 
   const joinQuery = db()
     .select({
@@ -122,12 +129,12 @@ const _getBlocks = async (
       l1L2BlockProposedTable,
       and(
         eq(l2Block.height, l1L2BlockProposedTable.l2BlockNumber),
-        eq(archive.root, l1L2BlockProposedTable.archive)
-      )
+        eq(archive.root, l1L2BlockProposedTable.archive),
+      ),
     )
     .leftJoin(
       l1L2ProofVerifiedTable,
-      eq(l2Block.height, l1L2ProofVerifiedTable.l2BlockNumber)
+      eq(l2Block.height, l1L2ProofVerifiedTable.l2BlockNumber),
     );
 
   let whereQuery;
@@ -168,14 +175,20 @@ const _getBlocks = async (
       .where(eq(l2BlockFinalizationStatusTable.l2BlockHash, result.hash))
       .orderBy(
         desc(l2BlockFinalizationStatusTable.status),
-        desc(l2BlockFinalizationStatusTable.l2BlockNumber)
+        desc(l2BlockFinalizationStatusTable.l2BlockNumber),
       )
       .limit(1);
+
+    let finalizationStatusValue = finalizationStatus[0]?.status;
+    if (finalizationStatusValue === undefined) {
+      finalizationStatusValue = FIRST_FINALIZATION_STATUS;
+      logger.warn(`Finalization status not found for block ${result.hash}`);
+    }
 
     const blockData = {
       hash: result.hash,
       height: result.height,
-      finalizationStatus: finalizationStatus[0].status,
+      finalizationStatus: finalizationStatusValue,
       archive: result.archive,
       proposedOnL1: result.l1L2BlockProposed?.l1BlockTimestamp
         ? result.l1L2BlockProposed

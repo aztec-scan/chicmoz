@@ -6,6 +6,7 @@ export const aztecExplorer = {
   getL2BlockByHash: "l2/blocks/",
   getL2BlockByHeight: "l2/blocks/",
   getL2BlocksByHeightRange: "l2/blocks",
+  getL2TxEffects: "l2/tx-effects",
   getL2TxEffectByHash: "l2/tx-effects/",
   getL2TxEffectsByHeight: (height: bigint) => `l2/blocks/${height}/tx-effects`,
   getL2TxEffectByHeightAndIndex: (height: bigint, index: number) =>

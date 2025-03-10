@@ -20,7 +20,7 @@ spec:
         - image: ethereum-listener:latest
           resources:
             limits:
-              memory: 150Mi
+              memory: 300Mi
               cpu: 500m
           name: ethereum-listener
           env:

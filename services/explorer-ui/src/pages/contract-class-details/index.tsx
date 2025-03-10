@@ -26,14 +26,14 @@ export const ContractClassDetails: FC = () => {
   const selectedVersion = selectedVersionWithArtifactRes?.data
     ? selectedVersionWithArtifactRes.data
     : contractClassesRes.data?.find(
-        (contract) => contract.version === Number(version)
+        (contract) => contract.version === Number(version),
       );
 
-  const headerStr = `Contract class details - "${
+  const headerStr = `Contract class details${
     selectedVersion?.artifactContractName
-      ? selectedVersion?.artifactContractName
+      ? ` - "${selectedVersion?.artifactContractName}"`
       : ""
-  }"`;
+  }`;
 
   return (
     <div className="mx-auto px-[70px] max-w-[1440px]">

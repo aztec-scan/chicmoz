@@ -25,6 +25,19 @@ interface TabSectionProps {
   contractArtifactError: Error | null;
 }
 
+export const getDataFromMap = (data: SimplifiedViewOfFunc) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+  const result: { [key: string]: { [key: string]: string } } = {};
+  for (const [key, value] of data) {
+    // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+    result[key] = {};
+    for (const [k, v] of value) {
+      result[key][k] = v;
+    }
+  }
+  return result;
+};
+
 export const TabSection: FC<TabSectionProps> = ({
   contractClasses,
   contractClassId,
@@ -38,9 +51,9 @@ export const TabSection: FC<TabSectionProps> = ({
   };
 
   let artifact: SimpleArtifactData;
-  let privFunc: SimplifiedViewOfFunc = {};
-  let pubFunc: SimplifiedViewOfFunc = {};
-  let uncFunc: SimplifiedViewOfFunc = {};
+  let privFunc: SimplifiedViewOfFunc = new Map();
+  let pubFunc: SimplifiedViewOfFunc = new Map();
+  let uncFunc: SimplifiedViewOfFunc = new Map();
 
   if (selectedVersion?.artifactJson) {
     const artifactData = getArtifactData(selectedVersion);
@@ -54,12 +67,9 @@ export const TabSection: FC<TabSectionProps> = ({
     contractVersions: !!contractClasses && !!contractClasses.data?.length,
     contractInstances: !!contractInstances && !!contractInstances.data?.length,
 
-    privateFunctions:
-      !!selectedVersion && privFunc && Object.values(privFunc).length > 1,
-    unconstrainedFunctions:
-      !!selectedVersion && uncFunc && Object.values(uncFunc).length > 1,
-    publicFunctions:
-      !!selectedVersion && pubFunc && Object.values(pubFunc).length > 1,
+    privateFunctions: !!selectedVersion && privFunc && privFunc.size > 1,
+    unconstrainedFunctions: !!selectedVersion && uncFunc && uncFunc.size > 1,
+    publicFunctions: !!selectedVersion && pubFunc && pubFunc.size > 1,
     artifactJson:
       !!selectedVersion &&
       (!!selectedVersion.artifactJson || isContractArtifactLoading),
@@ -73,11 +83,11 @@ export const TabSection: FC<TabSectionProps> = ({
       case "contractInstances":
         return <ContractInstancesTab data={contractInstances} />;
       case "privateFunctions":
-        return <JsonTab data={privFunc} />;
+        return <JsonTab data={getDataFromMap(privFunc)} />;
       case "unconstrainedFunctions":
-        return <JsonTab data={uncFunc} />;
+        return <JsonTab data={getDataFromMap(uncFunc)} />;
       case "publicFunctions":
-        return <JsonTab data={pubFunc} />;
+        return <JsonTab data={getDataFromMap(pubFunc)} />;
       case "artifactJson":
         return isContractArtifactLoading ? (
           <Loader amount={1} />

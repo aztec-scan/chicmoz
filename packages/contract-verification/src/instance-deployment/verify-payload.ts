@@ -17,7 +17,7 @@ export const verifyInstanceDeploymentPayload = async (
     instanceAddress: string;
     stringifiedArtifactJson: string;
     contractClassId: string;
-  }
+  },
 ): Promise<boolean> => {
   const {
     stringifiedArtifactJson,
@@ -28,13 +28,13 @@ export const verifyInstanceDeploymentPayload = async (
     publicKeysString,
   } = payload;
   const artifact = loadContractArtifact(
-    JSON.parse(stringifiedArtifactJson) as unknown as NoirCompiledContract
+    JSON.parse(stringifiedArtifactJson) as unknown as NoirCompiledContract,
   );
 
   const initFn = artifact.functions.find((fn) => fn.name === "constructor");
   const initializationHash = await computeInitializationHash(
     initFn,
-    constructorArgs
+    constructorArgs,
   );
   const saltedHash = await computeSaltedInitializationHash({
     initializationHash,

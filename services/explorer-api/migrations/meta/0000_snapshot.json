@@ -1,5 +1,5 @@
 {
-  "id": "28af05ee-1ff7-43c1-8220-bfddd4354c0a",
+  "id": "ddaa99f7-4c79-4d73-bb14-9057612a22d0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1200,8 +1200,90 @@
         }
       }
     },
-    "public.l2_contract_instance_verified_deployment": {
-      "name": "l2_contract_instance_verified_deployment",
+    "public.l2_contract_instance_deployer_metadata": {
+      "name": "l2_contract_instance_deployer_metadata",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contract_identifier": {
+          "name": "contract_identifier",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "details": {
+          "name": "details",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_name": {
+          "name": "creator_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_contact": {
+          "name": "creator_contact",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "app_url": {
+          "name": "app_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repo_url": {
+          "name": "repo_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploaded_at": {
+          "name": "uploaded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "l2_contract_instance_deployer_metadata_address_l2_contract_instance_deployed_address_fk": {
+          "name": "l2_contract_instance_deployer_metadata_address_l2_contract_instance_deployed_address_fk",
+          "tableFrom": "l2_contract_instance_deployer_metadata",
+          "tableTo": "l2_contract_instance_deployed",
+          "columnsFrom": ["address"],
+          "columnsTo": ["address"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.l2_contract_instance_verified_deployment_arguments": {
+      "name": "l2_contract_instance_verified_deployment_arguments",
       "schema": "",
       "columns": {
         "id": {
@@ -1237,16 +1319,16 @@
         },
         "constructor_args": {
           "name": "constructor_args",
-          "type": "varchar",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "l2_contract_instance_verified_deployment_address_l2_contract_instance_deployed_address_fk": {
-          "name": "l2_contract_instance_verified_deployment_address_l2_contract_instance_deployed_address_fk",
-          "tableFrom": "l2_contract_instance_verified_deployment",
+        "l2_contract_instance_verified_deployment_arguments_address_l2_contract_instance_deployed_address_fk": {
+          "name": "l2_contract_instance_verified_deployment_arguments_address_l2_contract_instance_deployed_address_fk",
+          "tableFrom": "l2_contract_instance_verified_deployment_arguments",
           "tableTo": "l2_contract_instance_deployed",
           "columnsFrom": ["address"],
           "columnsTo": ["address"],

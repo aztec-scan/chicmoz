@@ -23,7 +23,7 @@ spec:
           name: ethereum-listener
           resources:
             limits:
-              memory: 150Mi
+              memory: 300Mi
               cpu: 500m
           env:
             - name: NODE_ENV

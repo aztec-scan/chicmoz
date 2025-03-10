@@ -8,11 +8,11 @@ import { TabId, verifiedDeploymentTabs } from "./types";
 
 interface PillSectionProps {
   verifiedDeploymentData?: DetailItem[];
-  contactDetailsData?: DetailItem[];
+  deployerMetadata?: DetailItem[];
 }
 export const TabsSection: FC<PillSectionProps> = ({
   verifiedDeploymentData,
-  contactDetailsData,
+  deployerMetadata,
 }) => {
   const [selectedTab, setSelectedTab] = useState<TabId>("verifiedDeployment");
   const onOptionSelect = (value: string) => {
@@ -21,13 +21,13 @@ export const TabsSection: FC<PillSectionProps> = ({
 
   const isAvailable = {
     verifiedDeployment: !!verifiedDeploymentData,
-    contactDetails: !!contactDetailsData,
+    contactDetails: !!deployerMetadata,
   };
 
   const renderTabContent = () => {
     switch (selectedTab) {
       case "contactDetails":
-        return <KeyValueDisplay data={contactDetailsData ?? []} />;
+        return <KeyValueDisplay data={deployerMetadata ?? []} />;
       case "verifiedDeployment":
         return <KeyValueDisplay data={verifiedDeploymentData ?? []} />;
       default:

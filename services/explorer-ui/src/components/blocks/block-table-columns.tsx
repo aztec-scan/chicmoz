@@ -5,13 +5,14 @@ import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import type { BlockTableSchema } from "./blocks-schema";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { BlockStatusBadge } from "../block-status-badge";
 
 const text = {
   height: "HEIGHT",
   blockHash: "BLOCK HASH",
   txEffectsLength: "NBR OF TXS",
-  totalFees: "FEES (FPA)",
   timeSince: "AGE",
+  blockStatus: "BLOCK STATUS"
 };
 
 export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
@@ -48,7 +49,7 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
     ),
     cell: ({ row }) => {
       const blockHash = row.getValue("blockHash");
-      if (typeof blockHash !== "string") return null;
+      if (typeof blockHash !== "string") { return null; }
       const r = `${routes.blocks.route}/${blockHash}`;
       return (
         <div className="text-purple-light font-mono">
@@ -94,18 +95,18 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "totalFees",
+    accessorKey: "blockStatus",
     header: ({ column }) => (
       <DataTableColumnHeader
         className="text-purple-dark text-sm"
         column={column}
-        title={text.totalFees}
+        title={text.blockStatus}
       />
     ),
     cell: ({ row }) => (
-      <div className="font-mono">{row.getValue("totalFees")}</div>
+      <BlockStatusBadge className="font-mono" status={row.getValue("blockStatus")} />
     ),
-    enableSorting: true,
+    enableSorting: false,
     enableHiding: false,
   },
 ];
