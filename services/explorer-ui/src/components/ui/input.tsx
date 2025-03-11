@@ -3,8 +3,7 @@ import { CrossIcon, LoadingIcon, SearchIcon } from "~/assets";
 
 import { cn } from "~/lib/utils";
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
@@ -32,7 +31,7 @@ export interface SearchInputProps
 const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
   ({ className, type, onIconClick, isLoading, noResults, ...props }, ref) => {
     return (
-      <div className="flex items-center pl-3 w-full bg-white rounded-md focus-visible:ring-1 focus-visible:ring-ring">
+      <div className="flex items-center pl-3 gap-1 w-full bg-white rounded-md focus-visible:ring-1 focus-visible:ring-ring">
         {noResults ? (
           <div>
             <CrossIcon />

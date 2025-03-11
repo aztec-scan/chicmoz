@@ -35,21 +35,22 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   else if (extLink) { displayType = DisplayType.EXTERNAL_LINK; }
   else if (label.includes("status")) { displayType = DisplayType.BADGE; }
 
-  const commonTextClasses = "text-sm flex-grow text-end justify-end";
+  const commonTextClasses = "text-sm flex-grow text-end justify-end ";
+
   return (
     <div
       key={label}
-      className={`flex items-center gap-2 py-3 ${!isLast ? "border-b border-gray-200" : ""
+      className={`flex items-center gap-2 py-3 ${!isLast ? "border-b border-gray-200 dark:border-gray-700" : ""
         }`}
     >
-      <span className="text-gray-600 w-1/3">{label}</span>
+      <span className="text-gray-600 dark:text-gray-300 w-1/3">{label}</span>
       {displayType === DisplayType.TEXT && (
         <span className={commonTextClasses}>{value}</span>
       )}
       {displayType === DisplayType.LINK && (
         <Link
           to={link}
-          className={`${commonTextClasses} text-primary-600 text-primary cursor-pointer`}
+          className={`${commonTextClasses} text-primary-600 text-primary cursor-pointer hover:opacity-80`}
         >
           {value.startsWith("0x") ? truncateHashString(value) : value}
           <span className="ml-1">🔗</span>
@@ -73,7 +74,7 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
           href={extLink}
           target="_blank"
           rel="noreferrer"
-          className={`${commonTextClasses} text-primary-600 text-primary cursor-pointer`}
+          className={`${commonTextClasses} text-primary-600 text-primary cursor-pointer hover:opacity-80`}
         >
           {value}
           <span className="ml-1">↗️</span>
