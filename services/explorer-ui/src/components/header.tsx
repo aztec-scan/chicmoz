@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, MoonIcon, SunsetIcon, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SearchInput } from "~/components/ui/input";
 import { useSearch } from "~/hooks";
@@ -7,13 +7,13 @@ import { routes } from "~/routes/__root.tsx";
 import { MagicDevLink } from "./magic-dev-link";
 import { Button } from "./ui";
 import { ChicmozHomeLink } from "./ui/chicmoz-home-link";
+import { ThemeToggle } from "./theme-toggle";
 
 export const Header = () => {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
   const [hasNoResults, setHasNoResults] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigationItems = [
     { name: routes.home.title, path: routes.home.route },
@@ -23,11 +23,6 @@ export const Header = () => {
   ];
   const { data, isLoading, error, refetch, isSuccess, fetchStatus } =
     useSearch(searchValue);
-
-  const handleOnClickTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle("dark");
-  }
 
   useEffect(() => {
     if (data) {
@@ -94,6 +89,7 @@ export const Header = () => {
               </div>
 
               <div className="flex space-x-6 justify-center items-center pr-11">
+                <ThemeToggle />
                 {navigationItems.map((item) => (
                   <Link
                     key={item.name}
@@ -103,11 +99,6 @@ export const Header = () => {
                     {item.name}
                   </Link>
                 ))}
-              </div>
-              <div className="flex items-center space-x-4">
-                {isDarkMode ?
-                  <MoonIcon className="h-6 w-6" color="white" onClick={handleOnClickTheme} /> :
-                  <SunsetIcon className="h-6 w-6" color="white" onClick={handleOnClickTheme} />}
               </div>
             </div>
 
@@ -151,6 +142,11 @@ export const Header = () => {
                     isLoading={isLoading}
                     noResults={hasNoResults}
                   />
+                </div>
+
+                <div className="flex items-center pt-2">
+                  <span className="text-white mr-2">Toggle theme:</span>
+                  <ThemeToggle />
                 </div>
 
                 {/* Navigation Items */}
