@@ -144,7 +144,7 @@ export const Header = () => {
                   />
                 </div>
 
-                <div className="flex items-center pt-2">
+                <div className="flex items-center justify-between pt-2">
                   <span className="text-white mr-2">Toggle theme:</span>
                   <ThemeToggle />
                 </div>
