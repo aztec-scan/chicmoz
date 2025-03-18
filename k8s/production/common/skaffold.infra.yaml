@@ -96,14 +96,6 @@ manifests:
             log.retention.bytes=1073741824  # 1GB per partition
             log.segment.bytes=536870912  # 512MB segments
             log.cleanup.policy=delete  # Delete old data
-          persistence:
-            enabled: true
-            size: 20Gi
-            storageClass: "do-block-storage"
-          logPersistence:
-            enabled: true
-            size: 10Gi
-            storageClass: "do-block-storage"
         createNamespace: false
         recreatePods: true
         skipBuildDependencies: false
