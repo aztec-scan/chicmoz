@@ -93,7 +93,7 @@ export const Header = () => {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className="text-secondary hover:text-white transition-colors"
+                    className="text-white hover:text-white transition-colors"
                   >
                     {item.name}
                   </Link>

@@ -51,7 +51,7 @@
 
   .dark {
     /* Base dark theme with purple tones instead of generic dark gray */
-    --white: hsl(262, 30%, 10%);
+    --white: hsl(0 0% 100%);
     --grey-dark: hsl(262, 15%, 30%);
     --grey-light: hsl(262, 20%, 15%);
 
