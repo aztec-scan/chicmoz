@@ -74,7 +74,7 @@ export const Header = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:w-full md:items-center md:justify-between ">
               <div className="flex items-baseline">
-                <ChicmozHomeLink textClasses="hidden md:block pr-6" />
+                <ChicmozHomeLink textClasses="hidden md:block pr-6 self-center" />
                 <MagicDevLink textClasses="hidden md:block" />
               </div>
               <div className="flex  justify-center items-center w-1/2 sm:w-1/3 ">
@@ -115,9 +115,9 @@ export const Header = () => {
                 >
                   <span className="flex items-center">
                     {isMenuOpen ? (
-                      <X className="h-6 w-6 mr-2 text-secondary" />
+                      <X className="h-6 w-6 mr-2 text-white" />
                     ) : (
-                      <Menu className="h-6 w-6 mr-2 text-secondary" />
+                      <Menu className="h-6 w-6 mr-2 text-white" />
                     )}
                   </span>
                 </Button>

@@ -21,7 +21,7 @@ export const InfoBadge: FC<InfoBadgeProps> = ({
 
   return (
     <div className="flex flex-col bg-white w-full justify-between rounded-lg shadow-md p-4">
-      <p className="text-sm text-white">{title}</p>
+      <p className="text-sm text-primary dark:text-white">{title}</p>
       {isLoading ? (
         <Loader amount={1} />
       ) : (
