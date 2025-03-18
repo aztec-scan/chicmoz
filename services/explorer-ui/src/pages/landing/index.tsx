@@ -97,7 +97,7 @@ export const Landing: FC = () => {
       {!isConclusivlyDown && (
         <>
           <div className="hidden md:mt-16 md:flex flex-wrap justify-center my-20">
-            <h1 className="">Explore the power of privacy on Aztec</h1>
+            <h2 className="text-primary dark:text-white">Explore the power of privacy on Aztec</h2>
           </div>
           <div className="grid grid-cols-2 gap-3 my-20 md:grid-cols-3 md:gap-5">
             <InfoBadge

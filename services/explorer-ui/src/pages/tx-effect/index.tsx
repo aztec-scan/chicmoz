@@ -34,8 +34,8 @@ export const TxEffects: FC = () => {
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap m-5">
-        <h2 className="mt-2 text-primary md:hidden">All Tx Effects</h2>
-        <h1 className="hidden md:block md:mt-8">All Tx Effects</h1>
+        <h2 className="mt-2 text-primary md:hidden">All transaction effects</h2>
+        <h1 className="hidden md:block md:mt-8">All Tx transaction effects</h1>
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5 ">
         <InfoBadge
