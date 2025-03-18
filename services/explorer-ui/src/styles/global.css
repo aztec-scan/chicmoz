@@ -50,30 +50,48 @@
   }
 
   .dark {
-    --background: hsl(222.2 84% 4.9%);
-    --foreground: hsl(210 40% 98%);
-    --card: hsl(222.2 84% 4.9%);
-    --card-foreground: hsl(210 40% 98%);
-    --popover: hsl(222.2 84% 4.9%);
-    --popover-foreground: hsl(210 40% 98%);
-    --primary: hsl(210 40% 98%);
-    --primary-foreground: hsl(222.2 47.4% 11.2%);
-    --secondary: hsl(217.2 32.6% 17.5%);
-    --secondary-foreground: hsl(210 40% 98%);
-    --muted: hsl(217.2 32.6% 17.5%);
-    --muted-foreground: hsl(215 20.2% 65.1%);
-    --accent: hsl(217.2 32.6% 17.5%);
-    --accent-foreground: hsl(210 40% 98%);
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(210 40% 98%);
-    --border: hsl(217.2 32.6% 17.5%);
-    --input: hsl(217.2 32.6% 17.5%);
-    --ring: hsl(212.7 26.8% 83.9%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
+    /* Base dark theme with purple tones instead of generic dark gray */
+    --white: hsl(0 0% 100%);
+    --grey-dark: hsl(262, 15%, 30%);
+    --grey-light: hsl(262, 20%, 15%);
+
+    /* Keep accent colors but adjusted for dark mode */
+    --blue: hsl(227, 70%, 60%);
+    --green: hsl(158, 54%, 45%);
+    --red: hsl(7, 90%, 65%);
+    --yellow: hsl(49, 90%, 65%);
+
+    /* Adjust the purples for dark mode */
+    --purple-dark: hsl(262, 36%, 75%);
+    --purple-light: hsl(251, 60%, 65%);
+
+    /* Theme variables */
+    --background: hsl(262, 30%, 8%);
+    --foreground: hsl(262, 36%, 85%);
+    --card: hsl(262, 25%, 12%);
+    --card-foreground: hsl(262, 36%, 90%);
+    --popover: hsl(262, 25%, 12%);
+    --popover-foreground: hsl(262, 36%, 90%);
+    --primary: var(--purple-light);
+    --primary-foreground: hsl(262, 30%, 10%);
+    --secondary: hsl(262, 20%, 20%);
+    --secondary-foreground: hsl(262, 36%, 85%);
+    --muted: hsl(262, 15%, 25%);
+    --muted-foreground: hsl(262, 10%, 70%);
+    --accent: hsl(251, 30%, 25%);
+    --accent-foreground: hsl(262, 36%, 90%);
+    --destructive: var(--red);
+    --destructive-foreground: hsl(262, 36%, 90%);
+    --border: hsl(262, 20%, 25%);
+    --input: hsl(262, 20%, 25%);
+    --ring: var(--purple-light);
+
+    /* Chart colors for dark mode */
+    --chart-1: hsl(12 76% 55%);
+    --chart-2: hsl(173 58% 45%);
+    --chart-3: hsl(197 37% 45%);
+    --chart-4: hsl(43 74% 60%);
+    --chart-5: hsl(27 87% 60%);
   }
 }
 
@@ -84,7 +102,7 @@
   body {
     @apply bg-background text-foreground font-default;
     /* background-color: #FFFFFF; */
-    background-image: url('data:image/svg+xml,<svg width="100%" height="100%" viewBox="0 0 1800 237" fill="none" xmlns="http://www.w3.org/2000/svg"><path opacity="0.4" d="M0 0L1800 101.41L0 202.696V0Z" fill="%23715EC2"/><path fill-rule="evenodd" clip-rule="evenodd" d="M0 141.849L1800 63.7258V141.849V219.973V236.875H0V141.849Z" fill="%23715EC2"/><path opacity="1.0" fill-rule="evenodd" clip-rule="evenodd" d="M1.25 224.105L1800 89.5167V224.105V237H0V224.23V224.105H1.25Z" fill="%23EEEDF1"/></svg>');
+    background-image: url(../assets/background-art.svg);
     background-attachment: fixed;
     /* background-size: auto | cover | contain | 500px 250px; */
     background-position: center 30%;
@@ -93,6 +111,10 @@
     /* background-origin: border-box | padding-box | content-box; */
     /* background-clip: border-box | padding-box | content-box; */
     /* background-blend-mode: multiply | screen | overlay; */
+  }
+
+  .dark body {
+    background-image: url(../assets/background-art-dark.svg);
   }
 }
 
@@ -119,5 +141,57 @@
 
   h4 {
     @apply scroll-m-20 text-[20px] font-default lg:text-[24px];
+  }
+}
+@layer utilities {
+  /* Additional dark mode refinements */
+  .dark .bg-white {
+    @apply bg-gray-800 text-gray-200;
+  }
+
+  .dark pre {
+    @apply bg-gray-800 text-gray-200;
+  }
+
+  .dark table th {
+    @apply text-gray-300;
+  }
+
+  .dark .border-gray-300 {
+    @apply border-gray-700;
+  }
+
+  /* Improve readability of code and text blocks */
+  .dark code,
+  .dark pre {
+    @apply bg-gray-800 text-gray-200 border border-gray-700;
+  }
+
+  /* Fix for data tables in dark mode */
+  .dark [data-state="selected"] {
+    background-color: rgba(113, 94, 194, 0.2);
+  }
+
+  .dark .hover\:bg-muted\/50:hover {
+    background-color: rgba(113, 94, 194, 0.1);
+  }
+
+  /* Improve input fields in dark mode */
+  .dark input,
+  .dark select,
+  .dark textarea {
+    @apply bg-gray-800 border-gray-700 text-gray-200;
+  }
+
+  .dark ::placeholder {
+    @apply text-gray-500;
+  }
+
+  /* Shadow adjustments for dark mode */
+  .dark .shadow-md,
+  .dark .shadow-lg {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -2px rgba(0, 0, 0, 0.2);
   }
 }

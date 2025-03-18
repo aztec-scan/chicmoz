@@ -1,6 +1,7 @@
 import AztecIcon from "./aztec-icon.svg?react";
 import AztecIconWhite from "./aztec-icon-white.svg?react";
 import BackgroundArt from "./background-art.svg?react";
+import BackgroundArtDark from "./background-art-dark.svg?react";
 import CopyIcon from "./copy-icon.svg?react";
 import SuccessIcon from "./success-icon.svg?react";
 import ObscuraLogoWhite from "./obscura-logo-white.svg?react";
@@ -15,6 +16,7 @@ export {
   AztecIcon,
   LoadingIcon,
   BackgroundArt,
+  BackgroundArtDark,
   AztecIconWhite,
   ObscuraLogoWhite,
   CopyIcon,

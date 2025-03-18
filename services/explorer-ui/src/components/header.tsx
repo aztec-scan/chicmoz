@@ -7,6 +7,7 @@ import { routes } from "~/routes/__root.tsx";
 import { MagicDevLink } from "./magic-dev-link";
 import { Button } from "./ui";
 import { ChicmozHomeLink } from "./ui/chicmoz-home-link";
+import { ThemeToggle } from "./theme-toggle";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -48,8 +49,8 @@ export const Header = () => {
         setHasNoResults(true);
       }
     }
-    if (error) setHasNoResults(true);
-    if (!data && isSuccess) setHasNoResults(true);
+    if (error) { setHasNoResults(true); }
+    if (!data && isSuccess) { setHasNoResults(true); }
   }, [data, error, isSuccess, navigate, fetchStatus]);
 
   const handleOnChange = (value: string) => {
@@ -65,16 +66,15 @@ export const Header = () => {
     <div className="mx-auto px-4 mt-10 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-col w-full items-center bg-purple-light rounded-[40px] py-4 pr-4 md:pl-10">
         <div
-          className={`w-full transition-all duration-300 ease-in-out ${
-            isMenuOpen ? "rounded-b-3xl" : ""
-          }`}
+          className={`w-full transition-all duration-300 ease-in-out ${isMenuOpen ? "rounded-b-3xl" : ""
+            }`}
         >
           {/* Header */}
           <div className="w-full mx-auto">
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:w-full md:items-center md:justify-between ">
               <div className="flex items-baseline">
-                <ChicmozHomeLink textClasses="hidden md:block pr-6" />
+                <ChicmozHomeLink textClasses="hidden md:block pr-6 self-center" />
                 <MagicDevLink textClasses="hidden md:block" />
               </div>
               <div className="flex  justify-center items-center w-1/2 sm:w-1/3 ">
@@ -93,11 +93,12 @@ export const Header = () => {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className="text-secondary hover:text-white transition-colors"
+                    className="text-white hover:text-white transition-colors"
                   >
                     {item.name}
                   </Link>
                 ))}
+                <ThemeToggle />
               </div>
             </div>
 
@@ -114,9 +115,9 @@ export const Header = () => {
                 >
                   <span className="flex items-center">
                     {isMenuOpen ? (
-                      <X className="h-6 w-6 mr-2 text-secondary" />
+                      <X className="h-6 w-6 mr-2 text-white" />
                     ) : (
-                      <Menu className="h-6 w-6 mr-2 text-secondary" />
+                      <Menu className="h-6 w-6 mr-2 text-white" />
                     )}
                   </span>
                 </Button>
@@ -126,9 +127,8 @@ export const Header = () => {
             {/* Mobile Menu Content */}
             <div
               className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out
-              ${
-                isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-              }`}
+              ${isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+                }`}
             >
               <div className="px-4 py-4 space-y-3">
                 {/* Search bar */}
@@ -142,6 +142,11 @@ export const Header = () => {
                     isLoading={isLoading}
                     noResults={hasNoResults}
                   />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-white mr-2">Toggle theme:</span>
+                  <ThemeToggle />
                 </div>
 
                 {/* Navigation Items */}

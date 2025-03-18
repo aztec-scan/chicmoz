@@ -25,7 +25,7 @@ Reason: ${systemHealth.reason}`}
   return (
     <div className={className}>
       <Link to={routes.dev.route} className="flex flex-row items-center">
-        <p className={`${textClasses} font-space-grotesk text-secondary`}>
+        <p className={`${textClasses} font-space-grotesk text-white`}>
           {L2_NETWORK_ID}
         </p>
         <CustomTooltip content={tooltipContent}>

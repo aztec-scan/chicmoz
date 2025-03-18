@@ -14,13 +14,14 @@ export const InfoBadge: FC<InfoBadgeProps> = ({
   error,
 }) => {
   const text = useMemo(() => {
-    if (error) return error.message;
-    if (data) return data;
+    if (error) { return error.message; }
+    if (data) { return data; }
     return "No Data";
   }, [data, error]);
+
   return (
-    <div className="flex flex-col bg-white w-full justify-between rounded-lg shadow-md p-4 ">
-      <p className="text-sm">{title}</p>
+    <div className="flex flex-col bg-white w-full justify-between rounded-lg shadow-md p-4">
+      <p className="text-sm text-primary dark:text-white">{title}</p>
       {isLoading ? (
         <Loader amount={1} />
       ) : (

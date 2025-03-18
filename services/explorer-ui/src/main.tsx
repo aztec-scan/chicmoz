@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import "~/styles/global.css";
-import { QueryProvider, TanstackRouterProvider } from "./providers";
+import { QueryProvider, TanstackRouterProvider, ThemeProvider } from "./providers";
 
 // NOTE: these two lines are necessary for proper parsing of ChicmozL2Block
 import { Buffer } from "buffer";
@@ -15,14 +15,16 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <QueryProvider>
-        <TanstackRouterProvider />
-        <Toaster
-          icons={{
-            success: <SuccessIcon />,
-          }}
-        />
-      </QueryProvider>
+      <ThemeProvider>
+        <QueryProvider>
+          <TanstackRouterProvider />
+          <Toaster
+            icons={{
+              success: <SuccessIcon />,
+            }}
+          />
+        </QueryProvider>
+      </ThemeProvider>
     </StrictMode>,
   );
 }
