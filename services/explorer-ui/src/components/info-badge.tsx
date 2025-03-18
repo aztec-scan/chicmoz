@@ -20,7 +20,7 @@ export const InfoBadge: FC<InfoBadgeProps> = ({
   }, [data, error]);
 
   return (
-    <div className="flex flex-col bg-white dark:bg-card w-full justify-between rounded-lg shadow-md p-4">
+    <div className="flex flex-col bg-white w-full justify-between rounded-lg shadow-md p-4">
       <p className="text-sm dark:text-gray-300">{title}</p>
       {isLoading ? (
         <Loader amount={1} />

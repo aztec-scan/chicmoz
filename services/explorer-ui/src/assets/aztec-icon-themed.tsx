@@ -1,0 +1,37 @@
+import { type FC } from 'react';
+import { useTheme } from 'next-themes';
+
+interface AztecIconThemedProps {
+  className?: string;
+  width?: number;
+  height?: number;
+}
+
+export const AztecIconThemed: FC<AztecIconThemedProps> = ({
+  className = "",
+  width = 20,
+  height = 20
+}) => {
+  const { theme } = useTheme();
+
+  // Use white for dark mode, and purple for light mode
+  const fillColor = theme === 'dark' ? '#1f2937' : '#FFFFFF';
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={width}
+      height={height}
+      viewBox="0 0 20 20"
+      fill="none"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M12.0416 0.841065L19.1594 7.95893C20.2821 9.08165 20.2821 10.9018 19.1594 12.0245L12.027 19.1594C10.9042 20.2821 9.08408 20.2821 7.96136 19.1594L0.841065 12.0416C-0.281657 10.9188 -0.281657 9.09866 0.841065 7.97594L7.97594 0.841065C9.09866 -0.281657 10.9188 -0.281657 12.0416 0.841065ZM9.52636 2.64665L9.4972 2.67339L2.67582 9.49477C2.40364 9.76694 2.39635 10.1995 2.64908 10.4838L2.67582 10.513L9.48748 17.3247C9.75965 17.5968 10.1922 17.6041 10.4741 17.3514L10.5033 17.3247L17.3247 10.5033C17.6041 10.2238 17.6041 9.76938 17.3247 9.48748L10.513 2.67582C10.2408 2.40364 9.80826 2.39635 9.52636 2.64908V2.64665ZM10.1315 5.64787L14.3502 9.86901C14.4207 9.93948 14.4207 10.0513 14.3502 10.1242L10.1242 14.3502C10.0537 14.4207 9.93948 14.4207 9.86901 14.3502L5.6503 10.129C5.57982 10.0586 5.57982 9.94678 5.6503 9.87387L9.8763 5.64787C9.94678 5.57739 10.061 5.57739 10.1315 5.64787Z"
+        fill={fillColor}
+      />
+    </svg>
+  );
+};

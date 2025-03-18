@@ -11,9 +11,11 @@ import SearchIcon from "./search-icon.svg?react";
 import DiscordIcon from "./discord-icon.svg?react";
 import LoadingIcon from "./loading-icon.svg?react";
 import CrossIcon from "./cross-icon.svg?react";
+import { AztecIconThemed } from "./aztec-icon-themed";
 
 export {
   AztecIcon,
+  AztecIconThemed,
   LoadingIcon,
   BackgroundArt,
   BackgroundArtDark,

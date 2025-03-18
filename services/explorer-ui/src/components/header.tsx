@@ -89,7 +89,6 @@ export const Header = () => {
               </div>
 
               <div className="flex space-x-6 justify-center items-center pr-11">
-                <ThemeToggle />
                 {navigationItems.map((item) => (
                   <Link
                     key={item.name}
@@ -99,6 +98,7 @@ export const Header = () => {
                     {item.name}
                   </Link>
                 ))}
+                <ThemeToggle />
               </div>
             </div>
 
