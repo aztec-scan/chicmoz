@@ -22,32 +22,30 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({ latestBloc
     setShowPendingTxs(checked);
   }
 
-  const latestTxEffectsWithPending = useMemo(() => {
-    if (!latestTxEffectsData) {
-      return [];
-    }
-    if (!latestBlocks) {
-      return [];
-    }
-    const disguisedPendingTxs =
-      pendingTxs?.reduce((acc, tx) => {
-        if (!latestTxEffectsData.some((effect) => effect.txHash === tx.hash)) {
-          acc.push({
-            txHash: tx.hash,
-            transactionFee: -1,
-            blockNumber: -1,
-            timestamp: tx.birthTimestamp ?? 0,
-          });
-        }
-        return acc;
-      }, [] as TxEffectTableSchema[]) ?? [];
-    return [
-      ...disguisedPendingTxs,
-      ...mapLatestTxEffects(latestTxEffectsData, latestBlocks),
-    ];
-  }, [pendingTxs, latestTxEffectsData, latestBlocks]);
+  const txEffectData = useMemo(() => {
 
-  const txEffectData = showPendingTxs ? latestTxEffectsWithPending : mapLatestTxEffects(latestTxEffectsData ?? [], latestBlocks ?? []);
+    const mappedLatestTxEffects = (!latestTxEffectsData || !latestBlocks)
+      ? []
+      : mapLatestTxEffects(latestTxEffectsData, latestBlocks);
+
+    if (!showPendingTxs || !pendingTxs || !latestTxEffectsData) {
+      return mappedLatestTxEffects;
+    }
+
+    const pendingTxEffects = pendingTxs.reduce((acc, tx) => {
+      if (!latestTxEffectsData.some((effect) => effect.txHash === tx.hash)) {
+        acc.push({
+          txHash: tx.hash,
+          transactionFee: -1,
+          blockNumber: -1,
+          timestamp: tx.birthTimestamp ?? 0,
+        });
+      }
+      return acc;
+    }, [] as TxEffectTableSchema[]);
+
+    return [...pendingTxEffects, ...mappedLatestTxEffects];
+  }, [latestTxEffectsData, latestBlocks, pendingTxs, showPendingTxs]);
 
   return (
     <>
@@ -59,5 +57,6 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({ latestBloc
         disableSizeSelector={true}
         handleDisablePendingTx={toggleShowPendingTx}
       />
-    </>)
+    </>
+  )
 }
