@@ -32,8 +32,8 @@ export const Blocks: FC = () => {
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap m-5">
-        <h2 className="mt-2 text-primary md:hidden">All Blocks</h2>
-        <h1 className="hidden md:block md:text-primary md:mt-8">All Blocks</h1>
+        <h2 className="text-primary md:dark:text-white mt-2 md:hidden">Blocks overview</h2>
+        <h2 className="hidden md:block md:text-primary md:dark:text-white md:mt-8">Blocks overview</h2>
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5 ">
         <InfoBadge

@@ -102,7 +102,6 @@
   body {
     @apply bg-background text-foreground font-default;
     /* background-color: #FFFFFF; */
-    background-image: url(../assets/background-art.svg);
     background-attachment: fixed;
     /* background-size: auto | cover | contain | 500px 250px; */
     background-position: center 30%;
@@ -111,10 +110,6 @@
     /* background-origin: border-box | padding-box | content-box; */
     /* background-clip: border-box | padding-box | content-box; */
     /* background-blend-mode: multiply | screen | overlay; */
-  }
-
-  .dark body {
-    background-image: url(../assets/background-art-dark.svg);
   }
 }
 
