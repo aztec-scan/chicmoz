@@ -66,6 +66,9 @@ export const updateContractInstanceDeployerMetadata = async (
           creatorContact: contractDeployerMetadata.creatorContact,
           appUrl: contractDeployerMetadata.appUrl,
           repoUrl: contractDeployerMetadata.repoUrl,
+          // Add the new fields for trusted token portals
+          contractType: (contractDeployerMetadata as any).contractType,
+          aztecScanOriginNotes: (contractDeployerMetadata as any).aztecScanOriginNotes,
         })
         .returning();
     }

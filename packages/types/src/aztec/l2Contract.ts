@@ -11,6 +11,9 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   contractClassId: frSchema,
   initializationHash: frSchema,
   deployer: aztecAddressSchema,
+  aztecScanOriginNotes: z.object({
+    comment: z.string().default("This contract has been posted by Mr. X on the forum."),
+  }).nullable().optional(),
   publicKeys: z.object({
     masterNullifierPublicKey: concatFrPointSchema,
     masterIncomingViewingPublicKey: concatFrPointSchema,
@@ -36,6 +39,11 @@ export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer
   typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema
 >;
 
+export enum ContractType {
+  Token,
+  Portal
+}
+
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
   contractClassId: frSchema,
@@ -45,8 +53,9 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   packedBytecode: bufferSchema,
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
-  isToken: z.boolean().nullable().optional(),
-  whyNotToken: z.string().nullable().optional(),
+  contractType: z.nativeEnum(ContractType).nullable().optional(),
+  isToken: z.boolean().nullable().optional(), // removeme
+  whyNotToken: z.string().nullable().optional(), // removeme
 });
 
 export type ChicmozL2ContractClassRegisteredEvent = z.infer<
