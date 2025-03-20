@@ -73,6 +73,7 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
+    contractType: integer("contract_type"),
   },
   (t) => ({
     primaryKey: primaryKey({
@@ -99,6 +100,7 @@ export const l2ContractInstanceDeployerMetadataTable = pgTable(
     repoUrl: varchar("repo_url").notNull(),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
     reviewedAt: timestamp("reviewed_at"),
+    aztecScanOriginNotes: jsonb("aztec_scan_origin_notes"),
   },
 );
 
