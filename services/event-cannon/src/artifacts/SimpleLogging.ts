@@ -30,7 +30,6 @@ import {
   Point,
   type PublicKey,
   PublicKeys,
-  type UnencryptedL2Log,
   type Wallet,
   type U128Like,
   type WrappedFieldLike,
@@ -44,16 +43,16 @@ export const SimpleLoggingContractArtifact = loadContractArtifact(SimpleLoggingC
  * Type-safe interface for contract SimpleLogging;
  */
 export class SimpleLoggingContract extends ContractBase {
-  
+
   private constructor(
     instance: ContractInstanceWithAddress,
     wallet: Wallet,
   ) {
     super(instance, SimpleLoggingContractArtifact, wallet);
   }
-  
 
-  
+
+
   /**
    * Creates a contract instance.
    * @param address - The deployed contract's address.
@@ -67,18 +66,18 @@ export class SimpleLoggingContract extends ContractBase {
     return Contract.at(address, SimpleLoggingContract.artifact, wallet) as Promise<SimpleLoggingContract>;
   }
 
-  
+
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
-  public static deploy(wallet: Wallet, ) {
+  public static deploy(wallet: Wallet,) {
     return new DeployMethod<SimpleLoggingContract>(PublicKeys.default(), wallet, SimpleLoggingContractArtifact, SimpleLoggingContract.at, Array.from(arguments).slice(1));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified public keys hash to derive the address.
    */
-  public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet, ) {
+  public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet,) {
     return new DeployMethod<SimpleLoggingContract>(publicKeys, wallet, SimpleLoggingContractArtifact, SimpleLoggingContract.at, Array.from(arguments).slice(2));
   }
 
@@ -98,31 +97,31 @@ export class SimpleLoggingContract extends ContractBase {
       opts.method ?? 'constructor',
     );
   }
-  
 
-  
+
+
   /**
    * Returns this contract's artifact.
    */
   public static get artifact(): ContractArtifact {
     return SimpleLoggingContractArtifact;
   }
-  
+
 
   public static get storage(): ContractStorageLayout<'counters'> {
-      return {
-        counters: {
-      slot: new Fr(1n),
-    }
-      } as ContractStorageLayout<'counters'>;
-    }
-    
+    return {
+      counters: {
+        slot: new Fr(1n),
+      }
+    } as ContractStorageLayout<'counters'>;
+  }
 
-  
+
+
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public declare methods: {
-    
+
     /** compute_note_hash_and_optionally_a_nullifier(contract_address: struct, nonce: field, storage_slot: field, note_type_id: field, compute_nullifier: boolean, packed_note_content: array) */
     compute_note_hash_and_optionally_a_nullifier: ((contract_address: AztecAddressLike, nonce: FieldLike, storage_slot: FieldLike, note_type_id: FieldLike, compute_nullifier: boolean, packed_note_content: FieldLike[]) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
@@ -145,5 +144,5 @@ export class SimpleLoggingContract extends ContractBase {
     sync_notes: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
   };
 
-  
+
 }

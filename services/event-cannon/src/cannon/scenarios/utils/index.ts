@@ -21,7 +21,7 @@ import {
   deployInstance,
   registerContractClass,
 } from "@aztec/aztec.js/deployment";
-import { deriveSigningKey } from "@aztec/circuits.js";
+import { deriveSigningKey } from "@aztec/stdlib";
 import { FunctionType } from "@aztec/foundation/abi";
 import { ContractClassRegisteredEvent } from "@aztec/protocol-contracts/class-registerer";
 import {

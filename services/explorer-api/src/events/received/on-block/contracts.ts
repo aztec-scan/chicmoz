@@ -18,6 +18,7 @@ import {
 import { logger } from "../../../logger.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateError } from "../utils.js";
+import { ContractClassPublic, ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 
 const parseObjs = <T>(
   blockHash: string,

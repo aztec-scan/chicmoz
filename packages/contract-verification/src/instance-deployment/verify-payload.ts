@@ -42,7 +42,7 @@ export const verifyInstanceDeploymentPayload = async (
     deployer: AztecAddress.fromString(deployer),
   });
   const computedAddress = await computeContractAddressFromInstance({
-    contractClassId: Fr.fromString(contractClassId),
+    originalContractClassId: Fr.fromString(contractClassId),
     saltedInitializationHash: saltedHash,
     publicKeys: PublicKeys.fromString(publicKeysString),
   });
