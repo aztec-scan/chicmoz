@@ -14,7 +14,7 @@
     "lint-base": "yarn run g:lint"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.76.4",
+    "@aztec/aztec.js": "0.81.0",
     "@chicmoz-pkg/types": "workspace:^"
   },
   "devDependencies": {

@@ -1,9 +1,5 @@
 import { L2Block } from "@aztec/aztec.js";
 import {
-  type ContractClassPublic,
-  type ContractInstanceWithAddress,
-} from "@aztec/circuits.js";
-import {
   ContractClassRegisteredEvent,
   PrivateFunctionBroadcastedEvent,
   UnconstrainedFunctionBroadcastedEvent,
@@ -22,6 +18,7 @@ import {
 import { logger } from "../../../logger.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateError } from "../utils.js";
+import { ContractClassPublic, ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 
 const parseObjs = <T>(
   blockHash: string,

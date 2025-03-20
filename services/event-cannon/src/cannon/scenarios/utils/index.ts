@@ -10,6 +10,7 @@ import {
   Fr,
   FunctionCall,
   FunctionSelector,
+  FunctionType,
   NoirCompiledContract,
   PXE,
   SentTx,
@@ -21,9 +22,8 @@ import {
   deployInstance,
   registerContractClass,
 } from "@aztec/aztec.js/deployment";
-import { deriveSigningKey } from "@aztec/circuits.js";
-import { FunctionType } from "@aztec/foundation/abi";
 import { ContractClassRegisteredEvent } from "@aztec/protocol-contracts/class-registerer";
+import { deriveSigningKey } from "@aztec/stdlib/keys"
 import {
   generateVerifyArtifactPayload,
   generateVerifyArtifactUrl,
@@ -119,14 +119,14 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
   }
   const contractClassLogs = block.body.txEffects
     .flatMap((txEffect) => (txEffect ? [txEffect.contractClassLogs] : []))
-    .flatMap((txLog) => txLog.unrollLogs());
+    .flatMap((txLog) => txLog.flat());
 
   const contractClasses = await Promise.all(
     contractClassLogs
       .filter((log) =>
-        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log.data),
+        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log),
       )
-      .map((log) => ContractClassRegisteredEvent.fromLog(log.data))
+      .map((log) => ContractClassRegisteredEvent.fromLog(log))
       .map((e) => e.toContractClassPublic()),
   );
 
@@ -154,7 +154,7 @@ export const deployContract = async <T extends Contract>({
   const newClassId = await getNewContractClassId(node, receipt.blockNumber);
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
-    : `(🍎 attached classId: ${deployedContract.instance.contractClassId.toString()})`;
+    : `(🍎 attached classId: ${deployedContract.instance.currentContractClassId.toString()})`;
   logger.info(
     `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );
