@@ -25,6 +25,7 @@ import {
   type FunctionSelectorLike,
   L1EventPayload,
   loadContractArtifact,
+  loadContractArtifactForPublic,
   type NoirCompiledContract,
   NoteSelector,
   Point,
@@ -43,16 +44,16 @@ export const SimpleLoggingContractArtifact = loadContractArtifact(SimpleLoggingC
  * Type-safe interface for contract SimpleLogging;
  */
 export class SimpleLoggingContract extends ContractBase {
-
+  
   private constructor(
     instance: ContractInstanceWithAddress,
     wallet: Wallet,
   ) {
     super(instance, SimpleLoggingContractArtifact, wallet);
   }
+  
 
-
-
+  
   /**
    * Creates a contract instance.
    * @param address - The deployed contract's address.
@@ -66,18 +67,18 @@ export class SimpleLoggingContract extends ContractBase {
     return Contract.at(address, SimpleLoggingContract.artifact, wallet) as Promise<SimpleLoggingContract>;
   }
 
-
+  
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
-  public static deploy(wallet: Wallet,) {
+  public static deploy(wallet: Wallet, ) {
     return new DeployMethod<SimpleLoggingContract>(PublicKeys.default(), wallet, SimpleLoggingContractArtifact, SimpleLoggingContract.at, Array.from(arguments).slice(1));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified public keys hash to derive the address.
    */
-  public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet,) {
+  public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet, ) {
     return new DeployMethod<SimpleLoggingContract>(publicKeys, wallet, SimpleLoggingContractArtifact, SimpleLoggingContract.at, Array.from(arguments).slice(2));
   }
 
@@ -97,9 +98,9 @@ export class SimpleLoggingContract extends ContractBase {
       opts.method ?? 'constructor',
     );
   }
+  
 
-
-
+  
   /**
    * Returns this contract's artifact.
    */
@@ -107,24 +108,28 @@ export class SimpleLoggingContract extends ContractBase {
     return SimpleLoggingContractArtifact;
   }
 
+  /**
+   * Returns this contract's artifact with public bytecode.
+   */
+  public static get artifactForPublic(): ContractArtifact {
+    return loadContractArtifactForPublic(SimpleLoggingContractArtifactJson as NoirCompiledContract);
+  }
+  
 
   public static get storage(): ContractStorageLayout<'counters'> {
-    return {
-      counters: {
-        slot: new Fr(1n),
-      }
-    } as ContractStorageLayout<'counters'>;
-  }
+      return {
+        counters: {
+      slot: new Fr(1n),
+    }
+      } as ContractStorageLayout<'counters'>;
+    }
+    
 
-
-
+  
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public declare methods: {
-
-    /** compute_note_hash_and_optionally_a_nullifier(contract_address: struct, nonce: field, storage_slot: field, note_type_id: field, compute_nullifier: boolean, packed_note_content: array) */
-    compute_note_hash_and_optionally_a_nullifier: ((contract_address: AztecAddressLike, nonce: FieldLike, storage_slot: FieldLike, note_type_id: FieldLike, compute_nullifier: boolean, packed_note_content: FieldLike[]) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
-
+    
     /** constructor() */
     constructor: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
@@ -134,8 +139,8 @@ export class SimpleLoggingContract extends ContractBase {
     /** increase_counter_public(counter_id: field) */
     increase_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** process_log(log_plaintext: struct, tx_hash: field, unique_note_hashes_in_tx: struct, first_nullifier_in_tx: field, recipient: struct) */
-    process_log: ((log_plaintext: { storage: FieldLike[], len: (bigint | number) }, tx_hash: FieldLike, unique_note_hashes_in_tx: { storage: FieldLike[], len: (bigint | number) }, first_nullifier_in_tx: FieldLike, recipient: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** process_log(_log_ciphertext: struct, _tx_hash: field, _unique_note_hashes_in_tx: struct, _first_nullifier_in_tx: field, _recipient: struct) */
+    process_log: ((_log_ciphertext: { storage: FieldLike[], len: (bigint | number) }, _tx_hash: FieldLike, _unique_note_hashes_in_tx: { storage: FieldLike[], len: (bigint | number) }, _first_nullifier_in_tx: FieldLike, _recipient: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** public_dispatch(selector: field) */
     public_dispatch: ((selector: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
@@ -144,5 +149,5 @@ export class SimpleLoggingContract extends ContractBase {
     sync_notes: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
   };
 
-
+  
 }
