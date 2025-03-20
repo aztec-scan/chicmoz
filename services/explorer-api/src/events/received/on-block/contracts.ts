@@ -1,9 +1,5 @@
 import { L2Block } from "@aztec/aztec.js";
 import {
-  type ContractClassPublic,
-  type ContractInstanceWithAddress,
-} from "@aztec/circuits.js";
-import {
   ContractClassRegisteredEvent,
   PrivateFunctionBroadcastedEvent,
   UnconstrainedFunctionBroadcastedEvent,

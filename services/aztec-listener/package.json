@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@aztec/aztec.js": "0.81.0",
-    "@aztec/circuits.js": "0.76.4",
+    "@aztec/stdlib": "0.81.0",
     "@chicmoz-pkg/backend-utils": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",
