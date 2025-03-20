@@ -33,7 +33,7 @@ export async function run() {
   registerContractClassArtifact(
     contractLoggingName,
     contractArtifactJson,
-    contract.instance.contractClassId.toString(),
+    contract.instance.currentContractClassId.toString(),
     contract.instance.version
   ).catch((err) => {
     logger.error(err);
