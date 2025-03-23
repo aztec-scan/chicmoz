@@ -6,9 +6,9 @@ import {
   AztecNode,
   BatchCall,
   Contract,
+  ContractFunctionInteraction,
   DeploySentTx,
   Fr,
-  FunctionCall,
   FunctionSelector,
   FunctionType,
   NoirCompiledContract,
@@ -225,10 +225,8 @@ export const publicDeployAccounts = async (
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
   }
-  const deployCalls: FunctionCall[] = [
-    await (
-      await registerContractClass(sender, SchnorrAccountContractArtifact)
-    ).request(),
+  const deployCalls: ContractFunctionInteraction[] = [
+    await registerContractClass(sender, SchnorrAccountContractArtifact),
     ...((
       await Promise.all(
         notPubliclyDeployedAccounts.map(async (contractMetadata) => {
@@ -239,11 +237,11 @@ export const publicDeployAccounts = async (
             return undefined;
           }
           return (
-            await deployInstance(sender, contractMetadata.contractInstance)
-          ).request();
+            deployInstance(sender, contractMetadata.contractInstance)
+          );
         }),
       )
-    ).filter((call) => call !== undefined) as FunctionCall[]),
+    ).filter((call) => call !== undefined) as ContractFunctionInteraction[]),
   ];
   const batch = new BatchCall(sender, deployCalls);
   await batch.send().wait();
