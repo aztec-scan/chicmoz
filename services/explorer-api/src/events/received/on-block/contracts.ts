@@ -77,32 +77,28 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
     .map((e) => e.toContractInstance());
 
   const contractClassLogs = b.body.txEffects
-    .flatMap((txEffect) => (txEffect ? [txEffect.contractClassLogs] : []))
-    .flatMap((txLog) => txLog.unrollLogs());
+    .flatMap((txEffect) => (txEffect ? [txEffect.contractClassLogs] : [])).flat()
 
-  const contractClasses = await Promise.all(
-    contractClassLogs
-      .filter((log) =>
-        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log.data)
-      )
-      .map((log) => ContractClassRegisteredEvent.fromLog(log.data))
-      .map((e) => e.toContractClassPublic())
-  );
+  const contractClassRegisteredEvents = contractClassLogs
+    .filter(log => ContractClassRegisteredEvent.isContractClassRegisteredEvent(log))
+    .map(log => ContractClassRegisteredEvent.fromLog(log));
+
+  const contractClasses = await Promise.all(contractClassRegisteredEvents.map(e => e.toContractClassPublic()));
 
   const privateFnEvents = contractClassLogs
     .filter((log) =>
       PrivateFunctionBroadcastedEvent.isPrivateFunctionBroadcastedEvent(
-        log.data
+        log
       )
     )
-    .map((log) => PrivateFunctionBroadcastedEvent.fromLog(log.data));
+    .map((log) => PrivateFunctionBroadcastedEvent.fromLog(log));
   const unconstrainedFnEvents = contractClassLogs
     .filter((log) =>
       UnconstrainedFunctionBroadcastedEvent.isUnconstrainedFunctionBroadcastedEvent(
-        log.data
+        log
       )
     )
-    .map((log) => UnconstrainedFunctionBroadcastedEvent.fromLog(log.data));
+    .map((log) => UnconstrainedFunctionBroadcastedEvent.fromLog(log));
 
   if (contractClasses.length > 0) {
     logger.info(
