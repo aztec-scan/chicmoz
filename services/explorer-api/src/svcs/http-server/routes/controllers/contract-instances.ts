@@ -281,6 +281,8 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
           dbContractInstance.version,
         ),
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    logger.info(JSON.parse(contractClassString!)?.contractType);
     const dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
       JSON.parse(contractClassString!),
     );
@@ -391,27 +393,35 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     // Handle contractType (for contract class)
     if (deployerMetadata.contractType !== undefined) {
       // TODO: Implement updating contractType in contract class
-      logger.info(`Received contractType ${deployerMetadata.contractType} for contract ${address}`);
+      logger.info(
+        `Received contractType ${deployerMetadata.contractType} for contract ${address}`,
+      );
     }
 
-    // Remove contractType and aztecScanOriginNotes from deployerMetadata
-    const { aztecScanOriginNotes, ...cleanDeployerMetadata } = deployerMetadata;
+    // Remove contractType and aztecScanNotes from deployerMetadata
+    const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
 
-    // Handle aztecScanOriginNotes
-    if (aztecScanOriginNotes?.comment) {
-      await db.l2Contract.storeContractInstanceOriginNotes(
+    logger.info(
+      `POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: ${JSON.stringify(
+        aztecScanNotes,
+      )}`,
+    );
+    if (aztecScanNotes?.origin) {
+      await db.l2Contract
+        .storeContractInstanceAztecScanNotes({
+          address,
+          aztecScanNotes,
+        })
+        .catch((err) => {
+          logger.warn(`Failed to store origin notes: ${err}`);
+        });
+    }
+
+    const metaDataStoreRes =
+      await db.l2Contract.updateContractInstanceDeployerMetadata({
         address,
-        aztecScanOriginNotes.comment
-      ).catch(err => {
-        logger.warn(`Failed to store origin notes: ${err}`);
+        ...cleanDeployerMetadata,
       });
-    }
-
-
-    const metaDataStoreRes = await db.l2Contract.updateContractInstanceDeployerMetadata({
-      address,
-      ...cleanDeployerMetadata,
-    });
 
     if (!metaDataStoreRes) {
       res.status(500).send("Failed to update deployer metadata");

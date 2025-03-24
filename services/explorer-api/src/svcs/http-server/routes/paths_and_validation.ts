@@ -4,7 +4,6 @@ import {
   chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozL2SequencerSchema,
   chicmozSearchQuerySchema,
-  contractTypeSchema,
   ethAddressSchema,
   hexStringSchema,
 } from "@chicmoz-pkg/types";
@@ -157,17 +156,9 @@ export const getContractClassUnconstrainedFunctionSchema =
   getContractClassPrivateFunctionSchema;
 
 export const postContrctClassArtifactSchema = z.lazy(() => {
-  let overrideContractType = {};
-  if (process.env.NODE_ENV === "production") {
-    // TODO: this should be stored also!!!
-    overrideContractType = {
-      contractType: contractTypeSchema.optional(),
-    };
-  }
   return z.object({
     ...getContractClassSchema.shape,
     body: z.object({
-      ...overrideContractType,
       stringifiedArtifactJson: z.string(),
     }),
   });

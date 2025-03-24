@@ -14,6 +14,7 @@ import {
 import { l2Block } from "../index.js";
 import {
   bufferType,
+  contractTypeDbEnum,
   generateAztecAddressColumn,
   generateConcatFrPointColumn,
   generateFrColumn,
@@ -73,7 +74,7 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
-    contractType: integer("contract_type"),
+    contractType: contractTypeDbEnum("contract_type"),
   },
   (t) => ({
     primaryKey: primaryKey({
@@ -103,9 +104,8 @@ export const l2ContractInstanceDeployerMetadataTable = pgTable(
   },
 );
 
-// Create a separate table for Aztec Scan Origin Notes
-export const l2ContractInstanceAztecScanOriginNotes = pgTable(
-  "l2_contract_instance_aztec_scan_origin_notes",
+export const l2ContractInstanceAztecScanNotes = pgTable(
+  "l2_contract_instance_aztec_scan_notes",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     address: generateAztecAddressColumn("address")
@@ -113,7 +113,9 @@ export const l2ContractInstanceAztecScanOriginNotes = pgTable(
       .references(() => l2ContractInstanceDeployed.address, {
         onDelete: "cascade",
       }),
+    origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
+    relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
   },
 );
@@ -151,16 +153,16 @@ export const l2ContractInstanceDeployedRelations = relations(
         l2ContractClassRegistered.version,
       ],
     }),
-    originNotes: one(l2ContractInstanceAztecScanOriginNotes),
+    aztecScanNotes: one(l2ContractInstanceAztecScanNotes),
   }),
 );
 
 // Add relation for origin notes to contract instance
-export const l2ContractInstanceAztecScanOriginNotesRelations = relations(
-  l2ContractInstanceAztecScanOriginNotes,
+export const l2ContractInstanceAztecScanNotesRelations = relations(
+  l2ContractInstanceAztecScanNotes,
   ({ one }) => ({
     contractInstance: one(l2ContractInstanceDeployed, {
-      fields: [l2ContractInstanceAztecScanOriginNotes.address],
+      fields: [l2ContractInstanceAztecScanNotes.address],
       references: [l2ContractInstanceDeployed.address],
     }),
   }),

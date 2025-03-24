@@ -63,10 +63,10 @@ export async function run() {
       appUrl: "https://aztec.network",
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
-      contractType: 1, // ContractType.Portal
-      aztecScanOriginNotes: {
-        comment: "This is a commonly used token portal deployed by the Aztec team."
-      }
+      aztecScanNotes: {
+        origin: "EXAMPLE: this was published on X with 1M likes",
+        comment: "This is a commonly used token for testing",
+      },
     },
   }).catch((err) => {
     logger.error(`Failed to verify contract instance deployment: ${err}`);

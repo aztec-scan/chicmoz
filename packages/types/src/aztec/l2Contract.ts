@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { aztecAddressSchema } from "../general.js";
 import { chicmozL2BlockSchema } from "./l2Block.js";
+import { aztecScanNoteSchema } from "./special.js";
 import { bufferSchema, concatFrPointSchema, frSchema } from "./utils.js";
 
 export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
@@ -11,9 +12,7 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   contractClassId: frSchema,
   initializationHash: frSchema,
   deployer: aztecAddressSchema,
-  aztecScanOriginNotes: z.object({
-    comment: z.string().default("This contract has been posted by Mr. X on the forum."),
-  }).nullable().optional(),
+  aztecScanNotes: aztecScanNoteSchema.optional(),
   publicKeys: z.object({
     masterNullifierPublicKey: concatFrPointSchema,
     masterIncomingViewingPublicKey: concatFrPointSchema,
@@ -26,23 +25,23 @@ export type ChicmozL2ContractInstanceDeployedEvent = z.infer<
   typeof chicmozL2ContractInstanceDeployedEventSchema
 >;
 
-export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema = z.object({
-  id: z.string().uuid().optional(),
-  address: aztecAddressSchema,
-  salt: frSchema,
-  deployer: aztecAddressSchema,
-  publicKeysString: z.string(),
-  constructorArgs: z.string().array(),
-});
+export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema =
+  z.object({
+    id: z.string().uuid().optional(),
+    address: aztecAddressSchema,
+    salt: frSchema,
+    deployer: aztecAddressSchema,
+    publicKeysString: z.string(),
+    constructorArgs: z.string().array(),
+  });
 
-export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer<
-  typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema
->;
+export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema =
+  z.infer<typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema>;
 
 export enum ContractType {
-  Unknown,
-  Token,
-  TokenBridge
+  Unknown = "Unknown",
+  Token = "Token",
+  TokenBridge = "TokenBridge",
 }
 
 export const contractTypeSchema = z.nativeEnum(ContractType);

@@ -1,5 +1,5 @@
 {
-  "id": "5f88d4ff-b4ac-4d2f-b3e8-ab569619b91d",
+  "id": "024ab57b-472e-433c-9fc6-eb9794ea2119",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1073,7 +1073,7 @@
         },
         "contract_type": {
           "name": "contract_type",
-          "type": "integer",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         }
@@ -1098,8 +1098,8 @@
       },
       "uniqueConstraints": {}
     },
-    "public.l2_contract_instance_aztec_scan_origin_notes": {
-      "name": "l2_contract_instance_aztec_scan_origin_notes",
+    "public.l2_contract_instance_aztec_scan_notes": {
+      "name": "l2_contract_instance_aztec_scan_notes",
       "schema": "",
       "columns": {
         "id": {
@@ -1115,11 +1115,23 @@
           "primaryKey": false,
           "notNull": true
         },
+        "origin": {
+          "name": "origin",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
         "comment": {
           "name": "comment",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "related_l1_contract_addresses": {
+          "name": "related_l1_contract_addresses",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "uploaded_at": {
           "name": "uploaded_at",
@@ -1131,9 +1143,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "l2_contract_instance_aztec_scan_origin_notes_address_l2_contract_instance_deployed_address_fk": {
-          "name": "l2_contract_instance_aztec_scan_origin_notes_address_l2_contract_instance_deployed_address_fk",
-          "tableFrom": "l2_contract_instance_aztec_scan_origin_notes",
+        "l2_contract_instance_aztec_scan_notes_address_l2_contract_instance_deployed_address_fk": {
+          "name": "l2_contract_instance_aztec_scan_notes_address_l2_contract_instance_deployed_address_fk",
+          "tableFrom": "l2_contract_instance_aztec_scan_notes",
           "tableTo": "l2_contract_instance_deployed",
           "columnsFrom": ["address"],
           "columnsTo": ["address"],

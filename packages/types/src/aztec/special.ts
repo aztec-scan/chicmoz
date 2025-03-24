@@ -8,13 +8,43 @@ import {
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
   chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema,
+  contractTypeSchema,
 } from "./l2Contract.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
 
+export const aztecScanNoteSchema = z.object({
+  origin: z.string(),
+  comment: z.string(),
+  relatedL1ContractAddresses: z
+    .array(
+      z
+        .object({
+          address: z.string(),
+          note: z.string(),
+        })
+        .nullable()
+        .optional(),
+    )
+    .nullable()
+    .optional(),
+});
+
+export type AztecScanNote = z.infer<typeof aztecScanNoteSchema>;
+//│ run-migrations file:///usr/main/packages/types/build/aztec/special.js:35                                                                                                                                                                                   │
+//│ run-migrations     ...chicmozL2ContractInstanceDeployedEventSchema.shape,                                                                                                                                                                                  │
+//│ run-migrations        ^                                                                                                                                                                                                                                    │
+//│ run-migrations                                                                                                                                                                                                                                             │
+//│ run-migrations ReferenceError: Cannot access 'chicmozL2ContractInstanceDeployedEventSchema' before initialization                                                                                                                                          │
+//│ run-migrations     at file:///usr/main/packages/types/build/aztec/special.js:35:8                                                                                                                                                                          │
+//│ run-migrations     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)                                                                                                                                                                          │
+//│ run-migrations     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)                                                                                                                                                                  │
+//│ run-migrations     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)                                                                                                                                                         │
+//│ run-migrations                                                                                                                                                                                                                                             │
+//│ run-migrations Node.js v20.19.0
 export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   // TODO: update schema with better/more info
   address: z.lazy(
-    () => chicmozL2ContractInstanceDeployedEventSchema.shape.address
+    () => chicmozL2ContractInstanceDeployedEventSchema.shape.address,
   ),
   contractIdentifier: z.string(),
   details: z.string(),
@@ -24,25 +54,23 @@ export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   repoUrl: z.string(),
   uploadedAt: z.coerce.date(),
   reviewedAt: z.coerce.date().optional(),
-  // Add these fields to the schema for TypeScript, even though 
-  // they'll be stored in separate tables
-  contractType: z.number().optional(),
-  aztecScanOriginNotes: z.object({
-    comment: z.string()
-  }).optional(),
+  contractType: z.lazy(() => contractTypeSchema).nullable().optional(),
+  aztecScanNotes: aztecScanNoteSchema.nullable().optional(),
 });
 
 export type ChicmozL2ContractInstanceDeployerMetadata = z.infer<
   typeof chicmozL2ContractInstanceDeployerMetadataSchema
 >;
 
-export const chicmozL2ContractInstanceDeluxeSchema = z.object({
-  ...chicmozL2ContractInstanceDeployedEventSchema.shape,
-  ...chicmozL2ContractClassRegisteredEventSchema.shape,
-  blockHeight: chicmozL2BlockSchema.shape.height.optional(),
-  deployerMetadata: chicmozL2ContractInstanceDeployerMetadataSchema.optional(),
-  verifiedDeploymentArguments:
-    chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema.optional(),
+export const chicmozL2ContractInstanceDeluxeSchema = z.lazy(() => {
+  return z.object({
+    ...chicmozL2ContractInstanceDeployedEventSchema.shape,
+    ...chicmozL2ContractClassRegisteredEventSchema.shape,
+    blockHeight: chicmozL2BlockSchema.shape.height.optional(),
+    deployerMetadata: chicmozL2ContractInstanceDeployerMetadataSchema.optional(),
+    verifiedDeploymentArguments:
+      chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema.optional(),
+  });
 });
 
 export type ChicmozL2ContractInstanceDeluxe = z.infer<
@@ -55,7 +83,7 @@ export const chicmozL2TxEffectDeluxeSchema = z.object({
   txBirthTimestamp: z.number(),
   timestamp: z.lazy(
     () =>
-      chicmozL2BlockSchema.shape.header.shape.globalVariables.shape.timestamp
+      chicmozL2BlockSchema.shape.header.shape.globalVariables.shape.timestamp,
   ),
 });
 

@@ -96,6 +96,7 @@ export const run = async () => {
     },
     node: getAztecNodeClient(),
   });
+
   registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
@@ -104,9 +105,7 @@ export const run = async () => {
   ).catch((err) => {
     logger.error(err);
   });
-
-  // Add verification to mark the token contract as a trusted portal
-  await verifyContractInstanceDeployment({
+  verifyContractInstanceDeployment({
     contractLoggingName: tokenContractLoggingName,
     contractInstanceAddress: token.address.toString(),
     verifyArgs: {
@@ -125,14 +124,16 @@ export const run = async () => {
       appUrl: "https://aztec.network",
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
-      contractType: 1, // ContractType.Portal
-      aztecScanOriginNotes: {
-        comment: "This is a trusted token portal contract deployed by Aztec",
+      aztecScanNotes: {
+        origin: "EXAMPLE: this was published on X with 1M likes",
+        comment: "This is a commonly used token for testing",
       },
     },
   }).catch((err) => {
     logger.error(`Failed to verify token contract instance deployment: ${err}`);
   });
+
+  await new Promise((resolve) => setTimeout(resolve, 10000));
 
   const tokenBridgeContractLoggingName = "Token Bridge Contract";
   const bridge = await deployContract({
@@ -156,8 +157,7 @@ export const run = async () => {
     logger.error(err);
   });
 
-  // Add verification to mark the bridge contract as a trusted portal
-  await verifyContractInstanceDeployment({
+  verifyContractInstanceDeployment({
     contractLoggingName: tokenBridgeContractLoggingName,
     contractInstanceAddress: bridge.address.toString(),
     verifyArgs: {
@@ -179,8 +179,8 @@ export const run = async () => {
       appUrl: "https://aztec.network",
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
-      contractType: 1, // ContractType.Portal
-      aztecScanOriginNotes: {
+      aztecScanNotes: {
+        origin: "EXAMPLE: this was published on X with 1M likes",
         comment:
           "This is a commonly used token bridge for moving assets between L1 and L2",
       },
@@ -191,22 +191,25 @@ export const run = async () => {
     );
   });
 
-  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt())
-    {throw new Error(`Token admin is not ${owner.toString()}`);}
+  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt()) {
+    throw new Error(`Token admin is not ${owner.toString()}`);
+  }
 
   if (
     !(
       (await bridge.methods.get_config().simulate()) as { token: AztecAddress }
     ).token.equals(token.address)
-  )
-    {throw new Error(`Bridge token is not ${token.address.toString()}`);}
+  ) {
+    throw new Error(`Bridge token is not ${token.address.toString()}`);
+  }
 
   await logAndWaitForTx(
     token.methods.set_minter(bridge.address, true).send(),
     "setting minter",
   );
-  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n)
-    {throw new Error(`Bridge is not a minter`);}
+  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n) {
+    throw new Error(`Bridge is not a minter`);
+  }
 
   const { l1ContractAddresses } = await pxe.getNodeInfo();
 

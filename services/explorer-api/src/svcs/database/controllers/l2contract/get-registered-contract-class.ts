@@ -1,21 +1,22 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
+import { getContractType } from "@chicmoz-pkg/contract-verification";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  ContractType,
   chicmozL2ContractClassRegisteredEventSchema,
   type ChicmozL2ContractClassRegisteredEvent,
-  ContractType,
 } from "@chicmoz-pkg/types";
 import { and, desc, eq } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
+import { logger } from "../../../../logger.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
-import {getContractType} from "@chicmoz-pkg/contract-verification";
 
 export const getL2RegisteredContractClass = async (
   classId: ChicmozL2ContractClassRegisteredEvent["contractClassId"],
   version: ChicmozL2ContractClassRegisteredEvent["version"],
-  includeArtifactJson?: boolean
+  includeArtifactJson?: boolean,
 ): Promise<ChicmozL2ContractClassRegisteredEvent | null> => {
   const res = await getL2RegisteredContractClasses({
     classId,
@@ -43,7 +44,7 @@ export const getL2RegisteredContractClasses = async ({
   const whereQuery = version
     ? and(
         eq(l2ContractClassRegistered.contractClassId, classId),
-        eq(l2ContractClassRegistered.version, version)
+        eq(l2ContractClassRegistered.version, version),
       )
     : eq(l2ContractClassRegistered.contractClassId, classId);
   const limit = version ? 1 : DB_MAX_CONTRACTS;
@@ -62,9 +63,13 @@ export const getL2RegisteredContractClasses = async ({
     };
     if (includeArtifactJson && r.artifactJson) {
       const parsedArtifactJson = JSON.parse(
-        r.artifactJson
+        r.artifactJson,
       ) as unknown as NoirCompiledContract;
       const contractTypeResult = getContractType(parsedArtifactJson);
+      logger.info(
+        "contractTypeResult====>",
+        JSON.stringify(Object.keys(contractTypeResult)),
+      );
       tokenData = {
         ...contractTypeResult,
       };
@@ -94,6 +99,6 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
     .limit(DB_MAX_CONTRACTS);
 
   return result.map((r) =>
-    chicmozL2ContractClassRegisteredEventSchema.parse(r)
+    chicmozL2ContractClassRegisteredEventSchema.parse(r),
   );
 };

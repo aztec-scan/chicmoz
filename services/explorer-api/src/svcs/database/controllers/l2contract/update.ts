@@ -1,5 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  AztecScanNote,
   NODE_ENV,
   NodeEnv,
   chicmozL2ContractInstanceDeployerMetadataSchema,
@@ -9,7 +10,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { logger } from "../../../../logger.js";
 import {
-  l2ContractInstanceAztecScanOriginNotes,
+  l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployerMetadataTable,
 } from "../../../database/schema/l2contract/index.js";
 
@@ -85,10 +86,13 @@ export const updateContractInstanceDeployerMetadata = async (
  * @param comment Note about the contract's origin/trust status
  * @returns The stored origin note record
  */
-export const storeContractInstanceOriginNotes = async (
-  address: string,
-  comment: string,
-): Promise<
+export const storeContractInstanceAztecScanNotes = async ({
+  address,
+  aztecScanNotes,
+}: {
+  address: string;
+  aztecScanNotes: AztecScanNote;
+}): Promise<
   { id: string; address: string; comment: string; uploadedAt: Date } | undefined
 > => {
   // In production mode, skip this operation for now
@@ -103,29 +107,27 @@ export const storeContractInstanceOriginNotes = async (
     // Check if there are existing notes
     const existingNotes = await dbTx
       .select()
-      .from(l2ContractInstanceAztecScanOriginNotes)
-      .where(eq(l2ContractInstanceAztecScanOriginNotes.address, address))
+      .from(l2ContractInstanceAztecScanNotes)
+      .where(eq(l2ContractInstanceAztecScanNotes.address, address))
       .limit(1);
 
     if (existingNotes.length > 0) {
       // Update existing notes
       return await dbTx
-        .update(l2ContractInstanceAztecScanOriginNotes)
+        .update(l2ContractInstanceAztecScanNotes)
         .set({
-          comment,
+          ...aztecScanNotes,
           uploadedAt: new Date(),
         })
-        .where(
-          eq(l2ContractInstanceAztecScanOriginNotes.id, existingNotes[0].id),
-        )
+        .where(eq(l2ContractInstanceAztecScanNotes.id, existingNotes[0].id))
         .returning();
     } else {
       // Insert new notes
       return await dbTx
-        .insert(l2ContractInstanceAztecScanOriginNotes)
+        .insert(l2ContractInstanceAztecScanNotes)
         .values({
+          ...aztecScanNotes,
           address,
-          comment,
           uploadedAt: new Date(),
         })
         .returning();
