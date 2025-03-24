@@ -1,11 +1,13 @@
-import { type ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { routes } from "~/routes/__root";
+import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
-import { type ContractInstance } from "./schema";
+import { routes } from "~/routes/__root";
+//import { type ContractInstance, isTrustedPortal } from "./schema";
 import { CopyableText } from "~/components/copy-text";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { getClassVersionLink } from "../utils";
+import { ContractInstance } from "./schema";
+//import { Badge } from "~/components/ui/badge";
 
 const text = {
   address: "ADDRESS",
@@ -14,6 +16,7 @@ const text = {
   version: "VERSION",
   contractClassId: "CONTRACT CLASS ID",
   deployer: "DEPLOYER",
+  trusted: "TRUSTED",
 };
 
 export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
@@ -52,7 +55,7 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
     cell: ({ row }) =>
       getClassVersionLink(
         row.getValue("contractClassId"),
-        row.getValue("version")
+        row.getValue("version"),
       ),
     enableSorting: true,
     enableHiding: false,
@@ -107,7 +110,7 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
       if (typeof blockHash !== "string") return null;
       const r = `${routes.blocks.route}/${blockHash}`;
       const truncatedBlockHash = `${blockHash.slice(0, 6)}...${blockHash.slice(
-        -4
+        -4,
       )}`;
       return (
         <div className="text-purple-light font-mono">

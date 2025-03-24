@@ -388,31 +388,29 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       return;
     }
 
-    // Process trust status fields (contractType and aztecScanOriginNotes)
-    // In development mode, accept the override values; in production, skip initially
-    const isDevMode = process.env.NODE_ENV === 'development';
-    const deployerMetadataToStore = { ...deployerMetadata };
-    
-    // TODO: fixme
-    if (!isDevMode) {
-      // In production, skip or remove the trust fields for now
-      if (deployerMetadataToStore.contractType !== undefined) {
-        delete deployerMetadataToStore.contractType;
-      }
-      if (deployerMetadataToStore.aztecScanOriginNotes !== undefined) {
-        delete deployerMetadataToStore.aztecScanOriginNotes;
-      }
-    } else {
-      // In development, log that we're accepting trust status fields
-      if (deployerMetadataToStore.contractType !== undefined || 
-          deployerMetadataToStore.aztecScanOriginNotes !== undefined) {
-        logger.info(`Development mode: Accepting trust status fields for contract ${address}`);
-      }
+    // Handle contractType (for contract class)
+    if (deployerMetadata.contractType !== undefined) {
+      // TODO: Implement updating contractType in contract class
+      logger.info(`Received contractType ${deployerMetadata.contractType} for contract ${address}`);
     }
+
+    // Remove contractType and aztecScanOriginNotes from deployerMetadata
+    const { aztecScanOriginNotes, ...cleanDeployerMetadata } = deployerMetadata;
+
+    // Handle aztecScanOriginNotes
+    if (aztecScanOriginNotes?.comment) {
+      await db.l2Contract.storeContractInstanceOriginNotes(
+        address,
+        aztecScanOriginNotes.comment
+      ).catch(err => {
+        logger.warn(`Failed to store origin notes: ${err}`);
+      });
+    }
+
 
     const metaDataStoreRes = await db.l2Contract.updateContractInstanceDeployerMetadata({
       address,
-      ...deployerMetadataToStore,
+      ...cleanDeployerMetadata,
     });
 
     if (!metaDataStoreRes) {

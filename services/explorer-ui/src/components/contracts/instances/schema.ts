@@ -9,4 +9,14 @@ export const contractInstanceSchema = z.object({
   version: z.number(),
   contractClassId: z.string(),
   deployer: z.string(),
+  contractType: z.number().optional(),
+  aztecScanOriginNotes: z.object({
+    comment: z.string(),
+  }).optional(),
 });
+
+// Helper function to determine if a contract is a trusted portal
+export const isTrustedPortal = (contract: ContractInstance): boolean => {
+  // ContractType.Portal is 1 (enum value)
+  return contract.contractType === 1;
+};

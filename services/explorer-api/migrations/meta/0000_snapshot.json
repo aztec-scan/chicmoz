@@ -1,5 +1,5 @@
 {
-  "id": "ddaa99f7-4c79-4d73-bb14-9057612a22d0",
+  "id": "5f88d4ff-b4ac-4d2f-b3e8-ab569619b91d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1070,6 +1070,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "contract_type": {
+          "name": "contract_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1090,6 +1096,52 @@
           "columns": ["contract_class_id", "version"]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "public.l2_contract_instance_aztec_scan_origin_notes": {
+      "name": "l2_contract_instance_aztec_scan_origin_notes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploaded_at": {
+          "name": "uploaded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "l2_contract_instance_aztec_scan_origin_notes_address_l2_contract_instance_deployed_address_fk": {
+          "name": "l2_contract_instance_aztec_scan_origin_notes_address_l2_contract_instance_deployed_address_fk",
+          "tableFrom": "l2_contract_instance_aztec_scan_origin_notes",
+          "tableTo": "l2_contract_instance_deployed",
+          "columnsFrom": ["address"],
+          "columnsTo": ["address"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "public.l2_contract_instance_deployed": {

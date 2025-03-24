@@ -100,7 +100,21 @@ export const l2ContractInstanceDeployerMetadataTable = pgTable(
     repoUrl: varchar("repo_url").notNull(),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
     reviewedAt: timestamp("reviewed_at"),
-    aztecScanOriginNotes: jsonb("aztec_scan_origin_notes"),
+  },
+);
+
+// Create a separate table for Aztec Scan Origin Notes
+export const l2ContractInstanceAztecScanOriginNotes = pgTable(
+  "l2_contract_instance_aztec_scan_origin_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    address: generateAztecAddressColumn("address")
+      .notNull()
+      .references(() => l2ContractInstanceDeployed.address, {
+        onDelete: "cascade",
+      }),
+    comment: varchar("comment").notNull(),
+    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
   },
 );
 
@@ -136,6 +150,18 @@ export const l2ContractInstanceDeployedRelations = relations(
         l2ContractClassRegistered.contractClassId,
         l2ContractClassRegistered.version,
       ],
+    }),
+    originNotes: one(l2ContractInstanceAztecScanOriginNotes),
+  }),
+);
+
+// Add relation for origin notes to contract instance
+export const l2ContractInstanceAztecScanOriginNotesRelations = relations(
+  l2ContractInstanceAztecScanOriginNotes,
+  ({ one }) => ({
+    contractInstance: one(l2ContractInstanceDeployed, {
+      fields: [l2ContractInstanceAztecScanOriginNotes.address],
+      references: [l2ContractInstanceDeployed.address],
     }),
   }),
 );

@@ -24,6 +24,12 @@ export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   repoUrl: z.string(),
   uploadedAt: z.coerce.date(),
   reviewedAt: z.coerce.date().optional(),
+  // Add these fields to the schema for TypeScript, even though 
+  // they'll be stored in separate tables
+  contractType: z.number().optional(),
+  aztecScanOriginNotes: z.object({
+    comment: z.string()
+  }).optional(),
 });
 
 export type ChicmozL2ContractInstanceDeployerMetadata = z.infer<

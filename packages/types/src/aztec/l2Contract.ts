@@ -44,6 +44,8 @@ export enum ContractType {
   Portal
 }
 
+export const contractTypeSchema = z.nativeEnum(ContractType);
+
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
   contractClassId: frSchema,
@@ -53,7 +55,7 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   packedBytecode: bufferSchema,
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
-  contractType: z.nativeEnum(ContractType).nullable().optional(),
+  contractType: contractTypeSchema.nullable().optional(),
   isToken: z.boolean().nullable().optional(), // removeme
   whyNotToken: z.string().nullable().optional(), // removeme
 });

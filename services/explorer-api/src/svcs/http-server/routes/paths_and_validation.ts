@@ -4,6 +4,7 @@ import {
   chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozL2SequencerSchema,
   chicmozSearchQuerySchema,
+  contractTypeSchema,
   ethAddressSchema,
   hexStringSchema,
 } from "@chicmoz-pkg/types";
@@ -156,9 +157,17 @@ export const getContractClassUnconstrainedFunctionSchema =
   getContractClassPrivateFunctionSchema;
 
 export const postContrctClassArtifactSchema = z.lazy(() => {
+  let overrideContractType = {};
+  if (process.env.NODE_ENV === "production") {
+    // TODO: this should be stored also!!!
+    overrideContractType = {
+      contractType: contractTypeSchema.optional(),
+    };
+  }
   return z.object({
     ...getContractClassSchema.shape,
     body: z.object({
+      ...overrideContractType,
       stringifiedArtifactJson: z.string(),
     }),
   });
@@ -169,6 +178,12 @@ export const getContractInstancesByContractClassIdSchema =
 export const getVerifiedContractInstanceSchema = getContractInstanceSchema;
 
 export const postVerifiedContractInstanceSchema = z.lazy(() => {
+  let overrideAztecOriginNotes = {};
+  if (process.env.NODE_ENV === "production") {
+    overrideAztecOriginNotes = {
+      aztecOriginNotes: true,
+    };
+  }
   return z.object({
     ...getContractInstanceSchema.shape,
     body: z.object({
@@ -176,9 +191,10 @@ export const postVerifiedContractInstanceSchema = z.lazy(() => {
         .omit({
           address: true,
           uploadedAt: true,
+          ...overrideAztecOriginNotes,
         })
         .optional(),
-      verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema
+      verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema,
     }),
   });
 });

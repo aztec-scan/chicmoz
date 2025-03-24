@@ -172,7 +172,15 @@ CREATE TABLE IF NOT EXISTS "l2_contract_class_registered" (
 	"packed_bytecode" "bytea" NOT NULL,
 	"artifact_json" varchar,
 	"artifact_contract_name" varchar,
+	"contract_type" integer,
 	CONSTRAINT "contract_class_id_version" PRIMARY KEY("contract_class_id","version")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "l2_contract_instance_aztec_scan_origin_notes" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"address" varchar(66) NOT NULL,
+	"comment" varchar NOT NULL,
+	"uploaded_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (
@@ -425,6 +433,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "l2_contract_class_registered" ADD CONSTRAINT "l2_contract_class_registered_block_hash_l2Block_hash_fk" FOREIGN KEY ("block_hash") REFERENCES "public"."l2Block"("hash") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "l2_contract_instance_aztec_scan_origin_notes" ADD CONSTRAINT "l2_contract_instance_aztec_scan_origin_notes_address_l2_contract_instance_deployed_address_fk" FOREIGN KEY ("address") REFERENCES "public"."l2_contract_instance_deployed"("address") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
