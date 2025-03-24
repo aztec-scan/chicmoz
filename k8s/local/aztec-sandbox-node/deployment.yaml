@@ -24,6 +24,8 @@ spec:
               memory: 1500Mi
               cpu: 1000m
           args:
+            - node
+            - ./aztec/dest/bin/index.js
             - start
             - --sandbox
           ports:
