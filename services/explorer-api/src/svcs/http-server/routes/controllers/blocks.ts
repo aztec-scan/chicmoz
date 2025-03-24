@@ -5,6 +5,7 @@ import {
   getBlocksSchema,
 } from "../paths_and_validation.js";
 import { blockResponse, blockResponseArray, dbWrapper } from "./utils/index.js";
+import { jsonStringify } from "@chicmoz-pkg/types";
 
 export const openapi_GET_LATEST_HEIGHT = {
   "/l2/latest-height": {
@@ -28,7 +29,7 @@ export const openapi_GET_LATEST_HEIGHT = {
 
 export const GET_LATEST_HEIGHT = asyncHandler(async (_req, res) => {
   const latestHeight = await dbWrapper.getLatestHeight();
-  res.status(200).send(JSON.stringify(latestHeight));
+  res.status(200).send(jsonStringify(latestHeight));
 });
 
 export const openapi_GET_LATEST_BLOCK = {
@@ -45,7 +46,7 @@ export const GET_LATEST_BLOCK = asyncHandler(async (_req, res) => {
     ["l2", "blocks"],
     db.l2Block.getLatestBlock
   );
-  if (!latestBlockData) throw new Error("Latest block not found");
+  if (!latestBlockData) { throw new Error("Latest block not found"); }
   res.status(200).send(latestBlockData);
 });
 
