@@ -116,7 +116,7 @@ export const l2ContractInstanceAztecScanNotes = pgTable(
     origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
     relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
-    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(), // TODO: rename to updatedAt
   },
 );
 
@@ -157,7 +157,6 @@ export const l2ContractInstanceDeployedRelations = relations(
   }),
 );
 
-// Add relation for origin notes to contract instance
 export const l2ContractInstanceAztecScanNotesRelations = relations(
   l2ContractInstanceAztecScanNotes,
   ({ one }) => ({

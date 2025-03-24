@@ -172,7 +172,7 @@ export const postVerifiedContractInstanceSchema = z.lazy(() => {
   let overrideAztecOriginNotes = {};
   if (process.env.NODE_ENV === "production") {
     overrideAztecOriginNotes = {
-      aztecOriginNotes: true,
+      aztecScanNotes: true
     };
   }
   return z.object({

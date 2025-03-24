@@ -1,6 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
 import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { logger } from "../../../../logger.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceAztecScanNotes,
@@ -14,6 +15,18 @@ export const getL2DeployedContractInstanceByAddress = async (
   address: HexString,
   includeArtifactJson?: boolean,
 ): Promise<ChicmozL2ContractInstanceDeluxe | null> => {
+  const allAztecScanNotes = await db()
+    .select()
+    .from(l2ContractInstanceAztecScanNotes)
+    .where(eq(l2ContractInstanceAztecScanNotes.address, address))
+    .execute();
+  logger.info(`getL2DeployedContractInstanceByAddress allAztecScanNotes: ${allAztecScanNotes.length}`);
+  logger.info(`getL2DeployedContractInstanceByAddress allAztecScanNotes: ${JSON.stringify(allAztecScanNotes)}`);
+  logger.info(
+    `getL2DeployedContractInstanceByAddress this aztecScanNotes: ${JSON.stringify(
+      allAztecScanNotes.find((note) => note.address === address),
+    )}`,
+  );
   const result = await db()
     .select({
       instance: getTableColumns(l2ContractInstanceDeployed),
@@ -65,6 +78,10 @@ export const getL2DeployedContractInstanceByAddress = async (
     .where(eq(l2ContractInstanceDeployed.address, address))
     .orderBy(desc(l2ContractInstanceDeployed.version))
     .limit(1);
+
+  if (result.length === 0) {
+    return null;
+  }
 
   const {
     instance,

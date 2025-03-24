@@ -30,17 +30,7 @@ export const aztecScanNoteSchema = z.object({
 });
 
 export type AztecScanNote = z.infer<typeof aztecScanNoteSchema>;
-//│ run-migrations file:///usr/main/packages/types/build/aztec/special.js:35                                                                                                                                                                                   │
-//│ run-migrations     ...chicmozL2ContractInstanceDeployedEventSchema.shape,                                                                                                                                                                                  │
-//│ run-migrations        ^                                                                                                                                                                                                                                    │
-//│ run-migrations                                                                                                                                                                                                                                             │
-//│ run-migrations ReferenceError: Cannot access 'chicmozL2ContractInstanceDeployedEventSchema' before initialization                                                                                                                                          │
-//│ run-migrations     at file:///usr/main/packages/types/build/aztec/special.js:35:8                                                                                                                                                                          │
-//│ run-migrations     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)                                                                                                                                                                          │
-//│ run-migrations     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)                                                                                                                                                                  │
-//│ run-migrations     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)                                                                                                                                                         │
-//│ run-migrations                                                                                                                                                                                                                                             │
-//│ run-migrations Node.js v20.19.0
+
 export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   // TODO: update schema with better/more info
   address: z.lazy(

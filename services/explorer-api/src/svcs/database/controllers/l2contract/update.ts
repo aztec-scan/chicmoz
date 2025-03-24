@@ -3,6 +3,7 @@ import {
   AztecScanNote,
   NODE_ENV,
   NodeEnv,
+  aztecScanNoteSchema,
   chicmozL2ContractInstanceDeployerMetadataSchema,
   type ChicmozL2ContractInstanceDeployerMetadata,
 } from "@chicmoz-pkg/types";
@@ -13,6 +14,49 @@ import {
   l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployerMetadataTable,
 } from "../../../database/schema/l2contract/index.js";
+
+export const updateContractInstanceAztecScanNotes = async ({
+  contractInstanceAddress,
+  aztecScanNotes,
+}: {
+  contractInstanceAddress: string;
+  aztecScanNotes: AztecScanNote | undefined | null;
+}): Promise<AztecScanNote | undefined> => {
+  if (!aztecScanNotes) {
+    logger.warn(`No notes provided for contract: ${contractInstanceAddress}`);
+    return undefined;
+  }
+  logger.info(`Storing notes for contract: ${JSON.stringify(aztecScanNotes)}`);
+  const res = await db().transaction(async (dbTx) => {
+    const existingNotes = await dbTx
+      .select()
+      .from(l2ContractInstanceAztecScanNotes)
+      .where(
+        eq(l2ContractInstanceAztecScanNotes.address, contractInstanceAddress),
+      )
+      .limit(1);
+    if (existingNotes.length > 0) {
+      return await dbTx
+        .update(l2ContractInstanceAztecScanNotes)
+        .set({
+          ...aztecScanNotes,
+          uploadedAt: new Date(),
+        })
+        .where(eq(l2ContractInstanceAztecScanNotes.id, existingNotes[0].id))
+        .returning();
+    } else {
+      return await dbTx
+        .insert(l2ContractInstanceAztecScanNotes)
+        .values({
+          ...aztecScanNotes,
+          address: contractInstanceAddress,
+          uploadedAt: new Date(),
+        })
+        .returning();
+    }
+  });
+  return aztecScanNoteSchema.parse(res[0]);
+};
 
 export const updateContractInstanceDeployerMetadata = async (
   contractDeployerMetadata: Omit<
@@ -78,61 +122,4 @@ export const updateContractInstanceDeployerMetadata = async (
     .array(chicmozL2ContractInstanceDeployerMetadataSchema)
     .parse(res)
     .at(0);
-};
-
-/**
- * Store origin notes for a contract instance
- * @param address Contract address
- * @param comment Note about the contract's origin/trust status
- * @returns The stored origin note record
- */
-export const storeContractInstanceAztecScanNotes = async ({
-  address,
-  aztecScanNotes,
-}: {
-  address: string;
-  aztecScanNotes: AztecScanNote;
-}): Promise<
-  { id: string; address: string; comment: string; uploadedAt: Date } | undefined
-> => {
-  // In production mode, skip this operation for now
-  if (NODE_ENV === NodeEnv.PROD) {
-    logger.warn(`Skipping origin notes in production for address: ${address}`);
-    return undefined;
-  }
-
-  logger.info(`Storing origin notes for contract: ${address}`);
-
-  const res = await db().transaction(async (dbTx) => {
-    // Check if there are existing notes
-    const existingNotes = await dbTx
-      .select()
-      .from(l2ContractInstanceAztecScanNotes)
-      .where(eq(l2ContractInstanceAztecScanNotes.address, address))
-      .limit(1);
-
-    if (existingNotes.length > 0) {
-      // Update existing notes
-      return await dbTx
-        .update(l2ContractInstanceAztecScanNotes)
-        .set({
-          ...aztecScanNotes,
-          uploadedAt: new Date(),
-        })
-        .where(eq(l2ContractInstanceAztecScanNotes.id, existingNotes[0].id))
-        .returning();
-    } else {
-      // Insert new notes
-      return await dbTx
-        .insert(l2ContractInstanceAztecScanNotes)
-        .values({
-          ...aztecScanNotes,
-          address,
-          uploadedAt: new Date(),
-        })
-        .returning();
-    }
-  });
-
-  return res[0];
 };

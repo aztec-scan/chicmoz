@@ -281,8 +281,6 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
           dbContractInstance.version,
         ),
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    logger.info(JSON.parse(contractClassString!)?.contractType);
     const dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
       JSON.parse(contractClassString!),
     );
@@ -398,16 +396,21 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       );
     }
 
+    logger.info(`\n\n===========
+${JSON.stringify(deployerMetadata)}
+    \n\n`);
+
     const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
-    if (aztecScanNotes?.origin) {
-      await db.l2Contract
-        .storeContractInstanceAztecScanNotes({
-          address,
-          aztecScanNotes,
-        })
-        .catch((err) => {
-          logger.warn(`Failed to store origin notes: ${err}`);
-        });
+    const aztecScanNotesRes =
+      await db.l2Contract.updateContractInstanceAztecScanNotes({
+        contractInstanceAddress: address,
+        aztecScanNotes,
+      });
+    logger.info(JSON.stringify(aztecScanNotesRes));
+
+    if (!aztecScanNotesRes) {
+      res.status(500).send("Failed to update aztec scan notes");
+      return;
     }
 
     const metaDataStoreRes =
@@ -421,6 +424,26 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       return;
     }
 
+    logger.info(`\n\n===========
+                ADDRESS: ${address}
+      ${JSON.stringify(
+        chicmozL2ContractInstanceDeluxeSchema.parse({
+          ...dbContractInstance,
+          ...dbContractClass,
+          verifiedDeploymentArguments: {
+            ...verificationPayload,
+            address,
+            stringifiedArtifactJson: artifactString,
+          },
+          aztecScanNotes,
+          deployerMetadata: {
+            ...deployerMetadata,
+            address,
+            uploadedAt: metaDataStoreRes.uploadedAt,
+          },
+        }).aztecScanNotes,
+      )}\n\n`);
+
     const newContractInstance = JSON.stringify(
       chicmozL2ContractInstanceDeluxeSchema.parse({
         ...dbContractInstance,
@@ -430,6 +453,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
           address,
           stringifiedArtifactJson: artifactString,
         },
+        aztecScanNotes,
         deployerMetadata: {
           ...deployerMetadata,
           address,

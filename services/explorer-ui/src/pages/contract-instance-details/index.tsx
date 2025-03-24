@@ -24,7 +24,7 @@ export const ContractInstanceDetails: FC = () => {
   if (error) return <div>Error</div>;
   if (!contractInstanceDetails) return <div>No data</div>;
 
-  const { verifiedDeploymentArguments, deployerMetadata } =
+  const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
     getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
 
   return (
@@ -48,6 +48,7 @@ export const ContractInstanceDetails: FC = () => {
         <TabsSection
           verifiedDeploymentData={verifiedDeploymentArguments}
           deployerMetadata={deployerMetadata}
+          aztecScanNotes={aztecScanNotes}
         />
       </div>
     </div>
