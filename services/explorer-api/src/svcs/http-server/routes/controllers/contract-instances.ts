@@ -398,14 +398,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       );
     }
 
-    // Remove contractType and aztecScanNotes from deployerMetadata
     const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
-
-    logger.info(
-      `POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: ${JSON.stringify(
-        aztecScanNotes,
-      )}`,
-    );
     if (aztecScanNotes?.origin) {
       await db.l2Contract
         .storeContractInstanceAztecScanNotes({

@@ -133,8 +133,6 @@ export const run = async () => {
     logger.error(`Failed to verify token contract instance deployment: ${err}`);
   });
 
-  await new Promise((resolve) => setTimeout(resolve, 10000));
-
   const tokenBridgeContractLoggingName = "Token Bridge Contract";
   const bridge = await deployContract({
     contractLoggingName: tokenBridgeContractLoggingName,

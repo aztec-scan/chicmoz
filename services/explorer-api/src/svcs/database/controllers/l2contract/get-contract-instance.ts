@@ -3,6 +3,7 @@ import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
 import { and, desc, eq, getTableColumns } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
+  l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployed,
   l2ContractInstanceDeployerMetadataTable,
   l2ContractInstanceVerifiedDeploymentArguments,
@@ -49,11 +50,16 @@ export const getL2DeployedContractInstanceByAddress = async (
     )
     .leftJoin(
       l2ContractInstanceDeployerMetadataTable,
-      and(
-        eq(
-          l2ContractInstanceDeployed.address,
-          l2ContractInstanceDeployerMetadataTable.address,
-        ),
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceDeployerMetadataTable.address,
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceAztecScanNotes,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceAztecScanNotes.address,
       ),
     )
     .where(eq(l2ContractInstanceDeployed.address, address))

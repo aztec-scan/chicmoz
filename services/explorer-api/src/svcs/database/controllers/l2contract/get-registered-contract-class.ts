@@ -8,7 +8,6 @@ import {
 } from "@chicmoz-pkg/types";
 import { and, desc, eq } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
-import { logger } from "../../../../logger.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
@@ -66,10 +65,6 @@ export const getL2RegisteredContractClasses = async ({
         r.artifactJson,
       ) as unknown as NoirCompiledContract;
       const contractTypeResult = getContractType(parsedArtifactJson);
-      logger.info(
-        "contractTypeResult====>",
-        JSON.stringify(Object.keys(contractTypeResult)),
-      );
       tokenData = {
         ...contractTypeResult,
       };

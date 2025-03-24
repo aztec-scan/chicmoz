@@ -209,16 +209,11 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
     const parsed = JSON.parse(
       body.stringifiedArtifactJson,
     ) as unknown as NoirCompiledContract;
-    const contractType = getContractType(parsed);
-    logger.info(
-      `POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT: ${JSON.stringify(
-        Object.keys(contractType),
-      )} (${JSON.stringify(contractType).substring(0, 100)}....)`,
-    );
+    const contractTypeResult = getContractType(parsed);
     const completeContractClass = {
       ...dbContractClass,
       artifactJson: body.stringifiedArtifactJson,
-      contractType,
+      contractType: contractTypeResult.contractType,
     };
 
     setEntry(
