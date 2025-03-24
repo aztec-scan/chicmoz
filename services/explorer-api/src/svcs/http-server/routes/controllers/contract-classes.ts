@@ -1,7 +1,6 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
 import {
-  IsTokenArtifactResult,
-  isTokenArtifact,
+  getContractType,
   verifyArtifactPayload,
 } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
@@ -210,15 +209,11 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
     const parsed = JSON.parse(
       body.stringifiedArtifactJson,
     ) as unknown as NoirCompiledContract;
-    // TODO: instead store ContractType
-    const isTokenArtifactRes = isTokenArtifact(parsed) as IsTokenArtifactResult;
-    //const contractType = getArtifactContractType(parsed);
+    const contractType = getContractType(parsed);
     const completeContractClass = {
       ...dbContractClass,
       artifactJson: body.stringifiedArtifactJson,
-      //contractType,
-      isToken: isTokenArtifactRes.result,
-      whyNotToken: isTokenArtifactRes.details,
+      contractType,
     };
 
     setEntry(

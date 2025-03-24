@@ -40,8 +40,9 @@ export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer
 >;
 
 export enum ContractType {
+  Unknown,
   Token,
-  Portal
+  TokenBridge
 }
 
 export const contractTypeSchema = z.nativeEnum(ContractType);

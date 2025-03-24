@@ -1,18 +1,16 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
-import {
-  IsTokenArtifactResult,
-  isTokenArtifact,
-} from "@chicmoz-pkg/contract-verification";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   chicmozL2ContractClassRegisteredEventSchema,
   type ChicmozL2ContractClassRegisteredEvent,
+  ContractType,
 } from "@chicmoz-pkg/types";
 import { and, desc, eq } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
+import {getContractType} from "@chicmoz-pkg/contract-verification";
 
 export const getL2RegisteredContractClass = async (
   classId: ChicmozL2ContractClassRegisteredEvent["contractClassId"],
@@ -59,30 +57,17 @@ export const getL2RegisteredContractClasses = async ({
 
   return result.map((r) => {
     let tokenData = {
-      isToken: false,
+      contractType: ContractType.Unknown,
       artifactContractName: "",
-      whyNotToken: "No artifactJson found",
     };
     if (includeArtifactJson && r.artifactJson) {
       const parsedArtifactJson = JSON.parse(
         r.artifactJson
       ) as unknown as NoirCompiledContract;
-      const isTokenResult = isTokenArtifact(
-        parsedArtifactJson
-      ) as IsTokenArtifactResult;
-      if (isTokenResult.result) {
-        tokenData = {
-          isToken: true,
-          artifactContractName: isTokenResult.contractName,
-          whyNotToken: isTokenResult.details,
-        };
-      } else {
-        tokenData = {
-          isToken: false,
-          artifactContractName: isTokenResult.contractName,
-          whyNotToken: isTokenResult.details,
-        };
-      }
+      const contractTypeResult = getContractType(parsedArtifactJson);
+      tokenData = {
+        ...contractTypeResult,
+      };
     }
     return chicmozL2ContractClassRegisteredEventSchema.parse({
       ...r,

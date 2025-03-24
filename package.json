@@ -24,6 +24,7 @@
   "scripts": {
     "build:packages": "yarn workspaces foreach --parallel --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",
     "lint:packages": "yarn workspaces foreach --parallel --all --topological-dev --verbose --include '@chicmoz-pkg/*' run lint",
+    "build-all-slow": "yarn workspaces foreach --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build && yarn workspaces foreach --all --topological-dev --verbose --include 'services/*' run build",
     "build": "yarn workspaces foreach --parallel --all --topological-dev --verbose run build",
     "lint": "yarn workspaces foreach --parallel --all --topological-dev --verbose run lint",
     "test": "yarn workspaces foreach --parallel --all --topological-dev --verbose run test-once",
