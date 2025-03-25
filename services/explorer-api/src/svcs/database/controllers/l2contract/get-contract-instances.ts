@@ -12,6 +12,8 @@ import {
 import { getBlocksWhereRange } from "../utils.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
 
+const DEFAULT_SORT = (desc(l2ContractInstanceDeployed.version), desc(l2Block.height));
+
 export const getL2DeployedContractInstances = async ({
   fromHeight,
   toHeight,
@@ -67,7 +69,7 @@ export const getL2DeployedContractInstances = async ({
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .where(whereRange)
-    .orderBy(desc(l2ContractInstanceDeployed.version), desc(l2Block.height))
+    .orderBy(DEFAULT_SORT)
     .limit(DB_MAX_CONTRACTS);
 
   const parsed = result.map((r) => {
@@ -156,6 +158,7 @@ export const getL2DeployedContractInstancesByContractClassId = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      blockHeight: l2Block.height,
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
@@ -170,6 +173,10 @@ export const getL2DeployedContractInstancesByContractClassId = async (
           l2ContractClassRegistered.version,
         ),
       ),
+    )
+    .leftJoin(
+      l2Block,
+      eq(l2ContractInstanceDeployed.blockHash, l2Block.hash),
     )
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
@@ -190,7 +197,7 @@ export const getL2DeployedContractInstancesByContractClassId = async (
       ),
     )
     .where(eq(l2ContractInstanceDeployed.contractClassId, contractClassId))
-    .orderBy(desc(l2ContractInstanceDeployed.version))
+    .orderBy(DEFAULT_SORT)
     .limit(DB_MAX_CONTRACTS);
 
   return result.map((r) => {

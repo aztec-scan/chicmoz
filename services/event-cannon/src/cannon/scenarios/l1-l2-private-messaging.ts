@@ -127,6 +127,12 @@ export const run = async () => {
       aztecScanNotes: {
         origin: "EXAMPLE: this was published on X with 1M likes",
         comment: "This is a commonly used token for testing",
+        relatedL1ContractAddresses: [
+          {
+            address: underlyingERC20Address.toString(),
+            note: "L1 ERC20 contract",
+          },
+        ],
       },
     },
   }).catch((err) => {
@@ -181,6 +187,16 @@ export const run = async () => {
         origin: "EXAMPLE: this was published on X with 1M likes",
         comment:
           "This is a commonly used token bridge for moving assets between L1 and L2",
+        relatedL1ContractAddresses: [
+          {
+            address: underlyingERC20Address.toString(),
+            note: "L1 ERC20 contract",
+          },
+          {
+            address: tokenPortalAddress.toString(),
+            note: "Token Portal contract",
+          },
+        ],
       },
     },
   }).catch((err) => {

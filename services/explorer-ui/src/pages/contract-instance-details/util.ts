@@ -138,20 +138,20 @@ export const getVerifiedContractInstanceDeploymentData = (
         },
       ]
     : undefined;
-  const aztecScanNotes = data.deployerMetadata?.aztecScanNotes
+  const aztecScanNotes = data.aztecScanNotes
     ? [
         {
           label: "ORIGIN",
-          value: data.deployerMetadata.aztecScanNotes.origin,
+          value: data.aztecScanNotes.origin,
         },
         {
           label: "COMMENT",
-          value: data.deployerMetadata.aztecScanNotes.comment,
+          value: data.aztecScanNotes.comment,
         },
         {
           label: "RELATED L1 CONTRACT ADDRESSES",
           value: JSON.stringify(
-            data.deployerMetadata.aztecScanNotes.relatedL1ContractAddresses,
+            data.aztecScanNotes.relatedL1ContractAddresses,
             null,
             2,
           ) ?? "None",

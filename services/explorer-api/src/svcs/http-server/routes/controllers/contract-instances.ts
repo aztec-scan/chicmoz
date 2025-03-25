@@ -70,6 +70,12 @@ export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
       includeArtifactJson,
     ),
   );
+  logger.info(`\n\nThis is what we are getting from the cache/DB for ADDRESS: ${address}
+${JSON.stringify(
+  chicmozL2ContractInstanceDeluxeSchema.parse(JSON.parse(instanceData ?? ""))
+    .aztecScanNotes,
+)}\n\n`);
+
   res.status(200).send(instanceData);
 });
 
@@ -396,10 +402,6 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       );
     }
 
-    logger.info(`\n\n===========
-${JSON.stringify(deployerMetadata)}
-    \n\n`);
-
     const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
     const aztecScanNotesRes =
       await db.l2Contract.updateContractInstanceAztecScanNotes({
@@ -424,25 +426,24 @@ ${JSON.stringify(deployerMetadata)}
       return;
     }
 
-    logger.info(`\n\n===========
-                ADDRESS: ${address}
-      ${JSON.stringify(
-        chicmozL2ContractInstanceDeluxeSchema.parse({
-          ...dbContractInstance,
-          ...dbContractClass,
-          verifiedDeploymentArguments: {
-            ...verificationPayload,
-            address,
-            stringifiedArtifactJson: artifactString,
-          },
-          aztecScanNotes,
-          deployerMetadata: {
-            ...deployerMetadata,
-            address,
-            uploadedAt: metaDataStoreRes.uploadedAt,
-          },
-        }).aztecScanNotes,
-      )}\n\n`);
+    logger.info(`\n\nThis is what we are setting the cache to for ADDRESS: ${address}
+${JSON.stringify(
+  chicmozL2ContractInstanceDeluxeSchema.parse({
+    ...dbContractInstance,
+    ...dbContractClass,
+    verifiedDeploymentArguments: {
+      ...verificationPayload,
+      address,
+      stringifiedArtifactJson: artifactString,
+    },
+    aztecScanNotes,
+    deployerMetadata: {
+      ...deployerMetadata,
+      address,
+      uploadedAt: metaDataStoreRes.uploadedAt,
+    },
+  }).aztecScanNotes,
+)}\n\n`);
 
     const newContractInstance = JSON.stringify(
       chicmozL2ContractInstanceDeluxeSchema.parse({
