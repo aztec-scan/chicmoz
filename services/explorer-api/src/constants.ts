@@ -8,6 +8,16 @@ export const AZTEC_SCAN_NOTES: Record<
 > = {
   MAINNET: {},
   SANDBOX: {
+    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+      origin: "This is an example note",
+      comment: "EXAMPLE",
+      relatedL1ContractAddresses: [
+        {
+          address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          note: "This is an example note for the L1-contract",
+        },
+      ],
+    },
   },
   DEVNET: {},
   SP_TESTNET: {},
