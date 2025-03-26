@@ -32,10 +32,12 @@ spec:
             - name: pxe-port
               containerPort: 8081
               protocol: TCP
+
           env:
+            # NOTE: So far this file in aztec-packages seems to be closest to the truth: yarn-project/aztec/src/cli/aztec_start_options.ts
             #- name: DEBUG
             #  value: "aztec:*"
-            - name: ETHEREUM_HOST
+            - name: ETHEREUM_HOSTS
               value: "http://anvil-ethereum-node:8545"
             - name: L1_CHAIN_ID
               value: "31337"
