@@ -53,7 +53,7 @@ export const run = async () => {
   await publicDeployAccounts(wallet, wallets, pxe);
 
   const { walletClient, publicClient } = createL1Clients(
-    ETHEREUM_RPC_URL,
+    [ETHEREUM_RPC_URL],
     MNEMONIC
   );
 
@@ -103,7 +103,7 @@ export const run = async () => {
   registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
-    token.instance.contractClassId.toString(),
+    token.instance.currentContractClassId.toString(),
     token.instance.version
   ).catch((err) => {
     logger.error(err);
@@ -125,28 +125,25 @@ export const run = async () => {
   registerContractClassArtifact(
     tokenBridgeContractLoggingName,
     tokenBridgeContractArtifactJson,
-    bridge.instance.contractClassId.toString(),
+    bridge.instance.currentContractClassId.toString(),
     bridge.instance.version
   ).catch((err) => {
     logger.error(err);
   });
 
-  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt())
-    throw new Error(`Token admin is not ${owner.toString()}`);
+  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt()) { throw new Error(`Token admin is not ${owner.toString()}`); }
 
   if (
     !(
       (await bridge.methods.get_config().simulate()) as { token: AztecAddress }
     ).token.equals(token.address)
-  )
-    throw new Error(`Bridge token is not ${token.address.toString()}`);
+  ) { throw new Error(`Bridge token is not ${token.address.toString()}`); }
 
   await logAndWaitForTx(
     token.methods.set_minter(bridge.address, true).send(),
     "setting minter"
   );
-  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n)
-    throw new Error(`Bridge is not a minter`);
+  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n) { throw new Error(`Bridge is not a minter`); }
 
   const { l1ContractAddresses } = await pxe.getNodeInfo();
 
@@ -192,7 +189,7 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount
+    l1TokenBalance - bridgeAmount
   );
   const msgHash = Fr.fromString(claim.messageHash);
 
@@ -247,9 +244,8 @@ export const run = async () => {
       await user1Wallet.setPublicAuthWit(
         {
           caller: l2Bridge.address,
-          action: await l2Token.methods
-            .burn_public(ownerAddress, withdrawAmount, nonce)
-            .request(),
+          action: l2Token.methods
+            .burn_public(ownerAddress, withdrawAmount, nonce),
         },
         true
       )
@@ -272,11 +268,11 @@ export const run = async () => {
   );
   assert(
     (await l2Token.methods.balance_of_public(ownerAddress).simulate()) ===
-      bridgeAmount - withdrawAmount
+    bridgeAmount - withdrawAmount
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount
+    l1TokenBalance - bridgeAmount
   );
 
   const [l2ToL1MessageIndex, siblingPath] =
@@ -287,8 +283,7 @@ export const run = async () => {
 
   const wait = 10000;
   logger.info(
-    `waiting ${
-      wait / 1000
+    `waiting ${wait / 1000
     } seconds for the message to be available for consumption...`
   );
   await new Promise((resolve) => setTimeout(resolve, wait));
@@ -302,6 +297,6 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount + withdrawAmount
+    l1TokenBalance - bridgeAmount + withdrawAmount
   );
 };

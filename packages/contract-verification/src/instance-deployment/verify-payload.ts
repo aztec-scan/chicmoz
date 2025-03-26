@@ -2,14 +2,14 @@ import {
   AztecAddress,
   Fr,
   NoirCompiledContract,
+  PublicKeys,
   loadContractArtifact,
 } from "@aztec/aztec.js";
 import {
-  PublicKeys,
   computeContractAddressFromInstance,
   computeInitializationHash,
   computeSaltedInitializationHash,
-} from "@aztec/circuits.js";
+} from "@aztec/stdlib/contract";
 import { VerifyInstanceDeploymentPayload } from "../types.js";
 
 export const verifyInstanceDeploymentPayload = async (
@@ -42,7 +42,7 @@ export const verifyInstanceDeploymentPayload = async (
     deployer: AztecAddress.fromString(deployer),
   });
   const computedAddress = await computeContractAddressFromInstance({
-    contractClassId: Fr.fromString(contractClassId),
+    originalContractClassId: Fr.fromString(contractClassId),
     saltedInitializationHash: saltedHash,
     publicKeys: PublicKeys.fromString(publicKeysString),
   });
