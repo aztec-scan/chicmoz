@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { aztecAddressSchema } from "../general.js";
 import { chicmozL2BlockSchema } from "./l2Block.js";
+import { aztecScanNoteSchema } from "./special.js";
 import { bufferSchema, concatFrPointSchema, frSchema } from "./utils.js";
 
 export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
@@ -11,6 +12,7 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   contractClassId: frSchema,
   initializationHash: frSchema,
   deployer: aztecAddressSchema,
+  aztecScanNotes: aztecScanNoteSchema.optional(),
   publicKeys: z.object({
     masterNullifierPublicKey: concatFrPointSchema,
     masterIncomingViewingPublicKey: concatFrPointSchema,
@@ -23,18 +25,26 @@ export type ChicmozL2ContractInstanceDeployedEvent = z.infer<
   typeof chicmozL2ContractInstanceDeployedEventSchema
 >;
 
-export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema = z.object({
-  id: z.string().uuid().optional(),
-  address: aztecAddressSchema,
-  salt: frSchema,
-  deployer: aztecAddressSchema,
-  publicKeysString: z.string(),
-  constructorArgs: z.string().array(),
-});
+export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema =
+  z.object({
+    id: z.string().uuid().optional(),
+    address: aztecAddressSchema,
+    salt: frSchema,
+    deployer: aztecAddressSchema,
+    publicKeysString: z.string(),
+    constructorArgs: z.string().array(),
+  });
 
-export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer<
-  typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema
->;
+export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema =
+  z.infer<typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema>;
+
+export enum ContractType {
+  Unknown = "Unknown",
+  Token = "Token",
+  TokenBridge = "TokenBridge",
+}
+
+export const contractTypeSchema = z.nativeEnum(ContractType);
 
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
@@ -45,8 +55,7 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   packedBytecode: bufferSchema,
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
-  isToken: z.boolean().nullable().optional(),
-  whyNotToken: z.string().nullable().optional(),
+  contractType: contractTypeSchema.nullable().optional(),
 });
 
 export type ChicmozL2ContractClassRegisteredEvent = z.infer<

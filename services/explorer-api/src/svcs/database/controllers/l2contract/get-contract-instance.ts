@@ -3,6 +3,7 @@ import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
 import { and, desc, eq, getTableColumns } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
+  l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployed,
   l2ContractInstanceDeployerMetadataTable,
   l2ContractInstanceVerifiedDeploymentArguments,
@@ -23,6 +24,7 @@ export const getL2DeployedContractInstanceByAddress = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      aztecScanNotes: getTableColumns(l2ContractInstanceAztecScanNotes),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
@@ -49,22 +51,32 @@ export const getL2DeployedContractInstanceByAddress = async (
     )
     .leftJoin(
       l2ContractInstanceDeployerMetadataTable,
-      and(
-        eq(
-          l2ContractInstanceDeployed.address,
-          l2ContractInstanceDeployerMetadataTable.address,
-        ),
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceDeployerMetadataTable.address,
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceAztecScanNotes,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceAztecScanNotes.address,
       ),
     )
     .where(eq(l2ContractInstanceDeployed.address, address))
     .orderBy(desc(l2ContractInstanceDeployed.version))
     .limit(1);
 
+  if (result.length === 0) {
+    return null;
+  }
+
   const {
     instance,
     class: contractClass,
     verifiedDeploymentArguments,
     deployerMetadata,
+    aztecScanNotes,
   } = result[0];
 
   return parseDeluxe({
@@ -72,5 +84,6 @@ export const getL2DeployedContractInstanceByAddress = async (
     instance,
     verifiedDeploymentArguments,
     deployerMetadata,
+    aztecScanNotes,
   });
 };

@@ -29,6 +29,7 @@ import {
   logAndWaitForTx,
   publicDeployAccounts,
   registerContractClassArtifact,
+  verifyContractInstanceDeployment,
 } from "./utils/index.js";
 
 const MNEMONIC = "test test test test test test test test test test test junk";
@@ -49,7 +50,7 @@ export const run = async () => {
 
   const { walletClient, publicClient } = createL1Clients(
     ETHEREUM_RPC_URL,
-    MNEMONIC
+    MNEMONIC,
   );
   logger.info("🐰 Deploying contracts...");
 
@@ -58,10 +59,10 @@ export const run = async () => {
     publicClient,
     TestERC20Abi,
     TestERC20Bytecode,
-    ["Test Token", "TEST", walletClient.account.address]
+    ["Test Token", "TEST", walletClient.account.address],
   ).then(({ address }) => address);
   logger.info(
-    `🐰 Underlying ERC20 deployed at ${underlyingERC20Address.toString()}`
+    `🐰 Underlying ERC20 deployed at ${underlyingERC20Address.toString()}`,
   );
 
   logger.info("🐰 Deploying TokenPortal contract...");
@@ -70,7 +71,7 @@ export const run = async () => {
     publicClient,
     TokenPortalAbi,
     TokenPortalBytecode,
-    []
+    [],
   );
   logger.info(`🐰 TokenPortal deployed at ${tokenPortalAddress.toString()}`);
   const tokenPortal = getContract({
@@ -90,18 +91,52 @@ export const run = async () => {
         owner,
         TOKEN_NAME,
         TOKEN_SYMBOL,
-        18
+        18,
       ).send();
     },
     node: getAztecNodeClient(),
   });
+
   registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
     token.instance.contractClassId.toString(),
-    token.instance.version
+    token.instance.version,
   ).catch((err) => {
     logger.error(err);
+  });
+  verifyContractInstanceDeployment({
+    contractLoggingName: tokenContractLoggingName,
+    contractInstanceAddress: token.address.toString(),
+    verifyArgs: {
+      artifactObj: tokenContractArtifactJson,
+      publicKeysString: token.instance.publicKeys.toString(),
+      deployer: token.instance.deployer.toString(),
+      salt: token.instance.salt.toString(),
+      constructorArgs: [owner.toString(), TOKEN_NAME, TOKEN_SYMBOL, "18"],
+    },
+    deployerMetadata: {
+      contractIdentifier: tokenContractLoggingName,
+      details: "Standard Token contract for L1-L2 messaging",
+      creatorName: "Event Cannon",
+      creatorContact:
+        "email: test@test.com, discord: test#1234, telegram: @test",
+      appUrl: "https://aztec.network",
+      repoUrl: "https://github.com/AztecProtocol/aztec-packages",
+      reviewedAt: new Date(),
+      aztecScanNotes: {
+        origin: "This contract was deployed by the event-cannon",
+        comment: "IT'S USING THE OVERRIDE METHOD ONLY AVAILABLE IN DEV",
+        relatedL1ContractAddresses: [
+          {
+            address: underlyingERC20Address.toString(),
+            note: "L1 ERC20 contract",
+          },
+        ],
+      },
+    },
+  }).catch((err) => {
+    logger.error(`Failed to verify token contract instance deployment: ${err}`);
   });
 
   const tokenBridgeContractLoggingName = "Token Bridge Contract";
@@ -111,7 +146,7 @@ export const run = async () => {
       return TokenBridgeContract.deploy(
         wallet,
         token.address,
-        tokenPortalAddress
+        tokenPortalAddress,
       ).send();
     },
     node: getAztecNodeClient(),
@@ -121,27 +156,73 @@ export const run = async () => {
     tokenBridgeContractLoggingName,
     tokenBridgeContractArtifactJson,
     bridge.instance.contractClassId.toString(),
-    bridge.instance.version
+    bridge.instance.version,
   ).catch((err) => {
     logger.error(err);
   });
 
-  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt())
+  verifyContractInstanceDeployment({
+    contractLoggingName: tokenBridgeContractLoggingName,
+    contractInstanceAddress: bridge.address.toString(),
+    verifyArgs: {
+      artifactObj: tokenBridgeContractArtifactJson,
+      publicKeysString: bridge.instance.publicKeys.toString(),
+      deployer: bridge.instance.deployer.toString(),
+      salt: bridge.instance.salt.toString(),
+      constructorArgs: [
+        token.address.toString(),
+        tokenPortalAddress.toString(),
+      ],
+    },
+    deployerMetadata: {
+      contractIdentifier: tokenBridgeContractLoggingName,
+      details: "Token Bridge contract for L1-L2 token transfers",
+      creatorName: "Event Cannon",
+      creatorContact:
+        "email: test@test.com, discord: test#1234, telegram: @test",
+      appUrl: "https://aztec.network",
+      repoUrl: "https://github.com/AztecProtocol/aztec-packages",
+      reviewedAt: new Date(),
+      aztecScanNotes: {
+        origin: "This contract was deployed by the event-cannon",
+        comment: "IT'S USING THE OVERRIDE METHOD ONLY AVAILABLE IN DEV",
+        relatedL1ContractAddresses: [
+          {
+            address: underlyingERC20Address.toString(),
+            note: "L1 ERC20 contract",
+          },
+          {
+            address: tokenPortalAddress.toString(),
+            note: "Token Portal contract",
+          },
+        ],
+      },
+    },
+  }).catch((err) => {
+    logger.error(
+      `Failed to verify bridge contract instance deployment: ${err}`,
+    );
+  });
+
+  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt()) {
     throw new Error(`Token admin is not ${owner.toString()}`);
+  }
 
   if (
     !(
       (await bridge.methods.get_config().simulate()) as { token: AztecAddress }
     ).token.equals(token.address)
-  )
+  ) {
     throw new Error(`Bridge token is not ${token.address.toString()}`);
+  }
 
   await logAndWaitForTx(
     token.methods.set_minter(bridge.address, true).send(),
-    "setting minter"
+    "setting minter",
   );
-  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n)
+  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n) {
     throw new Error(`Bridge is not a minter`);
+  }
 
   const { l1ContractAddresses } = await pxe.getNodeInfo();
 
@@ -151,7 +232,7 @@ export const run = async () => {
       underlyingERC20Address.toString(),
       bridge.address.toString(),
     ],
-    {}
+    {},
   );
 
   const l1TokenPortalManager = new L1TokenPortalManager(
@@ -160,7 +241,7 @@ export const run = async () => {
     l1ContractAddresses.outboxAddress,
     publicClient,
     walletClient,
-    createLogger("L1TokenPortalManager-private")
+    createLogger("L1TokenPortalManager-private"),
   );
   const l1TokenManager = l1TokenPortalManager.getTokenManager();
   const ownerAddress = wallet.getAddress();
@@ -170,7 +251,7 @@ export const run = async () => {
   const bridgeAmount = 100n;
 
   const ethAccount = EthAddress.fromString(
-    (await walletClient.getAddresses())[0]
+    (await walletClient.getAddresses())[0],
   );
 
   const l2Token = token;
@@ -184,11 +265,11 @@ export const run = async () => {
   const claim = await l1TokenPortalManager.bridgeTokensPrivate(
     ownerAddress,
     bridgeAmount,
-    shouldMint
+    shouldMint,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount
+      l1TokenBalance - bridgeAmount,
   );
   const msgHash = Fr.fromString(claim.messageHash);
 
@@ -196,35 +277,35 @@ export const run = async () => {
   await retryUntil(
     async () => await aztecNode.isL1ToL2MessageSynced(msgHash),
     "message sync",
-    10
+    10,
   );
 
   await logAndWaitForTx(
     l2Token.methods.mint_to_public(ownerAddress, 0n).send(),
-    "minting public tokens A"
+    "minting public tokens A",
   );
   await logAndWaitForTx(
     l2Token.methods.mint_to_public(ownerAddress, 0n).send(),
-    "minting public tokens B"
+    "minting public tokens B",
   );
 
   logger.info("checking message leaf index matches...");
   const maybeIndexAndPath = await aztecNode.getL1ToL2MessageMembershipWitness(
     "latest",
-    msgHash
+    msgHash,
   );
   assert(maybeIndexAndPath !== undefined);
   assert(maybeIndexAndPath[0] === claim.messageLeafIndex);
 
   logger.info(
-    "🐰 3. consuming L1 -> L2 message and minting private tokens on L2"
+    "🐰 3. consuming L1 -> L2 message and minting private tokens on L2",
   );
   const { claimAmount, claimSecret, messageLeafIndex } = claim;
   await logAndWaitForTx(
     l2Bridge.methods
       .claim_private(ownerAddress, claimAmount, claimSecret, messageLeafIndex)
       .send(),
-    "claiming private tokens"
+    "claiming private tokens",
   );
 
   const l2TokenBalance = (await l2Token.methods
@@ -247,7 +328,7 @@ export const run = async () => {
     withdrawAmount,
     ethAccount,
     l2Bridge.address,
-    EthAddress.ZERO
+    EthAddress.ZERO,
   );
   const l2TxReceipt = await logAndWaitForTx(
     l2Bridge.methods
@@ -256,32 +337,32 @@ export const run = async () => {
         ethAccount,
         withdrawAmount,
         EthAddress.ZERO,
-        nonce
+        nonce,
       )
       .send(),
-    "exiting to L1"
+    "exiting to L1",
   );
 
   assert(
     (await l2Token.methods.balance_of_private(ownerAddress).simulate()) ===
-      bridgeAmount - withdrawAmount
+      bridgeAmount - withdrawAmount,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount
+      l1TokenBalance - bridgeAmount,
   );
 
   const [l2ToL1MessageIndex, siblingPath] =
     await aztecNode.getL2ToL1MessageMembershipWitness(
       l2TxReceipt.blockNumber!,
-      l2ToL1Message
+      l2ToL1Message,
     );
 
   const wait = 10000;
   logger.info(
     `waiting ${
       wait / 1000
-    } seconds for the message to be available for consumption...`
+    } seconds for the message to be available for consumption...`,
   );
   await new Promise((resolve) => setTimeout(resolve, wait));
 
@@ -290,11 +371,11 @@ export const run = async () => {
     ethAccount,
     BigInt(l2TxReceipt.blockNumber!),
     l2ToL1MessageIndex,
-    siblingPath
+    siblingPath,
   );
 
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount + withdrawAmount
+      l1TokenBalance - bridgeAmount + withdrawAmount,
   );
 };
