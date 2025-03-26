@@ -34,7 +34,7 @@ spec:
               protocol: TCP
 
           env:
-            # NOTE: So far this file in aztec-packages seems to be closest to the truth: yarn-project/aztec/src/cli/aztec_start_options.ts
+            # NOTE: So far this file in aztec-packages seems to be closest to the truth: yarn-project/aztec/src/cli/aztec_start_options.ts (also boxes/docker-compose.yml is a good place)
             #- name: DEBUG
             #  value: "aztec:*"
             - name: ETHEREUM_HOSTS
