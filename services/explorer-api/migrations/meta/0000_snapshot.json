@@ -1,5 +1,5 @@
 {
-  "id": "ec1360b8-dd11-41e6-a7b1-601c5d582a9e",
+  "id": "5c6befc9-4068-4794-a31e-402bd1140b8f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1135,6 +1135,13 @@
         },
         "uploaded_at": {
           "name": "uploaded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,

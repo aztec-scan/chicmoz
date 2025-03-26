@@ -125,8 +125,8 @@ export const run = async () => {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
       aztecScanNotes: {
-        origin: "EXAMPLE: this was published on X with 1M likes",
-        comment: "This is a commonly used token for testing",
+        origin: "This contract was deployed by the event-cannon",
+        comment: "IT'S USING THE OVERRIDE METHOD ONLY AVAILABLE IN DEV",
         relatedL1ContractAddresses: [
           {
             address: underlyingERC20Address.toString(),
@@ -184,9 +184,8 @@ export const run = async () => {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
       aztecScanNotes: {
-        origin: "EXAMPLE: this was published on X with 1M likes",
-        comment:
-          "This is a commonly used token bridge for moving assets between L1 and L2",
+        origin: "This contract was deployed by the event-cannon",
+        comment: "IT'S USING THE OVERRIDE METHOD ONLY AVAILABLE IN DEV",
         relatedL1ContractAddresses: [
           {
             address: underlyingERC20Address.toString(),

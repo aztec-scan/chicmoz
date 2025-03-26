@@ -404,7 +404,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
 
     const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
     const aztecScanNotesRes =
-      await db.l2Contract.updateContractInstanceAztecScanNotes({
+      await db.l2.updateContractInstanceAztecScanNotes({
         contractInstanceAddress: address,
         aztecScanNotes,
       });

@@ -27,6 +27,8 @@ export const aztecScanNoteSchema = z.object({
     )
     .nullable()
     .optional(),
+  uploadedAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 export type AztecScanNote = z.infer<typeof aztecScanNoteSchema>;
@@ -44,7 +46,10 @@ export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   repoUrl: z.string(),
   uploadedAt: z.coerce.date(),
   reviewedAt: z.coerce.date().optional(),
-  contractType: z.lazy(() => contractTypeSchema).nullable().optional(),
+  contractType: z
+    .lazy(() => contractTypeSchema)
+    .nullable()
+    .optional(),
   aztecScanNotes: aztecScanNoteSchema.nullable().optional(),
 });
 
@@ -57,7 +62,8 @@ export const chicmozL2ContractInstanceDeluxeSchema = z.lazy(() => {
     ...chicmozL2ContractInstanceDeployedEventSchema.shape,
     ...chicmozL2ContractClassRegisteredEventSchema.shape,
     blockHeight: chicmozL2BlockSchema.shape.height.optional(),
-    deployerMetadata: chicmozL2ContractInstanceDeployerMetadataSchema.optional(),
+    deployerMetadata:
+      chicmozL2ContractInstanceDeployerMetadataSchema.optional(),
     verifiedDeploymentArguments:
       chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema.optional(),
   });

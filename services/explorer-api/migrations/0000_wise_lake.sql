@@ -182,7 +182,8 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_aztec_scan_notes" (
 	"origin" varchar NOT NULL,
 	"comment" varchar NOT NULL,
 	"related_l1_contract_addresses" jsonb,
-	"uploaded_at" timestamp DEFAULT now() NOT NULL
+	"uploaded_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (

@@ -107,7 +107,7 @@ export const l2ContractInstanceDeployerMetadataTable = pgTable(
 export const l2ContractInstanceAztecScanNotes = pgTable(
   "l2_contract_instance_aztec_scan_notes",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().defaultRandom(), // NOTE: not using address as FK enables us to store notes on startup (without a finished indexing process of the chain)
     address: generateAztecAddressColumn("address")
       .notNull()
       .references(() => l2ContractInstanceDeployed.address, {
@@ -116,7 +116,11 @@ export const l2ContractInstanceAztecScanNotes = pgTable(
     origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
     relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
-    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(), // TODO: rename to updatedAt
+    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
 );
 
