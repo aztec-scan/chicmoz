@@ -9,8 +9,8 @@ export const getContractType = (
   contractType: ContractType;
   artifactContractName: string;
 } => {
-  // Check if it's a token
   const isToken = isTokenArtifact(contract);
+  const artifactContractName = isToken.contractName ?? "";
   if (isToken.result) {
     return {
       contractType: ContractType.Token,
@@ -20,7 +20,6 @@ export const getContractType = (
   // eslint-disable-next-line no-console
   console.log("isToken", isToken.details);
 
-  // Check if it's a token bridge
   const isTokenBridge = isTokenBridgeArtifact(contract);
   if (isTokenBridge.result) {
     return {
@@ -32,6 +31,6 @@ export const getContractType = (
   console.log("isTokenBridge", isTokenBridge.details);
   return {
     contractType: ContractType.Unknown,
-    artifactContractName: "", // TODO: might be able to get name anyway?
+    artifactContractName,
   };
 };
