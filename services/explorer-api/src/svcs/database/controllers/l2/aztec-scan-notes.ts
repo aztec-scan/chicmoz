@@ -15,7 +15,6 @@ export const updateContractInstanceAztecScanNotes = async ({
     logger.warn(`No notes provided for contract: ${contractInstanceAddress}`);
     return undefined;
   }
-  logger.info(`Storing notes for contract: ${JSON.stringify(aztecScanNotes)}`);
   const res = await db().transaction(async (dbTx) => {
     const existingNotes = await dbTx
       .select()

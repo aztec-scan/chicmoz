@@ -14,7 +14,6 @@ const text = {
   version: "VERSION",
   contractClassId: "CONTRACT CLASS ID",
   deployer: "DEPLOYER",
-  trusted: "TRUSTED",
 };
 
 export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
