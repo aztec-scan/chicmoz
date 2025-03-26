@@ -1,13 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "~/components/data-table";
-import { routes } from "~/routes/__root";
-//import { type ContractInstance, isTrustedPortal } from "./schema";
 import { CopyableText } from "~/components/copy-text";
+import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { routes } from "~/routes/__root";
 import { getClassVersionLink } from "../utils";
-import { ContractInstance } from "./schema";
-//import { Badge } from "~/components/ui/badge";
+import { type ContractInstance } from "./schema";
 
 const text = {
   address: "ADDRESS",
