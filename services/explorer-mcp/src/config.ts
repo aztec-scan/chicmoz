@@ -7,5 +7,6 @@ export const ENDPOINTS = {
   getL2LatestBlock: "l2/blocks/latest",
   getL2TxEffectByHash: "l2/tx-effects/",
   getL2SearchResult: "l2/search",
-  getL2ChainInfo: "l2/info"
+  getL2ChainInfo: "l2/info",
+  getL2ChainErrors: "l2/errors",
 };
