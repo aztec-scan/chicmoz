@@ -70,7 +70,6 @@ export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
       includeArtifactJson,
     ),
   );
-
   res.status(200).send(instanceData);
 });
 
