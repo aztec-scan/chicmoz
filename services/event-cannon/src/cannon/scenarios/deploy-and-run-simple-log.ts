@@ -3,7 +3,7 @@ import {
   type NoirCompiledContract,
   waitForPXE,
 } from "@aztec/aztec.js";
-import { SimpleLoggingContract } from "../../artifacts/SimpleLogging.js";
+import { SimpleLoggingContract } from "../../artifacts/SimpleLogging-v1.js";
 import artifactJson from "../../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json" assert { type: "json" };
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";

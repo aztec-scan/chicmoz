@@ -30,7 +30,7 @@ import {
   generateVerifyInstancePayload,
   generateVerifyInstanceUrl,
 } from "@chicmoz-pkg/contract-verification";
-import { ChicmozL2ContractInstanceDeployerMetadata } from "@chicmoz-pkg/types";
+import { ChicmozL2ContractInstanceDeployerMetadata, jsonStringify } from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { callExplorerApi } from "./explorer-api.js";
@@ -130,6 +130,8 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
       .map((e) => e.toContractClassPublic()),
   );
 
+  logger.info(`  Found ${contractClasses.length} contract classes`);
+  logger.info(`${jsonStringify(contractClassLogs)}`);
   return contractClasses[0]?.id.toString();
 };
 
@@ -145,8 +147,10 @@ export const deployContract = async <T extends Contract>({
   node: AztecNode;
 }): Promise<T> => {
   logger.info(`DEPLOYING ${contractLoggingName}`);
+
   const contractTx = deployFn();
   const hash = (await contractTx.getTxHash()).toString();
+
   logger.info(`📫 ${contractLoggingName} txHash: ${hash} (Deploying contract)`);
   const deployedContract = await contractTx.deployed();
   const receipt = await contractTx.wait();
@@ -154,7 +158,7 @@ export const deployContract = async <T extends Contract>({
   const newClassId = await getNewContractClassId(node, receipt.blockNumber);
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
-    : `(🍎 attached classId: ${deployedContract.instance.currentContractClassId.toString()})`;
+    : `(🍎 attached currentclassId: ${deployedContract.instance.currentContractClassId.toString()})`;
   logger.info(
     `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );

@@ -31,19 +31,21 @@ spec:
             - name: EXPLORER_API_URL
               value: "http://explorer-api-sandbox-service:80"
             - name: INIFINITE_LOOP
-              value: "true"
+              value: "false"
             - name: SCENARIO_SIMPLE_DEFAULT_ACCOUNT
-              value: "true"
+              value: "false"
             - name: SCENARIO_TOKEN_CONTRACT
-              value: "true"
+              value: "false"
             - name: SCENARIO_FUNCTIONS_VOTE
-              value: "true"
+              value: "false"
             - name: SCENARIO_SIMPLE_CONTRACT
-              value: "true"
+              value: "false"
             - name: SCENARIO_SIMPLE_LOG
               value: "true"
             - name: SCENARIO_L1L2_PUBLIC_MESSAGING
-              value: "true"
+              value: "false"
             - name: SCENARIO_L1L2_PRIVATE_MESSAGING
-              value: "true"
+              value: "false"
+            - name: SCENARIO_DEPLOY_AND_UPDATE
+              value: "false"
 status: {}
