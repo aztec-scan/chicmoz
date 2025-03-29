@@ -8,13 +8,10 @@ export const contractClassLogsSchema = z.object({
 });
 
 const logsSchema = (logEntrySchema: typeof contractClassLogsSchema) =>
-  z.object({
-    functionLogs: z.array(
-      z.object({
-        logs: z.array(logEntrySchema),
-      })
-    ),
-  });
+  z.array(
+    z.object({
+      logs: z.array(logEntrySchema),
+    }).optional());
 
 export const chicmozL2PendingTxSchema = z.object({
   // TODO: this schema needs to be properly defined, perhaps merged with txEffect

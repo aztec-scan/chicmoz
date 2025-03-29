@@ -41,8 +41,9 @@ export const chicmozSearchResultsSchema = z.lazy(() =>
       ),
       registeredContractClasses: z.array(
         z.object({
-          contractClassId:
-            chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
+          originalContractClassId:
+            chicmozL2ContractClassRegisteredEventSchema.shape.originalContractClassId,
+          currentContractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.currentContractClassId,
           version: chicmozL2ContractClassRegisteredEventSchema.shape.version,
           partOfBlockWithHash: chicmozL2BlockSchema.shape.hash.optional(),
         })

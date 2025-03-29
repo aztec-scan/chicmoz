@@ -8,7 +8,8 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
   version: z.number(), // TODO: rename to contractClassVersion
   salt: frSchema,
-  contractClassId: frSchema,
+  currentContractClassId: frSchema,
+  originalContractClassId: frSchema,
   initializationHash: frSchema,
   deployer: aztecAddressSchema,
   publicKeys: z.object({
@@ -38,7 +39,8 @@ export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer
 
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
-  contractClassId: frSchema,
+  currentContractClassId: frSchema,
+  originalContractClassId: frSchema,
   version: z.number(),
   artifactHash: frSchema,
   privateFunctionsRoot: frSchema,
@@ -58,8 +60,9 @@ const functionSelectorSchema = z.object({
 });
 
 export const chicmozL2PrivateFunctionBroadcastedEventSchema = z.object({
-  contractClassId:
-    chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
+  originalContractClassId:
+    chicmozL2ContractClassRegisteredEventSchema.shape.originalContractClassId,
+  currentContractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.currentContractClassId,
   artifactMetadataHash: frSchema,
   unconstrainedFunctionsArtifactTreeRoot: frSchema,
   privateFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
@@ -79,8 +82,9 @@ export type ChicmozL2PrivateFunctionBroadcastedEvent = z.infer<
 >;
 
 export const chicmozL2UnconstrainedFunctionBroadcastedEventSchema = z.object({
-  contractClassId:
-    chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
+  currentContractClassId:
+    chicmozL2ContractClassRegisteredEventSchema.shape.currentContractClassId,
+  originalContractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.originalContractClassId,
   artifactMetadataHash: frSchema,
   privateFunctionsArtifactTreeRoot: frSchema,
   artifactFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?

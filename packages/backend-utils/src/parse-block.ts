@@ -35,6 +35,7 @@ export const parseBlock = async (
       txEffects: getTxEffectWithHashes(b.body.txEffects),
     },
   };
+
   return chicmozL2BlockSchema.parse({
     hash: blockHash.toString(),
     height: b.number,

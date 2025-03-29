@@ -33,19 +33,19 @@ spec:
             - name: INIFINITE_LOOP
               value: "false"
             - name: SCENARIO_SIMPLE_DEFAULT_ACCOUNT
-              value: "false"
+              value: "true"
             - name: SCENARIO_TOKEN_CONTRACT
-              value: "false"
+              value: "true"
             - name: SCENARIO_FUNCTIONS_VOTE
-              value: "false"
+              value: "true"
             - name: SCENARIO_SIMPLE_CONTRACT
-              value: "false"
+              value: "true"
             - name: SCENARIO_SIMPLE_LOG
               value: "true"
             - name: SCENARIO_L1L2_PUBLIC_MESSAGING
-              value: "false"
+              value: "true"
             - name: SCENARIO_L1L2_PRIVATE_MESSAGING
-              value: "false"
+              value: "true"
             - name: SCENARIO_DEPLOY_AND_UPDATE
               value: "false"
 status: {}
