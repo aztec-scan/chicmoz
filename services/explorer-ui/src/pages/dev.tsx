@@ -1,6 +1,7 @@
 import { CHICMOZ_TYPES_AZTEC_VERSION } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
-import { type FC } from "react";
+import { type FC, useState } from "react";
+import { TestContractUI } from "~/components/test/test-contract-ui";
 import {
   useChainErrors,
   useChainInfo,
@@ -39,11 +40,32 @@ export const DevPage: FC = () => {
     error: sequencersError,
   } = useSequencers();
 
+  const [showTestContractUI, setShowTestContractUI] = useState(false);
+
   return (
     <div className="flex flex-col items-center">
       <h1>Dev Page</h1>
 
       <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2">
+        <h2>Test Components</h2>
+        <div className="flex items-center gap-4 mt-4">
+          <button
+            onClick={() => setShowTestContractUI(!showTestContractUI)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {showTestContractUI ? "Hide Contract UI Test" : "Show Contract UI Test"}
+          </button>
+        </div>
+      </div>
+
+      {showTestContractUI && (
+        <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
+          <h2>Contract UI Test</h2>
+          <TestContractUI />
+        </div>
+      )}
+
+      <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
         <h2>Misc</h2>
         <pre>
           <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>
