@@ -909,3 +909,114 @@ await db.insert(tableSchema).values({
 ```
 
 The shared packages significantly reduce code duplication across services while ensuring consistency in implementation patterns. They abstract common concerns like message passing, data persistence, and type safety, allowing service developers to focus on business logic.
+
+# TODO: ArtifactJson UI Improvement
+
+This heading outlines a plan to improve the display of artifactJson in the explorer-ui contract-class details view.
+
+## Current Implementation
+
+The current implementation:
+
+1. Fetches the full artifactJson from the backend when `includeArtifactJson` is set to true
+2. Parses the JSON on the frontend to categorize functions (private, public, unconstrained)
+3. Displays the entire raw JSON in the "artifactJson" tab
+4. Shows categorized functions in separate tabs
+
+## Issues
+
+1. The artifactJson can be large and contains information not relevant to most users
+2. The entire JSON is transmitted to the frontend, even when only specific parts are needed
+3. The UI display is not user-friendly (raw JSON)
+4. No filtering or search capabilities for large artifact JSONs
+
+## Improvement Plan
+
+### Phase 1: Enhanced Frontend Display
+
+1. **Create a more structured UI for the artifactJson tab:**
+
+   - Create a new component `EnhancedJsonView.tsx` that replaces the current `JsonTab` component
+   - Implement collapsible sections for different parts of the artifact
+   - Add syntax highlighting for better readability
+   - Implement basic filtering/search functionality
+
+2. **Hide non-relevant information by default:**
+
+   - Identify and hide internal details, debug information, and compiler metadata
+   - Show a summary of error codes instead of listing all of them
+   - Provide a "Show All" option for users who want to see the complete JSON
+
+3. **Implementation steps:**
+   - Modify `services/explorer-ui/src/pages/contract-class-details/tabs/json-tab.tsx`
+   - Update `services/explorer-ui/src/pages/contract-class-details/tabs-section.tsx` to use the enhanced view
+   - Update the parsing logic in `services/explorer-ui/src/pages/contract-class-details/util.ts`
+
+### Phase 2: Backend Optimization
+
+1. **Implement selective artifactJson fetching in the API:**
+
+   - Modify the backend API to support fetching specific parts of the artifactJson
+   - Add query parameters to control what parts should be included (e.g., `?include=functions,metadata&exclude=errorCodes`)
+   - Implement proper caching for frequently accessed parts
+
+2. **Update frontend to use selective fetching:**
+
+   - Modify `useContractClass` hook to accept parameters for selective fetching
+   - Implement lazy loading for different sections of the artifact
+   - Add a mechanism to fetch additional details on demand
+
+3. **Implementation steps:**
+   - Modify the backend API endpoint in explorer-api service
+   - Update `services/explorer-ui/src/api/contract.ts` to support selective fetching
+   - Update the hooks and UI components to use the new API capabilities
+
+## Code Organization ✅
+
+Code structure has been reorganized for better maintainability:
+
+1. **JSON Viewer Components:** ✅
+
+   - Created a new directory: `services/explorer-ui/src/pages/contract-class-details/json-viewer/`
+   - Split into multiple files:
+     - `index.tsx` - Main component that orchestrates everything
+     - `collapsible-section.tsx` - Reusable component for collapsible JSON sections
+     - `filter-bar.tsx` - Component for search and filtering
+     - `json-display.tsx` - Component for the actual JSON display with highlighting
+
+2. **Utility Functions:** ✅
+
+   - Split the current `util.ts` into:
+     - `artifact-parser.ts` - Functions for parsing and categorizing artifact JSON
+     - `display-utils.ts` - Utils for transforming data for display
+     - `key-value-helpers.ts` - Key-value data transformation functions
+
+3. **Tab Structure:**
+   - Updated `json-tab.tsx` to use the new JsonViewer component
+
+## Starting Points
+
+1. **Begin with code reorganization:** ✅
+
+   - Refactored the existing code according to the structure outlined above
+   - Ensured the functionality remains the same after refactoring
+   - Verified that the code builds successfully after refactoring
+
+2. **Frontend enhancement (Phase 1):** ⏩ (In Progress)
+
+   - The basic components in the `json-viewer` directory have been created
+   - Next steps:
+     - Enhance the JsonViewer component to parse and intelligently display artifact JSON
+     - Implement filtering for relevant vs. non-relevant information
+     - Add proper collapsible sections for different parts of the artifact JSON
+
+3. **Files to focus on next:**
+
+   - `services/explorer-ui/src/pages/contract-class-details/json-viewer/index.tsx` - Enhance the main viewer
+   - `services/explorer-ui/src/pages/contract-class-details/artifact-parser.ts` - Add smarter parsing
+   - Consider creating additional components for specific sections of the artifact JSON
+
+4. **Research needed:**
+   - Analyze the structure of actual artifactJson payloads to better understand what information is relevant
+   - Explore UI libraries for better JSON visualization (e.g., react-json-view)
+   - Consider performance implications for large JSON objects
