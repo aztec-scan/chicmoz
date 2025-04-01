@@ -19,7 +19,7 @@ import { controllers as db } from "../../../database/index.js";
 import {
   getContractInstanceSchema,
   getContractInstancesByBlockHashSchema,
-  getContractInstancesByContractClassIdSchema,
+  getContractInstancesByCurrentContractClassIdSchema,
   getContractInstancesSchema,
   postVerifiedContractInstanceSchema,
 } from "../paths_and_validation.js";
@@ -185,14 +185,14 @@ export const openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = {
 
 export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
   async (req, res) => {
-    const { classId } =
-      getContractInstancesByContractClassIdSchema.parse(req).params;
+    const { currentContractClassId } =
+      getContractInstancesByCurrentContractClassIdSchema.parse(req).params;
     const includeArtifactJson = false;
     const instances = await dbWrapper.getLatest(
-      ["l2", "contract-instances", "class", classId],
+      ["l2", "contract-instances", "class", currentContractClassId],
       () =>
-        db.l2Contract.getL2DeployedContractInstancesByContractClassId(
-          classId,
+        db.l2Contract.getL2DeployedContractInstancesByCurrentContractClassId(
+          currentContractClassId,
           includeArtifactJson,
         ),
     );
@@ -272,12 +272,12 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       [
         "l2",
         "contract-classes",
-        dbContractInstance.contractClassId,
+        dbContractInstance.currentContractClassId,
         dbContractInstance.version,
       ],
       () =>
         db.l2Contract.getL2RegisteredContractClass(
-          dbContractInstance.contractClassId,
+          dbContractInstance.currentContractClassId,
           dbContractInstance.version,
         ),
     );
@@ -293,7 +293,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       res
         .status(400)
         .send(
-          `artifactJson is missing in the request and could not be found for contract class ${dbContractInstance.contractClassId} version ${dbContractInstance.version}`,
+          `artifactJson is missing in the request and could not be found for contract class ${dbContractInstance.currentContractClassId} version ${dbContractInstance.version}`,
         );
       return;
     }
@@ -330,7 +330,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         [
           "l2",
           "contract-classes",
-          dbContractInstance.contractClassId,
+          dbContractInstance.currentContractClassId,
           dbContractInstance.version,
         ],
         JSON.stringify(completeContractClass),
@@ -339,7 +339,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         logger.warn(`Failed to cache contract class: ${err}`);
       });
       await db.l2Contract.addArtifactJson(
-        dbContractClass.contractClassId,
+        dbContractClass.currentContractClassId,
         dbContractClass.version,
         stringifiedArtifactJson,
       );
@@ -363,7 +363,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       ...verificationPayload,
       stringifiedArtifactJson: artifactString,
       instanceAddress: address,
-      contractClassId: dbContractInstance.contractClassId,
+      contractClassId: dbContractInstance.currentContractClassId,
     });
 
     if (!isVerifiedDeploymentPayload) {

@@ -23,7 +23,7 @@ const getBlockHashByHeight = async (
     .from(l2Block)
     .where(eq(l2Block.height, height))
     .execute();
-  if (res.length === 0) return [];
+  if (res.length === 0) { return []; }
   return [{ hash: res[0].hash }];
 };
 
@@ -37,7 +37,7 @@ const matchBlock = async (
     .from(l2Block)
     .where(eq(l2Block.hash, hash))
     .execute();
-  if (res.length === 0) return [];
+  if (res.length === 0) { return []; }
   return [{ hash: res[0].hash }];
 };
 
@@ -51,23 +51,24 @@ const matchTxEffect = async (
     .from(txEffect)
     .where(or(eq(txEffect.txHash, hash), eq(txEffect.txHash, hash)))
     .execute();
-  if (res.length === 0) return [];
+  if (res.length === 0) { return []; }
   return [{ txHash: res[0].hash }];
 };
 
 const matchContractClass = async (
-  contractClassId: HexString
+  currentContractClassId: HexString
 ): Promise<ChicmozSearchResults["results"]["registeredContractClasses"]> => {
   const res = await db()
     .select({
-      contractClassId: l2ContractClassRegistered.contractClassId,
+      originalContractClassID: l2ContractClassRegistered.originalContractClassId,
+      currentContractClassID: l2ContractClassRegistered.currentContractClassId,
       version: l2ContractClassRegistered.version,
     })
     .from(l2ContractClassRegistered)
-    .where(eq(l2ContractClassRegistered.contractClassId, contractClassId))
+    .where(eq(l2ContractClassRegistered.currentContractClassId, currentContractClassId))
     .execute();
-  if (res.length === 0) return [];
-  return [{ contractClassId: res[0].contractClassId, version: res[0].version }];
+  if (res.length === 0) { return []; }
+  return [{ originalContractClassId: res[0].originalContractClassID, currentContractClassId: res[0].currentContractClassID, version: res[0].version }];
 };
 
 const matchContractInstance = async (
@@ -80,7 +81,7 @@ const matchContractInstance = async (
     .from(l2ContractInstanceDeployed)
     .where(eq(l2ContractInstanceDeployed.address, contractInstanceId))
     .execute();
-  if (res.length === 0) return [];
+  if (res.length === 0) { return []; }
   return [{ address: res[0].address }];
 };
 

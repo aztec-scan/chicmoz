@@ -55,7 +55,7 @@ export const addArtifactJson = async (
     })
     .where(
       and(
-        eq(l2ContractClassRegistered.contractClassId, contractClassId),
+        eq(l2ContractClassRegistered.currentContractClassId, contractClassId),
         eq(l2ContractClassRegistered.version, version),
       ),
     )

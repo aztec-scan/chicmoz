@@ -92,6 +92,7 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
       )
     )
     .map((log) => PrivateFunctionBroadcastedEvent.fromLog(log));
+
   const unconstrainedFnEvents = contractClassLogs
     .filter((log) =>
       UnconstrainedFunctionBroadcastedEvent.isUnconstrainedFunctionBroadcastedEvent(
@@ -128,6 +129,7 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
     };
   });
 
+
   const parsedContractClasses: ChicmozL2ContractClassRegisteredEvent[] =
     parseObjs(blockHash, contractClassesWithId, (contractClass) =>
       chicmozL2ContractClassRegisteredEventSchema.parse(contractClass)
@@ -151,7 +153,7 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
     parsedContractClasses,
     controllers.l2Contract.storeContractClass,
     "contractClass",
-    "contractClassId"
+    "currentContractClassId",
   );
   await storeObj(
     parsedContractInstances,

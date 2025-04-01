@@ -165,14 +165,15 @@ CREATE TABLE IF NOT EXISTS "tx" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_class_registered" (
 	"block_hash" varchar NOT NULL,
-	"contract_class_id" varchar(66) NOT NULL,
+	"current_contract_class_id" varchar(66) NOT NULL,
+	"original_contract_class_id" varchar(66) NOT NULL,
 	"version" bigint NOT NULL,
 	"artifact_hash" varchar(66) NOT NULL,
 	"private_functions_root" varchar(66) NOT NULL,
 	"packed_bytecode" "bytea" NOT NULL,
 	"artifact_json" varchar,
 	"artifact_contract_name" varchar,
-	CONSTRAINT "contract_class_id_version" PRIMARY KEY("contract_class_id","version")
+	CONSTRAINT "contract_class_id_version" PRIMARY KEY("current_contract_class_id","version")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (
@@ -181,7 +182,8 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (
 	"address" varchar(66) NOT NULL,
 	"version" integer NOT NULL,
 	"salt" varchar(66) NOT NULL,
-	"contract_class_id" varchar(66) NOT NULL,
+	"current_contract_class_id" varchar(66) NOT NULL,
+	"original_contract_class_id" varchar(66) NOT NULL,
 	"initialization_hash" varchar(66) NOT NULL,
 	"deployer" varchar(66) NOT NULL,
 	"masterNullifierPublicKey" varchar(130) NOT NULL,
@@ -214,7 +216,8 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_verified_deployment_arguments" 
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_private_function" (
-	"contract_class_id" varchar(66) NOT NULL,
+	"current_contract_class_id" varchar(66) NOT NULL,
+	"original_contract_class_id" varchar(66) NOT NULL,
 	"artifact_metadata_hash" varchar(66) NOT NULL,
 	"unconstrained_functions_artifact_tree_root" varchar(66) NOT NULL,
 	"private_function_tree_sibling_path" jsonb NOT NULL,
@@ -225,11 +228,12 @@ CREATE TABLE IF NOT EXISTS "l2_private_function" (
 	"private_function_metadata_hash" varchar(66) NOT NULL,
 	"private_function_vk_hash" varchar(66) NOT NULL,
 	"private_function_bytecode" "bytea" NOT NULL,
-	CONSTRAINT "private_function_contract_class" PRIMARY KEY("contract_class_id","private_function_selector_value")
+	CONSTRAINT "private_function_contract_class" PRIMARY KEY("current_contract_class_id","private_function_selector_value")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_unconstrained_function" (
-	"contract_class_id" varchar(66) NOT NULL,
+	"current_contract_class_id" varchar(66) NOT NULL,
+	"original_contract_class_id" varchar(66) NOT NULL,
 	"artifact_metadata_hash" varchar(66) NOT NULL,
 	"private_functions_artifact_tree_root" varchar(66) NOT NULL,
 	"artifact_function_tree_sibling_path" jsonb NOT NULL,
@@ -237,7 +241,7 @@ CREATE TABLE IF NOT EXISTS "l2_unconstrained_function" (
 	"unconstrained_function_selector_value" bigint NOT NULL,
 	"unconstrained_function_metadata_hash" varchar(66) NOT NULL,
 	"unconstrained_function_bytecode" "bytea" NOT NULL,
-	CONSTRAINT "unconstrained_function_contract_class" PRIMARY KEY("contract_class_id","unconstrained_function_selector_value")
+	CONSTRAINT "unconstrained_function_contract_class" PRIMARY KEY("current_contract_class_id","unconstrained_function_selector_value")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l1_generic_contract_event" (
@@ -436,7 +440,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "l2_contract_instance_deployed" ADD CONSTRAINT "contract_class" FOREIGN KEY ("contract_class_id","version") REFERENCES "public"."l2_contract_class_registered"("contract_class_id","version") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "l2_contract_instance_deployed" ADD CONSTRAINT "contract_class" FOREIGN KEY ("current_contract_class_id","version") REFERENCES "public"."l2_contract_class_registered"("current_contract_class_id","version") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

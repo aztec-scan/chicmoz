@@ -6,7 +6,7 @@ import {
   generateL2TopicName,
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import { ChicmozL2Block, ChicmozL2TxEffect } from "@chicmoz-pkg/types";
+import { ChicmozL2Block, ChicmozL2TxEffect, jsonStringify } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
@@ -23,12 +23,13 @@ const truncateString = (value: string) => {
   return `${startHash}...${endHash}`;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hackyLogBlock = (b: L2Block) => {
   const blockString = JSON.stringify(b, null, 2);
   const logString = blockString
     .split(":")
     .map((v) => {
-      if (v.length > 200 && v.includes(",")) {return truncateString(v);}
+      if (v.length > 200 && v.includes(",")) { return truncateString(v); }
 
       return v;
     })
@@ -56,13 +57,13 @@ const onBlock = async ({
   const b = blockFromString(block);
   let parsedBlock;
   try {
+    logger.info(jsonStringify(b));
     parsedBlock = await parseBlock(b, finalizationStatus);
   } catch (e) {
     logger.error(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `Failed to parse block ${blockNumber}: ${(e as Error)?.stack ?? e}`,
     );
-    hackyLogBlock(b);
     return;
   }
   await storeBlock(parsedBlock);

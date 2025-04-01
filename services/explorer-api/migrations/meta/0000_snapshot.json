@@ -1,5 +1,5 @@
 {
-  "id": "ddaa99f7-4c79-4d73-bb14-9057612a22d0",
+  "id": "8408ab2f-f80f-4c79-b65c-859a41475c88",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1029,8 +1029,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contract_class_id": {
-          "name": "contract_class_id",
+        "current_contract_class_id": {
+          "name": "current_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_contract_class_id": {
+          "name": "original_contract_class_id",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1087,7 +1093,7 @@
       "compositePrimaryKeys": {
         "contract_class_id_version": {
           "name": "contract_class_id_version",
-          "columns": ["contract_class_id", "version"]
+          "columns": ["current_contract_class_id", "version"]
         }
       },
       "uniqueConstraints": {}
@@ -1127,8 +1133,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contract_class_id": {
-          "name": "contract_class_id",
+        "current_contract_class_id": {
+          "name": "current_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_contract_class_id": {
+          "name": "original_contract_class_id",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1185,8 +1197,8 @@
           "name": "contract_class",
           "tableFrom": "l2_contract_instance_deployed",
           "tableTo": "l2_contract_class_registered",
-          "columnsFrom": ["contract_class_id", "version"],
-          "columnsTo": ["contract_class_id", "version"],
+          "columnsFrom": ["current_contract_class_id", "version"],
+          "columnsTo": ["current_contract_class_id", "version"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1343,8 +1355,14 @@
       "name": "l2_private_function",
       "schema": "",
       "columns": {
-        "contract_class_id": {
-          "name": "contract_class_id",
+        "current_contract_class_id": {
+          "name": "current_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_contract_class_id": {
+          "name": "original_contract_class_id",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1415,7 +1433,10 @@
       "compositePrimaryKeys": {
         "private_function_contract_class": {
           "name": "private_function_contract_class",
-          "columns": ["contract_class_id", "private_function_selector_value"]
+          "columns": [
+            "current_contract_class_id",
+            "private_function_selector_value"
+          ]
         }
       },
       "uniqueConstraints": {}
@@ -1424,8 +1445,14 @@
       "name": "l2_unconstrained_function",
       "schema": "",
       "columns": {
-        "contract_class_id": {
-          "name": "contract_class_id",
+        "current_contract_class_id": {
+          "name": "current_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_contract_class_id": {
+          "name": "original_contract_class_id",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1479,7 +1506,7 @@
         "unconstrained_function_contract_class": {
           "name": "unconstrained_function_contract_class",
           "columns": [
-            "contract_class_id",
+            "current_contract_class_id",
             "unconstrained_function_selector_value"
           ]
         }

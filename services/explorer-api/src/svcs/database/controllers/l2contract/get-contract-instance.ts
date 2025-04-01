@@ -29,8 +29,8 @@ export const getL2DeployedContractInstanceByAddress = async (
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
-          l2ContractClassRegistered.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
+          l2ContractClassRegistered.currentContractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,

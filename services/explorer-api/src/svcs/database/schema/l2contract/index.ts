@@ -31,7 +31,8 @@ export const l2ContractInstanceDeployed = pgTable(
     address: generateAztecAddressColumn("address").notNull().unique(),
     version: integer("version").notNull(),
     salt: generateFrColumn("salt").notNull(), // TODO: maybe should not be here?
-    contractClassId: generateFrColumn("contract_class_id").notNull(),
+    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
+    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
     initializationHash: generateFrColumn("initialization_hash").notNull(),
     deployer: generateAztecAddressColumn("deployer").notNull(),
     masterNullifierPublicKey: generateConcatFrPointColumn(
@@ -50,9 +51,9 @@ export const l2ContractInstanceDeployed = pgTable(
   (t) => ({
     contractClass: foreignKey({
       name: "contract_class",
-      columns: [t.contractClassId, t.version],
+      columns: [t.currentContractClassId, t.version],
       foreignColumns: [
-        l2ContractClassRegistered.contractClassId,
+        l2ContractClassRegistered.currentContractClassId,
         l2ContractClassRegistered.version,
       ],
     }).onDelete("cascade"),
@@ -66,7 +67,8 @@ export const l2ContractClassRegistered = pgTable(
       .notNull()
       .$type<HexString>()
       .references(() => l2Block.hash, { onDelete: "cascade" }),
-    contractClassId: generateFrColumn("contract_class_id").notNull(),
+    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
+    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
     version: bigint("version", { mode: "number" }).notNull(),
     artifactHash: generateFrColumn("artifact_hash").notNull(),
     privateFunctionsRoot: generateFrColumn("private_functions_root").notNull(),
@@ -77,7 +79,7 @@ export const l2ContractClassRegistered = pgTable(
   (t) => ({
     primaryKey: primaryKey({
       name: "contract_class_id_version",
-      columns: [t.contractClassId, t.version],
+      columns: [t.currentContractClassId, t.version],
     }),
   }),
 );
@@ -127,11 +129,11 @@ export const l2ContractInstanceDeployedRelations = relations(
     ),
     contractClass: one(l2ContractClassRegistered, {
       fields: [
-        l2ContractInstanceDeployed.contractClassId,
+        l2ContractInstanceDeployed.currentContractClassId,
         l2ContractInstanceDeployed.version,
       ],
       references: [
-        l2ContractClassRegistered.contractClassId,
+        l2ContractClassRegistered.currentContractClassId,
         l2ContractClassRegistered.version,
       ],
     }),
@@ -141,7 +143,8 @@ export const l2ContractInstanceDeployedRelations = relations(
 export const l2PrivateFunction = pgTable(
   "l2_private_function",
   {
-    contractClassId: generateFrColumn("contract_class_id").notNull(),
+    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
+    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
     unconstrainedFunctionsArtifactTreeRoot: generateFrColumn(
       "unconstrained_functions_artifact_tree_root",
@@ -171,8 +174,9 @@ export const l2PrivateFunction = pgTable(
   },
   (t) => ({
     primaryKey: primaryKey({
+
       name: "private_function_contract_class",
-      columns: [t.contractClassId, t.privateFunction_selector_value],
+      columns: [t.currentContractClassId, t.privateFunction_selector_value],
     }),
   }),
 );
@@ -180,7 +184,8 @@ export const l2PrivateFunction = pgTable(
 export const l2UnconstrainedFunction = pgTable(
   "l2_unconstrained_function",
   {
-    contractClassId: generateFrColumn("contract_class_id").notNull(),
+    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
+    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
     privateFunctionsArtifactTreeRoot: generateFrColumn(
       "private_functions_artifact_tree_root",
@@ -205,7 +210,7 @@ export const l2UnconstrainedFunction = pgTable(
   (t) => ({
     primaryKey: primaryKey({
       name: "unconstrained_function_contract_class",
-      columns: [t.contractClassId, t.unconstrainedFunction_selector_value],
+      columns: [t.currentContractClassId, t.unconstrainedFunction_selector_value],
     }),
   }),
 );

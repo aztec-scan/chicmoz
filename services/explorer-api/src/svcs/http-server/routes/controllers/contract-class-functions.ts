@@ -30,11 +30,11 @@ export const openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS = {
 
 export const GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS = asyncHandler(
   async (req, res) => {
-    const { classId } =
+    const { currentContractClassId } =
       getContractClassPrivateFunctionsSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
-      ["l2", "contract-classes", classId, "private-functions"],
-      () => db.l2Contract.getL2ContractClassPrivateFunctions(classId)
+      ["l2", "contract-classes", currentContractClassId, "private-functions"],
+      () => db.l2Contract.getL2ContractClassPrivateFunctions(currentContractClassId)
     );
     res.status(200).send(contractClasses);
   }
@@ -69,19 +69,19 @@ export const openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION = {
 
 export const GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION = asyncHandler(
   async (req, res) => {
-    const { classId, functionSelector } =
+    const { currentContractClassId, functionSelector } =
       getContractClassPrivateFunctionSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
       [
         "l2",
         "contract-classes",
-        classId,
+        currentContractClassId,
         "private-functions",
         functionSelector,
       ],
       () =>
         db.l2Contract.getL2ContractClassPrivateFunction(
-          classId,
+          currentContractClassId,
           functionSelector
         )
     );
@@ -111,11 +111,11 @@ export const openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS = {
 
 export const GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS = asyncHandler(
   async (req, res) => {
-    const { classId } =
+    const { currentContractClassId } =
       getContractClassUnconstrainedFunctionsSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
-      ["l2", "contract-classes", classId, "unconstrained-functions"],
-      () => db.l2Contract.getL2ContractClassUnconstrainedFunctions(classId)
+      ["l2", "contract-classes", currentContractClassId, "unconstrained-functions"],
+      () => db.l2Contract.getL2ContractClassUnconstrainedFunctions(currentContractClassId)
     );
     res.status(200).send(contractClasses);
   }
@@ -151,19 +151,19 @@ export const openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION = {
 
 export const GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION = asyncHandler(
   async (req, res) => {
-    const { classId, functionSelector } =
+    const { currentContractClassId, functionSelector } =
       getContractClassUnconstrainedFunctionSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
       [
         "l2",
         "contract-classes",
-        classId,
+        currentContractClassId,
         "unconstrained-functions",
         functionSelector,
       ],
       () =>
         db.l2Contract.getL2ContractClassUnconstrainedFunction(
-          classId,
+          currentContractClassId,
           functionSelector
         )
     );
