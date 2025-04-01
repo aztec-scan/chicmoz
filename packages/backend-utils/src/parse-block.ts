@@ -4,15 +4,22 @@ import {
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
   chicmozL2BlockSchema,
+  jsonStringify,
 } from "@chicmoz-pkg/types";
 
 const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
   return txEffects.map((txEffect) => {
     return {
       ...txEffect,
+      privateLogs: txEffect.privateLogs.map((log) => {
+        const s = log.fields.map((f) => f.toJSON());
+        return s;
+      }).flat(),
       contractClassLogsLength: txEffect.contractClassLogs.length,
-      privateLogs: txEffect.privateLogs.map((log) => log.toFields()),
-      publicLogs: txEffect.publicLogs.map((log) => log.toFields()),
+      publicLogs: txEffect.publicLogs.map((log) => {
+        const s = log.log.map((f) => f.toJSON());
+        return s;
+      }).flat(),
       txHash: txEffect.txHash.toString(),
     };
   });
@@ -35,7 +42,8 @@ export const parseBlock = async (
       txEffects: getTxEffectWithHashes(b.body.txEffects),
     },
   };
-
+  // eslint-disable-next-line no-console
+  console.log(jsonStringify(blockWithTxEffectsHashesAdded))
   return chicmozL2BlockSchema.parse({
     hash: blockHash.toString(),
     height: b.number,

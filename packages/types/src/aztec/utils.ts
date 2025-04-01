@@ -68,3 +68,20 @@ export type StringifiedBuffer = {
   data: number[];
 };
 
+export const bufferSchema = z.preprocess(
+  (val) => {
+    if (val && (val as StringifiedBuffer).data) {
+      return Buffer.from((val as StringifiedBuffer).data);
+    }
+    if (val && (val as string)) {
+      return Buffer.from(val as string, "hex");
+    }
+    return val;
+  },
+  z.custom<Buffer>(
+    (value) => {
+      return value instanceof Buffer;
+    },
+    { message: "Expected a Buffer" }
+  )
+);

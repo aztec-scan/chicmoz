@@ -6,7 +6,7 @@ import {
   generateL2TopicName,
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import { ChicmozL2Block, ChicmozL2TxEffect, jsonStringify } from "@chicmoz-pkg/types";
+import { ChicmozL2Block, ChicmozL2TxEffect } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
@@ -57,7 +57,14 @@ const onBlock = async ({
   const b = blockFromString(block);
   let parsedBlock;
   try {
-    logger.info(jsonStringify(b));
+    // // eslint-disable-next-line no-console
+    // console.log(jsonStringify(b.body.txEffects[0]?.privateLogs?.[0]));
+    // // eslint-disable-next-line no-console
+    // console.log(typeof b.body.txEffects[0]?.privateLogs?.[0]?.fields)
+    // b.body.txEffects[0]?.privateLogs?.[0]?.fields.forEach((field) => {
+    //   // eslint-disable-next-line no-console
+    //   console.log(`field type-> , ${typeof field} | json -> ${field.toJSON()} `)
+    // });
     parsedBlock = await parseBlock(b, finalizationStatus);
   } catch (e) {
     logger.error(
@@ -66,6 +73,7 @@ const onBlock = async ({
     );
     return;
   }
+
   await storeBlock(parsedBlock);
   await storeContracts(b, parsedBlock.hash);
   await pendingTxsHook(parsedBlock.body.txEffects);

@@ -29,8 +29,8 @@ export const chicmozL2TxEffectSchema = z.object({
   nullifiers: z.array(frSchema),
   l2ToL1Msgs: z.array(frSchema),
   publicDataWrites: z.array(z.object({ leafSlot: frSchema, value: frSchema })),
-  privateLogs: z.array(z.object({ fields: z.array(frSchema) })),
-  publicLogs: z.array(z.object({ contractAddress: aztecAddressSchema, log: z.array(frSchema) })),
+  privateLogs: z.array(frSchema),
+  publicLogs: z.array(frSchema),
   contractClassLogs: z.array(z.object({ contractAddress: aztecAddressSchema, fields: z.array(frSchema) })),
   contractClassLogsLength: frNumberSchema,
 });

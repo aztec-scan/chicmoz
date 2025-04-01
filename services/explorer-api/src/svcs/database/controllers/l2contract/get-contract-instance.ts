@@ -66,6 +66,7 @@ export const getL2DeployedContractInstanceByAddress = async (
     verifiedDeploymentArguments,
     deployerMetadata,
   } = result[0];
+  //TODO: Reult can be undefined
 
   return parseDeluxe({
     contractClass,
