@@ -6,6 +6,7 @@ import { OptionButtons } from "~/components/option-buttons";
 import { useDeployedContractInstances } from "~/hooks";
 import { contractClassTabs, type TabId } from "./constants";
 import { getDataFromMap } from "./display-utils";
+import { ArtifactExplorerTab } from "./tabs/artifact-explorer-tab";
 import { ContractInstancesTab } from "./tabs/contract-instances";
 import { ContractVersionsTab } from "./tabs/contract-versions";
 import { JsonTab } from "./tabs/json-tab";
@@ -61,6 +62,9 @@ export const TabSection: FC<TabSectionProps> = ({
     artifactJson:
       !!selectedVersion &&
       (!!selectedVersion.artifactJson || isContractArtifactLoading),
+    artifactExplorer:
+      !!selectedVersion &&
+      (!!selectedVersion.artifactJson || isContractArtifactLoading),
     functionJson: !!selectedVersion && !!selectedVersion.artifactJson,
   };
 
@@ -81,6 +85,12 @@ export const TabSection: FC<TabSectionProps> = ({
           <Loader amount={1} />
         ) : (
           <JsonTab data={artifact} />
+        );
+      case "artifactExplorer":
+        return isContractArtifactLoading ? (
+          <Loader amount={1} />
+        ) : (
+          <ArtifactExplorerTab data={artifact} />
         );
       default:
         return null;

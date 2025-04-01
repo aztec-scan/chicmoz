@@ -1,10 +1,9 @@
 import { type FC } from "react";
-import { JsonViewer } from "../json-viewer";
 
 interface JsonTabProps {
   data: unknown
 }
 
 export const JsonTab: FC<JsonTabProps> = ({ data }) => {
-  return <JsonViewer data={data} />;
+  return <pre className="overflow-auto">{JSON.stringify(data, null, 2)}</pre>;
 };
