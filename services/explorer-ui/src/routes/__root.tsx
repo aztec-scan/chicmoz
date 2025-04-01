@@ -1,10 +1,17 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { lazy } from "react";
 import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 import { TailwindIndicator } from "~/components/ui/tailwind-indicator";
 
-// Temporarily disabled to avoid dynamic import issues
-const TanStackRouterDevtools = () => null;
+const TanStackRouterDevtools =
+  process.env.NODE_ENV === "development"
+    ? lazy(() =>
+        import("@tanstack/router-devtools").then((res) => ({
+          default: res.TanStackRouterDevtools,
+        }))
+      )
+    : () => null;
 
 export const Route = createRootRoute({
   component: () => (
@@ -147,16 +154,6 @@ export const routes = {
 };
 
 function notFoundComponent() {
-  // Temporary solution to handle /contracts/test and similar routes
-  if (window.location.pathname.startsWith('/contracts/') && 
-      !window.location.pathname.includes('/classes/') && 
-      !window.location.pathname.includes('/instances/')) {
-    
-    // Redirect to the contract index page
-    window.location.href = '/contracts';
-    return <div>Redirecting...</div>;
-  }
-  
   return (
     <div className="mx-auto px-[70px] max-w-[1440px]">
       <h1 className="mt-16">{text.title}</h1>
