@@ -1,7 +1,8 @@
-import { type FC } from "react";
+import type { FC } from "react";
+import * as React from "react";
 
 interface JsonTabProps {
-  data: unknown
+  data: unknown;
 }
 
 export const JsonTab: FC<JsonTabProps> = ({ data }) => {

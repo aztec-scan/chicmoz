@@ -1,4 +1,6 @@
-import { type FC, useState, useMemo } from "react";
+import type { FC } from "react";
+import * as React from "react";
+import { useMemo, useState } from "react";
 import { CollapsibleSection } from "./collapsible-section";
 import { FilterBar } from "./filter-bar";
 import { JsonDisplay } from "./json-display";
@@ -14,19 +16,48 @@ type ArtifactSection = {
   isExpandedByDefault: boolean;
 };
 
+// Define a type for the artifact JSON structure we're expecting
+interface ArtifactData {
+  name?: string;
+  version?: string | number;
+  functions?: unknown[];
+  types?: Record<string, unknown>;
+  constants?: Record<string, unknown>;
+  events?: unknown[];
+  [key: string]: unknown;
+}
+
 export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
   const [filter, setFilter] = useState("");
-  
+
   // Parse the artifact JSON into meaningful sections
   const sections = useMemo(() => {
-    if (!data) return [];
+    if (!data) {
+      return [];
+    }
 
     try {
-      const artifactData = typeof data === 'string' ? JSON.parse(data) : data;
+      // Parse string data or use as-is if already an object
+      let parsedData: unknown;
+      if (typeof data === "string") {
+        try {
+          parsedData = JSON.parse(data);
+        } catch (e) {
+          parsedData = {};
+        }
+      } else {
+        parsedData = data;
+      }
+
+      const artifactData = parsedData as ArtifactData;
       const sections: ArtifactSection[] = [];
 
       // Add functions
-      if (artifactData.functions && artifactData.functions.length > 0) {
+      if (
+        artifactData.functions &&
+        Array.isArray(artifactData.functions) &&
+        artifactData.functions.length > 0
+      ) {
         sections.push({
           title: "Functions",
           data: artifactData.functions,
@@ -36,12 +67,17 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
       }
 
       // Add general information (name, version, etc.)
-      const generalInfo: Record<string, unknown> = {
-        name: artifactData.name,
-        version: artifactData.version,
-      };
-      
-      if (Object.keys(generalInfo).some(key => generalInfo[key] !== undefined)) {
+      const generalInfo: Record<string, unknown> = {};
+      if (artifactData.name !== undefined) {
+        generalInfo.name = artifactData.name;
+      }
+      if (artifactData.version !== undefined) {
+        generalInfo.version = artifactData.version;
+      }
+
+      if (
+        Object.keys(generalInfo).some((key) => generalInfo[key] !== undefined)
+      ) {
         sections.push({
           title: "General Information",
           data: generalInfo,
@@ -50,9 +86,12 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
         });
       }
 
-
       // Add types
-      if (artifactData.types && Object.keys(artifactData.types).length > 0) {
+      if (
+        artifactData.types &&
+        typeof artifactData.types === "object" &&
+        Object.keys(artifactData.types).length > 0
+      ) {
         sections.push({
           title: "Types",
           data: artifactData.types,
@@ -62,7 +101,11 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
       }
 
       // Add constants
-      if (artifactData.constants && Object.keys(artifactData.constants).length > 0) {
+      if (
+        artifactData.constants &&
+        typeof artifactData.constants === "object" &&
+        Object.keys(artifactData.constants).length > 0
+      ) {
         sections.push({
           title: "Constants",
           data: artifactData.constants,
@@ -72,7 +115,11 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
       }
 
       // Add events
-      if (artifactData.events && artifactData.events.length > 0) {
+      if (
+        artifactData.events &&
+        Array.isArray(artifactData.events) &&
+        artifactData.events.length > 0
+      ) {
         sections.push({
           title: "Events",
           data: artifactData.events,
@@ -82,10 +129,12 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
       }
 
       // Add Other Information section for all remaining fields
-      const otherFields = { ...artifactData };
-      ['name', 'version', 'functions', 'types', 'constants', 'events'].forEach(field => {
-        delete otherFields[field];
-      });
+      const otherFields: Record<string, unknown> = { ...artifactData };
+      ["name", "version", "functions", "types", "constants", "events"].forEach(
+        (field) => {
+          delete otherFields[field];
+        },
+      );
 
       if (Object.keys(otherFields).length > 0) {
         sections.push({
@@ -110,24 +159,30 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
       return sections.sort((a, b) => a.priority - b.priority);
     } catch (error) {
       console.error("Error parsing artifact JSON:", error);
-      
+
       // Fallback: show raw data
-      return [{
-        title: "Raw Data",
-        data: data,
-        priority: 1,
-        isExpandedByDefault: true,
-      }];
+      return [
+        {
+          title: "Raw Data",
+          data: data,
+          priority: 1,
+          isExpandedByDefault: true,
+        },
+      ];
     }
   }, [data]);
 
   // Filter sections based on search term
   const filteredSections = useMemo(() => {
-    if (!filter) return sections;
-    
-    return sections.filter(section => {
+    if (!filter) {
+      return sections;
+    }
+
+    return sections.filter((section) => {
       // Deep search the JSON for the filter text
-      return JSON.stringify(section.data).toLowerCase().includes(filter.toLowerCase());
+      return JSON.stringify(section.data)
+        .toLowerCase()
+        .includes(filter.toLowerCase());
     });
   }, [sections, filter]);
 
@@ -140,13 +195,15 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
       <div className="mb-4">
         <FilterBar onFilterChange={handleFilterChange} />
       </div>
-      
+
       {filteredSections.length === 0 ? (
-        <div className="text-gray-500 dark:text-gray-400 italic">No matching data found</div>
+        <div className="text-gray-500 dark:text-gray-400 italic">
+          No matching data found
+        </div>
       ) : (
         filteredSections.map((section, index) => (
-          <CollapsibleSection 
-            key={`${section.title}-${index}`} 
+          <CollapsibleSection
+            key={`${section.title}-${index}`}
             title={section.title}
             defaultExpanded={section.isExpandedByDefault}
           >

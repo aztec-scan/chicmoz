@@ -1,8 +1,9 @@
-import { type FC } from "react";
+import type { FC } from "react";
+import * as React from "react";
 import { JsonViewer } from "../json-viewer";
 
 interface ArtifactExplorerTabProps {
-  data: unknown
+  data: unknown;
 }
 
 export const ArtifactExplorerTab: FC<ArtifactExplorerTabProps> = ({ data }) => {
