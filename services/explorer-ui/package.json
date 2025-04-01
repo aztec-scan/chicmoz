@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aztec/noir-contracts.js": "0.76.4",
     "@chicmoz-pkg/types": "workspace:^",
     "@radix-ui/react-accordion": "1.1.2",
     "@radix-ui/react-alert-dialog": "1.1.1",

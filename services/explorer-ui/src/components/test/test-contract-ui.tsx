@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import { type QueryObserverResult } from "@tanstack/react-query";
+import tokenBridgeContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_bridge_contract-TokenBridge?raw";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { TabSection } from "~/pages/contract-class-details/tabs-section";
 import { getContractClassKeyValueData } from "~/pages/contract-class-details/util";
@@ -19,51 +20,51 @@ export const TestContractUI: FC = () => {
   };
 
   // Mock artifact JSON string
-  const mockArtifactJson = JSON.stringify({
-    name: "EasyPrivateVoting",
-    version: "0.1.0",
-    functions: [
-      {
-        name: "constructor",
-        abi: {
-          parameters: []
-        },
-        custom_attributes: ["public"],
-        is_unconstrained: false
-      },
-      {
-        name: "vote",
-        abi: {
-          parameters: [
-            { 
-              name: "option", 
-              type: { 
-                kind: "field" 
-              } 
-            }
-          ]
-        },
-        custom_attributes: ["private"],
-        is_unconstrained: false
-      },
-      {
-        name: "get_results",
-        abi: {
-          parameters: []
-        },
-        custom_attributes: [],
-        is_unconstrained: true
-      }
-    ],
-    constants: {},
-    types: {},
-    events: []
-  });
+  //const mockArtifactJson = JSON.stringify({
+  //  name: "EasyPrivateVoting",
+  //  version: "0.1.0",
+  //  functions: [
+  //    {
+  //      name: "constructor",
+  //      abi: {
+  //        parameters: []
+  //      },
+  //      custom_attributes: ["public"],
+  //      is_unconstrained: false
+  //    },
+  //    {
+  //      name: "vote",
+  //      abi: {
+  //        parameters: [
+  //          { 
+  //            name: "option", 
+  //            type: { 
+  //              kind: "field" 
+  //            } 
+  //          }
+  //        ]
+  //      },
+  //      custom_attributes: ["private"],
+  //      is_unconstrained: false
+  //    },
+  //    {
+  //      name: "get_results",
+  //      abi: {
+  //        parameters: []
+  //      },
+  //      custom_attributes: [],
+  //      is_unconstrained: true
+  //    }
+  //  ],
+  //  constants: {},
+  //  types: {},
+  //  events: []
+  //});
 
   // Create mock data with artifact JSON
   const mockContractWithArtifact = {
     ...MOCK_CONTRACT_CLASS,
-    artifactJson: mockArtifactJson
+    artifactJson: tokenBridgeContractArtifactJson,
   };
 
   // Create mock query results to pass to TabSection

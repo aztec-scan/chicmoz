@@ -1007,6 +1007,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@chicmoz/explorer-ui@workspace:services/explorer-ui"
   dependencies:
+    "@aztec/noir-contracts.js": "npm:0.76.4"
     "@chicmoz-pkg/types": "workspace:^"
     "@radix-ui/react-accordion": "npm:1.1.2"
     "@radix-ui/react-alert-dialog": "npm:1.1.1"
