@@ -1,5 +1,5 @@
 {
-  "id": "5c6befc9-4068-4794-a31e-402bd1140b8f",
+  "id": "ce8acb09-0f09-49f5-9ee0-0cb011278f54",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1102,17 +1102,10 @@
       "name": "l2_contract_instance_aztec_scan_notes",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "address": {
           "name": "address",
           "type": "varchar(66)",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "origin": {
@@ -1149,17 +1142,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "l2_contract_instance_aztec_scan_notes_address_l2_contract_instance_deployed_address_fk": {
-          "name": "l2_contract_instance_aztec_scan_notes_address_l2_contract_instance_deployed_address_fk",
-          "tableFrom": "l2_contract_instance_aztec_scan_notes",
-          "tableTo": "l2_contract_instance_deployed",
-          "columnsFrom": ["address"],
-          "columnsTo": ["address"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
