@@ -48,15 +48,33 @@ export const JsonDisplay: FC<JsonDisplayProps> = ({
     return expandedPaths[path] ?? (initialDepth > 0);
   };
 
-  const renderNode = (value: unknown, path: string, depth: number): JSX.Element => {
+  const renderNode = (
+    value: unknown, 
+    path: string, 
+    depth: number, 
+    keyName?: string | number
+  ): JSX.Element => {
     // Render primitive values directly
     if (!hasChildren(value)) {
+      // If this is a property with a key, show the key along with the value
+      if (keyName !== undefined) {
+        return (
+          <div className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+            {/* Add an invisible spacer the same width as the arrow for alignment */}
+            <span className="w-5 inline-block"></span>
+            <span className="font-mono font-semibold text-gray-700 dark:text-gray-300 mr-1">
+              {keyName}:
+            </span>
+            {formatValue(value)}
+          </div>
+        );
+      }
       return formatValue(value);
     }
 
     // Don't go deeper than maxDepth
     if (depth >= maxDepth) {
-      return <span className="text-gray-500">[Complex Object]</span>;
+      return <span className="text-gray-500 dark:text-gray-400">[Complex Object]</span>;
     }
 
     // Handle objects and arrays
@@ -70,44 +88,122 @@ export const JsonDisplay: FC<JsonDisplayProps> = ({
 
     const expanded = isExpanded(path);
     
-    // Try to find a name for the object
-    const getObjectName = (obj: any): string => {
-      if (obj.name) return obj.name;
-      if (obj.functionName) return obj.functionName;
-      if (obj.title) return obj.title;
-      if (obj.id) return obj.id;
-      return "Object";
+    // Try to find a function name (or other meaningful name) for objects
+    const getFunctionName = (obj: any): string | null => {
+      if (typeof obj !== 'object' || !obj) return null;
+      if (obj.name && typeof obj.name === 'string') return obj.name;
+      if (obj.functionName && typeof obj.functionName === 'string') return obj.functionName;
+      return null;
     };
-
-    const objectName = isArray ? "Array" : getObjectName(value);
     
-    return (
-      <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-        <div 
-          className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded" 
-          onClick={() => togglePath(path)}
-        >
-          <span className="mr-2 text-blue-500 dark:text-blue-400">{expanded ? "▼" : "▶"}</span>
-          <span className="font-mono dark:text-gray-200">
-            {isArray 
-              ? `Array(${keys.length})` 
-              : `${objectName} {${keys.length} ${keys.length === 1 ? "property" : "properties"}}`
-            }
+    // Get function name if applicable
+    const functionName = !isArray ? getFunctionName(value) : null;
+    
+    // Compact notation for objects and arrays
+    const sizeDisplay = (
+      <>
+        <span className="font-mono dark:text-gray-200">
+          {isArray ? `[${keys.length}]` : `{${keys.length}}`}
+        </span>
+        {functionName && (
+          <span className="ml-1 text-gray-500 dark:text-gray-400 text-sm">
+            {functionName}
           </span>
+        )}
+      </>
+    );
+    
+    // The expand/collapse arrow
+    const toggleButton = (
+      <span 
+        className="mx-1 text-blue-500 dark:text-blue-400 cursor-pointer" 
+        onClick={(e) => {
+          e.stopPropagation();
+          togglePath(path);
+        }}
+      >
+        {expanded ? "▼" : "▶"}
+      </span>
+    );
+    
+    // Root level call (no key name provided)
+    if (keyName === undefined && depth === 0) {
+      return (
+        <div>
+          <div className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+            {toggleButton} {sizeDisplay}
+          </div>
+          
+          {expanded && (
+            <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 ml-2">
+              {keys.map((key) => {
+                const childPath = `${path}.${key}`;
+                const childValue = (value as Record<string, unknown>)[key];
+                
+                return (
+                  <div key={childPath} className="py-1">
+                    {isArray 
+                      ? renderNode(childValue, childPath, depth + 1) 
+                      : renderNode(childValue, childPath, depth + 1, key)}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Non-root elements with a key
+    if (keyName !== undefined) {
+      return (
+        <div>
+          <div className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+            {toggleButton}
+            <span className="font-mono font-semibold text-gray-700 dark:text-gray-300 mr-1">
+              {keyName}:
+            </span>
+            {sizeDisplay}
+          </div>
+          
+          {expanded && (
+            <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 ml-2 mt-1">
+              {keys.map((key) => {
+                const childPath = `${path}.${key}`;
+                const childValue = (value as Record<string, unknown>)[key];
+                
+                return (
+                  <div key={childPath} className="py-1">
+                    {isArray 
+                      ? renderNode(childValue, childPath, depth + 1) 
+                      : renderNode(childValue, childPath, depth + 1, key)}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Array items (no key displayed)
+    return (
+      <div>
+        <div className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded">
+          {toggleButton} {sizeDisplay}
         </div>
         
         {expanded && (
-          <div className="pl-4">
-            {keys.map((key, index) => {
+          <div className="pl-4 border-l-2 border-gray-200 dark:border-gray-700 ml-2 mt-1">
+            {keys.map((key) => {
               const childPath = `${path}.${key}`;
               const childValue = (value as Record<string, unknown>)[key];
               
               return (
                 <div key={childPath} className="py-1">
-                  <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">
-                    {isArray ? index : key}:
-                  </span>{" "}
-                  {renderNode(childValue, childPath, depth + 1)}
+                  {isArray 
+                    ? renderNode(childValue, childPath, depth + 1) 
+                    : renderNode(childValue, childPath, depth + 1, key)}
                 </div>
               );
             })}

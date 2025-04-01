@@ -16,7 +16,6 @@ type ArtifactSection = {
 
 export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
   const [filter, setFilter] = useState("");
-  const [showAllSections, setShowAllSections] = useState(false);
   
   // Parse the artifact JSON into meaningful sections
   const sections = useMemo(() => {
@@ -25,6 +24,16 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
     try {
       const artifactData = typeof data === 'string' ? JSON.parse(data) : data;
       const sections: ArtifactSection[] = [];
+
+      // Add functions
+      if (artifactData.functions && artifactData.functions.length > 0) {
+        sections.push({
+          title: "Functions",
+          data: artifactData.functions,
+          priority: 1,
+          isExpandedByDefault: true,
+        });
+      }
 
       // Add general information (name, version, etc.)
       const generalInfo: Record<string, unknown> = {
@@ -36,20 +45,11 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
         sections.push({
           title: "General Information",
           data: generalInfo,
-          priority: 1,
-          isExpandedByDefault: true,
-        });
-      }
-
-      // Add functions
-      if (artifactData.functions && artifactData.functions.length > 0) {
-        sections.push({
-          title: "Functions",
-          data: artifactData.functions,
           priority: 2,
           isExpandedByDefault: true,
         });
       }
+
 
       // Add types
       if (artifactData.types && Object.keys(artifactData.types).length > 0) {
@@ -135,20 +135,10 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
     setFilter(newFilter);
   };
 
-  const toggleShowAllSections = () => {
-    setShowAllSections(!showAllSections);
-  };
-
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4">
         <FilterBar onFilterChange={handleFilterChange} />
-        <button 
-          onClick={toggleShowAllSections}
-          className="ml-2 px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-        >
-          {showAllSections ? "Show Less" : "Show All"}
-        </button>
       </div>
       
       {filteredSections.length === 0 ? (
@@ -158,7 +148,7 @@ export const JsonViewer: FC<JsonViewerProps> = ({ data }) => {
           <CollapsibleSection 
             key={`${section.title}-${index}`} 
             title={section.title}
-            defaultExpanded={section.isExpandedByDefault || showAllSections}
+            defaultExpanded={section.isExpandedByDefault}
           >
             <JsonDisplay data={section.data} />
           </CollapsibleSection>
