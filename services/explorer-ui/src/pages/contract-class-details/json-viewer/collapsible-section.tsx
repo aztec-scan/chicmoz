@@ -1,5 +1,4 @@
 import type { FC, ReactNode } from "react";
-import * as React from "react";
 import { useState } from "react";
 
 interface CollapsibleSectionProps {

@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import * as React from "react";
 import { useMemo, useState } from "react";
 import { CollapsibleSection } from "./collapsible-section";
 import { FilterBar } from "./filter-bar";

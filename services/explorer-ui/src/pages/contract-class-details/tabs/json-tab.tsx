@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import * as React from "react";
 
 interface JsonTabProps {
   data: unknown;
