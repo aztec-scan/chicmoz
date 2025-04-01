@@ -29,7 +29,7 @@ export const updateContractInstanceAztecScanNotes = async ({
         .set({
           ...aztecScanNotes,
         })
-        .where(eq(l2ContractInstanceAztecScanNotes.id, existingNotes[0].id))
+        .where(eq(l2ContractInstanceAztecScanNotes.address, existingNotes[0].address))
         .returning();
     } else {
       return await dbTx

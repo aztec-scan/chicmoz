@@ -177,8 +177,7 @@ CREATE TABLE IF NOT EXISTS "l2_contract_class_registered" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_aztec_scan_notes" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"address" varchar(66) NOT NULL,
+	"address" varchar(66) PRIMARY KEY NOT NULL,
 	"origin" varchar NOT NULL,
 	"comment" varchar NOT NULL,
 	"related_l1_contract_addresses" jsonb,
@@ -436,12 +435,6 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "l2_contract_class_registered" ADD CONSTRAINT "l2_contract_class_registered_block_hash_l2Block_hash_fk" FOREIGN KEY ("block_hash") REFERENCES "public"."l2Block"("hash") ON DELETE cascade ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "l2_contract_instance_aztec_scan_notes" ADD CONSTRAINT "l2_contract_instance_aztec_scan_notes_address_l2_contract_instance_deployed_address_fk" FOREIGN KEY ("address") REFERENCES "public"."l2_contract_instance_deployed"("address") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
