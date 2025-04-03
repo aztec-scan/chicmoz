@@ -14,6 +14,7 @@ import {
 import { l2Block } from "../index.js";
 import {
   bufferType,
+  contractTypeDbEnum,
   generateAztecAddressColumn,
   generateConcatFrPointColumn,
   generateFrColumn,
@@ -89,6 +90,7 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
+    contractType: contractTypeDbEnum("contract_type"),
   },
   (t) => ({
     primaryKey: primaryKey({
@@ -115,6 +117,21 @@ export const l2ContractInstanceDeployerMetadataTable = pgTable(
     repoUrl: varchar("repo_url").notNull(),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
     reviewedAt: timestamp("reviewed_at"),
+  },
+);
+
+export const l2ContractInstanceAztecScanNotes = pgTable(
+  "l2_contract_instance_aztec_scan_notes",
+  {
+    address: generateAztecAddressColumn("address").notNull().primaryKey(), // NOTE: not using address as FK enables us to store notes on startup (without a finished indexing process of the chain)
+    origin: varchar("origin").notNull(),
+    comment: varchar("comment").notNull(),
+    relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
+    uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
 );
 
@@ -150,6 +167,17 @@ export const l2ContractInstanceDeployedRelations = relations(
         l2ContractClassRegistered.contractClassId,
         l2ContractClassRegistered.version,
       ],
+    }),
+    aztecScanNotes: one(l2ContractInstanceAztecScanNotes),
+  }),
+);
+
+export const l2ContractInstanceAztecScanNotesRelations = relations(
+  l2ContractInstanceAztecScanNotes,
+  ({ one }) => ({
+    contractInstance: one(l2ContractInstanceDeployed, {
+      fields: [l2ContractInstanceAztecScanNotes.address],
+      references: [l2ContractInstanceDeployed.address],
     }),
   }),
 );

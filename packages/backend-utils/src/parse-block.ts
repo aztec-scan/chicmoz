@@ -11,14 +11,12 @@ const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
     return {
       ...txEffect,
       privateLogs: txEffect.privateLogs.map((log) => {
-        const s = log.fields.map((f) => f.toJSON());
-        return s;
-      }).flat(),
+        return log.fields.map((f) => f.toJSON());
+      }),
       contractClassLogsLength: txEffect.contractClassLogs.length,
       publicLogs: txEffect.publicLogs.map((log) => {
-        const s = log.log.map((f) => f.toJSON());
-        return s;
-      }).flat(),
+        return log.log.map((f) => f.toJSON());
+      }),
       txHash: txEffect.txHash.toString(),
     };
   });

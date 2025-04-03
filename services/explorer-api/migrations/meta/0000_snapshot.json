@@ -1,5 +1,5 @@
 {
-  "id": "b70e5022-497f-495e-a264-8ed0239b1706",
+  "id": "ca5678c1-a572-4a8d-997e-b17175558683",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1070,6 +1070,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "contract_type": {
+          "name": "contract_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1090,6 +1096,54 @@
           "columns": ["contract_class_id", "version"]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "public.l2_contract_instance_aztec_scan_notes": {
+      "name": "l2_contract_instance_aztec_scan_notes",
+      "schema": "",
+      "columns": {
+        "address": {
+          "name": "address",
+          "type": "varchar(66)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "related_l1_contract_addresses": {
+          "name": "related_l1_contract_addresses",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploaded_at": {
+          "name": "uploaded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "public.l2_contract_instance_deployed": {

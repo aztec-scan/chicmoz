@@ -15,11 +15,13 @@ export const parseDeluxe = ({
   instance,
   deployerMetadata,
   verifiedDeploymentArguments,
+  aztecScanNotes,
 }: {
   contractClass: any;
   instance: any;
   deployerMetadata?: any;
   verifiedDeploymentArguments?: any;
+  aztecScanNotes?: any;
 }): ChicmozL2ContractInstanceDeluxe => {
   return chicmozL2ContractInstanceDeluxeSchema.parse({
     ...contractClass,
@@ -27,6 +29,7 @@ export const parseDeluxe = ({
     originalContractClassId: instance.originalContractClassId,
     deployerMetadata: deployerMetadata ?? undefined,
     verifiedDeploymentArguments: verifiedDeploymentArguments ?? undefined,
+    aztecScanNotes: aztecScanNotes ?? undefined,
     blockHash: instance.blockHash,
     packedBytecode: Buffer.from(contractClass.packedBytecode),
     address: instance.address,

@@ -138,5 +138,25 @@ export const getVerifiedContractInstanceDeploymentData = (
         },
       ]
     : undefined;
-  return { verifiedDeploymentArguments, deployerMetadata };
+  const aztecScanNotes = data.aztecScanNotes
+    ? [
+        {
+          label: "ORIGIN",
+          value: data.aztecScanNotes.origin,
+        },
+        {
+          label: "COMMENT",
+          value: data.aztecScanNotes.comment,
+        },
+        {
+          label: "RELATED L1 CONTRACT ADDRESSES",
+          value: JSON.stringify(
+            data.aztecScanNotes.relatedL1ContractAddresses,
+            null,
+            2,
+          ) ?? "None",
+        },
+      ]
+    : undefined;
+  return { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes };
 };

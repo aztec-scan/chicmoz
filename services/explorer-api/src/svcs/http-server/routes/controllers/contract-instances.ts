@@ -388,10 +388,22 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       return;
     }
 
-    const metaDataStoreRes = await db.l2Contract.updateContractInstanceDeployerMetadata({
-      address,
-      ...deployerMetadata,
+    const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
+    const aztecScanNotesRes = await db.l2.updateContractInstanceAztecScanNotes({
+      contractInstanceAddress: address,
+      aztecScanNotes,
     });
+
+    if (!aztecScanNotesRes) {
+      res.status(500).send("Failed to update aztec scan notes");
+      return;
+    }
+
+    const metaDataStoreRes =
+      await db.l2Contract.updateContractInstanceDeployerMetadata({
+        address,
+        ...cleanDeployerMetadata,
+      });
 
     if (!metaDataStoreRes) {
       res.status(500).send("Failed to update deployer metadata");
@@ -407,6 +419,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
           address,
           stringifiedArtifactJson: artifactString,
         },
+        aztecScanNotes,
         deployerMetadata: {
           ...deployerMetadata,
           address,

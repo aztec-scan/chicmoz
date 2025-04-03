@@ -57,14 +57,6 @@ const onBlock = async ({
   const b = blockFromString(block);
   let parsedBlock;
   try {
-    // // eslint-disable-next-line no-console
-    // console.log(jsonStringify(b.body.txEffects[0]?.privateLogs?.[0]));
-    // // eslint-disable-next-line no-console
-    // console.log(typeof b.body.txEffects[0]?.privateLogs?.[0]?.fields)
-    // b.body.txEffects[0]?.privateLogs?.[0]?.fields.forEach((field) => {
-    //   // eslint-disable-next-line no-console
-    //   console.log(`field type-> , ${typeof field} | json -> ${field.toJSON()} `)
-    // });
     parsedBlock = await parseBlock(b, finalizationStatus);
   } catch (e) {
     logger.error(

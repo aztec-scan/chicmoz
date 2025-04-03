@@ -171,6 +171,12 @@ export const getContractInstancesByCurrentContractClassIdSchema =
 export const getVerifiedContractInstanceSchema = getContractInstanceSchema;
 
 export const postVerifiedContractInstanceSchema = z.lazy(() => {
+  let overrideAztecOriginNotes = {};
+  if (process.env.NODE_ENV === "production") {
+    overrideAztecOriginNotes = {
+      aztecScanNotes: true
+    };
+  }
   return z.object({
     ...getContractInstanceSchema.shape,
     body: z.object({
@@ -178,9 +184,10 @@ export const postVerifiedContractInstanceSchema = z.lazy(() => {
         .omit({
           address: true,
           uploadedAt: true,
+          ...overrideAztecOriginNotes,
         })
         .optional(),
-      verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema
+      verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema,
     }),
   });
 });

@@ -172,7 +172,17 @@ CREATE TABLE IF NOT EXISTS "l2_contract_class_registered" (
 	"packed_bytecode" "bytea" NOT NULL,
 	"artifact_json" varchar,
 	"artifact_contract_name" varchar,
+	"contract_type" varchar,
 	CONSTRAINT "contract_class_id_version" PRIMARY KEY("contract_class_id","version")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "l2_contract_instance_aztec_scan_notes" (
+	"address" varchar(66) PRIMARY KEY NOT NULL,
+	"origin" varchar NOT NULL,
+	"comment" varchar NOT NULL,
+	"related_l1_contract_addresses" jsonb,
+	"uploaded_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (
