@@ -39,7 +39,6 @@ export const parseBlock = async (
       txEffects: getTxEffectWithHashes(b.body.txEffects),
     },
   };
-  // eslint-disable-next-line no-console
   return chicmozL2BlockSchema.parse({
     hash: blockHash.toString(),
     height: b.number,
