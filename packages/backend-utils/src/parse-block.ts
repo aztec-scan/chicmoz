@@ -4,7 +4,6 @@ import {
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
   chicmozL2BlockSchema,
-  jsonStringify,
 } from "@chicmoz-pkg/types";
 
 const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
@@ -43,7 +42,6 @@ export const parseBlock = async (
     },
   };
   // eslint-disable-next-line no-console
-  console.log(jsonStringify(blockWithTxEffectsHashesAdded))
   return chicmozL2BlockSchema.parse({
     hash: blockHash.toString(),
     height: b.number,
