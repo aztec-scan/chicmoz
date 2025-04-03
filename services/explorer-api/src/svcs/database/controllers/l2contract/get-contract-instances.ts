@@ -39,7 +39,7 @@ export const getL2DeployedContractInstances = async ({
       and(
         eq(
           l2ContractInstanceDeployed.currentContractClassId,
-          l2ContractClassRegistered.currentContractClassId,
+          l2ContractClassRegistered.contractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,
@@ -69,6 +69,7 @@ export const getL2DeployedContractInstances = async ({
     .where(whereRange)
     .orderBy(desc(l2ContractInstanceDeployed.version), desc(l2Block.height))
     .limit(DB_MAX_CONTRACTS);
+
 
   const parsed = result.map((r) => {
     return parseDeluxe({
@@ -103,7 +104,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       and(
         eq(
           l2ContractInstanceDeployed.currentContractClassId,
-          l2ContractClassRegistered.currentContractClassId,
+          l2ContractClassRegistered.contractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,
@@ -163,7 +164,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
       and(
         eq(
           l2ContractInstanceDeployed.currentContractClassId,
-          l2ContractClassRegistered.currentContractClassId,
+          l2ContractClassRegistered.contractClassId,
         ),
         eq(
           l2ContractInstanceDeployed.version,

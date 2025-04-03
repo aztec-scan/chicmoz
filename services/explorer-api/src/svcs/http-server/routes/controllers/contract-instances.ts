@@ -185,14 +185,14 @@ export const openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = {
 
 export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
   async (req, res) => {
-    const { currentContractClassId } =
+    const { contractClassId } =
       getContractInstancesByCurrentContractClassIdSchema.parse(req).params;
     const includeArtifactJson = false;
     const instances = await dbWrapper.getLatest(
-      ["l2", "contract-instances", "class", currentContractClassId],
+      ["l2", "contract-instances", "class", contractClassId],
       () =>
         db.l2Contract.getL2DeployedContractInstancesByCurrentContractClassId(
-          currentContractClassId,
+          contractClassId,
           includeArtifactJson,
         ),
     );
@@ -339,7 +339,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         logger.warn(`Failed to cache contract class: ${err}`);
       });
       await db.l2Contract.addArtifactJson(
-        dbContractClass.currentContractClassId,
+        dbContractClass.contractClassId,
         dbContractClass.version,
         stringifiedArtifactJson,
       );

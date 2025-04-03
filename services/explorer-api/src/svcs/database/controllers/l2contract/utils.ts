@@ -23,6 +23,8 @@ export const parseDeluxe = ({
 }): ChicmozL2ContractInstanceDeluxe => {
   return chicmozL2ContractInstanceDeluxeSchema.parse({
     ...contractClass,
+    currentContractClassId: instance.currentContractClassId,
+    originalContractClassId: instance.originalContractClassId,
     deployerMetadata: deployerMetadata ?? undefined,
     verifiedDeploymentArguments: verifiedDeploymentArguments ?? undefined,
     blockHash: instance.blockHash,

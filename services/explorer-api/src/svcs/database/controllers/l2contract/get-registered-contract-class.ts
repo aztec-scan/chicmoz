@@ -15,12 +15,12 @@ import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
 
 export const getL2RegisteredContractClass = async (
-  currentContractClassId: ChicmozL2ContractClassRegisteredEvent["currentContractClassId"],
+  contractClassId: ChicmozL2ContractClassRegisteredEvent["contractClassId"],
   version: ChicmozL2ContractClassRegisteredEvent["version"],
   includeArtifactJson?: boolean
 ): Promise<ChicmozL2ContractClassRegisteredEvent | null> => {
   const res = await getL2RegisteredContractClasses({
-    currentContractClassId,
+    contractClassId,
     version,
     includeArtifactJson,
   });
@@ -28,26 +28,26 @@ export const getL2RegisteredContractClass = async (
 };
 
 export const getL2RegisteredContractClasses = async ({
-  currentContractClassId,
+  contractClassId,
   version,
   includeArtifactJson,
 }: {
-  currentContractClassId?: ChicmozL2ContractClassRegisteredEvent["currentContractClassId"];
+  contractClassId?: ChicmozL2ContractClassRegisteredEvent["contractClassId"];
   version?: ChicmozL2ContractClassRegisteredEvent["version"];
   includeArtifactJson?: boolean;
 }): Promise<Array<ChicmozL2ContractClassRegisteredEvent>> => {
-  if (currentContractClassId === undefined && version !== undefined) {
+  if (contractClassId === undefined && version !== undefined) {
     throw new Error("Specifying version but not classId is not allowed");
   }
-  if (currentContractClassId === undefined) {
+  if (contractClassId === undefined) {
     return getLatestL2RegisteredContractClasses();
   }
   const whereQuery = version
     ? and(
-      eq(l2ContractClassRegistered.currentContractClassId, currentContractClassId),
+      eq(l2ContractClassRegistered.contractClassId, contractClassId),
       eq(l2ContractClassRegistered.version, version)
     )
-    : eq(l2ContractClassRegistered.currentContractClassId, currentContractClassId);
+    : eq(l2ContractClassRegistered.contractClassId, contractClassId);
   const limit = version ? 1 : DB_MAX_CONTRACTS;
 
   const result = await db()
@@ -97,7 +97,7 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
   const result = await db()
     .select({
       blockHash: l2ContractClassRegistered.blockHash,
-      currentContractClassId: l2ContractClassRegistered.currentContractClassId,
+      contractClassId: l2ContractClassRegistered.contractClassId,
       version: l2ContractClassRegistered.version,
       artifactHash: l2ContractClassRegistered.artifactHash,
       privateFunctionsRoot: l2ContractClassRegistered.privateFunctionsRoot,

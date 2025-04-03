@@ -53,12 +53,27 @@ export const l2ContractInstanceDeployed = pgTable(
       name: "contract_class",
       columns: [t.currentContractClassId, t.version],
       foreignColumns: [
-        l2ContractClassRegistered.currentContractClassId,
+        l2ContractClassRegistered.contractClassId,
         l2ContractClassRegistered.version,
       ],
     }).onDelete("cascade"),
   }),
 );
+
+export const l2ContractInstanceUpdate = pgTable(
+  "l2_contract_instance_update",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    address: generateAztecAddressColumn("address").notNull().unique(),
+    previousContractClassId: generateFrColumn("previous_contract_class_id").notNull(),
+    newContractClassId: generateFrColumn("new_contract_class_id").notNull(),
+    blockOfChange: bigint("height", { mode: "bigint" }).notNull(),
+    blockHash: varchar("block_hash")
+      .notNull()
+      .$type<HexString>()
+      .references(() => l2Block.hash, { onDelete: "cascade" }),
+  }
+)
 
 export const l2ContractClassRegistered = pgTable(
   "l2_contract_class_registered",
@@ -67,8 +82,7 @@ export const l2ContractClassRegistered = pgTable(
       .notNull()
       .$type<HexString>()
       .references(() => l2Block.hash, { onDelete: "cascade" }),
-    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
-    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
+    contractClassId: generateFrColumn("contract_class_id").notNull(),
     version: bigint("version", { mode: "number" }).notNull(),
     artifactHash: generateFrColumn("artifact_hash").notNull(),
     privateFunctionsRoot: generateFrColumn("private_functions_root").notNull(),
@@ -79,7 +93,7 @@ export const l2ContractClassRegistered = pgTable(
   (t) => ({
     primaryKey: primaryKey({
       name: "contract_class_id_version",
-      columns: [t.currentContractClassId, t.version],
+      columns: [t.contractClassId, t.version],
     }),
   }),
 );
@@ -133,7 +147,7 @@ export const l2ContractInstanceDeployedRelations = relations(
         l2ContractInstanceDeployed.version,
       ],
       references: [
-        l2ContractClassRegistered.currentContractClassId,
+        l2ContractClassRegistered.contractClassId,
         l2ContractClassRegistered.version,
       ],
     }),
@@ -143,8 +157,7 @@ export const l2ContractInstanceDeployedRelations = relations(
 export const l2PrivateFunction = pgTable(
   "l2_private_function",
   {
-    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
-    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
+    contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
     unconstrainedFunctionsArtifactTreeRoot: generateFrColumn(
       "unconstrained_functions_artifact_tree_root",
@@ -176,7 +189,7 @@ export const l2PrivateFunction = pgTable(
     primaryKey: primaryKey({
 
       name: "private_function_contract_class",
-      columns: [t.currentContractClassId, t.privateFunction_selector_value],
+      columns: [t.contractClassId, t.privateFunction_selector_value],
     }),
   }),
 );
@@ -184,8 +197,7 @@ export const l2PrivateFunction = pgTable(
 export const l2UnconstrainedFunction = pgTable(
   "l2_unconstrained_function",
   {
-    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
-    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
+    contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
     privateFunctionsArtifactTreeRoot: generateFrColumn(
       "private_functions_artifact_tree_root",
@@ -210,7 +222,7 @@ export const l2UnconstrainedFunction = pgTable(
   (t) => ({
     primaryKey: primaryKey({
       name: "unconstrained_function_contract_class",
-      columns: [t.currentContractClassId, t.unconstrainedFunction_selector_value],
+      columns: [t.contractClassId, t.unconstrainedFunction_selector_value],
     }),
   }),
 );

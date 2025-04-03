@@ -132,7 +132,7 @@ export const getABlockWithContractInstances = async () => {
 export const getContractClassesWithArtifactJson = async () => {
   const dbRes = await db()
     .select({
-      classId: l2ContractClassRegistered.currentContractClassId,
+      classId: l2ContractClassRegistered.contractClassId,
       version: l2ContractClassRegistered.version,
       artifactJson: l2ContractClassRegistered.artifactJson,
     })
@@ -147,7 +147,7 @@ export const getContractClassesWithArtifactJson = async () => {
 const getAL2PrivateFunction = async () => {
   const dbRes = await db()
     .select({
-      currentContractClassId: l2PrivateFunction.currentContractClassId,
+      currentContractClassId: l2PrivateFunction.contractClassId,
       functionSelector: l2PrivateFunction.privateFunction_selector_value,
     })
     .from(l2PrivateFunction)
@@ -160,7 +160,7 @@ const getAL2PrivateFunction = async () => {
 const getAL2UnconstrainedFunction = async () => {
   const dbRes = await db()
     .select({
-      currentContractClassId: l2UnconstrainedFunction.currentContractClassId,
+      contractClassId: l2UnconstrainedFunction.contractClassId,
       functionSelector:
         l2UnconstrainedFunction.unconstrainedFunction_selector_value,
     })

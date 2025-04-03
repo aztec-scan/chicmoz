@@ -7,7 +7,7 @@ import {
   address,
   blockHash,
   blockHeight,
-  currentContractClassId,
+  contractClassId,
   functionSelector,
   heightOrHash,
   paths,
@@ -85,7 +85,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     r.push(
       paths.contractClass
         .replace(
-          `:${currentContractClassId}`,
+          `:${contractClassId}`,
           blockAndAContractInstance.contractInstance.classId
         )
         .replace(
@@ -95,7 +95,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     );
     r.push(
       paths.contractClassesByClassId.replace(
-        `:${currentContractClassId}`,
+        `:${contractClassId}`,
         blockAndAContractInstance.contractInstance.classId
       )
     );
@@ -108,7 +108,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     );
     r.push(
       paths.contractInstancesByContractClassId.replace(
-        `:${currentContractClassId}`,
+        `:${contractClassId}`,
         blockAndAContractInstance.contractInstance.classId
       )
     );
@@ -130,13 +130,13 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
   if (privateFunction) {
     r.push(
       paths.contractClassPrivateFunctions.replace(
-        `:${currentContractClassId}`,
+        `:${contractClassId}`,
         privateFunction.currentContractClassId
       )
     );
     r.push(
       paths.contractClassPrivateFunction
-        .replace(`:${currentContractClassId}`, privateFunction.currentContractClassId)
+        .replace(`:${contractClassId}`, privateFunction.currentContractClassId)
         .replace(
           `:${functionSelector}`,
           privateFunction.functionSelector.toString()
@@ -146,13 +146,13 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
   if (unconstrainedFunction) {
     r.push(
       paths.contractClassUnconstrainedFunctions.replace(
-        `:${currentContractClassId}`,
-        unconstrainedFunction.currentContractClassId
+        `:${contractClassId}`,
+        unconstrainedFunction.contractClassId
       )
     );
     r.push(
       paths.contractClassUnconstrainedFunction
-        .replace(`:${currentContractClassId}`, unconstrainedFunction.currentContractClassId)
+        .replace(`:${contractClassId}`, unconstrainedFunction.contractClassId)
         .replace(
           `:${functionSelector}`,
           unconstrainedFunction.functionSelector.toString()

@@ -12,7 +12,7 @@ import {
 } from "../../schema/index.js";
 
 export const getL2ContractClassPrivateFunction = async (
-  currentClassId: ChicmozL2PrivateFunctionBroadcastedEvent["currentContractClassId"],
+  contractClassId: ChicmozL2PrivateFunctionBroadcastedEvent["contractClassId"],
   functionSelector: ChicmozL2PrivateFunctionBroadcastedEvent["privateFunction"]["selector"]["value"]
 ): Promise<ChicmozL2PrivateFunctionBroadcastedEvent | null> => {
   const res = await db()
@@ -22,7 +22,7 @@ export const getL2ContractClassPrivateFunction = async (
     .from(l2PrivateFunction)
     .where(
       and(
-        eq(l2PrivateFunction.currentContractClassId, currentClassId),
+        eq(l2PrivateFunction.contractClassId, contractClassId),
         eq(l2PrivateFunction.privateFunction_selector_value, functionSelector)
       )
     )
@@ -30,7 +30,7 @@ export const getL2ContractClassPrivateFunction = async (
 
   return res.length > 0
     ? chicmozL2PrivateFunctionBroadcastedEventSchema.parse({
-      contractClassId: res[0].currentContractClassId,
+      contractClassId: res[0].contractClassId,
       artifactMetadataHash: res[0].artifactMetadataHash,
       unconstrainedFunctionsArtifactTreeRoot: res[0].unconstrainedFunctionsArtifactTreeRoot,
       privateFunctionTreeSiblingPath: res[0].privateFunctionTreeSiblingPath,
@@ -50,17 +50,17 @@ export const getL2ContractClassPrivateFunction = async (
 };
 
 export const getL2ContractClassPrivateFunctions = async (
-  currentClassId: ChicmozL2PrivateFunctionBroadcastedEvent["currentContractClassId"]
+  contractClassId: ChicmozL2PrivateFunctionBroadcastedEvent["contractClassId"]
 ): Promise<Array<ChicmozL2PrivateFunctionBroadcastedEvent>> => {
   const res = await db()
     .select({
       ...getTableColumns(l2PrivateFunction),
     })
     .from(l2PrivateFunction)
-    .where(eq(l2PrivateFunction.currentContractClassId, currentClassId));
+    .where(eq(l2PrivateFunction.contractClassId, contractClassId));
   return res.map((r) =>
     chicmozL2PrivateFunctionBroadcastedEventSchema.parse({
-      contractClassId: r.currentContractClassId,
+      contractClassId: r.contractClassId,
       artifactMetadataHash: r.artifactMetadataHash,
       unconstrainedFunctionsArtifactTreeRoot: r.unconstrainedFunctionsArtifactTreeRoot,
       privateFunctionTreeSiblingPath: r.privateFunctionTreeSiblingPath,
@@ -80,7 +80,7 @@ export const getL2ContractClassPrivateFunctions = async (
 };
 
 export const getL2ContractClassUnconstrainedFunction = async (
-  currentClassId: ChicmozL2UnconstrainedFunctionBroadcastedEvent["currentContractClassId"],
+  contractClassId: ChicmozL2UnconstrainedFunctionBroadcastedEvent["contractClassId"],
   functionSelector: ChicmozL2UnconstrainedFunctionBroadcastedEvent["unconstrainedFunction"]["selector"]["value"]
 ): Promise<ChicmozL2UnconstrainedFunctionBroadcastedEvent | null> => {
   const res = await db()
@@ -90,7 +90,7 @@ export const getL2ContractClassUnconstrainedFunction = async (
     .from(l2UnconstrainedFunction)
     .where(
       and(
-        eq(l2UnconstrainedFunction.currentContractClassId, currentClassId),
+        eq(l2UnconstrainedFunction.contractClassId, contractClassId),
         eq(
           l2UnconstrainedFunction.unconstrainedFunction_selector_value,
           functionSelector
@@ -100,7 +100,7 @@ export const getL2ContractClassUnconstrainedFunction = async (
     .limit(1);
   return res.length > 0
     ? chicmozL2UnconstrainedFunctionBroadcastedEventSchema.parse({
-      contractClassId: res[0].currentContractClassId,
+      contractClassId: res[0].contractClassId,
       artifactMetadataHash: res[0].artifactMetadataHash,
       privateFunctionsArtifactTreeRoot: res[0].privateFunctionsArtifactTreeRoot,
       artifactFunctionTreeSiblingPath: res[0].artifactFunctionTreeSiblingPath,
@@ -117,17 +117,17 @@ export const getL2ContractClassUnconstrainedFunction = async (
 };
 
 export const getL2ContractClassUnconstrainedFunctions = async (
-  currentClassId: ChicmozL2UnconstrainedFunctionBroadcastedEvent["currentContractClassId"],
+  contractClassId: ChicmozL2UnconstrainedFunctionBroadcastedEvent["contractClassId"],
 ): Promise<Array<ChicmozL2UnconstrainedFunctionBroadcastedEvent>> => {
   const res = await db()
     .select({
       ...getTableColumns(l2UnconstrainedFunction),
     })
     .from(l2UnconstrainedFunction)
-    .where(eq(l2UnconstrainedFunction.currentContractClassId, currentClassId));
+    .where(eq(l2UnconstrainedFunction.contractClassId, contractClassId));
   return res.map((r) =>
     chicmozL2UnconstrainedFunctionBroadcastedEventSchema.parse({
-      contractClassId: r.currentContractClassId,
+      contractClassId: r.contractClassId,
       artifactMetadataHash: r.artifactMetadataHash,
       privateFunctionsArtifactTreeRoot: r.privateFunctionsArtifactTreeRoot,
       artifactFunctionTreeSiblingPath: r.artifactFunctionTreeSiblingPath,

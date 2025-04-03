@@ -56,19 +56,18 @@ const matchTxEffect = async (
 };
 
 const matchContractClass = async (
-  currentContractClassId: HexString
+  contractClassId: HexString
 ): Promise<ChicmozSearchResults["results"]["registeredContractClasses"]> => {
   const res = await db()
     .select({
-      originalContractClassID: l2ContractClassRegistered.originalContractClassId,
-      currentContractClassID: l2ContractClassRegistered.currentContractClassId,
+      contractClassID: l2ContractClassRegistered.contractClassId,
       version: l2ContractClassRegistered.version,
     })
     .from(l2ContractClassRegistered)
-    .where(eq(l2ContractClassRegistered.currentContractClassId, currentContractClassId))
+    .where(eq(l2ContractClassRegistered.contractClassId, contractClassId))
     .execute();
   if (res.length === 0) { return []; }
-  return [{ originalContractClassId: res[0].originalContractClassID, currentContractClassId: res[0].currentContractClassID, version: res[0].version }];
+  return [{ contractClassId: res[0].contractClassID, version: res[0].version }];
 };
 
 const matchContractInstance = async (

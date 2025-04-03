@@ -15,7 +15,7 @@ export const blockHash = "blockHash";
 export const txEffectIndex = "txEffectIndex";
 export const txEffectHash = "txEffectHash";
 export const address = "address";
-export const currentContractClassId = "currentContractClassId";
+export const contractClassId = "contractClassId";
 export const version = "version";
 export const functionSelector = "functionSelector";
 
@@ -32,16 +32,16 @@ export const paths = {
 
   txs: "/l2/txs",
 
-  contractClass: `/l2/contract-classes/:${currentContractClassId}/versions/:${version}`,
-  contractClassesByClassId: `/l2/contract-classes/:${currentContractClassId}`,
+  contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
+  contractClassesByClassId: `/l2/contract-classes/:${contractClassId}`,
   contractClasses: `/l2/contract-classes`,
 
-  contractClassPrivateFunctions: `/l2/contract-classes/:${currentContractClassId}/private-functions`,
-  contractClassPrivateFunction: `/l2/contract-classes/:${currentContractClassId}/private-functions/:${functionSelector}`,
-  contractClassUnconstrainedFunctions: `/l2/contract-classes/:${currentContractClassId}/unconstrained-functions`,
-  contractClassUnconstrainedFunction: `/l2/contract-classes/:${currentContractClassId}/unconstrained-functions/:${functionSelector}`,
+  contractClassPrivateFunctions: `/l2/contract-classes/:${contractClassId}/private-functions`,
+  contractClassPrivateFunction: `/l2/contract-classes/:${contractClassId}/private-functions/:${functionSelector}`,
+  contractClassUnconstrainedFunctions: `/l2/contract-classes/:${contractClassId}/unconstrained-functions`,
+  contractClassUnconstrainedFunction: `/l2/contract-classes/:${contractClassId}/unconstrained-functions/:${functionSelector}`,
 
-  contractInstancesByContractClassId: `/l2/contract-classes/:${currentContractClassId}/contract-instances`,
+  contractInstancesByContractClassId: `/l2/contract-classes/:${contractClassId}/contract-instances`,
   contractInstancesByBlockHash: `/l2/blocks/:${blockHash}/contract-instances`,
   contractInstance: `/l2/contract-instances/:${address}`,
   contractInstances: "/l2/contract-instances",
@@ -127,7 +127,7 @@ export const getContractInstancesByBlockHashSchema = z.object({
 
 export const getContractClassSchema = z.object({
   params: z.object({
-    [currentContractClassId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
     [version]: z.coerce.number().nonnegative(),
   }),
   query: contractIncludeArtifactJson,
@@ -135,21 +135,23 @@ export const getContractClassSchema = z.object({
 
 export const getContractClassesByCurrentClassIdSchema = z.object({
   params: z.object({
-    [currentContractClassId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
   }),
 });
 
 export const getContractClassPrivateFunctionsSchema = z.object({
   params: z.object({
-    [currentContractClassId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
+
   }),
 });
 export const getContractClassPrivateFunctionSchema = z.object({
   params: z.object({
-    [currentContractClassId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
     [functionSelector]: z.coerce.number().nonnegative(),
   }),
 });
+
 export const getContractClassUnconstrainedFunctionsSchema =
   getContractClassPrivateFunctionsSchema;
 export const getContractClassUnconstrainedFunctionSchema =

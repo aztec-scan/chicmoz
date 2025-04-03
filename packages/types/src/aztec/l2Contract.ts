@@ -24,6 +24,18 @@ export type ChicmozL2ContractInstanceDeployedEvent = z.infer<
   typeof chicmozL2ContractInstanceDeployedEventSchema
 >;
 
+export const chicmozL2ContractInstanceUpdatedEventSchema = z.object({
+  address: aztecAddressSchema,
+  previousContractClassId: frSchema,
+  newContractClassId: frSchema,
+  blockOfChange: chicmozL2BlockSchema.shape.height,
+  blockHash: chicmozL2BlockSchema.shape.hash,
+});
+
+export type ChicmozL2ContractInstanceUpdatedEvent = z.infer<
+  typeof chicmozL2ContractInstanceUpdatedEventSchema
+>;
+
 export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema = z.object({
   id: z.string().uuid().optional(),
   address: aztecAddressSchema,
@@ -39,8 +51,7 @@ export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema = z.infer
 
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
-  currentContractClassId: frSchema,
-  originalContractClassId: frSchema,
+  contractClassId: frSchema,
   version: z.number(),
   artifactHash: frSchema,
   privateFunctionsRoot: frSchema,
@@ -60,9 +71,7 @@ const functionSelectorSchema = z.object({
 });
 
 export const chicmozL2PrivateFunctionBroadcastedEventSchema = z.object({
-  originalContractClassId:
-    chicmozL2ContractClassRegisteredEventSchema.shape.originalContractClassId,
-  currentContractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.currentContractClassId,
+  contractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
   artifactMetadataHash: frSchema,
   unconstrainedFunctionsArtifactTreeRoot: frSchema,
   privateFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
@@ -82,9 +91,8 @@ export type ChicmozL2PrivateFunctionBroadcastedEvent = z.infer<
 >;
 
 export const chicmozL2UnconstrainedFunctionBroadcastedEventSchema = z.object({
-  currentContractClassId:
-    chicmozL2ContractClassRegisteredEventSchema.shape.currentContractClassId,
-  originalContractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.originalContractClassId,
+  contractClassId:
+    chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
   artifactMetadataHash: frSchema,
   privateFunctionsArtifactTreeRoot: frSchema,
   artifactFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
