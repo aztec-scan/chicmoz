@@ -6,7 +6,7 @@ export const genereateOpenApiSpec = () => ({
   openapi: "3.1.0",
   info: {
     title: "Aztec Scan API",
-    version: process.env.VERSION_STRING,
+    version: process.env.VERSION_STRING ?? "VERSION NOT SET",
     description:
       "API for exploring Aztec Network. Please note that this is a work in progress and the API is subject to change.",
   },
