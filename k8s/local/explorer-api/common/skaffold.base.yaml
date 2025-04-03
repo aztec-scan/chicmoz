@@ -8,6 +8,8 @@ build:
       context: ../../../../services/explorer-api
       docker:
         dockerfile: Dockerfile
+        buildArgs:
+          VERSION_STRING: "dev-local"
       requires:
         - image: chicmoz-base
           alias: BASE

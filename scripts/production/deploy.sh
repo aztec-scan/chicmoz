@@ -13,7 +13,7 @@ source "$PARENT_SCRIPT_DIR/get_version.sh"
 VERSION_STRING=$(get_version)
 echo "Using VERSION_STRING: $VERSION_STRING"
 
-# Export for backward compatibility with build processes
+# Export VERSION_STRING for the build process
 export VERSION_STRING
 
 # Run skaffold with the version information
