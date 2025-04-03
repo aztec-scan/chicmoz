@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+    defaultNamespace: chicmoz
+manifests:
+  rawYaml:
+    - ./swagger/deployment.yaml
+    - ./swagger/service.yaml
+    - ./swagger/ingress.yaml
