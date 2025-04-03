@@ -13,6 +13,7 @@ import {
   chicmozL2ContractInstanceDeployedEventSchema,
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
 import { controllers as db } from "../../../database/index.js";
@@ -29,9 +30,10 @@ import {
   dbWrapper,
 } from "./utils/index.js";
 
-export const openapi_GET_L2_CONTRACT_INSTANCE = {
+export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
     get: {
+      tags: ["L2", "contract-instances"],
       summary: "Get contract instance by address",
       parameters: [
         {
@@ -73,9 +75,10 @@ export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
   res.status(200).send(instanceData);
 });
 
-export const openapi_GET_L2_CONTRACT_INSTANCES = {
+export const openapi_GET_L2_CONTRACT_INSTANCES: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
     get: {
+      tags: ["L2", "contract-instances"],
       summary: "Get contract instances between from and to block heights",
       parameters: [
         {
@@ -113,31 +116,33 @@ export const GET_L2_CONTRACT_INSTANCES = asyncHandler(async (req, res) => {
   res.status(200).send(instances);
 });
 
-export const openapi_GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH = {
-  "/l2/contract-instances/block/{blockHash}": {
-    get: {
-      summary: "Get contract instances by block hash",
-      parameters: [
-        {
-          name: "blockHash",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
+export const openapi_GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-instances/block/{blockHash}": {
+      get: {
+        tags: ["L2", "contract-instances"],
+        summary: "Get contract instances by block hash",
+        parameters: [
+          {
+            name: "blockHash",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
-        },
-        {
-          name: "includeArtifactJson",
-          in: "query",
-          schema: {
-            type: "boolean",
+          {
+            name: "includeArtifactJson",
+            in: "query",
+            schema: {
+              type: "boolean",
+            },
           },
-        },
-      ],
-      responses: contractInstanceResponseArray,
+        ],
+        responses: contractInstanceResponseArray,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH = asyncHandler(
   async (req, res) => {
@@ -157,31 +162,33 @@ export const GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH = asyncHandler(
   },
 );
 
-export const openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = {
-  "/l2/contract-classes/{classId}/contract-instances": {
-    get: {
-      summary: "Get contract instances by contract class id",
-      parameters: [
-        {
-          name: "classId",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
+export const openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-classes/{classId}/contract-instances": {
+      get: {
+        tags: ["L2", "contract-instances"],
+        summary: "Get contract instances by contract class id",
+        parameters: [
+          {
+            name: "classId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
-        },
-        {
-          name: "includeArtifactJson",
-          in: "query",
-          schema: {
-            type: "boolean",
+          {
+            name: "includeArtifactJson",
+            in: "query",
+            schema: {
+              type: "boolean",
+            },
           },
-        },
-      ],
-      responses: contractInstanceResponseArray,
+        ],
+        responses: contractInstanceResponseArray,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
   async (req, res) => {
@@ -200,24 +207,26 @@ export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
   },
 );
 
-export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = {
-  "/l2/contract-instances/{contractInstanceAddress}/verified-deployment": {
-    get: {
-      summary: "Post data to verify contract instance deployment",
-      parameters: [
-        {
-          name: "contractInstanceAddress",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
+export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-instances/{contractInstanceAddress}/verified-deployment": {
+      get: {
+        tags: ["L2", "contract-instances"],
+        summary: "Post data to verify contract instance deployment",
+        parameters: [
+          {
+            name: "contractInstanceAddress",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
-        },
-      ],
-      responses: contractInstanceResponse,
+        ],
+        responses: contractInstanceResponse,
+      },
     },
-  },
-};
+  };
 
 export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
   async (req, res) => {

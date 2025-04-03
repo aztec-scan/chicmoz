@@ -1,8 +1,9 @@
 import { ApiKey } from "@chicmoz-pkg/types";
 import { PUBLIC_API_KEY } from "../../environment.js";
 import { openApiPaths } from "./routes/index.js";
+import { OpenAPIObject } from 'openapi3-ts/oas31';
 
-export const genereateOpenApiSpec = () => ({
+export const genereateOpenApiSpec = (): OpenAPIObject => ({
   openapi: "3.1.0",
   info: {
     title: "Aztec Scan API",

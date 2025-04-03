@@ -7,6 +7,6 @@ deploy:
     defaultNamespace: chicmoz
 manifests:
   rawYaml:
-    - ./swagger/deployment.yaml
-    - ./swagger/service.yaml
-    - ./swagger/ingress.yaml
+    - k8s/local/swagger/deployment.yaml
+    - k8s/local/swagger/service.yaml
+    - k8s/local/swagger/ingress.yaml

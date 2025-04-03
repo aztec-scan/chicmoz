@@ -1,12 +1,13 @@
 import assert from "assert";
 import bodyParser from "body-parser";
 import { Router } from "express";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { ARTIFACT_BODY_LIMIT } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import * as controller from "./controllers/index.js";
 import { paths } from "./paths_and_validation.js";
 
-export const openApiPaths = {
+export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_LATEST_HEIGHT,
   ...controller.openapi_GET_LATEST_BLOCK,
   ...controller.openapi_GET_BLOCK,
