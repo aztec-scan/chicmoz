@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { JsonViewer } from "../json-viewer";
+import { JsonViewer } from "~/components/json-viewer";
 
 interface ArtifactExplorerTabProps {
   data: unknown;
