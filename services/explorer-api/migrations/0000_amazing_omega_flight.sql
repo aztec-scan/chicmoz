@@ -191,7 +191,8 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployed" (
 	"address" varchar(66) NOT NULL,
 	"version" integer NOT NULL,
 	"salt" varchar(66) NOT NULL,
-	"contract_class_id" varchar(66) NOT NULL,
+	"current_contract_class_id" varchar(66) NOT NULL,
+	"original_contract_class_id" varchar(66) NOT NULL,
 	"initialization_hash" varchar(66) NOT NULL,
 	"deployer" varchar(66) NOT NULL,
 	"masterNullifierPublicKey" varchar(130) NOT NULL,
@@ -212,6 +213,16 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployer_metadata" (
 	"repo_url" varchar NOT NULL,
 	"uploaded_at" timestamp DEFAULT now() NOT NULL,
 	"reviewed_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "l2_contract_instance_update" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"address" varchar(66) NOT NULL,
+	"previous_contract_class_id" varchar(66) NOT NULL,
+	"new_contract_class_id" varchar(66) NOT NULL,
+	"height" bigint NOT NULL,
+	"block_hash" varchar NOT NULL,
+	CONSTRAINT "l2_contract_instance_update_address_unique" UNIQUE("address")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_verified_deployment_arguments" (
@@ -446,13 +457,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "l2_contract_instance_deployed" ADD CONSTRAINT "contract_class" FOREIGN KEY ("contract_class_id","version") REFERENCES "public"."l2_contract_class_registered"("contract_class_id","version") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "l2_contract_instance_deployed" ADD CONSTRAINT "contract_class" FOREIGN KEY ("current_contract_class_id","version") REFERENCES "public"."l2_contract_class_registered"("contract_class_id","version") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "l2_contract_instance_deployer_metadata" ADD CONSTRAINT "l2_contract_instance_deployer_metadata_address_l2_contract_instance_deployed_address_fk" FOREIGN KEY ("address") REFERENCES "public"."l2_contract_instance_deployed"("address") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "l2_contract_instance_update" ADD CONSTRAINT "l2_contract_instance_update_block_hash_l2Block_hash_fk" FOREIGN KEY ("block_hash") REFERENCES "public"."l2Block"("hash") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

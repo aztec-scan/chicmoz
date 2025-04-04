@@ -1,7 +1,7 @@
 [package]
-name = "simple_logging"
+name = "simple_logging_update"
 type = "contract"
-authors = [ "" ]
+authors = [""]
 compiler_version = ">=0.25.0"
 
 [dependencies]

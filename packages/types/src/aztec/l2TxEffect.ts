@@ -1,20 +1,7 @@
 import { z } from "zod";
 import { aztecAddressSchema, hexStringSchema } from "../general.js";
-import { bufferSchema, frNumberSchema, frSchema } from "./utils.js";
+import { frNumberSchema, frSchema } from "./utils.js";
 
-export const contractClassLogsSchema = z.object({
-  data: bufferSchema,
-  contractAddress: aztecAddressSchema,
-});
-
-const logsSchema = (logEntrySchema: typeof contractClassLogsSchema) =>
-  z.object({
-    functionLogs: z.array(
-      z.object({
-        logs: z.array(logEntrySchema),
-      })
-    ),
-  });
 
 export const chicmozL2PendingTxSchema = z.object({
   // TODO: this schema needs to be properly defined, perhaps merged with txEffect
@@ -44,7 +31,7 @@ export const chicmozL2TxEffectSchema = z.object({
   publicDataWrites: z.array(z.object({ leafSlot: frSchema, value: frSchema })),
   privateLogs: z.array(z.array(frSchema)),
   publicLogs: z.array(z.array(frSchema)),
-  contractClassLogs: logsSchema(contractClassLogsSchema),
+  contractClassLogs: z.array(z.object({ contractAddress: aztecAddressSchema, fields: z.array(frSchema) })),
   contractClassLogsLength: frNumberSchema,
 });
 

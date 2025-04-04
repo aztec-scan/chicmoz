@@ -9,7 +9,8 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
   version: z.number(), // TODO: rename to contractClassVersion
   salt: frSchema,
-  contractClassId: frSchema,
+  currentContractClassId: frSchema,
+  originalContractClassId: frSchema,
   initializationHash: frSchema,
   deployer: aztecAddressSchema,
   aztecScanNotes: aztecScanNoteSchema.optional(),
@@ -23,6 +24,18 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
 
 export type ChicmozL2ContractInstanceDeployedEvent = z.infer<
   typeof chicmozL2ContractInstanceDeployedEventSchema
+>;
+
+export const chicmozL2ContractInstanceUpdatedEventSchema = z.object({
+  address: aztecAddressSchema,
+  previousContractClassId: frSchema,
+  newContractClassId: frSchema,
+  blockOfChange: chicmozL2BlockSchema.shape.height,
+  blockHash: chicmozL2BlockSchema.shape.hash,
+});
+
+export type ChicmozL2ContractInstanceUpdatedEvent = z.infer<
+  typeof chicmozL2ContractInstanceUpdatedEventSchema
 >;
 
 export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema =
@@ -67,8 +80,7 @@ const functionSelectorSchema = z.object({
 });
 
 export const chicmozL2PrivateFunctionBroadcastedEventSchema = z.object({
-  contractClassId:
-    chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
+  contractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
   artifactMetadataHash: frSchema,
   unconstrainedFunctionsArtifactTreeRoot: frSchema,
   privateFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?

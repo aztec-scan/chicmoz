@@ -49,8 +49,8 @@ export const run = async () => {
   await publicDeployAccounts(wallet, wallets, pxe);
 
   const { walletClient, publicClient } = createL1Clients(
-    ETHEREUM_RPC_URL,
-    MNEMONIC,
+    [ETHEREUM_RPC_URL],
+    MNEMONIC
   );
   logger.info("🐰 Deploying contracts...");
 
@@ -100,8 +100,8 @@ export const run = async () => {
   registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
-    token.instance.contractClassId.toString(),
-    token.instance.version,
+    token.instance.currentContractClassId.toString(),
+    token.instance.version
   ).catch((err) => {
     logger.error(err);
   });
@@ -155,8 +155,8 @@ export const run = async () => {
   registerContractClassArtifact(
     tokenBridgeContractLoggingName,
     tokenBridgeContractArtifactJson,
-    bridge.instance.contractClassId.toString(),
-    bridge.instance.version,
+    bridge.instance.currentContractClassId.toString(),
+    bridge.instance.version
   ).catch((err) => {
     logger.error(err);
   });
@@ -269,7 +269,7 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount,
+    l1TokenBalance - bridgeAmount,
   );
   const msgHash = Fr.fromString(claim.messageHash);
 
@@ -345,11 +345,11 @@ export const run = async () => {
 
   assert(
     (await l2Token.methods.balance_of_private(ownerAddress).simulate()) ===
-      bridgeAmount - withdrawAmount,
+    bridgeAmount - withdrawAmount,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount,
+    l1TokenBalance - bridgeAmount,
   );
 
   const [l2ToL1MessageIndex, siblingPath] =
@@ -360,8 +360,7 @@ export const run = async () => {
 
   const wait = 10000;
   logger.info(
-    `waiting ${
-      wait / 1000
+    `waiting ${wait / 1000
     } seconds for the message to be available for consumption...`,
   );
   await new Promise((resolve) => setTimeout(resolve, wait));
@@ -376,6 +375,6 @@ export const run = async () => {
 
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount + withdrawAmount,
+    l1TokenBalance - bridgeAmount + withdrawAmount,
   );
 };

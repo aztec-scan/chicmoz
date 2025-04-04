@@ -23,12 +23,13 @@ const truncateString = (value: string) => {
   return `${startHash}...${endHash}`;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hackyLogBlock = (b: L2Block) => {
   const blockString = JSON.stringify(b, null, 2);
   const logString = blockString
     .split(":")
     .map((v) => {
-      if (v.length > 200 && v.includes(",")) {return truncateString(v);}
+      if (v.length > 200 && v.includes(",")) { return truncateString(v); }
 
       return v;
     })
@@ -62,9 +63,9 @@ const onBlock = async ({
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `Failed to parse block ${blockNumber}: ${(e as Error)?.stack ?? e}`,
     );
-    hackyLogBlock(b);
     return;
   }
+
   await storeBlock(parsedBlock);
   await storeContracts(b, parsedBlock.hash);
   await pendingTxsHook(parsedBlock.body.txEffects);
