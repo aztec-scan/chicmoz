@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: swagger
+  name: swagger-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swagger
+  template:
+    metadata:
+      labels:
+        app: swagger
+    spec:
+      containers:
+        - image: swaggerapi/swagger-ui:latest
+          name: swagger
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            - name: SWAGGER_JSON_URL
+              value: "http://api.sandbox.chicmoz.localhost/v1/dev-api-key/open-api-specification"
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 200m

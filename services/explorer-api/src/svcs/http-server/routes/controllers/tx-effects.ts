@@ -1,4 +1,5 @@
 import asyncHandler from "express-async-handler";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
 import {
   getTxEffectByBlockHeightAndIndexSchema,
@@ -11,9 +12,10 @@ import {
   txEffectResponseArray,
 } from "./utils/index.js";
 
-export const openapi_GET_L2_TX_EFFECTS = {
-  "/l2/txEffects": {
+export const openapi_GET_L2_TX_EFFECTS: OpenAPIObject["paths"] = {
+  "/l2/tx-effects": {
     get: {
+      tags: ["L2", "tx-effects"],
       summary: "Get all transaction effects",
       responses: txEffectResponseArray,
     },
@@ -23,67 +25,71 @@ export const openapi_GET_L2_TX_EFFECTS = {
 export const GET_L2_TX_EFFECTS = asyncHandler(async (_req, res) => {
   // TODO: this should be extended to enable querying for block-height ranges
   const txEffectsData = await dbWrapper.getLatest(["l2", "txEffects"], () =>
-    db.l2TxEffect.getLatestTxEffects()
+    db.l2TxEffect.getLatestTxEffects(),
   );
   res.status(200).send(txEffectsData);
 });
 
-export const openapi_GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT = {
-  "/l2/blocks/{blockHeight}/txEffects": {
-    get: {
-      summary: "Get transaction effects by block height",
-      parameters: [
-        {
-          name: "blockHeight",
-          in: "path",
-          required: true,
-          schema: {
-            type: "integer",
+export const openapi_GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT: OpenAPIObject["paths"] =
+  {
+    "/l2/blocks/{blockHeight}/txEffects": {
+      get: {
+        tags: ["L2", "tx-effects"],
+        summary: "Get transaction effects by block height",
+        parameters: [
+          {
+            name: "blockHeight",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
           },
-        },
-      ],
-      responses: txEffectResponseArray,
+        ],
+        responses: txEffectResponseArray,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT = asyncHandler(
   async (req, res) => {
     const { blockHeight } = getTxEffectsByBlockHeightSchema.parse(req).params;
     const txEffectsData = await dbWrapper.get(
       ["l2", "blocks", blockHeight, "txEffects"],
-      () => db.l2TxEffect.getTxEffectsByBlockHeight(blockHeight)
+      () => db.l2TxEffect.getTxEffectsByBlockHeight(blockHeight),
     );
     res.status(200).send(txEffectsData);
-  }
+  },
 );
 
-export const openapi_GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX = {
-  "/l2/blocks/{blockHeight}/txEffects/{txEffectIndex}": {
-    get: {
-      summary: "Get a specific transaction effect by block height and index",
-      parameters: [
-        {
-          name: "blockHeight",
-          in: "path",
-          required: true,
-          schema: {
-            type: "integer",
+export const openapi_GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX: OpenAPIObject["paths"] =
+  {
+    "/l2/blocks/{blockHeight}/txEffects/{txEffectIndex}": {
+      get: {
+        tags: ["L2", "tx-effects"],
+        summary: "Get a specific transaction effect by block height and index",
+        parameters: [
+          {
+            name: "blockHeight",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
           },
-        },
-        {
-          name: "txEffectIndex",
-          in: "path",
-          required: true,
-          schema: {
-            type: "integer",
+          {
+            name: "txEffectIndex",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
           },
-        },
-      ],
-      responses: txEffectResponse,
+        ],
+        responses: txEffectResponse,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX = asyncHandler(
   async (req, res) => {
@@ -94,37 +100,42 @@ export const GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX = asyncHandler(
       () =>
         db.l2TxEffect.getTxEffectByBlockHeightAndIndex(
           blockHeight,
-          txEffectIndex
-        )
+          txEffectIndex,
+        ),
     );
     res.status(200).send(txEffectsData);
-  }
+  },
 );
 
-export const openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH = {
-  "/l2/txEffects/{hash}": {
-    get: {
-      summary: "Get transaction effects by tx effect hash",
-      parameters: [
-        {
-          name: "hash",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
-            pattern: "^0x[a-fA-F0-9]+$",
+export const openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH: OpenAPIObject["paths"] =
+  {
+    "/l2/txEffects/{hash}": {
+      get: {
+        tags: ["L2", "tx-effects"],
+        summary: "Get transaction effects by tx effect hash",
+        parameters: [
+          {
+            name: "hash",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              pattern: "^0x[a-fA-F0-9]+$",
+            },
           },
-        },
-      ],
-      responses: txEffectResponse,
+        ],
+        responses: txEffectResponse,
+      },
     },
-  },
-};
+  };
 
-export const GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH = asyncHandler(async (req, res) => {
-  const { txEffectHash } = getTxEffectsByTxHashSchema.parse(req).params;
-  const txEffectsData = await dbWrapper.get(["l2", "txEffects", txEffectHash], () =>
-    db.l2TxEffect.getTxEffectByHash(txEffectHash)
-  );
-  res.status(200).send(txEffectsData);
-});
+export const GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH = asyncHandler(
+  async (req, res) => {
+    const { txEffectHash } = getTxEffectsByTxHashSchema.parse(req).params;
+    const txEffectsData = await dbWrapper.get(
+      ["l2", "txEffects", txEffectHash],
+      () => db.l2TxEffect.getTxEffectByHash(txEffectHash),
+    );
+    res.status(200).send(txEffectsData);
+  },
+);

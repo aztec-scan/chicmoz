@@ -28,6 +28,7 @@
     "express-http-proxy": "2.0.0",
     "helmet": "7.0.0",
     "morgan": "1.10.0",
+    "openapi3-ts": "^4.4.0",
     "pg": "8.11.3",
     "redis": "4.6.13",
     "uuid": "10.0.0",

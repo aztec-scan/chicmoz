@@ -6,6 +6,7 @@ import {
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import { chicmozL2ContractClassRegisteredEventSchema } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
 import { controllers as db } from "../../../database/index.js";
@@ -20,39 +21,42 @@ import {
   dbWrapper,
 } from "./utils/index.js";
 
-export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS = {
-  "/l2/contract-classes/{classId}/versions/{version}": {
-    get: {
-      summary: "Get registered contract class by contract class id and version",
-      parameters: [
-        {
-          name: "classId",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
+export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-classes/{classId}/versions/{version}": {
+      get: {
+        tags: ["L2", "contract-classes"],
+        summary:
+          "Get registered contract class by contract class id and version",
+        parameters: [
+          {
+            name: "classId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
-        },
-        {
-          name: "version",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
+          {
+            name: "version",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
-        },
-        {
-          name: "includeArtifactJson",
-          in: "query",
-          schema: {
-            type: "boolean",
+          {
+            name: "includeArtifactJson",
+            in: "query",
+            schema: {
+              type: "boolean",
+            },
           },
-        },
-      ],
-      responses: contractClassResponse,
+        ],
+        responses: contractClassResponse,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
   async (req, res) => {
@@ -71,25 +75,27 @@ export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
   },
 );
 
-export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = {
-  "/l2/contract-classes/{classId}": {
-    get: {
-      summary:
-        "Get all versions of registered contract classes by contract class id",
-      parameters: [
-        {
-          name: "classId",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
+export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-classes/{classId}": {
+      get: {
+        tags: ["L2", "contract-classes"],
+        summary:
+          "Get all versions of registered contract classes by contract class id",
+        parameters: [
+          {
+            name: "classId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
-        },
-      ],
-      responses: contractClassResponseArray,
+        ],
+        responses: contractClassResponseArray,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = asyncHandler(
   async (req, res) => {
@@ -107,14 +113,16 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = asyncHandler(
   },
 );
 
-export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES = {
-  "/l2/contract-classes": {
-    get: {
-      summary: "Get latest registered contract classes",
-      responses: contractClassResponseArray,
+export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-classes": {
+      get: {
+        tags: ["L2", "contract-classes"],
+        summary: "Get latest registered contract classes",
+        responses: contractClassResponseArray,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
   async (_req, res) => {
@@ -128,46 +136,48 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
   },
 );
 
-export const openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = {
-  "/l2/contract-classes/{classId}/versions/{version}": {
-    post: {
-      summary: "Register and verify contract class artifact",
-      parameters: [
-        {
-          name: "classId",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
-          },
-        },
-        {
-          name: "version",
-          in: "path",
-          required: true,
-          schema: {
-            type: "string",
-          },
-        },
-      ],
-      requestBody: {
-        content: {
-          "application/json": {
+export const openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-classes/{classId}/versions/{version}": {
+      post: {
+        tags: ["L2", "contract-classes"],
+        summary: "Register and verify contract class artifact",
+        parameters: [
+          {
+            name: "classId",
+            in: "path",
+            required: true,
             schema: {
-              type: "object",
-              properties: {
-                stringifiedArtifactJson: {
-                  type: "string",
+              type: "string",
+            },
+          },
+          {
+            name: "version",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  stringifiedArtifactJson: {
+                    type: "string",
+                  },
                 },
               },
             },
           },
         },
+        responses: contractClassResponse,
       },
-      responses: contractClassResponse,
     },
-  },
-};
+  };
 
 export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
   async (req, res) => {
