@@ -13,7 +13,7 @@ import {
 } from "./utils/index.js";
 
 export const openapi_GET_L2_TX_EFFECTS: OpenAPIObject["paths"] = {
-  "/l2/txEffects": {
+  "/l2/tx-effects": {
     get: {
       tags: ["L2", "tx-effects"],
       summary: "Get all transaction effects",

@@ -4,7 +4,7 @@ import { controllers as db } from "../../../database/index.js";
 import { getSearchSchema } from "../paths_and_validation.js";
 import { searchResultResponse } from "./utils/index.js";
 
-export const openapi_SEARCH: OpenAPIObject["paths"] = {
+export const openapi_L2_SEARCH: OpenAPIObject["paths"] = {
   "/l2/search": {
     get: {
       tags: ["L2", "search"],

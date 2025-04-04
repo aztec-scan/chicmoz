@@ -1,7 +1,7 @@
 import { ApiKey } from "@chicmoz-pkg/types";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { PUBLIC_API_KEY } from "../../environment.js";
 import { openApiPaths } from "./routes/index.js";
-import { OpenAPIObject } from 'openapi3-ts/oas31';
 
 export const genereateOpenApiSpec = (): OpenAPIObject => ({
   openapi: "3.1.0",
@@ -9,7 +9,15 @@ export const genereateOpenApiSpec = (): OpenAPIObject => ({
     title: "Aztec Scan API",
     version: process.env.VERSION_STRING ?? "VERSION NOT SET",
     description:
-      "API for exploring Aztec Network. Please note that this is a work in progress and the API is subject to change.",
+      `API for exploring Aztec Network. Please note that this is a work in progress and the API is subject to change.
+
+Currently there is no sign-up process for an API key. There will however be rate limits in place.
+
+This is also subject to change, and the latest updates on this will always be available here.`,
+    contact: {
+      name: "Github",
+      url: "https://github.com/aztec-scan/chicmoz",
+    },
   },
   servers: [
     {

@@ -209,21 +209,54 @@ export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
 
 export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: OpenAPIObject["paths"] =
   {
-    "/l2/contract-instances/{contractInstanceAddress}/verified-deployment": {
-      get: {
+    "/l2/contract-instances/{address}": {
+      post: {
         tags: ["L2", "contract-instances"],
-        summary: "Post data to verify contract instance deployment",
+        summary: "Verify contract instance deployment",
         parameters: [
           {
-            name: "contractInstanceAddress",
+            name: "address",
             in: "path",
             required: true,
             schema: {
               type: "string",
+              pattern: "^0x[a-fA-F0-9]+$",
             },
           },
         ],
-        responses: contractInstanceResponse,
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["verifiedDeploymentArguments"],
+                properties: {
+                  deployerMetadata: {
+                    type: "object",
+                  },
+                  verifiedDeploymentArguments: {
+                    type: "object",
+                    required: ["publicKeysString", "salt", "deployer", "constructorArgs", "stringifiedArtifactJson"],
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Contract instance verification successful"
+          },
+          "400": {
+            description: "Bad request or verification failed"
+          },
+          "404": {
+            description: "Contract instance not found"
+          },
+          "500": {
+            description: "Internal server error"
+          }
+        },
       },
     },
   };
