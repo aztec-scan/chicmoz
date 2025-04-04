@@ -43,7 +43,7 @@ export const DevPage: FC = () => {
     <div className="flex flex-col items-center">
       <h1>Dev Page</h1>
 
-      <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2">
+      <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
         <h2>Misc</h2>
         <pre>
           <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>

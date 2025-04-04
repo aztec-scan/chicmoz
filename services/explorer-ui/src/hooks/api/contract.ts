@@ -41,8 +41,7 @@ export const useContractClass = ({
       classId,
       version,
     }),
-    queryFn: () =>
-      ContractL2API.getContractClass({ classId, version, includeArtifactJson }),
+    queryFn: () => ContractL2API.getContractClass({ classId, version, includeArtifactJson }),
   });
 };
 
