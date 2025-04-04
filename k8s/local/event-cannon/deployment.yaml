@@ -46,6 +46,7 @@ spec:
               value: "true"
             - name: SCENARIO_L1L2_PRIVATE_MESSAGING
               value: "true"
+            #TODO: https://github.com/aztec-scan/chicmoz/issues/375
             - name: SCENARIO_DEPLOY_AND_UPDATE
               value: "false"
 status: {}

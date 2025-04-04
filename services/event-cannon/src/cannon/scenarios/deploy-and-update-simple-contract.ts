@@ -14,7 +14,6 @@ import {
   logAndWaitForTx,
   registerContractClassArtifact,
 } from "./utils/index.js";
-//TODO: https://github.com/aztec-scan/chicmoz/issues/375
 export async function run() {
   logger.info("===== SIMPLE LOG CONTRACT =====");
   const pxe = getPxe();
