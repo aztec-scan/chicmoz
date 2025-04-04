@@ -12,8 +12,6 @@ const constructor = "constructor";
 const processLog = "process_log";
 const claimPublic = "claim_public";
 const claimPrivate = "claim_private";
-const computeNoteHashAndOptionallyANullifier =
-  "compute_note_hash_and_optionally_a_nullifier";
 const exitToL1Private = "exit_to_l1_private";
 const syncNote = "sync_notes";
 
@@ -26,7 +24,6 @@ const requiredFunctionNames = [
   processLog,
   claimPublic,
   claimPrivate,
-  computeNoteHashAndOptionallyANullifier,
   exitToL1Private,
   syncNote,
 ];
@@ -76,12 +73,6 @@ const claimPrivateSchema = z.object({
   custom_attributes: z.array(z.string()),
 });
 
-const computeNoteHashAndOptionallyANullifierSchema = z.object({
-  name: z
-    .string()
-    .regex(new RegExp(`^${computeNoteHashAndOptionallyANullifier}$`)),
-  custom_attributes: z.array(z.string()),
-});
 
 const exitToL1PrivateSchema = z.object({
   name: z.string().regex(new RegExp(`^${exitToL1Private}$`)),
@@ -102,7 +93,6 @@ const requiredFunctions = z.union([
   processLogSchema,
   claimPublicSchema,
   claimPrivateSchema,
-  computeNoteHashAndOptionallyANullifierSchema,
   exitToL1PrivateSchema,
   syncNoteSchema,
 ]);
