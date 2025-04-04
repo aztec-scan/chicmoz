@@ -78,7 +78,6 @@ export const getL2DeployedContractInstanceByAddress = async (
     deployerMetadata,
     aztecScanNotes,
   } = result[0];
-  //TODO: Reult can be undefined
 
   return parseDeluxe({
     contractClass,
