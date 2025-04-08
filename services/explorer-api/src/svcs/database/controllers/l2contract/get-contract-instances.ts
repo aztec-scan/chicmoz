@@ -40,7 +40,7 @@ export const getL2DeployedContractInstances = async ({
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -71,6 +71,7 @@ export const getL2DeployedContractInstances = async ({
     .where(whereRange)
     .orderBy(DEFAULT_SORT)
     .limit(DB_MAX_CONTRACTS);
+
 
   const parsed = result.map((r) => {
     return parseDeluxe({
@@ -104,7 +105,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -144,8 +145,8 @@ export const getL2DeployedContractInstancesByBlockHash = async (
   });
 };
 
-export const getL2DeployedContractInstancesByContractClassId = async (
-  contractClassId: string,
+export const getL2DeployedContractInstancesByCurrentContractClassId = async (
+  currentContractClassId: string,
   includeArtifactJson?: boolean,
 ): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
   const result = await db()
@@ -165,7 +166,7 @@ export const getL2DeployedContractInstancesByContractClassId = async (
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -196,8 +197,8 @@ export const getL2DeployedContractInstancesByContractClassId = async (
         ),
       ),
     )
-    .where(eq(l2ContractInstanceDeployed.contractClassId, contractClassId))
-    .orderBy(DEFAULT_SORT)
+    .where(eq(l2ContractInstanceDeployed.currentContractClassId, currentContractClassId))
+    .orderBy(desc(l2ContractInstanceDeployed.version))
     .limit(DB_MAX_CONTRACTS);
 
   return result.map((r) => {

@@ -7,7 +7,7 @@ import {
   address,
   blockHash,
   blockHeight,
-  classId,
+  contractClassId,
   functionSelector,
   heightOrHash,
   paths,
@@ -85,7 +85,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     r.push(
       paths.contractClass
         .replace(
-          `:${classId}`,
+          `:${contractClassId}`,
           blockAndAContractInstance.contractInstance.classId
         )
         .replace(
@@ -95,7 +95,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     );
     r.push(
       paths.contractClassesByClassId.replace(
-        `:${classId}`,
+        `:${contractClassId}`,
         blockAndAContractInstance.contractInstance.classId
       )
     );
@@ -108,7 +108,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     );
     r.push(
       paths.contractInstancesByContractClassId.replace(
-        `:${classId}`,
+        `:${contractClassId}`,
         blockAndAContractInstance.contractInstance.classId
       )
     );
@@ -130,13 +130,13 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
   if (privateFunction) {
     r.push(
       paths.contractClassPrivateFunctions.replace(
-        `:${classId}`,
-        privateFunction.classId
+        `:${contractClassId}`,
+        privateFunction.currentContractClassId
       )
     );
     r.push(
       paths.contractClassPrivateFunction
-        .replace(`:${classId}`, privateFunction.classId)
+        .replace(`:${contractClassId}`, privateFunction.currentContractClassId)
         .replace(
           `:${functionSelector}`,
           privateFunction.functionSelector.toString()
@@ -146,13 +146,13 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
   if (unconstrainedFunction) {
     r.push(
       paths.contractClassUnconstrainedFunctions.replace(
-        `:${classId}`,
-        unconstrainedFunction.classId
+        `:${contractClassId}`,
+        unconstrainedFunction.contractClassId
       )
     );
     r.push(
       paths.contractClassUnconstrainedFunction
-        .replace(`:${classId}`, unconstrainedFunction.classId)
+        .replace(`:${contractClassId}`, unconstrainedFunction.contractClassId)
         .replace(
           `:${functionSelector}`,
           unconstrainedFunction.functionSelector.toString()
@@ -184,51 +184,51 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
       <h2>General routes</h2>
       <ul>
         ${r
-          .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
-          .join("")}
+      .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
+      .join("")}
       </ul>
       <br>
       <h2>Some tx effects with logs</h2>
       <h3>Private logs</h3>
       <ul>
         ${somePrivateLogsTxEffects
-          ?.map(
-            (hash) =>
-              `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`
-          )
-          .join("")}
+      ?.map(
+        (hash) =>
+          `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`
+      )
+      .join("")}
       </ul>
       <h3>Public logs</h3>
       <ul>
         ${somePublicLogsTxEffects
-          ?.map(
-            (hash) =>
-              `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`
-          )
-          .join("")}
+      ?.map(
+        (hash) =>
+          `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`
+      )
+      .join("")}
       </ul>
       <br>
       <h2>Contract classes with artifact json</h2>
       <ul>
         ${contractClassesWithArtifactJson
-          .map(
-            (contractClass) =>
-              `<li><a href=${SUB_PATH}/contract-classes/${contractClass.classId}/versions/${contractClass.version}>${contractClass.classId} - ${contractClass.version}</a></li>`
-          )
-          .join("")}
+      .map(
+        (contractClass) =>
+          `<li><a href=${SUB_PATH}/contract-classes/${contractClass.classId}/versions/${contractClass.version}>${contractClass.classId} - ${contractClass.version}</a></li>`
+      )
+      .join("")}
       </ul>
       <h2>Search routes</h2>
       <ul>
         ${searchRoutes
-          .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
-          .join("")}
+      .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
+      .join("")}
       </ul>
       <br>
       <h2>Stats routes</h2>
       <ul>
         ${statsRoutes
-          .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
-          .join("")}
+      .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
+      .join("")}
       </ul>
     </body>
   </html>

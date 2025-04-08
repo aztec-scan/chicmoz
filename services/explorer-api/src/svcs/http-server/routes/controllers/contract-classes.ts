@@ -12,7 +12,7 @@ import { logger } from "../../../../logger.js";
 import { controllers as db } from "../../../database/index.js";
 import {
   getContractClassSchema,
-  getContractClassesByClassIdSchema,
+  getContractClassesByCurrentClassIdSchema,
   postContrctClassArtifactSchema,
 } from "../paths_and_validation.js";
 import {
@@ -60,13 +60,13 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS: OpenAPIObject["paths"] =
 
 export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
   async (req, res) => {
-    const { classId, version } = getContractClassSchema.parse(req).params;
+    const { contractClassId, version } = getContractClassSchema.parse(req).params;
     const { includeArtifactJson } = getContractClassSchema.parse(req).query;
     const contractClass = await dbWrapper.get(
-      ["l2", "contract-classes", classId, version],
+      ["l2", "contract-classes", contractClassId, version],
       () =>
         db.l2Contract.getL2RegisteredContractClass(
-          classId,
+          contractClassId,
           version,
           includeArtifactJson,
         ),
@@ -99,13 +99,13 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS: OpenAPIObj
 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = asyncHandler(
   async (req, res) => {
-    const { classId } = getContractClassesByClassIdSchema.parse(req).params;
+    const { contractClassId } = getContractClassesByCurrentClassIdSchema.parse(req).params;
     const includeArtifactJson = false;
     const contractClasses = await dbWrapper.getLatest(
-      ["l2", "contract-classes", classId],
+      ["l2", "contract-classes", contractClassId],
       () =>
         db.l2Contract.getL2RegisteredContractClasses({
-          classId,
+          contractClassId,
           includeArtifactJson,
         }),
     );
@@ -182,13 +182,13 @@ export const openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT: OpenAPIObject["
 export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
   async (req, res) => {
     const {
-      params: { classId, version },
+      params: { contractClassId, version },
       body,
     } = postContrctClassArtifactSchema.parse(req);
 
     const contractClassString = await dbWrapper.get(
-      ["l2", "contract-classes", classId, version],
-      () => db.l2Contract.getL2RegisteredContractClass(classId, version),
+      ["l2", "contract-classes", contractClassId, version],
+      () => db.l2Contract.getL2RegisteredContractClass(contractClassId, version)
     );
     let dbContractClass;
     if (contractClassString) {
@@ -227,7 +227,7 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
     };
 
     setEntry(
-      ["l2", "contract-classes", classId, version.toString()],
+      ["l2", "contract-classes", contractClassId, version.toString()],
       JSON.stringify(completeContractClass),
       CACHE_TTL_SECONDS,
     ).catch((err) => {

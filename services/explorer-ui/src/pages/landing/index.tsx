@@ -97,8 +97,8 @@ export const Landing: FC = () => {
       {!isConclusivlyDown && (
         <>
           <div className=" flex flex-wrap justify-center my-14 md:my-20">
-            <h1 className="hidden md:text-primary md:dark:text-white">Explore the power of privacy on Aztec</h1>
-            <h5 className="text-primary dark:text-white">Explore the power of privacy on Aztec</h5>
+            <h1 className="hidden md:block md:text-primary md:dark:text-white">Explore the power of privacy on Aztec</h1>
+            <h5 className="text-primary dark:text-white md:hidden">Explore the power of privacy on Aztec</h5>
           </div>
           <div className="grid grid-cols-2 gap-3 my-14 md:my-20 md:grid-cols-3 md:gap-5">
             <InfoBadge

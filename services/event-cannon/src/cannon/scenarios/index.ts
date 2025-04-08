@@ -5,3 +5,4 @@ export { run as deployAndInteractTokenContract } from "./deploy-and-interact-tok
 export { run as deploySimpleLog } from "./deploy-and-run-simple-log.js";
 export { run as l1L2PublicMessaging } from "./l1-l2-public-messaging.js";
 export { run as l1L2PrivateMessaging } from "./l1-l2-private-messaging.js";
+export { run as deployAndUpdateSimpleContract } from "./deploy-and-update-simple-contract.js";
