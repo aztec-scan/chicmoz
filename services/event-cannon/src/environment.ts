@@ -30,3 +30,5 @@ export const SCENARIO_L1L2_PUBLIC_MESSAGING =
   process.env.SCENARIO_L1L2_PUBLIC_MESSAGING === "true" ?? false;
 export const SCENARIO_L1L2_PRIVATE_MESSAGING =
   process.env.SCENARIO_L1L2_PRIVATE_MESSAGING === "true" ?? false;
+export const SCENARIO_DEPLOY_AND_UPDATE =
+  process.env.SCENARIO_DEPLOY_AND_UPDATE === "true" ?? false;

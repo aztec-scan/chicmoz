@@ -1,5 +1,5 @@
 {
-  "id": "ce8acb09-0f09-49f5-9ee0-0cb011278f54",
+  "id": "2953057d-4d5e-4fe1-8314-81f9758887e8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1181,8 +1181,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contract_class_id": {
-          "name": "contract_class_id",
+        "current_contract_class_id": {
+          "name": "current_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_contract_class_id": {
+          "name": "original_contract_class_id",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1239,7 +1245,7 @@
           "name": "contract_class",
           "tableFrom": "l2_contract_instance_deployed",
           "tableTo": "l2_contract_class_registered",
-          "columnsFrom": ["contract_class_id", "version"],
+          "columnsFrom": ["current_contract_class_id", "version"],
           "columnsTo": ["contract_class_id", "version"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -1335,6 +1341,69 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
+    },
+    "public.l2_contract_instance_update": {
+      "name": "l2_contract_instance_update",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "previous_contract_class_id": {
+          "name": "previous_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "new_contract_class_id": {
+          "name": "new_contract_class_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "l2_contract_instance_update_block_hash_l2Block_hash_fk": {
+          "name": "l2_contract_instance_update_block_hash_l2Block_hash_fk",
+          "tableFrom": "l2_contract_instance_update",
+          "tableTo": "l2Block",
+          "columnsFrom": ["block_hash"],
+          "columnsTo": ["hash"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "l2_contract_instance_update_address_unique": {
+          "name": "l2_contract_instance_update_address_unique",
+          "nullsNotDistinct": false,
+          "columns": ["address"]
+        }
+      }
     },
     "public.l2_contract_instance_verified_deployment_arguments": {
       "name": "l2_contract_instance_verified_deployment_arguments",

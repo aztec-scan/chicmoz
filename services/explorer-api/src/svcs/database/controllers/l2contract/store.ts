@@ -1,5 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  ChicmozL2ContractInstanceUpdatedEvent,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeployedEvent,
   type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema,
@@ -10,18 +11,26 @@ import { and, eq } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
+  l2ContractInstanceUpdate,
   l2ContractInstanceVerifiedDeploymentArguments,
   l2PrivateFunction,
   l2UnconstrainedFunction,
 } from "../../../database/schema/l2contract/index.js";
 
-export const storeContractInstance = async (
+export const storeContractInstanceDeployed = async (
   instance: ChicmozL2ContractInstanceDeployedEvent,
 ): Promise<void> => {
   const { publicKeys, ...rest } = instance;
   await db()
     .insert(l2ContractInstanceDeployed)
     .values({ ...publicKeys, ...rest });
+};
+
+export const storeContractInstanceUpdated = async (
+  instance: ChicmozL2ContractInstanceUpdatedEvent,
+): Promise<void> => {
+  await db()
+    .insert(l2ContractInstanceUpdate).values({ ...instance });
 };
 
 export const storeContractInstanceVerifiedDeploymentArguments = async (

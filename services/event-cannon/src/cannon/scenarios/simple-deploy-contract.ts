@@ -30,10 +30,14 @@ export async function run() {
     node: getAztecNodeClient(),
   });
 
+  logger.info(`conract currentContractClassId ${contract.instance.currentContractClassId.toString()}`);
+  logger.info(`conract originalContractClassId ${contract.instance.originalContractClassId.toString()}`);
+
+
   registerContractClassArtifact(
     contractLoggingName,
     contractArtifactJson,
-    contract.instance.contractClassId.toString(),
+    contract.instance.currentContractClassId.toString(),
     contract.instance.version
   ).catch((err) => {
     logger.error(err);
