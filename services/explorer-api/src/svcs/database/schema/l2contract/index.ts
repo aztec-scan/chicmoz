@@ -32,8 +32,12 @@ export const l2ContractInstanceDeployed = pgTable(
     address: generateAztecAddressColumn("address").notNull().unique(),
     version: integer("version").notNull(),
     salt: generateFrColumn("salt").notNull(), // TODO: maybe should not be here?
-    currentContractClassId: generateFrColumn("current_contract_class_id").notNull(),
-    originalContractClassId: generateFrColumn("original_contract_class_id").notNull(),
+    currentContractClassId: generateFrColumn(
+      "current_contract_class_id",
+    ).notNull(),
+    originalContractClassId: generateFrColumn(
+      "original_contract_class_id",
+    ).notNull(),
     initializationHash: generateFrColumn("initialization_hash").notNull(),
     deployer: generateAztecAddressColumn("deployer").notNull(),
     masterNullifierPublicKey: generateConcatFrPointColumn(
@@ -61,20 +65,19 @@ export const l2ContractInstanceDeployed = pgTable(
   }),
 );
 
-export const l2ContractInstanceUpdate = pgTable(
-  "l2_contract_instance_update",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    address: generateAztecAddressColumn("address").notNull().unique(),
-    previousContractClassId: generateFrColumn("previous_contract_class_id").notNull(),
-    newContractClassId: generateFrColumn("new_contract_class_id").notNull(),
-    blockOfChange: bigint("height", { mode: "bigint" }).notNull(),
-    blockHash: varchar("block_hash")
-      .notNull()
-      .$type<HexString>()
-      .references(() => l2Block.hash, { onDelete: "cascade" }),
-  }
-)
+export const l2ContractInstanceUpdate = pgTable("l2_contract_instance_update", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  address: generateAztecAddressColumn("address").notNull().unique(),
+  previousContractClassId: generateFrColumn(
+    "previous_contract_class_id",
+  ).notNull(),
+  newContractClassId: generateFrColumn("new_contract_class_id").notNull(),
+  blockOfChange: bigint("height", { mode: "bigint" }).notNull(),
+  blockHash: varchar("block_hash")
+    .notNull()
+    .$type<HexString>()
+    .references(() => l2Block.hash, { onDelete: "cascade" }),
+});
 
 export const l2ContractClassRegistered = pgTable(
   "l2_contract_class_registered",
@@ -187,8 +190,8 @@ export const l2PrivateFunction = pgTable(
   {
     contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
-    unconstrainedFunctionsArtifactTreeRoot: generateFrColumn(
-      "unconstrained_functions_artifact_tree_root",
+    utilityFunctionsArtifactTreeRoot: generateFrColumn(
+      "utility_functions_artifact_tree_root",
     ).notNull(),
     privateFunctionTreeSiblingPath: jsonb(
       "private_function_tree_sibling_path",
@@ -215,15 +218,14 @@ export const l2PrivateFunction = pgTable(
   },
   (t) => ({
     primaryKey: primaryKey({
-
       name: "private_function_contract_class",
       columns: [t.contractClassId, t.privateFunction_selector_value],
     }),
   }),
 );
 
-export const l2UnconstrainedFunction = pgTable(
-  "l2_unconstrained_function",
+export const l2UtilityFunction = pgTable(
+  "l2_utility_function",
   {
     contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
@@ -236,21 +238,18 @@ export const l2UnconstrainedFunction = pgTable(
     artifactFunctionTreeLeafIndex: bigint("artifact_function_tree_leaf_index", {
       mode: "number",
     }).notNull(),
-    unconstrainedFunction_selector_value: bigint(
-      "unconstrained_function_selector_value",
-      { mode: "number" },
+    utilityFunction_selector_value: bigint("utility_function_selector_value", {
+      mode: "number",
+    }).notNull(),
+    utilityFunction_metadataHash: generateFrColumn(
+      "utility_function_metadata_hash",
     ).notNull(),
-    unconstrainedFunction_metadataHash: generateFrColumn(
-      "unconstrained_function_metadata_hash",
-    ).notNull(),
-    unconstrainedFunction_bytecode: bufferType(
-      "unconstrained_function_bytecode",
-    ).notNull(),
+    utilityFunction_bytecode: bufferType("utility_function_bytecode").notNull(),
   },
   (t) => ({
     primaryKey: primaryKey({
-      name: "unconstrained_function_contract_class",
-      columns: [t.contractClassId, t.unconstrainedFunction_selector_value],
+      name: "utility_function_contract_class",
+      columns: [t.contractClassId, t.utilityFunction_selector_value],
     }),
   }),
 );
@@ -260,7 +259,7 @@ export const l2ContractClassRegisteredRelations = relations(
   ({ many }) => ({
     instances: many(l2ContractInstanceDeployed),
     privateFunctions: many(l2PrivateFunction),
-    unconstrainedFunctions: many(l2UnconstrainedFunction),
+    utilityFunctions: many(l2UtilityFunction),
   }),
 );
 
@@ -271,8 +270,8 @@ export const l2PrivateFunctionRelations = relations(
   }),
 );
 
-export const l2UnconstrainedFunctionRelations = relations(
-  l2UnconstrainedFunction,
+export const l2UtilityFunctionRelations = relations(
+  l2UtilityFunction,
   ({ many }) => ({
     contractClass: many(l2ContractClassRegistered),
   }),

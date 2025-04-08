@@ -39,12 +39,12 @@ const backOffOptions: Partial<IBackOffOptions> = {
       errorCode === "ECONNREFUSED" || errorCode === "ENOTFOUND";
     if (isRetriableProductionError) {
       logger.warn(
-        `🤡 Aztec connection reset, retrying attempt ${attemptNumber}...`
+        `🤡 Aztec connection reset, retrying attempt ${attemptNumber}...`,
       );
       return true;
     } else if (NODE_ENV === NodeEnv.DEV && isRetriableDevelopmentError) {
       logger.warn(
-        `🤡🤡 Aztec connection refused or not found, retrying attempt ${attemptNumber}...`
+        `🤡🤡 Aztec connection refused or not found, retrying attempt ${attemptNumber}...`,
       );
       return true;
     }
@@ -54,20 +54,22 @@ const backOffOptions: Partial<IBackOffOptions> = {
 };
 
 const node = () => {
-  if (!aztecNode) throw new Error("Node not initialized");
+  if (!aztecNode) {
+    throw new Error("Node not initialized");
+  }
   return aztecNode;
 };
 
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
-  args?: Parameters<AztecNode[K]>
+  args?: Parameters<AztecNode[K]>,
 ): Promise<ReturnType<AztecNode[K]>> => {
   try {
     const res = await backOff(async () => {
       // eslint-disable-next-line @typescript-eslint/ban-types
       return (await (node()[fnName] as Function).apply(
         node(),
-        args
+        args,
       )) as Promise<ReturnType<AztecNode[K]>>;
     }, backOffOptions);
     onL2RpcNodeAlive(AZTEC_RPC_URL);
@@ -83,7 +85,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
     });
     if ((e as Error).cause) {
       logger.warn(
-        `Aztec failed to fetch: ${JSON.stringify((e as Error).cause)}`
+        `Aztec failed to fetch: ${JSON.stringify((e as Error).cause)}`,
       );
     }
     throw e;
@@ -102,28 +104,28 @@ export const getFreshInfo = async (): Promise<{
 }> => {
   const nodeVersion = await callNodeFunction("getNodeVersion");
   logger.info(`🧋 Aztec node version: ${nodeVersion}`);
-  const protocolVersion = await callNodeFunction("getVersion");
-  logger.info(`🧋 Aztec protocol version: ${protocolVersion}`);
+  const rollupVersion = await callNodeFunction("getVersion");
+  logger.info(`🧋 Aztec rollup version: ${rollupVersion}`);
   const chainId = await callNodeFunction("getChainId");
   logger.info(`🧋 Aztec chain id: ${chainId}`);
   const enr = await callNodeFunction("getEncodedEnr");
   logger.info(`🧋 Aztec enr: ${enr}`);
   const contractAddresses = await callNodeFunction("getL1ContractAddresses");
   logger.info(
-    `🧋 Aztec contract addresses: ${JSON.stringify(contractAddresses)}`
+    `🧋 Aztec contract addresses: ${JSON.stringify(contractAddresses)}`,
   );
   const protocolContractAddresses = await callNodeFunction(
-    "getProtocolContractAddresses"
+    "getProtocolContractAddresses",
   );
   logger.info(
     `🧋 Aztec protocol contract addresses: ${JSON.stringify(
-      protocolContractAddresses
-    )}`
+      protocolContractAddresses,
+    )}`,
   );
   const nodeInfo: NodeInfo = {
     nodeVersion,
     l1ChainId: chainId,
-    protocolVersion,
+    rollupVersion,
     enr:
       enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX
         ? L2_NETWORK_ID
@@ -134,7 +136,7 @@ export const getFreshInfo = async (): Promise<{
   try {
     await callNodeFunction("getNodeInfo");
     logger.info(
-      `!!!! Aztec node info fetched successfully, perhaps switch back to this?`
+      `!!!! Aztec node info fetched successfully, perhaps switch back to this?`,
     );
   } catch (e) {
     logger.debug(`nodeInfo not available: ${(e as Error).message}`);
@@ -147,11 +149,11 @@ export const getFreshInfo = async (): Promise<{
   const sequencer = getSequencerFromNodeInfo(
     L2_NETWORK_ID,
     AZTEC_RPC_URL,
-    nodeInfo
+    nodeInfo,
   );
   onL2SequencerInfo(sequencer).catch((e) => {
     logger.error(
-      `Aztec failed to publish sequencer info: ${(e as Error).message}`
+      `Aztec failed to publish sequencer info: ${(e as Error).message}`,
     );
   });
 
@@ -165,12 +167,16 @@ export const getBlock = async (height: number) =>
   callNodeFunction("getBlock", [height]);
 
 export const getBlocks = async (fromHeight: number, toHeight: number) => {
-  if (toHeight - fromHeight > MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS)
+  if (toHeight - fromHeight > MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS) {
     throw new Error("Too many blocks to fetch");
+  }
   const blocks = [];
   for (let i = fromHeight; i < toHeight; i++) {
-    if (NODE_ENV === NodeEnv.DEV) await new Promise((r) => setTimeout(r, 500));
-    else await new Promise((r) => setTimeout(r, 200));
+    if (NODE_ENV === NodeEnv.DEV) {
+      await new Promise((r) => setTimeout(r, 500));
+    } else {
+      await new Promise((r) => setTimeout(r, 200));
+    }
     const block = await getBlock(i);
     blocks.push(block);
   }

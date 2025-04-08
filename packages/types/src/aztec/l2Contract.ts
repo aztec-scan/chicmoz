@@ -80,9 +80,10 @@ const functionSelectorSchema = z.object({
 });
 
 export const chicmozL2PrivateFunctionBroadcastedEventSchema = z.object({
-  contractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
+  contractClassId:
+    chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
   artifactMetadataHash: frSchema,
-  unconstrainedFunctionsArtifactTreeRoot: frSchema,
+  utilityFunctionsArtifactTreeRoot: frSchema,
   privateFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
   privateFunctionTreeLeafIndex: z.number(),
   artifactFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
@@ -99,20 +100,20 @@ export type ChicmozL2PrivateFunctionBroadcastedEvent = z.infer<
   typeof chicmozL2PrivateFunctionBroadcastedEventSchema
 >;
 
-export const chicmozL2UnconstrainedFunctionBroadcastedEventSchema = z.object({
+export const chicmozL2UtilityFunctionBroadcastedEventSchema = z.object({
   contractClassId:
     chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
   artifactMetadataHash: frSchema,
   privateFunctionsArtifactTreeRoot: frSchema,
   artifactFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
   artifactFunctionTreeLeafIndex: z.number(),
-  unconstrainedFunction: z.object({
+  utilityFunction: z.object({
     selector: functionSelectorSchema,
     metadataHash: frSchema,
     bytecode: bufferSchema,
   }),
 });
 
-export type ChicmozL2UnconstrainedFunctionBroadcastedEvent = z.infer<
-  typeof chicmozL2UnconstrainedFunctionBroadcastedEventSchema
+export type ChicmozL2UtilityFunctionBroadcastedEvent = z.infer<
+  typeof chicmozL2UtilityFunctionBroadcastedEventSchema
 >;

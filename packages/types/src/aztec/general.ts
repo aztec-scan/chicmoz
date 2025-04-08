@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
-export const CHICMOZ_TYPES_AZTEC_VERSION = "0.81.0";
+export const CHICMOZ_TYPES_AZTEC_VERSION = "0.84.0";
 
 export const L1ContractAddressesSchema = z.object({
   rollupAddress: z.string().startsWith("0x"),
@@ -28,7 +28,7 @@ export const ProtocolContractAddressesSchema = z.object({
 export const chicmozChainInfoSchema = z.object({
   l2NetworkId: l2NetworkIdSchema,
   l1ChainId: z.number(),
-  protocolVersion: z.number(),
+  rollupVersion: z.number(),
   l1ContractAddresses: L1ContractAddressesSchema,
   protocolContractAddresses: ProtocolContractAddressesSchema,
   createdAt: z.coerce.date().optional(),
@@ -44,7 +44,7 @@ export type ChicmozChainInfo = z.infer<typeof chicmozChainInfoSchema>;
 export const nodeInfoSchema = z.object({
   nodeVersion: z.string(),
   l1ChainId: z.number(),
-  protocolVersion: z.number(),
+  rollupVersion: z.number(),
   enr: z.string().optional(),
   l1ContractAddresses: L1ContractAddressesSchema,
   protocolContractAddresses: ProtocolContractAddressesSchema,
@@ -75,7 +75,7 @@ export const chicmozL2SequencerSchema = z.object({
   rpcNodeId: z.string().optional(),
   rpcUrl: z.string().optional(),
   l2NetworkId: l2NetworkIdSchema,
-  protocolVersion: z.number(),
+  rollupVersion: z.number(),
   nodeVersion: z.string(),
   l1ChainId: z.number(),
   lastSeenAt: z.coerce.date(),

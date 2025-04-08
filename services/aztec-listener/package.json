@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/aztec.js": "0.81.0",
-    "@aztec/stdlib": "0.81.0",
+    "@aztec/aztec.js": "0.84.0",
+    "@aztec/stdlib": "0.84.0",
     "@chicmoz-pkg/backend-utils": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",

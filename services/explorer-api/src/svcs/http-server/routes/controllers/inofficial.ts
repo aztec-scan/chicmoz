@@ -31,7 +31,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     await db.signOfLife.getABlockWithContractInstances();
   const contractClassesWithArtifactJson =
     await db.signOfLife.getContractClassesWithArtifactJson();
-  const { privateFunction, unconstrainedFunction } =
+  const { privateFunction, utilityFunction } =
     await db.signOfLife.getL2ContractFunctions();
   const somePrivateLogsTxEffects =
     await db.signOfLife.getSomeTxEffectWithPrivateLogs();
@@ -45,7 +45,7 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     r.push(paths.block.replace(`:${heightOrHash}`, block.hash));
     searchRoutes.push(
       `${paths.search}?q=${block.height.toString()}`,
-      `${paths.search}?q=${block.hash}`
+      `${paths.search}?q=${block.hash}`,
     );
   } else {
     r.push(paths.block + "NOT FOUND");
@@ -55,25 +55,25 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     r.push(
       paths.txEffectsByBlockHeight.replace(
         `:${blockHeight}`,
-        blockAndTxEffect.block.height.toString()
-      )
+        blockAndTxEffect.block.height.toString(),
+      ),
     );
     r.push(
       paths.txEffectByBlockHeightAndIndex
         .replace(`:${blockHeight}`, blockAndTxEffect.block.height.toString())
         .replace(
           `:${txEffectIndex}`,
-          blockAndTxEffect.txEffects[0].index.toString()
-        )
+          blockAndTxEffect.txEffects[0].index.toString(),
+        ),
     );
     r.push(
       paths.txEffectsByTxEffectHash.replace(
         `:${txEffectHash}`,
-        blockAndTxEffect.txEffects[0].hash
-      )
+        blockAndTxEffect.txEffects[0].hash,
+      ),
     );
     searchRoutes.push(
-      `${paths.search}?q=${blockAndTxEffect.txEffects[0].hash}`
+      `${paths.search}?q=${blockAndTxEffect.txEffects[0].hash}`,
     );
   } else {
     r.push(paths.txEffectsByBlockHeight + "NOT FOUND");
@@ -86,42 +86,42 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
       paths.contractClass
         .replace(
           `:${contractClassId}`,
-          blockAndAContractInstance.contractInstance.classId
+          blockAndAContractInstance.contractInstance.classId,
         )
         .replace(
           `:${version}`,
-          blockAndAContractInstance.contractInstance.version.toString()
-        )
+          blockAndAContractInstance.contractInstance.version.toString(),
+        ),
     );
     r.push(
       paths.contractClassesByClassId.replace(
         `:${contractClassId}`,
-        blockAndAContractInstance.contractInstance.classId
-      )
+        blockAndAContractInstance.contractInstance.classId,
+      ),
     );
     r.push(paths.contractClasses);
     r.push(
       paths.contractInstancesByBlockHash.replace(
         `:${blockHash}`,
-        blockAndAContractInstance.block.hash
-      )
+        blockAndAContractInstance.block.hash,
+      ),
     );
     r.push(
       paths.contractInstancesByContractClassId.replace(
         `:${contractClassId}`,
-        blockAndAContractInstance.contractInstance.classId
-      )
+        blockAndAContractInstance.contractInstance.classId,
+      ),
     );
     r.push(
       paths.contractInstance.replace(
         `:${address}`,
-        blockAndAContractInstance.contractInstance.address
-      )
+        blockAndAContractInstance.contractInstance.address,
+      ),
     );
     r.push(paths.contractInstances);
     searchRoutes.push(
       `${paths.search}?q=${blockAndAContractInstance.contractInstance.address}`,
-      `${paths.search}?q=${blockAndAContractInstance.contractInstance.classId}`
+      `${paths.search}?q=${blockAndAContractInstance.contractInstance.classId}`,
     );
   } else {
     r.push(paths.contractInstancesByBlockHash + "NOT FOUND");
@@ -131,36 +131,36 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
     r.push(
       paths.contractClassPrivateFunctions.replace(
         `:${contractClassId}`,
-        privateFunction.currentContractClassId
-      )
+        privateFunction.currentContractClassId,
+      ),
     );
     r.push(
       paths.contractClassPrivateFunction
         .replace(`:${contractClassId}`, privateFunction.currentContractClassId)
         .replace(
           `:${functionSelector}`,
-          privateFunction.functionSelector.toString()
-        )
+          privateFunction.functionSelector.toString(),
+        ),
     );
   }
-  if (unconstrainedFunction) {
+  if (utilityFunction) {
     r.push(
-      paths.contractClassUnconstrainedFunctions.replace(
+      paths.contractClassUtilityFunctions.replace(
         `:${contractClassId}`,
-        unconstrainedFunction.contractClassId
-      )
+        utilityFunction.contractClassId,
+      ),
     );
     r.push(
-      paths.contractClassUnconstrainedFunction
-        .replace(`:${contractClassId}`, unconstrainedFunction.contractClassId)
+      paths.contractClassUtilityFunction
+        .replace(`:${contractClassId}`, utilityFunction.contractClassId)
         .replace(
           `:${functionSelector}`,
-          unconstrainedFunction.functionSelector.toString()
-        )
+          utilityFunction.functionSelector.toString(),
+        ),
     );
   } else {
     r.push(paths.contractClassPrivateFunctions + "NOT FOUND");
-    r.push(paths.contractClassUnconstrainedFunctions + "NOT FOUND");
+    r.push(paths.contractClassUtilityFunctions + "NOT FOUND");
   }
 
   r.push(paths.chainInfo);
@@ -184,51 +184,51 @@ export const GET_ROUTES = asyncHandler(async (_req, res) => {
       <h2>General routes</h2>
       <ul>
         ${r
-      .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
-      .join("")}
+          .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
+          .join("")}
       </ul>
       <br>
       <h2>Some tx effects with logs</h2>
       <h3>Private logs</h3>
       <ul>
         ${somePrivateLogsTxEffects
-      ?.map(
-        (hash) =>
-          `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`
-      )
-      .join("")}
+          ?.map(
+            (hash) =>
+              `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`,
+          )
+          .join("")}
       </ul>
       <h3>Public logs</h3>
       <ul>
         ${somePublicLogsTxEffects
-      ?.map(
-        (hash) =>
-          `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`
-      )
-      .join("")}
+          ?.map(
+            (hash) =>
+              `<li><a href=localhost:5173/tx-effects/${hash}>${hash}</a></li>`,
+          )
+          .join("")}
       </ul>
       <br>
       <h2>Contract classes with artifact json</h2>
       <ul>
         ${contractClassesWithArtifactJson
-      .map(
-        (contractClass) =>
-          `<li><a href=${SUB_PATH}/contract-classes/${contractClass.classId}/versions/${contractClass.version}>${contractClass.classId} - ${contractClass.version}</a></li>`
-      )
-      .join("")}
+          .map(
+            (contractClass) =>
+              `<li><a href=${SUB_PATH}/contract-classes/${contractClass.classId}/versions/${contractClass.version}>${contractClass.classId} - ${contractClass.version}</a></li>`,
+          )
+          .join("")}
       </ul>
       <h2>Search routes</h2>
       <ul>
         ${searchRoutes
-      .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
-      .join("")}
+          .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
+          .join("")}
       </ul>
       <br>
       <h2>Stats routes</h2>
       <ul>
         ${statsRoutes
-      .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
-      .join("")}
+          .map((route) => `<li><a href=${SUB_PATH + route}>${route}</a></li>`)
+          .join("")}
       </ul>
     </body>
   </html>

@@ -38,8 +38,8 @@ export const paths = {
 
   contractClassPrivateFunctions: `/l2/contract-classes/:${contractClassId}/private-functions`,
   contractClassPrivateFunction: `/l2/contract-classes/:${contractClassId}/private-functions/:${functionSelector}`,
-  contractClassUnconstrainedFunctions: `/l2/contract-classes/:${contractClassId}/unconstrained-functions`,
-  contractClassUnconstrainedFunction: `/l2/contract-classes/:${contractClassId}/unconstrained-functions/:${functionSelector}`,
+  contractClassUtilityFunctions: `/l2/contract-classes/:${contractClassId}/utility-functions`,
+  contractClassUtilityFunction: `/l2/contract-classes/:${contractClassId}/utility-functions/:${functionSelector}`,
 
   contractInstancesByContractClassId: `/l2/contract-classes/:${contractClassId}/contract-instances`,
   contractInstancesByBlockHash: `/l2/blocks/:${blockHash}/contract-instances`,
@@ -142,7 +142,6 @@ export const getContractClassesByCurrentClassIdSchema = z.object({
 export const getContractClassPrivateFunctionsSchema = z.object({
   params: z.object({
     [contractClassId]: hexStringSchema,
-
   }),
 });
 export const getContractClassPrivateFunctionSchema = z.object({
@@ -152,9 +151,9 @@ export const getContractClassPrivateFunctionSchema = z.object({
   }),
 });
 
-export const getContractClassUnconstrainedFunctionsSchema =
+export const getContractClassUtilityFunctionsSchema =
   getContractClassPrivateFunctionsSchema;
-export const getContractClassUnconstrainedFunctionSchema =
+export const getContractClassUtilityFunctionSchema =
   getContractClassPrivateFunctionSchema;
 
 export const postContrctClassArtifactSchema = z.lazy(() => {
@@ -174,7 +173,7 @@ export const postVerifiedContractInstanceSchema = z.lazy(() => {
   let overrideAztecOriginNotes = {};
   if (process.env.NODE_ENV === "production") {
     overrideAztecOriginNotes = {
-      aztecScanNotes: true
+      aztecScanNotes: true,
     };
   }
   return z.object({
