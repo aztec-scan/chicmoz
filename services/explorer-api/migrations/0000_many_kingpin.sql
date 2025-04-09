@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS "aztec-chain-connection" (
 	"rpc_url" varchar NOT NULL,
 	"node_version" varchar NOT NULL,
 	"l1_chain_id" integer NOT NULL,
-	"protocol_version" integer NOT NULL,
+	"rollup_version" integer NOT NULL,
 	"enr" varchar,
 	"l1_contract_addresses" jsonb NOT NULL,
 	"protocol_contract_addresses" jsonb NOT NULL
@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_verified_deployment_arguments" 
 CREATE TABLE IF NOT EXISTS "l2_private_function" (
 	"contract_class_id" varchar(66) NOT NULL,
 	"artifact_metadata_hash" varchar(66) NOT NULL,
-	"unconstrained_functions_artifact_tree_root" varchar(66) NOT NULL,
+	"utility_functions_artifact_tree_root" varchar(66) NOT NULL,
 	"private_function_tree_sibling_path" jsonb NOT NULL,
 	"private_function_tree_leaf_index" bigint NOT NULL,
 	"artifact_function_tree_sibling_path" jsonb NOT NULL,
@@ -249,16 +249,16 @@ CREATE TABLE IF NOT EXISTS "l2_private_function" (
 	CONSTRAINT "private_function_contract_class" PRIMARY KEY("contract_class_id","private_function_selector_value")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "l2_unconstrained_function" (
+CREATE TABLE IF NOT EXISTS "l2_utility_function" (
 	"contract_class_id" varchar(66) NOT NULL,
 	"artifact_metadata_hash" varchar(66) NOT NULL,
 	"private_functions_artifact_tree_root" varchar(66) NOT NULL,
 	"artifact_function_tree_sibling_path" jsonb NOT NULL,
 	"artifact_function_tree_leaf_index" bigint NOT NULL,
-	"unconstrained_function_selector_value" bigint NOT NULL,
-	"unconstrained_function_metadata_hash" varchar(66) NOT NULL,
-	"unconstrained_function_bytecode" "bytea" NOT NULL,
-	CONSTRAINT "unconstrained_function_contract_class" PRIMARY KEY("contract_class_id","unconstrained_function_selector_value")
+	"utility_function_selector_value" bigint NOT NULL,
+	"utility_function_metadata_hash" varchar(66) NOT NULL,
+	"utility_function_bytecode" "bytea" NOT NULL,
+	CONSTRAINT "utility_function_contract_class" PRIMARY KEY("contract_class_id","utility_function_selector_value")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l1_generic_contract_event" (
@@ -309,7 +309,7 @@ CREATE TABLE IF NOT EXISTS "l1_l2_validator_withdrawer" (
 CREATE TABLE IF NOT EXISTS "l2_chain_info" (
 	"l2_network_id" varchar PRIMARY KEY NOT NULL,
 	"l1_chain_id" integer NOT NULL,
-	"protocol_version" integer NOT NULL,
+	"rollup_version" integer NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"l1_contract_addresses" jsonb NOT NULL,
@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS "l2_sequencer" (
 	"enr" varchar PRIMARY KEY NOT NULL,
 	"rpc_node_id" uuid NOT NULL,
 	"l2_network_id" varchar NOT NULL,
-	"protocol_version" integer NOT NULL,
+	"rollup_version" integer NOT NULL,
 	"node_version" varchar NOT NULL,
 	"l1_chain_id" integer NOT NULL,
 	"created_at" timestamp DEFAULT now()
