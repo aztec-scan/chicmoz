@@ -1,5 +1,5 @@
 {
-  "id": "2953057d-4d5e-4fe1-8314-81f9758887e8",
+  "id": "90258e71-1812-4edf-9210-8d0a8068b824",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -65,8 +65,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "protocol_version": {
-          "name": "protocol_version",
+        "rollup_version": {
+          "name": "rollup_version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -1478,8 +1478,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "unconstrained_functions_artifact_tree_root": {
-          "name": "unconstrained_functions_artifact_tree_root",
+        "utility_functions_artifact_tree_root": {
+          "name": "utility_functions_artifact_tree_root",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1543,8 +1543,8 @@
       },
       "uniqueConstraints": {}
     },
-    "public.l2_unconstrained_function": {
-      "name": "l2_unconstrained_function",
+    "public.l2_utility_function": {
+      "name": "l2_utility_function",
       "schema": "",
       "columns": {
         "contract_class_id": {
@@ -1577,20 +1577,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "unconstrained_function_selector_value": {
-          "name": "unconstrained_function_selector_value",
+        "utility_function_selector_value": {
+          "name": "utility_function_selector_value",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "unconstrained_function_metadata_hash": {
-          "name": "unconstrained_function_metadata_hash",
+        "utility_function_metadata_hash": {
+          "name": "utility_function_metadata_hash",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
         },
-        "unconstrained_function_bytecode": {
-          "name": "unconstrained_function_bytecode",
+        "utility_function_bytecode": {
+          "name": "utility_function_bytecode",
           "type": "bytea",
           "primaryKey": false,
           "notNull": true
@@ -1599,12 +1599,9 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "unconstrained_function_contract_class": {
-          "name": "unconstrained_function_contract_class",
-          "columns": [
-            "contract_class_id",
-            "unconstrained_function_selector_value"
-          ]
+        "utility_function_contract_class": {
+          "name": "utility_function_contract_class",
+          "columns": ["contract_class_id", "utility_function_selector_value"]
         }
       },
       "uniqueConstraints": {}
@@ -1889,8 +1886,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "protocol_version": {
-          "name": "protocol_version",
+        "rollup_version": {
+          "name": "rollup_version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -2069,8 +2066,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "protocol_version": {
-          "name": "protocol_version",
+        "rollup_version": {
+          "name": "rollup_version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true

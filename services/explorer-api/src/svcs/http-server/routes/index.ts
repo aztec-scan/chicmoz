@@ -28,8 +28,8 @@ export const openApiPaths: OpenAPIObject["paths"] = {
 
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS,
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION,
-  ...controller.openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS,
-  ...controller.openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION,
+  ...controller.openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS,
+  ...controller.openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION,
 
   ...controller.openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT,
 
@@ -142,12 +142,12 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION,
   );
   router.get(
-    paths.contractClassUnconstrainedFunctions,
-    controller.GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS,
+    paths.contractClassUtilityFunctions,
+    controller.GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS,
   );
   router.get(
-    paths.contractClassUnconstrainedFunction,
-    controller.GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION,
+    paths.contractClassUtilityFunction,
+    controller.GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION,
   );
 
   router.post(

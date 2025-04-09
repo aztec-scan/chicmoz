@@ -23,7 +23,6 @@ import {
   type FieldLike,
   Fr,
   type FunctionSelectorLike,
-  L1EventPayload,
   loadContractArtifact,
   loadContractArtifactForPublic,
   type NoirCompiledContract,
@@ -141,9 +140,6 @@ export class SimpleLoggingContract extends ContractBase {
 
     /** increase_counter_public(counter_id: field) */
     increase_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
-
-    /** process_log(_log_ciphertext: struct, _tx_hash: field, _unique_note_hashes_in_tx: struct, _first_nullifier_in_tx: field, _recipient: struct) */
-    process_log: ((_log_ciphertext: { storage: FieldLike[], len: (bigint | number) }, _tx_hash: FieldLike, _unique_note_hashes_in_tx: { storage: FieldLike[], len: (bigint | number) }, _first_nullifier_in_tx: FieldLike, _recipient: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** public_dispatch(selector: field) */
     public_dispatch: ((selector: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;

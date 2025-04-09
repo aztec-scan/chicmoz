@@ -9,7 +9,6 @@ const exitToL1Public = "exit_to_l1_public";
 const publicDispatch = "public_dispatch";
 const getConfigPublic = "get_config_public";
 const constructor = "constructor";
-const processLog = "process_log";
 const claimPublic = "claim_public";
 const claimPrivate = "claim_private";
 const exitToL1Private = "exit_to_l1_private";
@@ -21,7 +20,6 @@ const requiredFunctionNames = [
   publicDispatch,
   getConfigPublic,
   constructor,
-  processLog,
   claimPublic,
   claimPrivate,
   exitToL1Private,
@@ -58,11 +56,6 @@ const constructorSchema = z.object({
   custom_attributes: z.array(z.string()),
 });
 
-const processLogSchema = z.object({
-  name: z.string().regex(new RegExp(`^${processLog}$`)),
-  custom_attributes: z.array(z.string()),
-});
-
 const claimPublicSchema = z.object({
   name: z.string().regex(new RegExp(`^${claimPublic}$`)),
   custom_attributes: z.array(z.string()),
@@ -72,7 +65,6 @@ const claimPrivateSchema = z.object({
   name: z.string().regex(new RegExp(`^${claimPrivate}$`)),
   custom_attributes: z.array(z.string()),
 });
-
 
 const exitToL1PrivateSchema = z.object({
   name: z.string().regex(new RegExp(`^${exitToL1Private}$`)),
@@ -90,7 +82,6 @@ const requiredFunctions = z.union([
   publicDispatchSchema,
   getConfigPublicSchema,
   constructorSchema,
-  processLogSchema,
   claimPublicSchema,
   claimPrivateSchema,
   exitToL1PrivateSchema,

@@ -15,7 +15,7 @@ import {
   chicmozL2SequencerDeluxeSchema,
   chicmozL2SequencerSchema,
   chicmozL2TxEffectDeluxeSchema,
-  chicmozL2UnconstrainedFunctionBroadcastedEventSchema,
+  chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozSearchResultsSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
@@ -27,7 +27,7 @@ import { logger } from "../../../../../logger.js";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
   let schema = {};
-  // logger.info(`Generating schema for ${name}`);
+  //logger.info(`Generating schema for ${name}`);
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     schema = generateSchema(zodSchema);
@@ -113,13 +113,13 @@ export const contractClassPrivateFunctionResponseArray = getResponse(
   "contractClassPrivateFunctionArray",
 );
 
-export const contractClassUnconstrainedFunctionResponse = getResponse(
-  chicmozL2UnconstrainedFunctionBroadcastedEventSchema,
-  "contractClassUnconstrainedFunction",
+export const contractClassUtilityFunctionResponse = getResponse(
+  chicmozL2UtilityFunctionBroadcastedEventSchema,
+  "contractClassUtilityFunction",
 );
-export const contractClassUnconstrainedFunctionResponseArray = getResponse(
-  z.array(chicmozL2UnconstrainedFunctionBroadcastedEventSchema),
-  "contractClassUnconstrainedFunctionArray",
+export const contractClassUtilityFunctionResponseArray = getResponse(
+  z.array(chicmozL2UtilityFunctionBroadcastedEventSchema),
+  "contractClassUtilityFunctionArray",
 );
 
 // For lazy schemas, we need to create a modified version differently
