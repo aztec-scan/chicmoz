@@ -11,7 +11,7 @@ export function ChicmozHomeLink({
   return (
     <div className={className}>
       <Link to={routes.home.route} className="flex flex-row items-center">
-        <AztecIconWhite className={iconClasses} />
+        <AztecIconWhite className={iconClasses + `size-6`} />
         <p
           className={`${textClasses} text-white ml-1 font-bold text-[24px] font-space-grotesk`}
         >
