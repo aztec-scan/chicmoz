@@ -4,7 +4,7 @@ export type tabId =
   | "contractVersions"
   | "contractInstances"
   | "privateFunctions"
-  | "unconstrainedFunctions"
+  | "utilityFunctions"
   | "publicFunctions"
   | "artifactJson"
   | "artifactExplorer";
@@ -13,7 +13,7 @@ export const tabIds = [
   "contractVersions",
   "contractInstances",
   "privateFunctions",
-  "unconstrainedFunctions",
+  "utilityFunctions",
   "artifactJson",
   "publicFunctions",
   "artifactExplorer"
@@ -32,7 +32,7 @@ export const contractClassTabs: Tab[] = [
   { id: "contractVersions", label: "Versions" },
   { id: "contractInstances", label: "Instances" },
   { id: "privateFunctions", label: "Private functions" },
-  { id: "unconstrainedFunctions", label: "Unconstrained functions" },
+  { id: "utilityFunctions", label: "Utility functions" },
   { id: "publicFunctions", label: "Public functions" },
   { id: "artifactJson", label: "Artifact JSON" },
   { id: "artifactExplorer", label: "Artifact Explorer" }

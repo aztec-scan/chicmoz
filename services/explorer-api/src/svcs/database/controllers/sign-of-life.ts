@@ -10,7 +10,7 @@ import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
   l2PrivateFunction,
-  l2UnconstrainedFunction,
+  l2UtilityFunction,
 } from "../schema/index.js";
 
 export const getABlock = async () => {
@@ -23,7 +23,9 @@ export const getABlock = async () => {
     .orderBy(desc(l2Block.height))
     .limit(1)
     .execute();
-  if (res.length === 0) { return null; }
+  if (res.length === 0) {
+    return null;
+  }
   return {
     height: Number(res[0].height),
     hash: res[0].hash,
@@ -40,7 +42,7 @@ export const getABlockWithTxEffects = async () => {
       },
       txEffects:
         sql<string>`COALESCE(json_agg(json_build_object('hash', ${txEffect.txHash}, 'index', ${txEffect.index})) FILTER (WHERE ${txEffect.txHash} IS NOT NULL), '[]'::json)`.as(
-          "txEffects"
+          "txEffects",
         ),
       txEffectCount: sql<number>`count(${txEffect.txHash})`.as("txEffectCount"),
     })
@@ -52,7 +54,9 @@ export const getABlockWithTxEffects = async () => {
     .limit(1)
     .execute();
 
-  if (dbRes.length === 0) { return null; }
+  if (dbRes.length === 0) {
+    return null;
+  }
 
   const result = dbRes[0];
   return {
@@ -78,7 +82,9 @@ export const getSomeTxEffectWithPrivateLogs = async () => {
     .where(sql`jsonb_array_length(${txEffect.privateLogs}) > 0`)
     .limit(10)
     .execute();
-  if (dbRes.length === 0) { return null; }
+  if (dbRes.length === 0) {
+    return null;
+  }
   return dbRes.map((row) => row.txHash);
 };
 
@@ -91,7 +97,9 @@ export const getSomeTxEffectWithPublicLogs = async () => {
     .where(sql`jsonb_array_length(${txEffect.publicLogs}) > 0`)
     .limit(10)
     .execute();
-  if (dbRes.length === 0) { return null; }
+  if (dbRes.length === 0) {
+    return null;
+  }
   return dbRes.map((row) => row.hash);
 };
 
@@ -111,11 +119,13 @@ export const getABlockWithContractInstances = async () => {
     .from(l2Block)
     .innerJoin(
       l2ContractInstanceDeployed,
-      eq(l2Block.hash, l2ContractInstanceDeployed.blockHash)
+      eq(l2Block.hash, l2ContractInstanceDeployed.blockHash),
     )
     .limit(1)
     .execute();
-  if (dbRes.length === 0) { return null; }
+  if (dbRes.length === 0) {
+    return null;
+  }
   return {
     block: {
       height: Number(dbRes[0].l2Block.height),
@@ -140,7 +150,9 @@ export const getContractClassesWithArtifactJson = async () => {
     .where(isNotNull(l2ContractClassRegistered.artifactJson))
     .limit(10)
     .execute();
-  if (dbRes.length === 0) { return []; }
+  if (dbRes.length === 0) {
+    return [];
+  }
   return dbRes;
 };
 
@@ -153,31 +165,34 @@ const getAL2PrivateFunction = async () => {
     .from(l2PrivateFunction)
     .limit(1)
     .execute();
-  if (dbRes.length === 0) { return null; }
+  if (dbRes.length === 0) {
+    return null;
+  }
   return dbRes[0];
 };
 
-const getAL2UnconstrainedFunction = async () => {
+const getAL2UtilityFunction = async () => {
   const dbRes = await db()
     .select({
-      contractClassId: l2UnconstrainedFunction.contractClassId,
-      functionSelector:
-        l2UnconstrainedFunction.unconstrainedFunction_selector_value,
+      contractClassId: l2UtilityFunction.contractClassId,
+      functionSelector: l2UtilityFunction.utilityFunction_selector_value,
     })
-    .from(l2UnconstrainedFunction)
+    .from(l2UtilityFunction)
     .limit(1)
     .execute();
-  if (dbRes.length === 0) { return null; }
+  if (dbRes.length === 0) {
+    return null;
+  }
   return dbRes[0];
 };
 
 export const getL2ContractFunctions = async () => {
-  const [privateFunction, unconstrainedFunction] = await Promise.all([
+  const [privateFunction, utilityFunction] = await Promise.all([
     getAL2PrivateFunction(),
-    getAL2UnconstrainedFunction(),
+    getAL2UtilityFunction(),
   ]);
   return {
     privateFunction,
-    unconstrainedFunction,
+    utilityFunction,
   };
 };

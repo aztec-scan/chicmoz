@@ -3,11 +3,16 @@ import { controllers as db } from "../../../database/index.js";
 import {
   getContractClassPrivateFunctionSchema,
   getContractClassPrivateFunctionsSchema,
-  getContractClassUnconstrainedFunctionSchema,
-  getContractClassUnconstrainedFunctionsSchema,
+  getContractClassUtilityFunctionSchema,
+  getContractClassUtilityFunctionsSchema,
 } from "../paths_and_validation.js";
 import { dbWrapper } from "./utils/index.js";
-import { contractClassPrivateFunctionResponse, contractClassPrivateFunctionResponseArray, contractClassUnconstrainedFunctionResponse, contractClassUnconstrainedFunctionResponseArray } from "./utils/open-api-responses.js";
+import {
+  contractClassPrivateFunctionResponse,
+  contractClassPrivateFunctionResponseArray,
+  contractClassUtilityFunctionResponse,
+  contractClassUtilityFunctionResponseArray,
+} from "./utils/open-api-responses.js";
 
 export const openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS = {
   "/l2/contract-classes/{classId}/private-functions": {
@@ -34,10 +39,10 @@ export const GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS = asyncHandler(
       getContractClassPrivateFunctionsSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
       ["l2", "contract-classes", contractClassId, "private-functions"],
-      () => db.l2Contract.getL2ContractClassPrivateFunctions(contractClassId)
+      () => db.l2Contract.getL2ContractClassPrivateFunctions(contractClassId),
     );
     res.status(200).send(contractClasses);
-  }
+  },
 );
 
 export const openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION = {
@@ -82,18 +87,17 @@ export const GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION = asyncHandler(
       () =>
         db.l2Contract.getL2ContractClassPrivateFunction(
           contractClassId,
-          functionSelector
-        )
+          functionSelector,
+        ),
     );
     res.status(200).send(contractClasses);
-  }
+  },
 );
 
-export const openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS = {
-  "/l2/contract-classes/{classId}/unconstrained-functions": {
+export const openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS = {
+  "/l2/contract-classes/{classId}/utility-functions": {
     get: {
-      summary:
-        "Get broadcasted unconstrained functions of registered contract class",
+      summary: "Get broadcasted utility functions of registered contract class",
       parameters: [
         {
           name: "classId",
@@ -104,28 +108,27 @@ export const openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS = {
           },
         },
       ],
-      responses: contractClassUnconstrainedFunctionResponseArray,
+      responses: contractClassUtilityFunctionResponseArray,
     },
   },
 };
 
-export const GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS = asyncHandler(
+export const GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS = asyncHandler(
   async (req, res) => {
     const { contractClassId } =
-      getContractClassUnconstrainedFunctionsSchema.parse(req).params;
+      getContractClassUtilityFunctionsSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
-      ["l2", "contract-classes", contractClassId, "unconstrained-functions"],
-      () => db.l2Contract.getL2ContractClassUnconstrainedFunctions(contractClassId)
+      ["l2", "contract-classes", contractClassId, "utility-functions"],
+      () => db.l2Contract.getL2ContractClassUtilityFunctions(contractClassId),
     );
     res.status(200).send(contractClasses);
-  }
+  },
 );
 
-export const openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION = {
-  "/l2/contract-classes/{classId}/unconstrained-functions/{functionSelector}": {
+export const openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION = {
+  "/l2/contract-classes/{classId}/utility-functions/{functionSelector}": {
     get: {
-      summary:
-        "Get broadcasted unconstrained function of registered contract class",
+      summary: "Get broadcasted utility function of registered contract class",
       parameters: [
         {
           name: "classId",
@@ -144,29 +147,29 @@ export const openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION = {
           },
         },
       ],
-      responses: contractClassUnconstrainedFunctionResponse,
+      responses: contractClassUtilityFunctionResponse,
     },
   },
 };
 
-export const GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION = asyncHandler(
+export const GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION = asyncHandler(
   async (req, res) => {
     const { contractClassId, functionSelector } =
-      getContractClassUnconstrainedFunctionSchema.parse(req).params;
+      getContractClassUtilityFunctionSchema.parse(req).params;
     const contractClasses = await dbWrapper.getLatest(
       [
         "l2",
         "contract-classes",
         contractClassId,
-        "unconstrained-functions",
+        "utility-functions",
         functionSelector,
       ],
       () =>
-        db.l2Contract.getL2ContractClassUnconstrainedFunction(
+        db.l2Contract.getL2ContractClassUtilityFunction(
           contractClassId,
-          functionSelector
-        )
+          functionSelector,
+        ),
     );
     res.status(200).send(contractClasses);
-  }
+  },
 );

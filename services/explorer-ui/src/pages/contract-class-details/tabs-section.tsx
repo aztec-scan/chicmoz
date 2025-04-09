@@ -57,7 +57,7 @@ export const TabSection: FC<TabSectionProps> = ({
     contractInstances: !!contractInstances && !!contractInstances.data?.length,
 
     privateFunctions: !!selectedVersion && privFunc && privFunc.size > 1,
-    unconstrainedFunctions: !!selectedVersion && uncFunc && uncFunc.size > 1,
+    utilityFunctions: !!selectedVersion && uncFunc && uncFunc.size > 1,
     publicFunctions: !!selectedVersion && pubFunc && pubFunc.size > 1,
     artifactJson:
       !!selectedVersion &&
@@ -76,7 +76,7 @@ export const TabSection: FC<TabSectionProps> = ({
         return <ContractInstancesTab data={contractInstances} />;
       case "privateFunctions":
         return <JsonTab data={getDataFromMap(privFunc)} />;
-      case "unconstrainedFunctions":
+      case "utilityFunctions":
         return <JsonTab data={getDataFromMap(uncFunc)} />;
       case "publicFunctions":
         return <JsonTab data={getDataFromMap(pubFunc)} />;

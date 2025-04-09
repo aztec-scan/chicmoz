@@ -16,7 +16,7 @@ const adminAddress =
 const publicKeyValues =
   "0x01498945581e0eb9f8427ad6021184c700ef091d570892c437d12c7d90364bbd170ae506787c5c43d6ca9255d571c10fa9ffa9d141666e290c347c5c9ab7e34400c044b05b6ca83b9c2dbae79cc1135155956a64e136819136e9947fe5e5866c1c1f0ca244c7cd46b682552bff8ae77dea40b966a71de076ec3b7678f2bdb1511b00316144359e9a3ec8e49c1cdb7eeb0cedd190dfd9dc90eea5115aa779e287080ffc74d7a8b0bccb88ac11f45874172f3847eb8b92654aaa58a3d2b8dc7833019c111f36ad3fc1d9b7a7a14344314d2864b94f030594cd67f753ef774a1efb2039907fe37f08d10739255141bb066c506a12f7d1e8dfec21abc58494705b6f";
 const instanceAddress =
-  "0x294d8e233748c74f556020aecd3e7049773a5eeea59d92d30cdcb9d38dd9a730";
+  "0x03bc213fa73f6c5072c7bb2bdb82432c7186d9194b87bd05551327bccb5dfd69";
 
 describe("verify instance deployment", () => {
   let payload: VerifyInstanceDeploymentPayload;
@@ -44,7 +44,7 @@ describe("verify instance deployment", () => {
         await verifyInstanceDeploymentPayload({
           ...payload,
           stringifiedArtifactJson: JSON.stringify(
-            contractArtifactJson as unknown as NoirCompiledContract
+            contractArtifactJson as unknown as NoirCompiledContract,
           ),
           instanceAddress,
           contractClassId: contractClass.id.toString(),

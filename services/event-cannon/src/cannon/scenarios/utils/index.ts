@@ -18,19 +18,22 @@ import {
 } from "@aztec/aztec.js";
 import {
   broadcastPrivateFunction,
-  broadcastUnconstrainedFunction,
+  broadcastUtilityFunction,
   deployInstance,
   registerContractClass,
 } from "@aztec/aztec.js/deployment";
 import { ContractClassRegisteredEvent } from "@aztec/protocol-contracts/class-registerer";
-import { deriveSigningKey } from "@aztec/stdlib/keys"
+import { deriveSigningKey } from "@aztec/stdlib/keys";
 import {
   generateVerifyArtifactPayload,
   generateVerifyArtifactUrl,
   generateVerifyInstancePayload,
   generateVerifyInstanceUrl,
 } from "@chicmoz-pkg/contract-verification";
-import { ChicmozL2ContractInstanceDeployerMetadata, jsonStringify } from "@chicmoz-pkg/types";
+import {
+  ChicmozL2ContractInstanceDeployerMetadata,
+  jsonStringify,
+} from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { callExplorerApi } from "./explorer-api.js";
@@ -55,7 +58,7 @@ export const getFunctionSpacer = (type: FunctionType) => {
   if (type === FunctionType.PRIVATE) {
     return type + "       ";
   }
-  if (type === FunctionType.UNCONSTRAINED) {
+  if (type === FunctionType.UTILITY) {
     return type + " ";
   }
   return type + "        ";
@@ -193,20 +196,16 @@ export const broadcastFunctions = async ({
         `Broadcasting private function ${fn.name}`,
       );
     }
-    if (fn.functionType === FunctionType.UNCONSTRAINED) {
+    if (fn.functionType === FunctionType.UTILITY) {
       const selector = await FunctionSelector.fromNameAndParameters(
         fn.name,
         fn.parameters,
       );
       await logAndWaitForTx(
         (
-          await broadcastUnconstrainedFunction(
-            wallet,
-            contract.artifact,
-            selector,
-          )
+          await broadcastUtilityFunction(wallet, contract.artifact, selector)
         ).send(),
-        `Broadcasting unconstrained function ${fn.name}`,
+        `Broadcasting utility function ${fn.name}`,
       );
     }
   }
@@ -240,9 +239,7 @@ export const publicDeployAccounts = async (
             );
             return undefined;
           }
-          return (
-            deployInstance(sender, contractMetadata.contractInstance)
-          );
+          return deployInstance(sender, contractMetadata.contractInstance);
         }),
       )
     ).filter((call) => call !== undefined) as ContractFunctionInteraction[]),
@@ -291,9 +288,7 @@ export const verifyContractInstanceDeployment = async ({
   );
 
   const postData = JSON.stringify({
-    verifiedDeploymentArguments: generateVerifyInstancePayload(
-      verifyArgs,
-    ),
+    verifiedDeploymentArguments: generateVerifyInstancePayload(verifyArgs),
     deployerMetadata,
   });
   await callExplorerApi({

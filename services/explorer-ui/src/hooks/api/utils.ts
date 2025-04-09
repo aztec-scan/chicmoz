@@ -29,8 +29,8 @@ export const queryKeyGenerator = {
     "contractClassPrivateFunctions",
     classId,
   ],
-  contractClassUnconstrainedFunctions: (classId: string) => [
-    "contractClassUnconstrainedFunctions",
+  contractClassUtilityFunctions: (classId: string) => [
+    "contractClassUtilityFunctions",
     classId,
   ],
   latestContractClasses: (classId?: string) => [

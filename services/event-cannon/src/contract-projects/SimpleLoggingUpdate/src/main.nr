@@ -4,7 +4,7 @@ use dep::aztec::macros::aztec;
 contract SimpleLogging {
     use dep::aztec::prelude::{Map, PublicMutable};
     use dep::aztec::{
-        macros::{storage::storage, functions::{public, initializer, internal}},
+        macros::{storage::storage, functions::{public, initializer, utility, internal}},
     };
     #[storage]
     struct Storage<Context> {
@@ -41,6 +41,8 @@ contract SimpleLogging {
       context.emit_public_log(/*message=*/ "pub log");
       SimpleLogging::at(context.this_address()).add_to_counter_public(counter_id);
     }
+
+    #[utility]
     unconstrained fn get_counter_value(counter_id: Field) -> pub Field {
         storage.counters.at(counter_id).read()
     }

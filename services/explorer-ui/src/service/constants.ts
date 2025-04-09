@@ -19,18 +19,18 @@ export const aztecExplorer = {
     classId ? `l2/contract-classes/${classId}` : "l2/contract-classes",
   getL2ContractClassPrivateFunctions: (
     classId: string,
-    functionSelector?: string
+    functionSelector?: string,
   ) =>
     functionSelector
       ? `l2/contract-classes/${classId}/private-functions/${functionSelector}`
       : `l2/contract-classes/${classId}/private-functions`,
-  getL2ContractClassUnconstrainedFunctions: (
+  getL2ContractClassUtilityFunctions: (
     classId: string,
-    functionSelector?: string
+    functionSelector?: string,
   ) =>
     functionSelector
-      ? `l2/contract-classes/${classId}/unconstrained-functions/${functionSelector}`
-      : `l2/contract-classes/${classId}/unconstrained-functions`,
+      ? `l2/contract-classes/${classId}/utility-functions/${functionSelector}`
+      : `l2/contract-classes/${classId}/utility-functions`,
   getL2ContractInstance: (address: string) =>
     `l2/contract-instances/${address}`,
   getL2ContractInstances: "l2/contract-instances",
@@ -64,7 +64,7 @@ export const aztecExplorer = {
 export const APP_NAME = "Aztec-Scan";
 
 export const L2_NETWORK_ID = l2NetworkIdSchema.parse(
-  import.meta.env.VITE_L2_NETWORK_ID
+  import.meta.env.VITE_L2_NETWORK_ID,
 );
 
 export const CHICMOZ_ALL_UI_URLS =

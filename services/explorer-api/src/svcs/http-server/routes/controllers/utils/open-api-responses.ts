@@ -14,7 +14,7 @@ import {
   chicmozL2SequencerDeluxeSchema,
   chicmozL2SequencerSchema,
   chicmozL2TxEffectDeluxeSchema,
-  chicmozL2UnconstrainedFunctionBroadcastedEventSchema,
+  chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozSearchResultsSchema,
 } from "@chicmoz-pkg/types";
@@ -35,7 +35,7 @@ const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
   } catch (e) {
     // NOTE: this catch never happens
     logger.error(
-      `Failed to generate schema for ${name}: ${(e as Error).stack}`
+      `Failed to generate schema for ${name}: ${(e as Error).stack}`,
     );
   }
 
@@ -59,81 +59,81 @@ const cleanedBlockSchema = chicmozL2BlockLightSchema.extend({
 export const blockResponse = getResponse(cleanedBlockSchema, "block");
 export const blockResponseArray = getResponse(
   z.array(cleanedBlockSchema),
-  "blockArray"
+  "blockArray",
 );
 
 export const feeRecipientResponseArray = getResponse(
   z.array(
     chicmozFeeRecipientSchema.extend({
       feesReceived: z.string(),
-    })
+    }),
   ),
-  "feeRecipientArray"
+  "feeRecipientArray",
 );
 
 export const txEffectResponse = getResponse(
   chicmozL2TxEffectDeluxeSchema,
-  "txEffect"
+  "txEffect",
 );
 export const txEffectResponseArray = getResponse(
   z.array(chicmozL2TxEffectDeluxeSchema),
-  "txEffectArray"
+  "txEffectArray",
 );
 
 export const txResponse = getResponse(chicmozL2PendingTxSchema, "tx");
 export const txResponseArray = getResponse(
   z.array(chicmozL2PendingTxSchema),
-  "txArray"
+  "txArray",
 );
 
 export const contractClassResponse = getResponse(
   chicmozL2ContractClassRegisteredEventSchema,
-  "contractClass"
+  "contractClass",
 );
 export const contractClassResponseArray = getResponse(
   z.array(chicmozL2ContractClassRegisteredEventSchema),
-  "contractClassArray"
+  "contractClassArray",
 );
 
 export const contractClassPrivateFunctionResponse = getResponse(
   chicmozL2PrivateFunctionBroadcastedEventSchema,
-  "contractClassPrivateFunction"
+  "contractClassPrivateFunction",
 );
 export const contractClassPrivateFunctionResponseArray = getResponse(
   z.array(chicmozL2PrivateFunctionBroadcastedEventSchema),
-  "contractClassPrivateFunctionArray"
+  "contractClassPrivateFunctionArray",
 );
 
-export const contractClassUnconstrainedFunctionResponse = getResponse(
-  chicmozL2UnconstrainedFunctionBroadcastedEventSchema,
-  "contractClassUnconstrainedFunction"
+export const contractClassUtilityFunctionResponse = getResponse(
+  chicmozL2UtilityFunctionBroadcastedEventSchema,
+  "contractClassUtilityFunction",
 );
-export const contractClassUnconstrainedFunctionResponseArray = getResponse(
-  z.array(chicmozL2UnconstrainedFunctionBroadcastedEventSchema),
-  "contractClassUnconstrainedFunctionArray"
+export const contractClassUtilityFunctionResponseArray = getResponse(
+  z.array(chicmozL2UtilityFunctionBroadcastedEventSchema),
+  "contractClassUtilityFunctionArray",
 );
 
 export const contractInstanceResponse = getResponse(
   chicmozL2ContractInstanceDeluxeSchema,
-  "contractInstance"
+  "contractInstance",
 );
 export const contractInstanceResponseArray = getResponse(
   z.array(chicmozL2ContractInstanceDeluxeSchema),
-  "contractInstanceArray"
+  "contractInstanceArray",
 );
 
 export const verifiedContractInstanceResponse = getResponse(
   chicmozL2ContractInstanceDeployerMetadataSchema,
-  "verifiedContractInstance"
+  "verifiedContractInstance",
 );
 export const verifiedContractInstanceResponseArray = getResponse(
   z.array(chicmozL2ContractInstanceDeployerMetadataSchema),
-  "verifiedContractInstanceArray"
+  "verifiedContractInstanceArray",
 );
 
 export const searchResultResponse = getResponse(
   chicmozSearchResultsSchema,
-  "searchResult"
+  "searchResult",
 );
 
 const cleanedValidatorSchema = chicmozL1L2ValidatorSchema.extend({
@@ -141,37 +141,37 @@ const cleanedValidatorSchema = chicmozL1L2ValidatorSchema.extend({
 });
 export const l1L2ValidatorResponse = getResponse(
   cleanedValidatorSchema,
-  "l1L2Validator"
+  "l1L2Validator",
 );
 export const l1L2ValidatorResponseArray = getResponse(
   z.array(cleanedValidatorSchema),
-  "l1L2ValidatorArray"
+  "l1L2ValidatorArray",
 );
 export const l1L2ValidatorHistoryResponse = getResponse(
   chicmozL1L2ValidatorHistorySchema,
-  "l1L2ValidatorHistory"
+  "l1L2ValidatorHistory",
 );
 
 export const sequencerResponse = getResponse(
   chicmozL2SequencerDeluxeSchema,
-  "l2Sequencer"
+  "l2Sequencer",
 );
 export const sequencerResponseArray = getResponse(
   z.array(chicmozL2SequencerSchema),
-  "l2SequencerArray"
+  "l2SequencerArray",
 );
 export const sequencerErrorResponseArray = getResponse(
   z.array(chicmozL2RpcNodeErrorSchema),
-  "l2SequencerErrorArray"
+  "l2SequencerErrorArray",
 );
 
 export const chainInfoResponse = getResponse(
   chicmozChainInfoSchema,
-  "chainInfo"
+  "chainInfo",
 );
 export const chainErrorsResponse = sequencerErrorResponseArray;
 
 export const contractEventsResponse = getResponse(
   z.array(chicmozL1GenericContractEventSchema),
-  "contractEvents"
+  "contractEvents",
 );
