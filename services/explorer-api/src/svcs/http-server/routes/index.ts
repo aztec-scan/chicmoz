@@ -1,12 +1,13 @@
 import assert from "assert";
 import bodyParser from "body-parser";
 import { Router } from "express";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { ARTIFACT_BODY_LIMIT } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import * as controller from "./controllers/index.js";
 import { paths } from "./paths_and_validation.js";
 
-export const openApiPaths = {
+export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_LATEST_HEIGHT,
   ...controller.openapi_GET_LATEST_BLOCK,
   ...controller.openapi_GET_BLOCK,
@@ -14,6 +15,7 @@ export const openApiPaths = {
 
   ...controller.openapi_GET_L2_FEE_RECIPIENTS,
 
+  ...controller.openapi_GET_L2_TX_EFFECTS,
   ...controller.openapi_GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT,
   ...controller.openapi_GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX,
   ...controller.openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH,
@@ -35,8 +37,9 @@ export const openApiPaths = {
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCE,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES,
+  ...controller.openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT,
 
-  ...controller.openapi_SEARCH, // TODO: rename to L2_SEARCH?
+  ...controller.openapi_L2_SEARCH,
 
   ...controller.openapi_GET_L1_L2_VALIDATORS,
   ...controller.openapi_GET_L1_L2_VALIDATOR,
@@ -79,11 +82,13 @@ const otherPaths = [
 ];
 
 const checkDocsStatus = () => {
+  // TODO: this can be improved when this issue is complete: https://github.com/aztec-scan/chicmoz/issues/374
   const totalPaths = Object.keys(paths).length;
   const totalStatsPaths = otherPaths.length;
   const totalOpenApiPaths = Object.keys(openApiPaths).length;
   try {
-    assert(totalPaths - totalStatsPaths === totalOpenApiPaths);
+    const doubleUsagesOfPaths = 1; // TODO: currently there is one path that is used by POST and GET, this is correct. However this simple check-docs-status function should be improved to accept this case.
+    assert(totalPaths - totalStatsPaths - doubleUsagesOfPaths === totalOpenApiPaths);
   } catch (e) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     logger.error(

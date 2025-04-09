@@ -8,6 +8,7 @@ import {
   chicmozL2BlockLightSchema,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeluxeSchema,
+  chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2RpcNodeErrorSchema,
@@ -15,7 +16,6 @@ import {
   chicmozL2SequencerSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
-  chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozSearchResultsSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
@@ -52,8 +52,10 @@ const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
 };
 
 const cleanedBlockSchema = chicmozL2BlockLightSchema.extend({
+  height: z.string(), // Convert height from BigInt to string
   header: chicmozL2BlockLightSchema.shape.header.extend({
     totalFees: z.string(),
+    totalManaUsed: z.string(), // Convert manaUsed from BigInt to string
   }),
 });
 export const blockResponse = getResponse(cleanedBlockSchema, "block");
@@ -62,6 +64,8 @@ export const blockResponseArray = getResponse(
   "blockArray",
 );
 
+// The feeRecipientResponseArray already has the correct fix
+// with feesReceived converted to string:
 export const feeRecipientResponseArray = getResponse(
   z.array(
     chicmozFeeRecipientSchema.extend({
@@ -71,12 +75,17 @@ export const feeRecipientResponseArray = getResponse(
   "feeRecipientArray",
 );
 
+// Clean BigInt fields in TxEffectDeluxe schema
+const cleanedTxEffectDeluxeSchema = chicmozL2TxEffectDeluxeSchema.extend({
+  blockHeight: z.string(), // Convert BigInt to string
+});
+
 export const txEffectResponse = getResponse(
-  chicmozL2TxEffectDeluxeSchema,
+  cleanedTxEffectDeluxeSchema,
   "txEffect",
 );
 export const txEffectResponseArray = getResponse(
-  z.array(chicmozL2TxEffectDeluxeSchema),
+  z.array(cleanedTxEffectDeluxeSchema),
   "txEffectArray",
 );
 
@@ -113,12 +122,29 @@ export const contractClassUtilityFunctionResponseArray = getResponse(
   "contractClassUtilityFunctionArray",
 );
 
+// For lazy schemas, we need to create a modified version differently
+// We'll use a transform to convert BigInt to string at runtime
+const cleanedContractInstanceDeluxeSchema = z.lazy(() => {
+  // Start with the original schema
+  return chicmozL2ContractInstanceDeluxeSchema.transform((data) => {
+    // Create a new object with all the original properties
+    const result = { ...data };
+
+    // Convert the blockHeight to string if it exists
+    if (result.blockHeight !== undefined) {
+      result.blockHeight = result.blockHeight.toString() as unknown as bigint;
+    }
+
+    return result;
+  });
+});
+
 export const contractInstanceResponse = getResponse(
-  chicmozL2ContractInstanceDeluxeSchema,
+  cleanedContractInstanceDeluxeSchema,
   "contractInstance",
 );
 export const contractInstanceResponseArray = getResponse(
-  z.array(chicmozL2ContractInstanceDeluxeSchema),
+  z.array(cleanedContractInstanceDeluxeSchema),
   "contractInstanceArray",
 );
 
@@ -171,7 +197,13 @@ export const chainInfoResponse = getResponse(
 );
 export const chainErrorsResponse = sequencerErrorResponseArray;
 
+const cleanedContractEventsSchema = chicmozL1GenericContractEventSchema.extend({
+  l1BlockNumber: z.string(), // Convert BigInt to string
+  l1BlockTimestamp: z.string(), // Convert Date to string
+  eventArgs: z.record(z.unknown()).optional(),
+});
+
 export const contractEventsResponse = getResponse(
-  z.array(chicmozL1GenericContractEventSchema),
+  cleanedContractEventsSchema,
   "contractEvents",
 );
