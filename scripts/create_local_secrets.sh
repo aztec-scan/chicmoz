@@ -11,7 +11,7 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 # Create or update the secret
-if kubectl create secret generic global --from-env-file="$ENV_FILE" -n chicmoz --dry-run=client -o yaml | kubectl apply -f -; then
+if kubectl create secret generic global --from-env-file="$ENV_FILE" -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -; then
     echo "CHICMOZ SECRETS CREATED OR UPDATED!"
 else
     exit 1
