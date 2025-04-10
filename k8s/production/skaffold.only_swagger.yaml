@@ -1,0 +1,14 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: only-swagger-prod
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+    defaultNamespace: chicmoz-prod
+manifests:
+  rawYaml:
+    - ./swagger/deployment.yaml
+    - ./swagger/service.yaml
+    - ./swagger/ingress.yaml

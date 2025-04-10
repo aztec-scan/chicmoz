@@ -1,11 +1,12 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: chicmoz-prod
+  name: only-grafana-prod
 deploy:
   kubectl:
     flags:
       apply: ["--force"]
+    defaultNamespace: chicmoz-prod
 manifests:
   rawYaml:
     - ./grafana/ingress.yaml

@@ -30,7 +30,7 @@ export const openapi_GET_LATEST_HEIGHT: OpenAPIObject["paths"] = {
 
 export const GET_LATEST_HEIGHT = asyncHandler(async (_req, res) => {
   const latestHeight = await dbWrapper.getLatestHeight();
-  res.status(200).send(JSON.stringify(latestHeight));
+  res.status(200).send(JSON.stringify(latestHeight.toString()));
 });
 
 export const openapi_GET_LATEST_BLOCK: OpenAPIObject["paths"] = {
