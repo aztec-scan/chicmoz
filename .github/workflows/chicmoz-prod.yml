@@ -23,25 +23,26 @@ jobs:
           fetch-depth: 0
 
       - name: Print important information
-        env:
-          SP_TESTNET_OBSCURA_L2_RPC_1: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_1 }}
-          SP_TESTNET_OBSCURA_L2_RPC_2: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_2 }}
-          SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.SP_TESTNET_AZTEC_L2_BOOTNODE_RPC }}
-          SP_TESTNET_AZTEC_L1_HTTP: ${{ vars.SP_TESTNET_AZTEC_L1_HTTP }}
-          SP_TESTNET_AZTEC_L1_WS: ${{ vars.SP_TESTNET_AZTEC_L1_WS }}
-          DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
-          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
-          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+        # TODO: pipelines are public like the repo. This should not be printed as long as the repo is public
+        #        env:
+        #          SP_TESTNET_OBSCURA_L2_RPC_1: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_1 }}
+        #          SP_TESTNET_OBSCURA_L2_RPC_2: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_2 }}
+        #          SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.SP_TESTNET_AZTEC_L2_BOOTNODE_RPC }}
+        #          SP_TESTNET_AZTEC_L1_HTTP: ${{ vars.SP_TESTNET_AZTEC_L1_HTTP }}
+        #          SP_TESTNET_AZTEC_L1_WS: ${{ vars.SP_TESTNET_AZTEC_L1_WS }}
+        #          DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
+        #          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
+        #          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
         run: |
           echo "VERSION: $(git describe --tags)"
-          echo "SP_TESTNET_OBSCURA_L2_RPC_1: $SP_TESTNET_OBSCURA_L2_RPC_1"
-          echo "SP_TESTNET_OBSCURA_L2_RPC_2: $SP_TESTNET_OBSCURA_L2_RPC_2"
-          echo "SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: $SP_TESTNET_AZTEC_L2_BOOTNODE_RPC"
-          echo "SP_TESTNET_AZTEC_L1_HTTP: $SP_TESTNET_AZTEC_L1_HTTP"
-          echo "SP_TESTNET_AZTEC_L1_WS: $SP_TESTNET_AZTEC_L1_WS"
-          echo "DEVNET_AZTEC_L2_BOOTNODE_RPC: $DEVNET_AZTEC_L2_BOOTNODE_RPC"
-          echo "DEVNET_AZTEC_L1_HTTP: $DEVNET_AZTEC_L1_HTTP"
-          echo "DEVNET_AZTEC_L1_WS: $DEVNET_AZTEC_L1_WS"
+        #          echo "SP_TESTNET_OBSCURA_L2_RPC_1: $SP_TESTNET_OBSCURA_L2_RPC_1"
+        #          echo "SP_TESTNET_OBSCURA_L2_RPC_2: $SP_TESTNET_OBSCURA_L2_RPC_2"
+        #          echo "SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: $SP_TESTNET_AZTEC_L2_BOOTNODE_RPC"
+        #          echo "SP_TESTNET_AZTEC_L1_HTTP: $SP_TESTNET_AZTEC_L1_HTTP"
+        #          echo "SP_TESTNET_AZTEC_L1_WS: $SP_TESTNET_AZTEC_L1_WS"
+        #          echo "DEVNET_AZTEC_L2_BOOTNODE_RPC: $DEVNET_AZTEC_L2_BOOTNODE_RPC"
+        #          echo "DEVNET_AZTEC_L1_HTTP: $DEVNET_AZTEC_L1_HTTP"
+        #          echo "DEVNET_AZTEC_L1_WS: $DEVNET_AZTEC_L1_WS"
         shell: bash
 
       - name: Set up tools directory
