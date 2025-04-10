@@ -9,3 +9,4 @@ requires:
   - path: ./skaffold.light.yaml
   - path: ./common/skaffold.do_workaround.yaml
   - path: ./skaffold.only_grafana.yaml
+  - path: ./skaffold.only_swagger.yaml
