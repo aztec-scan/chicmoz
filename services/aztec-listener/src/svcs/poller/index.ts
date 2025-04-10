@@ -1,6 +1,6 @@
 import { NodeInfo } from "@aztec/aztec.js";
 import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
-import { NODE_ENV, NodeEnv } from "@chicmoz-pkg/types";
+import { NODE_ENV, NodeEnv, jsonStringify } from "@chicmoz-pkg/types";
 import {
   AZTEC_LISTEN_FOR_CHAIN_INFO,
   AZTEC_LISTEN_FOR_PENDING_TXS,
@@ -29,8 +29,8 @@ export const init = async () => {
   }
   await ensureInitializedBlockHeights();
   const initResult = await initNetworkClient();
-  logger.info(`Aztec chain info: ${JSON.stringify(initResult.chainInfo)}`);
-  logger.info(`Aztec sequencer info: ${JSON.stringify(initResult.sequencer)}`);
+  logger.info(`Aztec chain info: ${jsonStringify(initResult.chainInfo)}`);
+  logger.info(`Aztec sequencer info: ${jsonStringify(initResult.sequencer)}`);
 };
 
 export const startPoller = async () => {
@@ -40,8 +40,8 @@ export const startPoller = async () => {
     forceStartFromProvenHeight:
       AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
   });
-  if (AZTEC_LISTEN_FOR_PENDING_TXS) pendingTxsPoller.startPolling();
-  if (AZTEC_LISTEN_FOR_CHAIN_INFO) chainInfoPoller.startPolling();
+  if (AZTEC_LISTEN_FOR_PENDING_TXS) {pendingTxsPoller.startPolling();}
+  if (AZTEC_LISTEN_FOR_CHAIN_INFO) {chainInfoPoller.startPolling();}
 };
 
 export const getNodeInfo = () => nodeInfo;

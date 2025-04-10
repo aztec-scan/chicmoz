@@ -657,7 +657,7 @@ Within each environment directory, you'll find:
    - `local_devnet/`: For connecting to a local devnet
    - `remote_devnet/`: For connecting to a remote devnet
    - `sandbox/`: For the Aztec sandbox environment
-   - `sp_testnet/`: For the Aztec testnet environment
+   - `testnet/`: For the Aztec testnet environment
 
 3. **Common configurations**: Shared configurations in the `common/` directory:
    - `namespace.yaml`: Namespace definitions
@@ -745,7 +745,7 @@ For production deployment, the process involves:
 
 4. **Deploy services**:
    ```sh
-   skaffold run -f k8s/production/skaffold.sp_testnet.yaml
+   skaffold run -f k8s/production/skaffold.testnet.yaml
    ```
 
 ### Monitoring and Observability

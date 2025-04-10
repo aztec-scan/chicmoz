@@ -61,7 +61,18 @@ export const DevPage: FC = () => {
         <h2>Chain Info</h2>
         {isChainInfoLoading && <p>Loading...</p>}
         {chainInfoError && <p>Error: {chainInfoError.message}</p>}
-        {chainInfo && <pre>{JSON.stringify(chainInfo, null, 2)}</pre>}
+        {chainInfo && (
+          <pre>
+            {JSON.stringify(
+              {
+                ...chainInfo,
+                rollupVersion: chainInfo.rollupVersion.toString(),
+              },
+              null,
+              2,
+            )}
+          </pre>
+        )}
       </div>
 
       <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
@@ -97,7 +108,18 @@ stack:          ${error.stack}
         {isSequencersLoading && <p>Loading...</p>}
         {sequencersError && <p>Error: {sequencersError.message}</p>}
         {sequencers && <p>Sequencers count: {sequencers?.length}</p>}
-        {sequencers && <pre>{JSON.stringify(sequencers, null, 2)}</pre>}
+        {sequencers && (
+          <pre>
+            {JSON.stringify(
+              sequencers.map((s) => ({
+                ...s,
+                rollupVersion: s.rollupVersion.toString(),
+              })),
+              null,
+              2,
+            )}
+          </pre>
+        )}
       </div>
       <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
         <h2>links</h2>

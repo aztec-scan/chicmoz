@@ -1,0 +1,15 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: websocket-event-publisher-testnet
+requires:
+  - path: ./common/skaffold.base.yaml
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./testnet/service.yaml
+    - ./testnet/deployment.yaml
+    - ./testnet/ingress.yaml

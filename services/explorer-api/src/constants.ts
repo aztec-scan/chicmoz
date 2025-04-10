@@ -20,6 +20,5 @@ export const AZTEC_SCAN_NOTES: Record<
     },
   },
   DEVNET: {},
-  SP_TESTNET: {},
-  PUBLIC_TESTNET: {},
+  TESTNET: {},
 };

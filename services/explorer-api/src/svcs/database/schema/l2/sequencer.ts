@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  bigint,
   integer,
   pgTable,
   timestamp,
@@ -17,7 +18,9 @@ export const l2SequencerTable = pgTable("l2_sequencer", {
       onDelete: "cascade",
     }),
   l2NetworkId: l2NetworkIdDbEnum("l2_network_id").notNull(),
-  rollupVersion: integer("rollup_version").notNull(),
+  rollupVersion: bigint("rollup_version", {
+    mode: "bigint",
+  }).notNull(),
   nodeVersion: varchar("node_version").notNull(),
   l1ChainId: integer("l1_chain_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

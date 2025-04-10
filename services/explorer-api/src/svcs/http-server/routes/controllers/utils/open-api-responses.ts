@@ -178,23 +178,38 @@ export const l1L2ValidatorHistoryResponse = getResponse(
   "l1L2ValidatorHistory",
 );
 
+const cleanedSequencerDeluxeSchema = chicmozL2SequencerDeluxeSchema.extend({
+  rollupVersion: z.string(), // Convert BigInt to string
+});
+
 export const sequencerResponse = getResponse(
-  chicmozL2SequencerDeluxeSchema,
-  "l2Sequencer",
+  cleanedSequencerDeluxeSchema,
+  "l2SequencerDeluxe",
 );
+
+const cleanedSequencerSchema = chicmozL2SequencerSchema.extend({
+  rollupVersion: z.string(), // Convert BigInt to string
+});
+
 export const sequencerResponseArray = getResponse(
-  z.array(chicmozL2SequencerSchema),
-  "l2SequencerArray",
+  z.array(cleanedSequencerSchema),
+  "l2SequencerArrayDeluxe",
 );
+
 export const sequencerErrorResponseArray = getResponse(
   z.array(chicmozL2RpcNodeErrorSchema),
   "l2SequencerErrorArray",
 );
 
+const cleanedChainInfoSchema = chicmozChainInfoSchema.extend({
+  rollupVersion: z.string(), // Convert BigInt to string
+});
+
 export const chainInfoResponse = getResponse(
-  chicmozChainInfoSchema,
+  cleanedChainInfoSchema,
   "chainInfo",
 );
+
 export const chainErrorsResponse = sequencerErrorResponseArray;
 
 const cleanedContractEventsSchema = chicmozL1GenericContractEventSchema.extend({

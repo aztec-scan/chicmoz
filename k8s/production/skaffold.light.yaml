@@ -4,4 +4,4 @@ metadata:
   name: chicmoz-prod-light
 requires:
   - path: ./skaffold.devnet.yaml
-  #- path: ./skaffold.sp.yaml
+  #- path: ./skaffold.testnet.yaml
