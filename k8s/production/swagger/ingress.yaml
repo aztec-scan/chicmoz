@@ -22,5 +22,3 @@ spec:
                 name: swagger-service
                 port:
                   name: http
-status:
-  loadBalancer: {}
