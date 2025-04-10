@@ -18,6 +18,18 @@ spec:
     spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
+      initContainers:
+        - name: run-migrations
+          image: registry.digitalocean.com/aztlan-containers/ethereum-listener:latest
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-testnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
       containers:
         - image: registry.digitalocean.com/aztlan-containers/ethereum-listener:latest
           name: ethereum-listener
@@ -25,6 +37,11 @@ spec:
             limits:
               memory: 300Mi
               cpu: 500m
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-testnet
           env:
             - name: NODE_ENV
               value: "production"

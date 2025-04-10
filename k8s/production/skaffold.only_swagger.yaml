@@ -6,7 +6,6 @@ deploy:
   kubectl:
     flags:
       apply: ["--force"]
-    defaultNamespace: chicmoz-prod
 manifests:
   rawYaml:
     - ./swagger/deployment.yaml
