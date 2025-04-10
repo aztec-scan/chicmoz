@@ -22,7 +22,8 @@ This is also subject to change, and the latest updates on this will always be av
   servers: [
     {
       // TODO: parameterize URLs
-      url: "https://api.sandbox.aztecscan.xyz/v1/{apiKey}",
+      url: "https://api.devnet.aztecscan.xyz/v1/{apiKey}",
+      description: "Devnet Aztecscan API",
       variables: {
         apiKey: {
           default: PUBLIC_API_KEY,
@@ -32,6 +33,7 @@ This is also subject to change, and the latest updates on this will always be av
     },
     {
       url: "https://api.sp.aztecscan.xyz/v1/{apiKey}",
+      description: "S&P Testnet Aztecscan API",
       variables: {
         apiKey: {
           default: PUBLIC_API_KEY,
@@ -41,6 +43,7 @@ This is also subject to change, and the latest updates on this will always be av
     },
     {
       url: "http://api.sandbox.chicmoz.localhost/v1/{apiKey}",
+      description: "LOCAL sandbox Aztecscan API",
       variables: {
         apiKey: {
           default: ApiKey.DEV,
@@ -50,6 +53,7 @@ This is also subject to change, and the latest updates on this will always be av
     },
     {
       url: "http://api.sp.chicmoz.localhost/v1/{apiKey}",
+      description: "LOCAL S&P Testnet Aztecscan API",
       variables: {
         apiKey: {
           default: ApiKey.DEV,

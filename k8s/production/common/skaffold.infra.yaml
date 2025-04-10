@@ -92,10 +92,10 @@ manifests:
             - test
           extraConfig: |
             message.max.bytes=10000000
-            log.retention.hours=168  # 7 days retention
-            log.retention.bytes=1073741824  # 1GB per partition
-            log.segment.bytes=536870912  # 512MB segments
-            log.cleanup.policy=delete  # Delete old data
+            log.retention.hours=168
+            log.retention.bytes=1073741824
+            log.segment.bytes=536870912
+            log.cleanup.policy=delete
         createNamespace: false
         recreatePods: true
         skipBuildDependencies: false
