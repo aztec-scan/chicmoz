@@ -4,9 +4,9 @@ import {
 } from "@chicmoz-pkg/types";
 import { emit } from "../../../events/index.js";
 import { logger } from "../../../logger.js";
+import { getBlockTimestamp } from "../../client/index.js";
 import { RollupContract } from "../utils.js";
 import { asyncForEach } from "./index.js";
-import { getEventL1Timestamp } from "./utils.js";
 
 // TODO: Move to a more appropriate location
 const onError = (name: string) => (e: Error) => {
@@ -63,10 +63,8 @@ const l2BlockProposedOnLogs: OnLogsWrapper<L2BlockProposedEventParameters> =
           isFinalized: wrapperArgs.isFinalized,
           l2BlockNumber: log.args.blockNumber,
           archive: log.args.archive,
-          l1BlockTimestamp: getEventL1Timestamp(
-            log as unknown as { blockTimestamp: `0x${string}` }
-          ),
-        })
+          l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
+        }),
       );
       wrapperArgs.updateHeight(log.blockNumber);
     })
@@ -76,7 +74,7 @@ const l2BlockProposedOnLogs: OnLogsWrapper<L2BlockProposedEventParameters> =
       .finally(() => {
         wrapperArgs.storeHeight().catch((e) => {
           logger.error(
-            `🎓 Rollup blockProposed (Store height): ${(e as Error).stack}`
+            `🎓 Rollup blockProposed (Store height): ${(e as Error).stack}`,
           );
         });
       });
@@ -93,10 +91,8 @@ const l2BlockVerifiedOnLogs: OnLogsWrapper<L2ProofVerifiedEventParameters> =
           isFinalized: wrapperArgs.isFinalized,
           l2BlockNumber: log.args.blockNumber,
           proverId: log.args.proverId,
-          l1BlockTimestamp: getEventL1Timestamp(
-            log as unknown as { blockTimestamp: `0x${string}` }
-          ),
-        })
+          l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
+        }),
       );
       wrapperArgs.updateHeight(log.blockNumber);
     })
@@ -106,21 +102,21 @@ const l2BlockVerifiedOnLogs: OnLogsWrapper<L2ProofVerifiedEventParameters> =
       .finally(() => {
         wrapperArgs.storeHeight().catch((e) => {
           logger.error(
-            `🎩 Rollup blockProposed (Store height): ${(e as Error).stack}`
+            `🎩 Rollup blockProposed (Store height): ${(e as Error).stack}`,
           );
         });
       });
   };
 
 export const l2BlockProposedEventCallbacks = (
-  args: OnLogsCallbackWrapperArgs
+  args: OnLogsCallbackWrapperArgs,
 ) => ({
   onError: onError("🎓 L2BlockProposed error"),
   onLogs: l2BlockProposedOnLogs(args),
 });
 
 export const l2ProofVerifiedEventCallbacks = (
-  args: OnLogsCallbackWrapperArgs
+  args: OnLogsCallbackWrapperArgs,
 ) => ({
   onError: onError("🎩 L2ProofVerified error"),
   onLogs: l2BlockVerifiedOnLogs(args),

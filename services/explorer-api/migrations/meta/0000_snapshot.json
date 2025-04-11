@@ -1,5 +1,5 @@
 {
-  "id": "2ef04608-e6c6-451d-b63e-a57c5030b633",
+  "id": "c4f90e59-9f48-4564-b829-25863a5705b7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -807,42 +807,42 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.l1L2BlockProposed": {
-      "name": "l1L2BlockProposed",
+    "public.l1_l2_block_proposed": {
+      "name": "l1_l2_block_proposed",
       "schema": "",
       "columns": {
-        "l1ContractAddress": {
-          "name": "l1ContractAddress",
+        "l1_contract_address": {
+          "name": "l1_contract_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "l2_block_number": {
+          "name": "l2_block_number",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "l1_block_number": {
+          "name": "l1_block_number",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "l1_block_hash": {
+          "name": "l1_block_hash",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "l2BlockNumber": {
-          "name": "l2BlockNumber",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "l1BlockNumber": {
-          "name": "l1BlockNumber",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "l1BlockTimestamp": {
-          "name": "l1BlockTimestamp",
+        "l1_block_timestamp": {
+          "name": "l1_block_timestamp",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
-        "l1BlockHash": {
-          "name": "l1BlockHash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "isFinalized": {
-          "name": "isFinalized",
+        "is_finalized": {
+          "name": "is_finalized",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -860,55 +860,55 @@
       "compositePrimaryKeys": {
         "block_proposal": {
           "name": "block_proposal",
-          "columns": ["l2BlockNumber", "archive"]
+          "columns": ["l2_block_number", "archive"]
         }
       },
       "uniqueConstraints": {}
     },
-    "public.l1L2ProofVerified": {
-      "name": "l1L2ProofVerified",
+    "public.l1_l2_proof_verified": {
+      "name": "l1_l2_proof_verified",
       "schema": "",
       "columns": {
-        "l1ContractAddress": {
-          "name": "l1ContractAddress",
+        "l1_contract_address": {
+          "name": "l1_contract_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "l2_block_number": {
+          "name": "l2_block_number",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "l1_block_number": {
+          "name": "l1_block_number",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "l1_block_hash": {
+          "name": "l1_block_hash",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "l2BlockNumber": {
-          "name": "l2BlockNumber",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "l1BlockNumber": {
-          "name": "l1BlockNumber",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "l1BlockTimestamp": {
-          "name": "l1BlockTimestamp",
+        "l1_block_timestamp": {
+          "name": "l1_block_timestamp",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
-        "l1BlockHash": {
-          "name": "l1BlockHash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "isFinalized": {
-          "name": "isFinalized",
+        "is_finalized": {
+          "name": "is_finalized",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
         },
-        "proverId": {
-          "name": "proverId",
-          "type": "varchar(66)",
+        "prover_id": {
+          "name": "prover_id",
+          "type": "varchar(42)",
           "primaryKey": false,
           "notNull": true
         }
@@ -918,7 +918,7 @@
       "compositePrimaryKeys": {
         "proof_verified": {
           "name": "proof_verified",
-          "columns": ["l2BlockNumber", "proverId"]
+          "columns": ["l2_block_number", "prover_id"]
         }
       },
       "uniqueConstraints": {}

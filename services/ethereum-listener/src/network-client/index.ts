@@ -1,7 +1,6 @@
 import { IBackOffOptions, backOff } from "exponential-backoff";
 import { logger } from "../logger.js";
-import { getLatestFinalizedHeight, initClient } from "./client.js";
-export { watchContractsEvents } from "./client.js";
+import { getLatestFinalizedHeight, initClient } from "./client/index.js";
 
 const backOffOptions: Partial<IBackOffOptions> = {
   numOfAttempts: 10,

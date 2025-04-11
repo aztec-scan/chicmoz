@@ -123,26 +123,26 @@ CREATE TABLE IF NOT EXISTS "state" (
 	"header_id" uuid NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "l1L2BlockProposed" (
-	"l1ContractAddress" varchar NOT NULL,
-	"l2BlockNumber" bigint NOT NULL,
-	"l1BlockNumber" bigint NOT NULL,
-	"l1BlockTimestamp" timestamp NOT NULL,
-	"l1BlockHash" varchar NOT NULL,
-	"isFinalized" boolean DEFAULT false,
+CREATE TABLE IF NOT EXISTS "l1_l2_block_proposed" (
+	"l1_contract_address" varchar(42) NOT NULL,
+	"l2_block_number" bigint NOT NULL,
+	"l1_block_number" bigint NOT NULL,
+	"l1_block_hash" varchar NOT NULL,
+	"l1_block_timestamp" timestamp NOT NULL,
+	"is_finalized" boolean DEFAULT false,
 	"archive" varchar(66) NOT NULL,
-	CONSTRAINT "block_proposal" PRIMARY KEY("l2BlockNumber","archive")
+	CONSTRAINT "block_proposal" PRIMARY KEY("l2_block_number","archive")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "l1L2ProofVerified" (
-	"l1ContractAddress" varchar NOT NULL,
-	"l2BlockNumber" bigint NOT NULL,
-	"l1BlockNumber" bigint NOT NULL,
-	"l1BlockTimestamp" timestamp NOT NULL,
-	"l1BlockHash" varchar NOT NULL,
-	"isFinalized" boolean DEFAULT false,
-	"proverId" varchar(66) NOT NULL,
-	CONSTRAINT "proof_verified" PRIMARY KEY("l2BlockNumber","proverId")
+CREATE TABLE IF NOT EXISTS "l1_l2_proof_verified" (
+	"l1_contract_address" varchar(42) NOT NULL,
+	"l2_block_number" bigint NOT NULL,
+	"l1_block_number" bigint NOT NULL,
+	"l1_block_hash" varchar NOT NULL,
+	"l1_block_timestamp" timestamp NOT NULL,
+	"is_finalized" boolean DEFAULT false,
+	"prover_id" varchar(42) NOT NULL,
+	CONSTRAINT "proof_verified" PRIMARY KEY("l2_block_number","prover_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "archive" (

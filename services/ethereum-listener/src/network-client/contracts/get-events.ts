@@ -1,7 +1,7 @@
 import { PublicClient } from "viem";
 import { logger } from "../../logger.js";
 import { controllers as dbControllers } from "../../svcs/database/index.js";
-import { getPublicHttpClient } from "../client.js";
+import { getPublicHttpClient } from "../client/index.js";
 import {
   l2BlockProposedEventCallbacks,
   l2ProofVerifiedEventCallbacks,

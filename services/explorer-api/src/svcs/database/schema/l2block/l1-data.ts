@@ -7,17 +7,19 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import { generateFrColumn } from "../utils.js";
+import { generateEthAddressColumn, generateFrColumn } from "../utils.js";
 
 export const l1L2BlockProposedTable = pgTable(
-  "l1L2BlockProposed",
+  "l1_l2_block_proposed",
   {
-    l1ContractAddress: varchar("l1ContractAddress").notNull(),
-    l2BlockNumber: bigint("l2BlockNumber", { mode: "bigint" }).notNull(),
-    l1BlockNumber: bigint("l1BlockNumber", { mode: "bigint" }).notNull(),
-    l1BlockTimestamp: timestamp("l1BlockTimestamp").notNull(),
-    l1BlockHash: varchar("l1BlockHash").notNull(),
-    isFinalized: boolean("isFinalized").default(false),
+    l1ContractAddress: generateEthAddressColumn(
+      "l1_contract_address",
+    ).notNull(),
+    l2BlockNumber: bigint("l2_block_number", { mode: "bigint" }).notNull(),
+    l1BlockNumber: bigint("l1_block_number", { mode: "bigint" }).notNull(),
+    l1BlockHash: varchar("l1_block_hash").notNull(),
+    l1BlockTimestamp: timestamp("l1_block_timestamp").notNull(),
+    isFinalized: boolean("is_finalized").default(false),
     archive: generateFrColumn("archive").notNull(),
   },
   (t) => ({
@@ -25,24 +27,26 @@ export const l1L2BlockProposedTable = pgTable(
       name: "block_proposal",
       columns: [t.l2BlockNumber, t.archive],
     }),
-  })
+  }),
 );
 
 export const l1L2ProofVerifiedTable = pgTable(
-  "l1L2ProofVerified",
+  "l1_l2_proof_verified",
   {
-    l1ContractAddress: varchar("l1ContractAddress").notNull(),
-    l2BlockNumber: bigint("l2BlockNumber", { mode: "bigint" }).notNull(),
-    l1BlockNumber: bigint("l1BlockNumber", { mode: "bigint" }).notNull(),
-    l1BlockTimestamp: timestamp("l1BlockTimestamp").notNull(),
-    l1BlockHash: varchar("l1BlockHash").notNull(),
-    isFinalized: boolean("isFinalized").default(false),
-    proverId: generateFrColumn("proverId").notNull(),
+    l1ContractAddress: generateEthAddressColumn(
+      "l1_contract_address",
+    ).notNull(),
+    l2BlockNumber: bigint("l2_block_number", { mode: "bigint" }).notNull(),
+    l1BlockNumber: bigint("l1_block_number", { mode: "bigint" }).notNull(),
+    l1BlockHash: varchar("l1_block_hash").notNull(),
+    l1BlockTimestamp: timestamp("l1_block_timestamp").notNull(),
+    isFinalized: boolean("is_finalized").default(false),
+    proverId: generateEthAddressColumn("prover_id").notNull(),
   },
   (t) => ({
     pk: primaryKey({
       name: "proof_verified",
       columns: [t.l2BlockNumber, t.proverId],
     }),
-  })
+  }),
 );
