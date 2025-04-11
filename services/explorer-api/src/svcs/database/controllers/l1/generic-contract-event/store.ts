@@ -3,6 +3,9 @@ import { ChicmozL1GenericContractEvent } from "@chicmoz-pkg/types";
 import { l1GenericContractEventTable } from "../../../schema/l1/generic-contract-event.js";
 
 export const store = async (contractEvent: ChicmozL1GenericContractEvent) => {
+  if (!contractEvent.l1BlockTimestamp) {
+    throw new Error("Missing l1BlockTimestamp");
+  }
   return await db()
     .insert(l1GenericContractEventTable)
     .values({

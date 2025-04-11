@@ -2,13 +2,13 @@ import { chicmozL1GenericContractEventSchema } from "@chicmoz-pkg/types";
 import { Log } from "viem";
 import { emit } from "../../../events/index.js";
 import { logger } from "../../../logger.js";
-import { getEventL1Timestamp } from "./utils.js";
+import { getBlockTimestamp } from "../../client/index.js";
 
 export * from "./rollup.js";
 
 export const asyncForEach = async <T>(
   array: T[],
-  callback: (value: T) => Promise<void>
+  callback: (value: T) => Promise<void>,
 ) => {
   for (const item of array) {
     await callback(item);
@@ -38,15 +38,13 @@ export const genericOnLogs = ({
       chicmozL1GenericContractEventSchema.parse({
         l1BlockNumber: log.blockNumber,
         l1BlockHash: log.blockHash,
-        l1BlockTimestamp: getEventL1Timestamp(
-          log as unknown as { blockTimestamp: `0x${string}` }
-        ),
+        l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
         l1ContractAddress: log.address,
         l1TransactionHash: log.transactionHash,
         isFinalized: false,
         eventName: log.eventName,
         eventArgs: log.args,
-      })
+      }),
     );
     if (log.blockNumber) {
       updateHeight(log.blockNumber);
@@ -58,7 +56,9 @@ export const genericOnLogs = ({
     .finally(() => {
       storeHeight().catch((e) => {
         logger.error(
-          `🍔🥓 ${name}.${eventName} ERROR (storeHeight): ${(e as Error).stack}`
+          `🍔🥓 ${name}.${eventName} ERROR (storeHeight): ${
+            (e as Error).stack
+          }`,
         );
       });
     });

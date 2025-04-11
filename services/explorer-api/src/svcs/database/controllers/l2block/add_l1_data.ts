@@ -19,9 +19,15 @@ import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalizatio
 export const addL1L2BlockProposed = async (
   proposedData: ChicmozL1L2BlockProposed,
 ): Promise<ChicmozL2BlockFinalizationUpdateEvent | null> => {
+  if (!proposedData.l1BlockTimestamp) {
+    throw new Error("Missing l1BlockTimestamp");
+  }
   await db()
     .insert(l1L2BlockProposedTable)
-    .values(proposedData)
+    .values({
+      ...proposedData,
+      l1BlockTimestamp: proposedData.l1BlockTimestamp,
+    })
     .onConflictDoUpdate({
       target: [
         l1L2BlockProposedTable.l2BlockNumber,
@@ -146,10 +152,16 @@ export const ensureL1FinalizationIsStored = async (
 export const addL1L2ProofVerified = async (
   proofVerifiedData: ChicmozL1L2ProofVerified,
 ): Promise<ChicmozL2BlockFinalizationUpdateEvent | null> => {
+  if (!proofVerifiedData.l1BlockTimestamp) {
+    throw new Error("Missing l1BlockTimestamp");
+  }
   // TODO: db-transaction
   await db()
     .insert(l1L2ProofVerifiedTable)
-    .values(proofVerifiedData)
+    .values({
+      ...proofVerifiedData,
+      l1BlockTimestamp: proofVerifiedData.l1BlockTimestamp,
+    })
     .onConflictDoUpdate({
       target: [
         l1L2ProofVerifiedTable.l2BlockNumber,

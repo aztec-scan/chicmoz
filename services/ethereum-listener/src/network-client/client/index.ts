@@ -18,11 +18,12 @@ import {
   ETHEREUM_HTTP_RPC_URL,
   ETHEREUM_WS_RPC_URL,
   L2_NETWORK_ID,
-} from "../environment.js";
-import { emit } from "../events/index.js";
-import { logger } from "../logger.js";
-import { getL1Contracts } from "./contracts/index.js";
-export { startContractWatchers as watchContractsEvents } from "./contracts/index.js";
+} from "../../environment.js";
+import { emit } from "../../events/index.js";
+import { logger } from "../../logger.js";
+import { getL1Contracts } from "../contracts/index.js";
+import { getCachedBlockTimestamp } from "./cached-block-timestamps.js";
+export { startContractWatchers as watchContractsEvents } from "../contracts/index.js";
 
 let publicWsClient: PublicClient | undefined = undefined;
 let publicHttpClient: PublicClient | undefined = undefined;
@@ -78,10 +79,19 @@ export const getLatestFinalizedHeight = async () => {
   return block.number;
 };
 
-export const getBlock = async (blockNumber: number) => {
+export const getBlock = async (blockNumber: number | bigint) => {
   return await getPublicHttpClient().getBlock({
     blockNumber: BigInt(blockNumber),
   });
+};
+
+export const getBlockTimestamp = async (
+  blockNumber: number | bigint | null,
+) => {
+  if (!blockNumber) {
+    return null;
+  }
+  return getCachedBlockTimestamp(blockNumber, getBlock);
 };
 
 const json = (param: unknown): string => {
