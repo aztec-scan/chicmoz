@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: aztec-listener-testnet-label
+  name: aztec-listener-testnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aztec-listener-testnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: aztec-listener-testnet-label
+    spec:
+      initContainers:
+        - name: run-migrations
+          image: aztec-listener:latest
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener-testnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: aztec-listener:latest
+          resources:
+            limits:
+              memory: 750Mi
+              cpu: 500m
+          name: aztec-listener
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener-testnet
+          env:
+            - name: INSTANCE_NAME
+              value: "testnet_aztec-listener"
+            - name: BLOCK_POLL_INTERVAL_MS
+              value: "5000"
+            - name: L2_NETWORK_ID
+              value: "TESTNET"
+            - name: AZTEC_GENESIS_CATCHUP
+              value: "true"
+            - name: AZTEC_LISTEN_FOR_BLOCKS
+              value: "true"
+            - name: AZTEC_LISTEN_FOR_PENDING_TXS
+              value: "true"
+            - name: AZTEC_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: TESTNET_OBSCURA_L2_RPC_1
+                  #key: TESTNET_OBSCURA_L2_RPC_2
+                  #key: TESTNET_AZTEC_L2_BOOTNODE_RPC
+status: {}

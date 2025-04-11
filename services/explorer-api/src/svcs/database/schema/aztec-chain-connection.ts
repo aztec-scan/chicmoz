@@ -1,4 +1,5 @@
 import {
+  bigint,
   integer,
   jsonb,
   pgTable,
@@ -17,7 +18,9 @@ export const aztecChainConnection = pgTable("aztec-chain-connection", {
   rpcUrl: varchar("rpc_url").notNull(),
   nodeVersion: varchar("node_version").notNull(),
   l1ChainId: integer("l1_chain_id").notNull(),
-  rollupVersion: integer("rollup_version").notNull(),
+  rollupVersion: bigint("rollup_version", {
+    mode: "bigint",
+  }).notNull(),
   enr: varchar("enr"),
   l1ContractAddresses: jsonb("l1_contract_addresses").notNull(),
   protocolContractAddresses: jsonb("protocol_contract_addresses").notNull(),

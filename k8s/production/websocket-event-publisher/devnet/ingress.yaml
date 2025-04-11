@@ -10,9 +10,9 @@ metadata:
 spec:
   ingressClassName: nginx
   tls:
-    - hosts:
+    - secretName: aztecscan-ws-tls-devnet
+      hosts:
         - ws.devnet.aztecscan.xyz
-      secretName: aztecscan-ws-tls-devnet
   rules:
     - host: ws.devnet.aztecscan.xyz
       http:

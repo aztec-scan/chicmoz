@@ -1,5 +1,5 @@
 {
-  "id": "90258e71-1812-4edf-9210-8d0a8068b824",
+  "id": "2ef04608-e6c6-451d-b63e-a57c5030b633",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -67,7 +67,7 @@
         },
         "rollup_version": {
           "name": "rollup_version",
-          "type": "integer",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
@@ -1888,7 +1888,7 @@
         },
         "rollup_version": {
           "name": "rollup_version",
-          "type": "integer",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
@@ -2068,7 +2068,7 @@
         },
         "rollup_version": {
           "name": "rollup_version",
-          "type": "integer",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },

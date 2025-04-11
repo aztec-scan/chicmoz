@@ -25,21 +25,21 @@ jobs:
       - name: Print important information
         # TODO: pipelines are public like the repo. This should not be printed as long as the repo is public
         #        env:
-        #          SP_TESTNET_OBSCURA_L2_RPC_1: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_1 }}
-        #          SP_TESTNET_OBSCURA_L2_RPC_2: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_2 }}
-        #          SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.SP_TESTNET_AZTEC_L2_BOOTNODE_RPC }}
-        #          SP_TESTNET_AZTEC_L1_HTTP: ${{ vars.SP_TESTNET_AZTEC_L1_HTTP }}
-        #          SP_TESTNET_AZTEC_L1_WS: ${{ vars.SP_TESTNET_AZTEC_L1_WS }}
+        #          TESTNET_OBSCURA_L2_RPC_1: ${{ vars.TESTNET_OBSCURA_L2_RPC_1 }}
+        #          TESTNET_OBSCURA_L2_RPC_2: ${{ vars.TESTNET_OBSCURA_L2_RPC_2 }}
+        #          TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.TESTNET_AZTEC_L2_BOOTNODE_RPC }}
+        #          TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
+        #          TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
         #          DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
         #          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
         #          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
         run: |
           echo "VERSION: $(git describe --tags)"
-        #          echo "SP_TESTNET_OBSCURA_L2_RPC_1: $SP_TESTNET_OBSCURA_L2_RPC_1"
-        #          echo "SP_TESTNET_OBSCURA_L2_RPC_2: $SP_TESTNET_OBSCURA_L2_RPC_2"
-        #          echo "SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: $SP_TESTNET_AZTEC_L2_BOOTNODE_RPC"
-        #          echo "SP_TESTNET_AZTEC_L1_HTTP: $SP_TESTNET_AZTEC_L1_HTTP"
-        #          echo "SP_TESTNET_AZTEC_L1_WS: $SP_TESTNET_AZTEC_L1_WS"
+        #          echo "TESTNET_OBSCURA_L2_RPC_1: $TESTNET_OBSCURA_L2_RPC_1"
+        #          echo "TESTNET_OBSCURA_L2_RPC_2: $TESTNET_OBSCURA_L2_RPC_2"
+        #          echo "TESTNET_AZTEC_L2_BOOTNODE_RPC: $TESTNET_AZTEC_L2_BOOTNODE_RPC"
+        #          echo "TESTNET_AZTEC_L1_HTTP: $TESTNET_AZTEC_L1_HTTP"
+        #          echo "TESTNET_AZTEC_L1_WS: $TESTNET_AZTEC_L1_WS"
         #          echo "DEVNET_AZTEC_L2_BOOTNODE_RPC: $DEVNET_AZTEC_L2_BOOTNODE_RPC"
         #          echo "DEVNET_AZTEC_L1_HTTP: $DEVNET_AZTEC_L1_HTTP"
         #          echo "DEVNET_AZTEC_L1_WS: $DEVNET_AZTEC_L1_WS"
@@ -115,11 +115,11 @@ jobs:
 
       - name: Deploy to cluster with Skaffold
         env:
-          SP_TESTNET_OBSCURA_L2_RPC_1: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_1 }}
-          SP_TESTNET_OBSCURA_L2_RPC_2: ${{ vars.SP_TESTNET_OBSCURA_L2_RPC_2 }}
-          SP_TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.SP_TESTNET_AZTEC_L2_BOOTNODE_RPC }}
-          SP_TESTNET_AZTEC_L1_HTTP: ${{ vars.SP_TESTNET_AZTEC_L1_HTTP }}
-          SP_TESTNET_AZTEC_L1_WS: ${{ vars.SP_TESTNET_AZTEC_L1_WS }}
+          TESTNET_OBSCURA_L2_RPC_1: ${{ vars.TESTNET_OBSCURA_L2_RPC_1 }}
+          TESTNET_OBSCURA_L2_RPC_2: ${{ vars.TESTNET_OBSCURA_L2_RPC_2 }}
+          TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.TESTNET_AZTEC_L2_BOOTNODE_RPC }}
+          TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
+          TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
           DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
           DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
           DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
@@ -128,11 +128,11 @@ jobs:
           RETRY_DELAY=10
 
           kubectl create secret generic global \
-            --from-literal=SP_TESTNET_OBSCURA_L2_RPC_1=$SP_TESTNET_OBSCURA_L2_RPC_1 \
-            --from-literal=SP_TESTNET_OBSCURA_L2_RPC_2=$SP_TESTNET_OBSCURA_L2_RPC_2 \
-            --from-literal=SP_TESTNET_AZTEC_L2_BOOTNODE_RPC=$SP_TESTNET_AZTEC_L2_BOOTNODE_RPC \
-            --from-literal=SP_TESTNET_AZTEC_L1_HTTP=$SP_TESTNET_AZTEC_L1_HTTP \
-            --from-literal=SP_TESTNET_AZTEC_L1_WS=$SP_TESTNET_AZTEC_L1_WS \
+            --from-literal=TESTNET_OBSCURA_L2_RPC_1=$TESTNET_OBSCURA_L2_RPC_1 \
+            --from-literal=TESTNET_OBSCURA_L2_RPC_2=$TESTNET_OBSCURA_L2_RPC_2 \
+            --from-literal=TESTNET_AZTEC_L2_BOOTNODE_RPC=$TESTNET_AZTEC_L2_BOOTNODE_RPC \
+            --from-literal=TESTNET_AZTEC_L1_HTTP=$TESTNET_AZTEC_L1_HTTP \
+            --from-literal=TESTNET_AZTEC_L1_WS=$TESTNET_AZTEC_L1_WS \
             --from-literal=DEVNET_AZTEC_L2_BOOTNODE_RPC=$DEVNET_AZTEC_L2_BOOTNODE_RPC \
             --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
             --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \

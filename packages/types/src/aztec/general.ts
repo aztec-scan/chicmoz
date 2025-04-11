@@ -28,7 +28,7 @@ export const ProtocolContractAddressesSchema = z.object({
 export const chicmozChainInfoSchema = z.object({
   l2NetworkId: l2NetworkIdSchema,
   l1ChainId: z.number(),
-  rollupVersion: z.number(),
+  rollupVersion: z.coerce.bigint().nonnegative(),
   l1ContractAddresses: L1ContractAddressesSchema,
   protocolContractAddresses: ProtocolContractAddressesSchema,
   createdAt: z.coerce.date().optional(),
@@ -44,7 +44,7 @@ export type ChicmozChainInfo = z.infer<typeof chicmozChainInfoSchema>;
 export const nodeInfoSchema = z.object({
   nodeVersion: z.string(),
   l1ChainId: z.number(),
-  rollupVersion: z.number(),
+  rollupVersion: z.coerce.bigint().nonnegative(),
   enr: z.string().optional(),
   l1ContractAddresses: L1ContractAddressesSchema,
   protocolContractAddresses: ProtocolContractAddressesSchema,
@@ -75,7 +75,7 @@ export const chicmozL2SequencerSchema = z.object({
   rpcNodeId: z.string().optional(),
   rpcUrl: z.string().optional(),
   l2NetworkId: l2NetworkIdSchema,
-  rollupVersion: z.number(),
+  rollupVersion: z.coerce.bigint().nonnegative(),
   nodeVersion: z.string(),
   l1ChainId: z.number(),
   lastSeenAt: z.coerce.date(),

@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-explorer-api-testnet
+  namespace: chicmoz
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://swagger.chicmoz.localhost"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/auth-url: http://auth-service.chicmoz.svc.cluster.local
+    nginx.ingress.kubernetes.io/auth-response-headers: x-api-key
+spec:
+  rules:
+    - host: api.testnet.chicmoz.localhost
+      http:
+        paths:
+          - path: /v1/([^/]+)/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: explorer-api-testnet-service
+                port:
+                  name: http-app
+status:
+  loadBalancer: {}

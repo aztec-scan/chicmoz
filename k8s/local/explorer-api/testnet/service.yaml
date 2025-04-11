@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: explorer-api-testnet-service
+  namespace: chicmoz
+spec:
+  selector:
+    app: explorer-api-testnet-label
+  ports:
+    - name: http-app
+      protocol: TCP
+      port: 80
+      targetPort: http-app-port
