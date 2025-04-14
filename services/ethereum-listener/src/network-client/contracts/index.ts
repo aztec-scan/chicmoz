@@ -6,7 +6,7 @@ import {
   RollupAbi,
 } from "@aztec/l1-artifacts";
 import { controllers as dbControllers } from "../../svcs/database/index.js";
-import { getLatestFinalizedHeight, getPublicHttpClient } from "../client.js";
+import { getLatestFinalizedHeight, getPublicHttpClient } from "../client/index.js";
 import { getAllContractsEvents } from "./get-events.js";
 import { AztecContracts, UnwatchCallback, getTypedContract } from "./utils.js";
 import { watchAllContractsEvents } from "./watch-events.js";

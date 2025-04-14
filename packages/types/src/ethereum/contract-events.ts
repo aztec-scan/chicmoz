@@ -8,7 +8,7 @@ export const chicmozL1L2BlockProposedSchema = z.object({
   l1ContractAddress: ethAddressSchema,
   l2BlockNumber: z.coerce.bigint(),
   l1BlockNumber: z.coerce.bigint(),
-  l1BlockTimestamp: z.coerce.date(),
+  l1BlockTimestamp: z.date().optional(),
   l1BlockHash: z.string().startsWith("0x"),
   isFinalized: z.boolean().default(false),
   archive: frSchema,
@@ -22,10 +22,10 @@ export const chicmozL1L2ProofVerifiedSchema = z.object({
   l1ContractAddress: ethAddressSchema,
   l2BlockNumber: z.coerce.bigint(),
   l1BlockNumber: z.coerce.bigint(),
-  l1BlockTimestamp: z.coerce.date(),
+  l1BlockTimestamp: z.date().optional(),
   l1BlockHash: z.string().startsWith("0x"),
   isFinalized: z.boolean().default(false),
-  proverId: frSchema,
+  proverId: ethAddressSchema,
 });
 
 export type ChicmozL1L2ProofVerified = z.infer<
@@ -39,7 +39,7 @@ export const chicmozL1GenericContractEventSchema = z.object({
   eventArgs: z.record(z.unknown()).optional(),
   l1BlockNumber: z.coerce.bigint(),
   l1BlockHash: z.string().startsWith("0x"),
-  l1BlockTimestamp: z.coerce.date(),
+  l1BlockTimestamp: z.date().optional(),
   l1ContractAddress: z.string(),
   isFinalized: z.boolean().default(false),
   l1TransactionHash: z.string().startsWith("0x").optional().nullable(),
