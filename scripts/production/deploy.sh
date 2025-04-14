@@ -17,4 +17,4 @@ echo "Using VERSION_STRING: $VERSION_STRING"
 export VERSION_STRING
 
 # Run skaffold with the version information
-skaffold run --filename "k8s/production/skaffold.full.yaml" --default-repo=registry.digitalocean.com/aztlan-containers --build-concurrency=0
+skaffold run --filename "k8s/production/skaffold.light.yaml" --default-repo=registry.digitalocean.com/aztlan-containers --build-concurrency=0
