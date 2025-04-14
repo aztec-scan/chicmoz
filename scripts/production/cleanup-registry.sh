@@ -9,7 +9,7 @@ delete_old_tags() {
     echo "Processing repository: $repo"
     
     # List tags and filter for SHA-based tags, excluding the most recent 5
-    SHA_TAGS=$(doctl registry repository list-tags auth --no-header | awk '{print $4, $5, $8}' | sort -r | tail -n +6 | awk '{print $3}') || true
+    SHA_TAGS=$(doctl registry repository list-tags $repo --no-header | awk '{print $4, $5, $8}' | sort -r | tail -n +6 | awk '{print $3}') || true
     
     if [ -z "$SHA_TAGS" ]; then
         echo "No old SHA tags found for repository: $repo"
