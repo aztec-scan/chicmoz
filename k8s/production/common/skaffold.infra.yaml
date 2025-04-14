@@ -48,6 +48,7 @@ manifests:
           global.postgresql.auth.username: "admin"
           global.postgresql.auth.password: "secret-local-password"
           image.debug: true
+          primary.persistence.size: 50Gi
         namespace: chicmoz-prod
         createNamespace: false
         recreatePods: false
