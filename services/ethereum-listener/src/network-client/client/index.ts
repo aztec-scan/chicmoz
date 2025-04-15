@@ -107,7 +107,7 @@ export const getEarliestRollupBlockNumber = async () => {
   logger.info(`Searching for tips time between blocks ${start} and ${end}`);
   let foundL2ProvenBlockNumber = maxInt256;
   while (start < end) {
-    const blockNbr = Math.floor(Number(start + end) / 2);
+    const blockNbr = (start + end) / 2n;
     try {
       const res = await getPublicHttpClient().readContract({
         address: l1Contracts.rollup.address,

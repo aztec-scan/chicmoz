@@ -13,7 +13,9 @@ export const ValidatorsPage: FC = () => {
   const { data, isLoading, error } = useL1L2Validators();
   return (
     <div className="flex flex-col items-center">
-      <h1>{routes.validators.title}</h1>
+      <h1>
+        {`${routes.validators.title}${data?.length ? ` (${data?.length})` : ""}`}
+      </h1>
 
       <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
         {isLoading && <p>Loading...</p>}
