@@ -33,7 +33,15 @@ export const ValidatorsPage: FC = () => {
             </thead>
             <tbody>
               {data
-                .sort((a, b) => (Number(b.stake) ?? 0) - (Number(a.stake) ?? 0))
+                .sort((a, b) => {
+                  const stakeDiff =
+                    (Number(b.stake) ?? 0) - (Number(a.stake) ?? 0);
+                  if (stakeDiff !== 0) return stakeDiff;
+                  return (
+                    b.latestSeenChangeAt.getTime() -
+                    a.latestSeenChangeAt.getTime()
+                  );
+                })
                 .map((validator) => (
                   <tr key={validator.attester}>
                     <td className={`${tdClasses} font-mono`}>
@@ -55,7 +63,7 @@ export const ValidatorsPage: FC = () => {
                       {L1L2ValidatorStatus[validator.status].toString()}
                     </td>
                     <td className={tdClasses}>
-                      {validator.firstSeenAt.toISOString()}
+                      {validator.firstSeenAt.toLocaleString()}
                     </td>
                     <td className={tdClasses}>
                       {formatTimeSince(validator.latestSeenChangeAt.getTime())}
