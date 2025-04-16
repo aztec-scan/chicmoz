@@ -51,7 +51,7 @@ export const DevPage: FC = () => {
           footer for link).
           <br />
           <br />
-          This page will not be linked to from anywhere once mainnet is launced.
+          This page will not be linked to from anywhere once mainnet is launched.
         </p>,
       )}
       {generateCard(
