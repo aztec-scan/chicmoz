@@ -183,11 +183,7 @@ export const Header = () => {
                         >
                           Dev Page
                         </Link>
-                        {divider}
-                        <div className="px-4 py-2 flex items-center">
-                          <span className="text-white text-sm mr-2">
-                            Theme:
-                          </span>
+                        <div className="flex flex-row justify-end items-center px-4">
                           <ThemeToggle />
                         </div>
                       </div>
