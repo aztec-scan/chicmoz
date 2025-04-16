@@ -123,6 +123,10 @@ export const routes = {
     route: "/fee-recipients",
     title: "Fee Recipients",
   },
+  aztecscanHealth: {
+    route: "/aztecscan-health",
+    title: "Aztecscan Health",
+  },
   l1: {
     route: "/l1",
     title: "L1",

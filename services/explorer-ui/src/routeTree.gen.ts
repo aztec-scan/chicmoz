@@ -23,6 +23,7 @@ const VerifiedContractInstancesLazyImport = createFileRoute(
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const DevLazyImport = createFileRoute('/dev')()
+const AztecscanHealthLazyImport = createFileRoute('/aztecscan-health')()
 const AboutUsLazyImport = createFileRoute('/about-us')()
 const IndexLazyImport = createFileRoute('/')()
 const ValidatorsIndexLazyImport = createFileRoute('/validators/')()
@@ -70,6 +71,13 @@ const DevLazyRoute = DevLazyImport.update({
   path: '/dev',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/dev.lazy').then((d) => d.Route))
+
+const AztecscanHealthLazyRoute = AztecscanHealthLazyImport.update({
+  path: '/aztecscan-health',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/aztecscan-health.lazy').then((d) => d.Route),
+)
 
 const AboutUsLazyRoute = AboutUsLazyImport.update({
   path: '/about-us',
@@ -184,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutUsLazyImport
       parentRoute: typeof rootRoute
     }
+    '/aztecscan-health': {
+      id: '/aztecscan-health'
+      path: '/aztecscan-health'
+      fullPath: '/aztecscan-health'
+      preLoaderRoute: typeof AztecscanHealthLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/dev': {
       id: '/dev'
       path: '/dev'
@@ -291,6 +306,7 @@ export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   TermsAndConditionsRoute,
   AboutUsLazyRoute,
+  AztecscanHealthLazyRoute,
   DevLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
@@ -318,6 +334,7 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/terms-and-conditions",
         "/about-us",
+        "/aztecscan-health",
         "/dev",
         "/fee-recipients",
         "/privacy-policy",
@@ -342,6 +359,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/about-us": {
       "filePath": "about-us.lazy.tsx"
+    },
+    "/aztecscan-health": {
+      "filePath": "aztecscan-health.lazy.tsx"
     },
     "/dev": {
       "filePath": "dev.lazy.tsx"

@@ -5,14 +5,12 @@ import {
   useChainInfo,
   useSequencers,
   useSubTitle,
-  useSystemHealth,
 } from "~/hooks";
 import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import { CHICMOZ_ALL_UI_URLS } from "~/service/constants";
 
 export const DevPage: FC = () => {
-  const systemHealth = useSystemHealth();
   useSubTitle(routes.dev.title);
   const {
     data: chainInfo,
@@ -51,12 +49,9 @@ export const DevPage: FC = () => {
           footer for link).
           <br />
           <br />
-          This page will not be linked to from anywhere once mainnet is launched.
+          This page will not be linked to from anywhere once mainnet is
+          launched.
         </p>,
-      )}
-      {generateCard(
-        "System Health",
-        <pre>{JSON.stringify(systemHealth, null, 2)}</pre>,
       )}
       {generateCard(
         "Chain Info",

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { type Dispatch, type SetStateAction } from "react";
 import { routes } from "~/routes/__root.tsx";
+import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui";
 
 type DesktopBurgerMenuProps = {
@@ -71,12 +72,23 @@ export const DesktopBurgerMenu = ({
             {divider}
 
             <Link
+              to={routes.aztecscanHealth.route}
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+            >
+              {routes.aztecscanHealth.title}
+            </Link>
+
+            <Link
               to={routes.dev.route}
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-2 text-sm text-white hover:text-gray-400"
             >
               Dev Page
             </Link>
+            <div className="flex flex-row justify-end items-center px-4">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       )}

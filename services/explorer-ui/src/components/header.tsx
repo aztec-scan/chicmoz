@@ -180,6 +180,13 @@ export const Header = () => {
                     </Link>
                   ))}
                   <Link
+                    to={routes.aztecscanHealth.route}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-white text-lg py-1 hover:bg-white/10 transition-colors"
+                  >
+                    {routes.aztecscanHealth.title}
+                  </Link>
+                  <Link
                     to={routes.dev.route}
                     onClick={() => setIsMenuOpen(false)}
                     className="text-white text-lg py-1 hover:bg-white/10 transition-colors"
