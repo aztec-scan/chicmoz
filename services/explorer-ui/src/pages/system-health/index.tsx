@@ -48,9 +48,9 @@ export const SystemHealth: FC = () => {
               {component.componentId}: {component.health}
             </h3>
             <p className="mb-2">{component.description}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <pre className="text-sm text-gray-600 dark:text-gray-400 border-none dark:border-none whitespace-pre-wrap">
               {component.evaluationDetails}
-            </p>
+            </pre>
           </div>
         ))}
       </div>

@@ -85,7 +85,7 @@ const evaluateHealth = ({
         : HealthStatus.UNHEALTHY,
     componentId: "API-quality",
     description: `Checks if there have been both successful requests and no errors within ${reasonableTimeString}`,
-    evaluationDetails: `last successful request: ${lastSuccessfulRequest?.path}, last error: ${lastError?.error.message}`,
+    evaluationDetails: `last successful request: ${lastSuccessfulRequest?.path}\nlast error: ${lastError?.error.message}`,
   });
 
   const isChainErrorFreeWithinReasonableTime = chainErrors?.every(
