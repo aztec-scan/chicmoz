@@ -93,10 +93,6 @@ export const GITHUB_URL =
   typeof import.meta.env.VITE_GITHUB_URL === "string"
     ? import.meta.env.VITE_GITHUB_URL
     : "";
-export const X_URL =
-  typeof import.meta.env.VITE_X_URL === "string"
-    ? import.meta.env.VITE_X_URL
-    : "";
 
 export const VERSION_STRING =
   typeof import.meta.env.VITE_VERSION_STRING === "string"
