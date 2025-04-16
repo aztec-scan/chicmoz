@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { SearchInput } from "~/components/ui/input";
 import { useSearch } from "~/hooks";
 import { routes } from "~/routes/__root.tsx";
+import { DesktopBurgerMenu } from "./desktop-burger-menu";
 import { MagicDevLink } from "./magic-dev-link";
+import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui";
 import { ChicmozHomeLink } from "./ui/chicmoz-home-link";
-import { ThemeToggle } from "./theme-toggle";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -49,8 +50,12 @@ export const Header = () => {
         setHasNoResults(true);
       }
     }
-    if (error) { setHasNoResults(true); }
-    if (!data && isSuccess) { setHasNoResults(true); }
+    if (error) {
+      setHasNoResults(true);
+    }
+    if (!data && isSuccess) {
+      setHasNoResults(true);
+    }
   }, [data, error, isSuccess, navigate, fetchStatus]);
 
   const handleOnChange = (value: string) => {
@@ -61,21 +66,24 @@ export const Header = () => {
   const handleSearch = () => {
     void refetch();
   };
-
   return (
     <div className="mx-auto px-4 mt-10 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-col w-full items-center bg-purple-light rounded-[40px] py-4 pr-4 md:pl-10">
         <div
-          className={`w-full transition-all duration-300 ease-in-out ${isMenuOpen ? "rounded-b-3xl" : ""
-            }`}
+          className={`w-full transition-all duration-300 ease-in-out ${
+            isMenuOpen ? "rounded-b-3xl" : ""
+          }`}
         >
           {/* Header */}
           <div className="w-full mx-auto">
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:w-full md:items-center md:justify-between ">
-              <div className="flex items-baseline">
-                <ChicmozHomeLink textClasses="hidden md:block pr-6 self-center" />
-                <MagicDevLink textClasses="hidden md:block" />
+              <div className="flex items-center">
+                <ChicmozHomeLink
+                  className="-mt-1"
+                  textClasses="hidden md:block pr-6"
+                />
+                <MagicDevLink textClasses="hidden md:block self-center" />
               </div>
               <div className="flex  justify-center items-center w-1/2 sm:w-1/3 ">
                 <SearchInput
@@ -89,16 +97,30 @@ export const Header = () => {
               </div>
 
               <div className="flex space-x-6 justify-center items-center pr-11">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className="text-white hover:text-white transition-colors"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                <ThemeToggle />
+                <Link
+                  to={routes.blocks.route}
+                  className="text-white hover:text-secondary-foreground transition-colors"
+                >
+                  Blocks
+                </Link>
+                <Link
+                  to={routes.txEffects.route}
+                  className="text-white hover:text-secondary-foreground transition-colors"
+                >
+                  TxEffects
+                </Link>
+                <Link
+                  to={routes.contracts.route}
+                  className="text-white hover:text-secondary-foreground transition-colors"
+                >
+                  Contracts
+                </Link>
+
+                {/* Desktop Burger Menu */}
+                <DesktopBurgerMenu
+                  isMenuOpen={isMenuOpen}
+                  setIsMenuOpen={setIsMenuOpen}
+                />
               </div>
             </div>
 
@@ -127,8 +149,9 @@ export const Header = () => {
             {/* Mobile Menu Content */}
             <div
               className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out
-              ${isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-                }`}
+              ${
+                isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+              }`}
             >
               <div className="px-4 py-4 space-y-3">
                 {/* Search bar */}
@@ -144,11 +167,6 @@ export const Header = () => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-white mr-2">Toggle theme:</span>
-                  <ThemeToggle />
-                </div>
-
                 {/* Navigation Items */}
                 <div className="flex flex-col space-y-2">
                   {navigationItems.map((item) => (
@@ -161,6 +179,17 @@ export const Header = () => {
                       {item.name}
                     </Link>
                   ))}
+                  <Link
+                    to={routes.dev.route}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-white text-lg py-1 hover:bg-white/10 transition-colors"
+                  >
+                    Dev Page
+                  </Link>
+                  <div className="flex items-center py-2">
+                    <span className="text-white mr-2">Theme:</span>
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
             </div>
