@@ -55,10 +55,6 @@ export const DevPage: FC = () => {
         </p>,
       )}
       {generateCard(
-        "Aztecscan Health",
-        <pre>{JSON.stringify(systemHealth, null, 2)}</pre>,
-      )}
-      {generateCard(
         "Chain Info",
         <>
           {isChainInfoLoading && <p>Loading...</p>}
