@@ -25,9 +25,9 @@ export const DesktopBurgerMenu = ({
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
         {isMenuOpen ? (
-          <X className="h-6 w-6 text-white" />
+          <X className="h-6 w-6 text-white hover:text-secondary-foreground" />
         ) : (
-          <Menu className="h-6 w-6 text-white" />
+          <Menu className="h-6 w-6 text-white hover:text-secondary-foreground" />
         )}
       </Button>
 
