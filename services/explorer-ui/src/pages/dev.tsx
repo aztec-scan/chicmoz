@@ -1,4 +1,7 @@
-import { CHICMOZ_TYPES_AZTEC_VERSION } from "@chicmoz-pkg/types";
+import {
+  CHICMOZ_TYPES_AZTEC_VERSION,
+  getL1NetworkId,
+} from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
@@ -68,7 +71,6 @@ export const DevPage: FC = () => {
           <p>{`API URL                    ${API_URL}`}</p>
           <p>{`WS URL                     ${WS_URL}`}</p>
           <p>{`Indexing Aztec network     ${L2_NETWORK_ID}`}</p>
-          <p>{`Indexing L1 network        ${L2_NETWORK_ID}`}</p>
         </pre>,
       )}
       {generateCard(
