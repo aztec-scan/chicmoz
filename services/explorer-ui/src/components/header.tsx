@@ -5,9 +5,9 @@ import { SearchInput } from "~/components/ui/input";
 import { useSearch } from "~/hooks";
 import { routes } from "~/routes/__root.tsx";
 import { MagicDevLink } from "./magic-dev-link";
+import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui";
 import { ChicmozHomeLink } from "./ui/chicmoz-home-link";
-import { ThemeToggle } from "./theme-toggle";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -49,8 +49,12 @@ export const Header = () => {
         setHasNoResults(true);
       }
     }
-    if (error) { setHasNoResults(true); }
-    if (!data && isSuccess) { setHasNoResults(true); }
+    if (error) {
+      setHasNoResults(true);
+    }
+    if (!data && isSuccess) {
+      setHasNoResults(true);
+    }
   }, [data, error, isSuccess, navigate, fetchStatus]);
 
   const handleOnChange = (value: string) => {
@@ -61,21 +65,25 @@ export const Header = () => {
   const handleSearch = () => {
     void refetch();
   };
-
+  const divider = <hr className="my-1 mx-[8%] border border-gray-400/30" />;
   return (
     <div className="mx-auto px-4 mt-10 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-col w-full items-center bg-purple-light rounded-[40px] py-4 pr-4 md:pl-10">
         <div
-          className={`w-full transition-all duration-300 ease-in-out ${isMenuOpen ? "rounded-b-3xl" : ""
-            }`}
+          className={`w-full transition-all duration-300 ease-in-out ${
+            isMenuOpen ? "rounded-b-3xl" : ""
+          }`}
         >
           {/* Header */}
           <div className="w-full mx-auto">
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:w-full md:items-center md:justify-between ">
-              <div className="flex items-baseline">
-                <ChicmozHomeLink textClasses="hidden md:block pr-6 self-center" />
-                <MagicDevLink textClasses="hidden md:block" />
+              <div className="flex items-center">
+                <ChicmozHomeLink
+                  className="-mt-1"
+                  textClasses="hidden md:block pr-6"
+                />
+                <MagicDevLink textClasses="hidden md:block self-center" />
               </div>
               <div className="flex  justify-center items-center w-1/2 sm:w-1/3 ">
                 <SearchInput
@@ -89,16 +97,77 @@ export const Header = () => {
               </div>
 
               <div className="flex space-x-6 justify-center items-center pr-11">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className="text-white hover:text-white transition-colors"
+                <Link
+                  to={routes.blocks.route}
+                  className="text-white hover:text-white transition-colors"
+                >
+                  Blocks
+                </Link>
+                <Link
+                  to={routes.txEffects.route}
+                  className="text-white hover:text-white transition-colors"
+                >
+                  Tx Effects
+                </Link>
+                <Link
+                  to={routes.contracts.route}
+                  className="text-white hover:text-white transition-colors"
+                >
+                  Contracts
+                </Link>
+
+                {/* Desktop Burger Menu */}
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-transparent"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
                   >
-                    {item.name}
-                  </Link>
-                ))}
-                <ThemeToggle />
+                    {isMenuOpen ? (
+                      <X className="h-6 w-6 text-white" />
+                    ) : (
+                      <Menu className="h-6 w-6 text-white" />
+                    )}
+                  </Button>
+
+                  {/* Desktop Dropdown Menu */}
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 rounded-md bg-purple-light ring-1 ring-black ring-opacity-5 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                      <div
+                        className="py-1"
+                        role="menu"
+                        aria-orientation="vertical"
+                      >
+                        {/* Only show Home in the dropdown */}
+                        <Link
+                          to={routes.home.route}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-white hover:bg-white/10"
+                        >
+                          {routes.home.title}
+                        </Link>
+
+                        {divider}
+
+                        <Link
+                          to={routes.dev.route}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-white hover:bg-white/10"
+                        >
+                          Dev Pages
+                        </Link>
+                        {divider}
+                        <div className="px-4 py-2 flex items-center">
+                          <span className="text-white text-sm mr-2">
+                            Theme:
+                          </span>
+                          <ThemeToggle />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -127,8 +196,9 @@ export const Header = () => {
             {/* Mobile Menu Content */}
             <div
               className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out
-              ${isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-                }`}
+              ${
+                isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+              }`}
             >
               <div className="px-4 py-4 space-y-3">
                 {/* Search bar */}
@@ -144,11 +214,6 @@ export const Header = () => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-white mr-2">Toggle theme:</span>
-                  <ThemeToggle />
-                </div>
-
                 {/* Navigation Items */}
                 <div className="flex flex-col space-y-2">
                   {navigationItems.map((item) => (
@@ -161,6 +226,17 @@ export const Header = () => {
                       {item.name}
                     </Link>
                   ))}
+                  <Link
+                    to={routes.dev.route}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-white text-lg py-1 hover:bg-white/10 transition-colors"
+                  >
+                    Dev Pages
+                  </Link>
+                  <div className="flex items-center py-2">
+                    <span className="text-white mr-2">Theme:</span>
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
             </div>
