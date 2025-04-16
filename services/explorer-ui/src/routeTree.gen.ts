@@ -20,10 +20,10 @@ import { Route as TermsAndConditionsImport } from './routes/terms-and-conditions
 const VerifiedContractInstancesLazyImport = createFileRoute(
   '/verified-contract-instances',
 )()
-const SystemHealthLazyImport = createFileRoute('/system-health')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const DevLazyImport = createFileRoute('/dev')()
+const AztecscanHealthLazyImport = createFileRoute('/aztecscan-health')()
 const AboutUsLazyImport = createFileRoute('/about-us')()
 const IndexLazyImport = createFileRoute('/')()
 const ValidatorsIndexLazyImport = createFileRoute('/validators/')()
@@ -53,11 +53,6 @@ const VerifiedContractInstancesLazyRoute =
     import('./routes/verified-contract-instances.lazy').then((d) => d.Route),
   )
 
-const SystemHealthLazyRoute = SystemHealthLazyImport.update({
-  path: '/system-health',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/system-health.lazy').then((d) => d.Route))
-
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
   getParentRoute: () => rootRoute,
@@ -76,6 +71,13 @@ const DevLazyRoute = DevLazyImport.update({
   path: '/dev',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/dev.lazy').then((d) => d.Route))
+
+const AztecscanHealthLazyRoute = AztecscanHealthLazyImport.update({
+  path: '/aztecscan-health',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/aztecscan-health.lazy').then((d) => d.Route),
+)
 
 const AboutUsLazyRoute = AboutUsLazyImport.update({
   path: '/about-us',
@@ -190,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutUsLazyImport
       parentRoute: typeof rootRoute
     }
+    '/aztecscan-health': {
+      id: '/aztecscan-health'
+      path: '/aztecscan-health'
+      fullPath: '/aztecscan-health'
+      preLoaderRoute: typeof AztecscanHealthLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/dev': {
       id: '/dev'
       path: '/dev'
@@ -209,13 +218,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/system-health': {
-      id: '/system-health'
-      path: '/system-health'
-      fullPath: '/system-health'
-      preLoaderRoute: typeof SystemHealthLazyImport
       parentRoute: typeof rootRoute
     }
     '/verified-contract-instances': {
@@ -304,10 +306,10 @@ export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   TermsAndConditionsRoute,
   AboutUsLazyRoute,
+  AztecscanHealthLazyRoute,
   DevLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
-  SystemHealthLazyRoute,
   VerifiedContractInstancesLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
@@ -332,10 +334,10 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/terms-and-conditions",
         "/about-us",
+        "/aztecscan-health",
         "/dev",
         "/fee-recipients",
         "/privacy-policy",
-        "/system-health",
         "/verified-contract-instances",
         "/blocks/$blockNumber",
         "/l1/contract-events",
@@ -358,6 +360,9 @@ export const routeTree = rootRoute.addChildren({
     "/about-us": {
       "filePath": "about-us.lazy.tsx"
     },
+    "/aztecscan-health": {
+      "filePath": "aztecscan-health.lazy.tsx"
+    },
     "/dev": {
       "filePath": "dev.lazy.tsx"
     },
@@ -366,9 +371,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
-    },
-    "/system-health": {
-      "filePath": "system-health.lazy.tsx"
     },
     "/verified-contract-instances": {
       "filePath": "verified-contract-instances.lazy.tsx"

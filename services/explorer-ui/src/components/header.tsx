@@ -177,11 +177,11 @@ export const Header = () => {
                         {divider}
 
                         <Link
-                          to={routes.systemHealth.route}
+                          to={routes.aztecscanHealth.route}
                           onClick={() => setIsMenuOpen(false)}
                           className="block px-4 py-2 text-sm text-white hover:text-gray-400"
                         >
-                          {routes.systemHealth.title}
+                          {routes.aztecscanHealth.title}
                         </Link>
 
                         <Link
@@ -257,11 +257,11 @@ export const Header = () => {
                     </Link>
                   ))}
                   <Link
-                    to={routes.systemHealth.route}
+                    to={routes.aztecscanHealth.route}
                     onClick={() => setIsMenuOpen(false)}
                     className="text-white text-lg py-1 hover:bg-white/10 transition-colors"
                   >
-                    {routes.systemHealth.title}
+                    {routes.aztecscanHealth.title}
                   </Link>
                   <Link
                     to={routes.dev.route}

@@ -2,19 +2,19 @@ import { type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { useSubTitle, useSystemHealth } from "~/hooks";
 
-export const SystemHealth: FC = () => {
+export const AztecscanHealth: FC = () => {
   const { components, systemHealth } = useSystemHealth();
 
-  useSubTitle("System Health");
+  useSubTitle("Aztecscan Health");
 
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap justify-center my-14 md:my-20">
         <h1 className="hidden md:block md:text-primary md:dark:text-white">
-          System Health Status
+          Aztecscan Health Status
         </h1>
         <h5 className="text-primary dark:text-white md:hidden">
-          System Health Status
+          Aztecscan Health Status
         </h5>
       </div>
 
