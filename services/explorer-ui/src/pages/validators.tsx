@@ -13,7 +13,9 @@ export const ValidatorsPage: FC = () => {
   const { data, isLoading, error } = useL1L2Validators();
   return (
     <div className="flex flex-col items-center">
-      <h1>{routes.validators.title}</h1>
+      <h1>
+        {`${routes.validators.title}${data?.length ? ` (${data?.length})` : ""}`}
+      </h1>
 
       <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
         {isLoading && <p>Loading...</p>}
@@ -33,7 +35,15 @@ export const ValidatorsPage: FC = () => {
             </thead>
             <tbody>
               {data
-                .sort((a, b) => (Number(b.stake) ?? 0) - (Number(a.stake) ?? 0))
+                .sort((a, b) => {
+                  const stakeDiff =
+                    (Number(b.stake) ?? 0) - (Number(a.stake) ?? 0);
+                  if (stakeDiff !== 0) return stakeDiff;
+                  return (
+                    b.latestSeenChangeAt.getTime() -
+                    a.latestSeenChangeAt.getTime()
+                  );
+                })
                 .map((validator) => (
                   <tr key={validator.attester}>
                     <td className={`${tdClasses} font-mono`}>
@@ -55,7 +65,7 @@ export const ValidatorsPage: FC = () => {
                       {L1L2ValidatorStatus[validator.status].toString()}
                     </td>
                     <td className={tdClasses}>
-                      {validator.firstSeenAt.toISOString()}
+                      {validator.firstSeenAt.toLocaleString()}
                     </td>
                     <td className={tdClasses}>
                       {formatTimeSince(validator.latestSeenChangeAt.getTime())}

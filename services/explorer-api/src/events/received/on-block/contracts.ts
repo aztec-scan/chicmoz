@@ -52,7 +52,6 @@ const parseObjs = <T>(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       logger.error(`Failed to parse object: ${e}`);
       logger.error((e as Error).stack);
-      logger.error(JSON.stringify(obj, null, 2));
     }
   }
   return parsedObjs;

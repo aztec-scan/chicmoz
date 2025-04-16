@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { routes } from "~/routes/__root";
-import { DiscordIcon, GithubIcon, ObscuraLogoWhite, XIcon } from "~/assets";
-import { DISCORD_URL, GITHUB_URL, X_URL } from "~/service/constants";
+import { DiscordIcon, GithubIcon } from "~/assets";
 import { ChicmozHomeLink } from "~/components/ui/chicmoz-home-link";
+import { routes } from "~/routes/__root";
+import { DISCORD_URL, GITHUB_URL } from "~/service/constants";
 
 export const Footer = () => {
   return (
@@ -11,20 +11,9 @@ export const Footer = () => {
       <div className="bg-purple-light py-10">
         <div className="mx-auto px-[70px] max-w-[1440px]">
           <div className="flex flex-col w-full">
-            <ChicmozHomeLink className="hidden lg:block opacity-75 hover:opacity-100" />
             <div className="flex flex-col w-full items-center lg:items-end lg:text-center lg:flex-row">
-              <ChicmozHomeLink className="lg:hidden opacity-75 hover:opacity-100" />
-              <p className="flex flex-col mt-[60px] lg:mb-0 mb-[100px] mr-0 gap-1 lg:mt-0 lg:mr-auto lg:items-start items-center">
-                <a
-                  href="https://obscura.network"
-                  className="flex flex-col lg:items-start items-center opacity-75 hover:opacity-100"
-                >
-                  <span className="text-grey-light text-xs text-center lg:text-left">
-                    {text.builtAndPoweredBy}
-                  </span>
-                  <ObscuraLogoWhite className="size-3/4" />
-                </a>
-              </p>
+              <ChicmozHomeLink className="hidden lg:mr-auto lg:block opacity-75 hover:opacity-100" />
+              <ChicmozHomeLink className="lg:hidden mb-[20px] opacity-75 hover:opacity-100" />
               <div className="mx-auto flex items-center lg:flex-row flex-col">
                 <Link
                   to={routes.aboutUs.route}
@@ -54,13 +43,6 @@ export const Footer = () => {
                   <DiscordIcon className="size-3/4" />
                 </a>
                 <a
-                  href={X_URL}
-                  target="_blank"
-                  className="mx-auto opacity-75 hover:opacity-100"
-                >
-                  <XIcon className="size-3/4" />
-                </a>
-                <a
                   href={GITHUB_URL}
                   target="_blank"
                   className="mx-auto opacity-75 hover:opacity-100"
@@ -77,7 +59,6 @@ export const Footer = () => {
 };
 
 export const text = {
-  builtAndPoweredBy: "Built and powered by ",
   aboutUs: "About Us",
   privacyPolicy: "Privacy Policy",
   joinOurDiscord: "Join our Discord",
