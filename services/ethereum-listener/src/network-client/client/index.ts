@@ -1,6 +1,7 @@
 import { RollupAbi } from "@aztec/l1-artifacts";
 import {
   ChicmozL1L2Validator,
+  L2NetworkId,
   NODE_ENV,
   NodeEnv,
   chicmozL1L2ValidatorSchema,
@@ -11,6 +12,7 @@ import {
   createPublicClient,
   defineChain,
   http,
+  maxInt256,
   webSocket,
 } from "viem";
 import { foundry, mainnet, sepolia } from "viem/chains";
@@ -22,6 +24,7 @@ import {
 import { emit } from "../../events/index.js";
 import { logger } from "../../logger.js";
 import { getL1Contracts } from "../contracts/index.js";
+import { AztecContracts } from "../contracts/utils.js";
 import { getCachedBlockTimestamp } from "./cached-block-timestamps.js";
 export { startContractWatchers as watchContractsEvents } from "../contracts/index.js";
 
@@ -94,6 +97,72 @@ export const getBlockTimestamp = async (
   return getCachedBlockTimestamp(blockNumber, getBlock);
 };
 
+export const getEarliestRollupBlockNumber = async () => {
+  const l1Contracts = await getL1Contracts();
+  if (!l1Contracts) {
+    throw new Error("Contracts not initialized");
+  }
+  let end = await getLatestFinalizedHeight();
+  let start = 0n;
+  logger.info(`Searching for tips time between blocks ${start} and ${end}`);
+  let foundL2ProvenBlockNumber = maxInt256;
+  while (start < end) {
+    const blockNbr = (start + end) / 2n;
+    try {
+      const res = await getPublicHttpClient().readContract({
+        address: l1Contracts.rollup.address,
+        abi: RollupAbi,
+        functionName: "getTips",
+        blockNumber: BigInt(blockNbr),
+      });
+      if (res.provenBlockNumber === 0n) {
+        start = BigInt(blockNbr);
+        foundL2ProvenBlockNumber = BigInt(blockNbr);
+      }
+      end = BigInt(blockNbr);
+    } catch (e) {
+      if (
+        e instanceof Error &&
+        e.message.includes("Missing or invalid parameters")
+      ) {
+        start = BigInt(blockNbr) + 1n;
+      } else {
+        throw e;
+      }
+    }
+  }
+  if (foundL2ProvenBlockNumber === maxInt256) {
+    const hardcodedValue = hardcodedRollupGenesisBlocks(
+      l1Contracts.rollup.address,
+      L2_NETWORK_ID,
+    );
+    logger.info(
+      `No proven block number found, using hardcoded value ${hardcodedValue}`,
+    );
+    return hardcodedValue;
+  } else {
+    const betterSafeThanSorry = 100n;
+    return start - betterSafeThanSorry;
+  }
+};
+
+const hardcodedRollupGenesisBlocks = (
+  rollupAddress: `0x${string}`,
+  networkId: L2NetworkId,
+): bigint => {
+  // NOTE: these values are manually looked up from etherscan
+  logger.info(
+    `Hardcoded rollup genesis block for ${rollupAddress} on ${networkId}`,
+  );
+  if (
+    networkId === "TESTNET" &&
+    rollupAddress.toLowerCase() === "0x2a6eb8e6110ad8e6cc0ba5b8a794740e05ce62a6"
+  ) {
+    return 8076568n;
+  }
+  return 0n;
+};
+
 const json = (param: unknown): string => {
   return JSON.stringify(
     param,
@@ -160,31 +229,38 @@ export const emitRandomizedChangeWithinRandomizedTime = async (
   await emitRandomizedChangeWithinRandomizedTime(depth - 1, newValues);
 };
 
-export const queryStakingStateAndEmitUpdates = async () => {
-  // TODO: this entire function should be replaced with a watch on the contract (and some initial state query)
-  const l1Contracts = await getL1Contracts();
-  if (!l1Contracts) {
-    throw new Error("Contracts not initialized");
+let latestPublishedHeight = 0n;
+
+export const queryStakingStateAndEmitUpdates = async ({
+  contracts,
+  latestHeight,
+}: {
+  contracts: AztecContracts;
+  latestHeight: bigint;
+}) => {
+  if (latestHeight <= latestPublishedHeight) {
+    logger.info(
+      `Latest height ${latestHeight} <= latest published height ${latestPublishedHeight}`,
+    );
+    return;
   }
   const attesterCount = await getPublicHttpClient().readContract({
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    address: l1Contracts.rollup.address as `0x${string}`,
+    address: contracts.rollup.address,
     abi: RollupAbi,
+    blockNumber: latestHeight,
     functionName: "getActiveAttesterCount",
   });
   logger.info(`Active attester count: ${attesterCount.toString()}`);
   if (attesterCount > 0) {
     for (let i = 0; i < attesterCount; i++) {
       const attester = await getPublicHttpClient().readContract({
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        address: l1Contracts.rollup.address as `0x${string}`,
+        address: contracts.rollup.address,
         abi: RollupAbi,
         functionName: "getAttesterAtIndex",
         args: [BigInt(i)],
       });
       const attesterInfo = await getPublicHttpClient().readContract({
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        address: l1Contracts.rollup.address as `0x${string}`,
+        address: contracts.rollup.address,
         abi: RollupAbi,
         functionName: "getInfo",
         args: [attester],
@@ -197,6 +273,7 @@ export const queryStakingStateAndEmitUpdates = async () => {
         }),
       );
     }
+    latestPublishedHeight = latestHeight;
   } else {
     if (NODE_ENV === NodeEnv.DEV) {
       logger.info("Mocking dev attesters");
