@@ -1,3 +1,4 @@
+import { CHICMOZ_TYPES_AZTEC_VERSION } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
@@ -8,7 +9,13 @@ import {
 } from "~/hooks";
 import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { CHICMOZ_ALL_UI_URLS } from "~/service/constants";
+import {
+  API_URL,
+  CHICMOZ_ALL_UI_URLS,
+  L2_NETWORK_ID,
+  VERSION_STRING,
+  WS_URL,
+} from "~/service/constants";
 
 export const DevPage: FC = () => {
   useSubTitle(routes.dev.title);
@@ -52,6 +59,17 @@ export const DevPage: FC = () => {
           This page will not be linked to from anywhere once mainnet is
           launched.
         </p>,
+      )}
+      {generateCard(
+        "Misc",
+        <pre>
+          <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>
+          <p>{`Explorer version           ${VERSION_STRING}`}</p>
+          <p>{`API URL                    ${API_URL}`}</p>
+          <p>{`WS URL                     ${WS_URL}`}</p>
+          <p>{`Indexing Aztec network     ${L2_NETWORK_ID}`}</p>
+          <p>{`Indexing L1 network        ${L2_NETWORK_ID}`}</p>
+        </pre>,
       )}
       {generateCard(
         "Chain Info",
