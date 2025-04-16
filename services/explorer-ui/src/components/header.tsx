@@ -107,7 +107,7 @@ export const Header = () => {
                   to={routes.txEffects.route}
                   className="text-white hover:text-secondary-foreground transition-colors"
                 >
-                  Tx Effects
+                  TxEffects
                 </Link>
                 <Link
                   to={routes.contracts.route}
