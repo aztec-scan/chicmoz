@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import { routes } from "~/routes/__root.tsx";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui";
@@ -35,7 +35,6 @@ export const DesktopBurgerMenu = ({
       {isMenuOpen && (
         <div className="absolute right-0 mt-2 w-48 rounded-md bg-purple-light ring-1 ring-black ring-opacity-5 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
           <div className="py-1" role="menu" aria-orientation="vertical">
-            {/* Only show Home in the dropdown */}
             <Link
               to={routes.home.route}
               onClick={() => setIsMenuOpen(false)}
