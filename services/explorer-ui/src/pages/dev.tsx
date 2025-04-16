@@ -42,7 +42,17 @@ export const DevPage: FC = () => {
   return (
     <div className="flex flex-col items-center">
       <h1>Dev Page</h1>
-
+      <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
+        <p>
+          This page is for allowing access to data that is not yet available or
+          refined. If you see anything here that you think can be useful
+          someplace else on the site, please create an issue on our Github (see
+          footer for link).
+          <br />
+          <br />
+          This page will not be linked to from anywhere once mainnet is launced.
+        </p>
+      </div>
       <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-1/2 mt-4">
         <h2>Misc</h2>
         <pre>

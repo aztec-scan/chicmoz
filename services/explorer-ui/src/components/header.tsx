@@ -99,19 +99,19 @@ export const Header = () => {
               <div className="flex space-x-6 justify-center items-center pr-11">
                 <Link
                   to={routes.blocks.route}
-                  className="text-white hover:text-white transition-colors"
+                  className="text-white hover:text-secondary-foreground transition-colors"
                 >
                   Blocks
                 </Link>
                 <Link
                   to={routes.txEffects.route}
-                  className="text-white hover:text-white transition-colors"
+                  className="text-white hover:text-secondary-foreground transition-colors"
                 >
                   Tx Effects
                 </Link>
                 <Link
                   to={routes.contracts.route}
-                  className="text-white hover:text-white transition-colors"
+                  className="text-white hover:text-secondary-foreground transition-colors"
                 >
                   Contracts
                 </Link>
@@ -121,7 +121,7 @@ export const Header = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-white hover:bg-transparent"
+                    className="text-white hover:text-secondary-foreground"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   >
                     {isMenuOpen ? (
@@ -143,7 +143,7 @@ export const Header = () => {
                         <Link
                           to={routes.home.route}
                           onClick={() => setIsMenuOpen(false)}
-                          className="block px-4 py-2 text-sm text-white hover:bg-white/10"
+                          className="block px-4 py-2 text-sm text-white hover:text-gray-400"
                         >
                           {routes.home.title}
                         </Link>
@@ -151,11 +151,37 @@ export const Header = () => {
                         {divider}
 
                         <Link
+                          to={routes.blocks.route}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+                        >
+                          {routes.blocks.title}
+                        </Link>
+
+                        <Link
+                          to={routes.txEffects.route}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+                        >
+                          {routes.txEffects.title}
+                        </Link>
+
+                        <Link
+                          to={routes.contracts.route}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+                        >
+                          {routes.contracts.title}
+                        </Link>
+
+                        {divider}
+
+                        <Link
                           to={routes.dev.route}
                           onClick={() => setIsMenuOpen(false)}
-                          className="block px-4 py-2 text-sm text-white hover:bg-white/10"
+                          className="block px-4 py-2 text-sm text-white hover:text-gray-400"
                         >
-                          Dev Pages
+                          Dev Page
                         </Link>
                         {divider}
                         <div className="px-4 py-2 flex items-center">
@@ -231,7 +257,7 @@ export const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                     className="text-white text-lg py-1 hover:bg-white/10 transition-colors"
                   >
-                    Dev Pages
+                    Dev Page
                   </Link>
                   <div className="flex items-center py-2">
                     <span className="text-white mr-2">Theme:</span>
