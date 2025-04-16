@@ -20,6 +20,7 @@ import { Route as TermsAndConditionsImport } from './routes/terms-and-conditions
 const VerifiedContractInstancesLazyImport = createFileRoute(
   '/verified-contract-instances',
 )()
+const SystemHealthLazyImport = createFileRoute('/system-health')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const DevLazyImport = createFileRoute('/dev')()
@@ -51,6 +52,11 @@ const VerifiedContractInstancesLazyRoute =
   } as any).lazy(() =>
     import('./routes/verified-contract-instances.lazy').then((d) => d.Route),
   )
+
+const SystemHealthLazyRoute = SystemHealthLazyImport.update({
+  path: '/system-health',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/system-health.lazy').then((d) => d.Route))
 
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
@@ -205,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyPolicyLazyImport
       parentRoute: typeof rootRoute
     }
+    '/system-health': {
+      id: '/system-health'
+      path: '/system-health'
+      fullPath: '/system-health'
+      preLoaderRoute: typeof SystemHealthLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/verified-contract-instances': {
       id: '/verified-contract-instances'
       path: '/verified-contract-instances'
@@ -294,6 +307,7 @@ export const routeTree = rootRoute.addChildren({
   DevLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
+  SystemHealthLazyRoute,
   VerifiedContractInstancesLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
@@ -321,6 +335,7 @@ export const routeTree = rootRoute.addChildren({
         "/dev",
         "/fee-recipients",
         "/privacy-policy",
+        "/system-health",
         "/verified-contract-instances",
         "/blocks/$blockNumber",
         "/l1/contract-events",
@@ -351,6 +366,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
+    },
+    "/system-health": {
+      "filePath": "system-health.lazy.tsx"
     },
     "/verified-contract-instances": {
       "filePath": "verified-contract-instances.lazy.tsx"

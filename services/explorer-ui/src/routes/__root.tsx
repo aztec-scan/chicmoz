@@ -123,6 +123,10 @@ export const routes = {
     route: "/fee-recipients",
     title: "Fee Recipients",
   },
+  systemHealth: {
+    route: "/system-health",
+    title: "System Health",
+  },
   l1: {
     route: "/l1",
     title: "L1",
