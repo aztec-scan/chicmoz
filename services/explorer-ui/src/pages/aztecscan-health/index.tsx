@@ -5,7 +5,7 @@ import { useSubTitle, useSystemHealth } from "~/hooks";
 export const AztecscanHealth: FC = () => {
   const { components, systemHealth } = useSystemHealth();
 
-  useSubTitle("Aztecscan Health");
+  useSubTitle(`Aztecscan: ${systemHealth.health}`);
 
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
