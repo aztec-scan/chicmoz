@@ -77,7 +77,6 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
 
   // Get the appropriate fill color class based on progress
   const getFillColorClass = (daprogress: number) => {
-    console.log("progress", daprogress);
     if (isOverdue) {
       return "bg-red";
     }
