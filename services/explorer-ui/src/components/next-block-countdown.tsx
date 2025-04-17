@@ -1,12 +1,13 @@
-import { useEffect, useState, FC } from "react";
+import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import { useEffect, useState, type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { formatDuration } from "~/lib/utils";
 
 interface NextBlockCountdownProps {
-  latestBlocks: any[]; // Replace with proper type when available
-  averageBlockTime: number | null;
+  latestBlocks: ChicmozL2BlockLight[] | undefined;
+  averageBlockTime: string | number | undefined | null;
   isLoading: boolean;
-  error: any; // Replace with proper type when available
+  error: Error | null;
 }
 
 export const NextBlockCountdown: FC<NextBlockCountdownProps> = ({
@@ -19,26 +20,30 @@ export const NextBlockCountdown: FC<NextBlockCountdownProps> = ({
   const [nextBlockCountdown, setNextBlockCountdown] = useState<string | null>(
     null,
   );
-  
+
   // State to store UI delay offset (default: 6000ms = 6 seconds)
   const [uiDelayOffset, setUiDelayOffset] = useState<number>(6000);
 
   // Calculate and update UI delay offset when new blocks arrive
   useEffect(() => {
-    if (!latestBlocks?.length || !latestBlocks[0]?.header?.globalVariables?.timestamp) {
+    if (
+      !latestBlocks?.length ||
+      !latestBlocks[0]?.header?.globalVariables?.timestamp
+    ) {
       return;
     }
-    
+
     const latestBlock = latestBlocks[0];
     const blockTimestamp = new Date(
-      latestBlock.header.globalVariables.timestamp
+      latestBlock.header.globalVariables.timestamp,
     ).getTime();
     const now = Date.now();
-    
+
     // Calculate how much delay there is between block timestamp and UI detection
     // Only update if the delay is reasonable (to avoid outliers)
     const calculatedDelay = now - blockTimestamp;
-    if (calculatedDelay > 0 && calculatedDelay < 30000) { // Ignore if > 30 seconds
+    if (calculatedDelay > 0 && calculatedDelay < 30000) {
+      // Ignore if > 30 seconds
       setUiDelayOffset(calculatedDelay);
     }
   }, [latestBlocks]);
@@ -51,7 +56,7 @@ export const NextBlockCountdown: FC<NextBlockCountdownProps> = ({
     }
 
     const latestBlock = latestBlocks[0];
-    if (!latestBlock.header.globalVariables.timestamp) {
+    if (!latestBlock.header?.globalVariables?.timestamp) {
       return;
     }
 
@@ -63,7 +68,8 @@ export const NextBlockCountdown: FC<NextBlockCountdownProps> = ({
     const latestBlockTimestamp = new Date(
       latestBlock.header.globalVariables.timestamp,
     ).getTime();
-    const expectedNextBlockTime = latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
+    const expectedNextBlockTime =
+      latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
 
     // Set up interval to update countdown every second
     const intervalId = setInterval(() => {
