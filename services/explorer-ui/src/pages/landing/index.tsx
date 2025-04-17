@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table";
+import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { InfoBadge } from "~/components/info-badge";
 import { NextBlockCountdown } from "~/components/next-block-countdown";
 import {
@@ -111,7 +112,7 @@ export const Landing: FC = () => {
               Explore the power of privacy on Aztec
             </h5>
           </div>
-          <div className="grid grid-cols-2 gap-3 my-14 md:my-20 md:grid-cols-3 md:gap-5">
+          <div className="grid grid-cols-2 gap-3 mt-14 mb-10 md:mt-20 md:mb-10 md:grid-cols-3 md:gap-5">
             <InfoBadge
               title="Total transactions"
               isLoading={loadingTotalEffects}
@@ -149,6 +150,17 @@ export const Landing: FC = () => {
               error={errorAvarageBlockTime}
             />
           </div>
+
+          {/* Block Countdown Progress Bar */}
+          {!loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime && (
+            <div>
+              <BlockCountdownProgress 
+                latestBlocks={latestBlocks}
+                averageBlockTime={avarageBlockTime}
+              />
+            </div>
+          )}
+          
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
               <BlocksTable
