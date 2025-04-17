@@ -18,7 +18,7 @@ spec:
       initContainers:
         - name: run-migrations
           image: explorer-api:latest
-          command: ["yarn", run, "migrate"]
+          command: ["yarn", "run", "migrate"]
           envFrom:
             - configMapRef:
                 name: postgres-config-global
