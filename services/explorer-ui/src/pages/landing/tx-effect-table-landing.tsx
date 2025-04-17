@@ -56,6 +56,7 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({ latestBloc
         error={txEffectsError}
         disableSizeSelector={true}
         handleDisablePendingTx={toggleShowPendingTx}
+        nbrOfPendingTxs={pendingTxs?.length}
       />
     </>
   )
