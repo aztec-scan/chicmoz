@@ -1,7 +1,4 @@
-import {
-  CHICMOZ_TYPES_AZTEC_VERSION,
-  getL1NetworkId,
-} from "@chicmoz-pkg/types";
+import { CHICMOZ_TYPES_AZTEC_VERSION } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
@@ -189,6 +186,16 @@ stack:          ${error.stack}
                 </a>
               </li>
             ))}
+            <li key="docs">
+              <a
+                href="https://docs.aztecscan.xyz/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-purple-light hover:font-bold"
+              >
+                Docs
+              </a>
+            </li>
           </ul>
         </>,
       )}
