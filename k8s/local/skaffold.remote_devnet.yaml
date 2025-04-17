@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: remote_devnet
+requires:
+  - path: ./common/skaffold.infra.yaml
+  - path: ./explorer-ui/skaffold.remote_devnet.yaml
+  - path: ./ethereum-listener/skaffold.remote_devnet.yaml
+  - path: ./explorer-api/skaffold.remote_devnet.yaml
+  - path: ./auth/skaffold.yaml
+  - path: ./websocket-event-publisher/skaffold.remote_devnet.yaml
+  - path: ./aztec-listener/skaffold.remote_devnet.yaml

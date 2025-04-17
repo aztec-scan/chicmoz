@@ -1,5 +1,7 @@
 apiVersion: skaffold/v4beta6
 kind: Config
+metadata:
+  name: websocket-event-publisher-remote-devnet
 requires:
   - path: ./common/skaffold.base.yaml
 deploy:
@@ -8,5 +10,6 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./remote_devnet/postgres-config.yaml
+    - ./remote_devnet/service.yaml
     - ./remote_devnet/deployment.yaml
+    - ./remote_devnet/ingress.yaml

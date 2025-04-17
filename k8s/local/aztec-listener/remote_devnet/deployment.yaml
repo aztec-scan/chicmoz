@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: aztec-listener-devnet-label
+    app: aztec-listener-remote-devnet-label
   name: aztec-listener-remote-devnet-deployment
   namespace: chicmoz
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: aztec-listener-devnet-label
+      app: aztec-listener-remote-devnet-label
   strategy: {}
   template:
     metadata:
       labels:
-        app: aztec-listene-devnet-label
+        app: aztec-listener-remote-devnet-label
     spec:
       initContainers:
         - name: run-migrations
@@ -25,6 +25,9 @@ spec:
                 name: postgres-config-global
             - configMapRef:
                 name: postgres-config-aztec-listener-remote-devnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
       containers:
         - image: aztec-listener:latest
           resources:
