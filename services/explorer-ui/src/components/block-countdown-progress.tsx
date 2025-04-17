@@ -1,5 +1,5 @@
 import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
-import { useEffect, useMemo, useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { formatDuration } from "~/lib/utils";
 
 interface BlockCountdownProgressProps {
@@ -9,38 +9,12 @@ interface BlockCountdownProgressProps {
 
 export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   latestBlocks,
+  averageBlockTime,
 }) => {
   const [progress, setProgress] = useState<number>(0);
   const [uiDelayOffset, setUiDelayOffset] = useState<number>(6000);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isOverdue, setIsOverdue] = useState<boolean>(false);
-
-  const calculatedAvgBlockTime = useMemo(() => {
-    if (!latestBlocks || latestBlocks.length < 2) {
-      return null;
-    }
-
-    const blocks = latestBlocks.slice(0, Math.min(5, latestBlocks.length));
-
-    const timeDiffs: number[] = [];
-    for (let i = 0; i < blocks.length - 1; i++) {
-      const currentBlockTime = new Date(
-        blocks[i].header.globalVariables.timestamp,
-      ).getTime();
-      const nextBlockTime = new Date(
-        blocks[i + 1].header.globalVariables.timestamp,
-      ).getTime();
-      const diff = currentBlockTime - nextBlockTime;
-      if (diff > 0) {
-        timeDiffs.push(diff);
-      }
-    }
-
-    if (timeDiffs.length === 0) {
-      return null;
-    }
-    return timeDiffs.reduce((sum, diff) => sum + diff, 0) / timeDiffs.length;
-  }, [latestBlocks]);
 
   useEffect(() => {
     if (
@@ -63,7 +37,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   }, [latestBlocks]);
 
   useEffect(() => {
-    if (!calculatedAvgBlockTime || !latestBlocks?.length) {
+    if (!averageBlockTime || !latestBlocks?.length) {
       return;
     }
 
@@ -72,7 +46,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
       return;
     }
 
-    const avgBlockTimeMs = calculatedAvgBlockTime;
+    const avgBlockTimeMs = Number(averageBlockTime);
     const latestBlockTimestamp = new Date(
       latestBlock.header.globalVariables.timestamp,
     ).getTime();
@@ -99,7 +73,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }, 100);
 
     return () => clearInterval(intervalId);
-  }, [calculatedAvgBlockTime, latestBlocks, uiDelayOffset]);
+  }, [averageBlockTime, latestBlocks, uiDelayOffset]);
 
   // Get the appropriate fill color class based on progress
   const getFillColorClass = (daprogress: number) => {
@@ -131,8 +105,8 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   };
 
   return (
-    <div className="w-full px-4 py-6">
-      {`Next block ${getFormattedTimeLeft()}`}
+    <div className="w-full px-4 py-6 text-gray-500">
+      {`Expected next block ${getFormattedTimeLeft()}`}
       <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-3">
         <div
           className={`${getFillColorClass(
