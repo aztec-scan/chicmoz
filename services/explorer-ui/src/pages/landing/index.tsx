@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
 import {
@@ -57,6 +57,48 @@ export const Landing: FC = () => {
     Number(avarageBlockTime) / 1000,
     true,
   );
+
+  // Add state for the next block countdown
+  const [nextBlockCountdown, setNextBlockCountdown] = useState<string | null>(
+    null,
+  );
+
+  // Set up countdown timer for next expected block
+  useEffect(() => {
+    // Only proceed if we have average block time and latest blocks
+    if (!avarageBlockTime || !latestBlocks?.length) {
+      return;
+    }
+
+    const latestBlock = latestBlocks[0];
+    if (!latestBlock.header.globalVariables.timestamp) {
+      return;
+    }
+
+    // Convert average block time to milliseconds
+    const avgBlockTimeMs = Number(avarageBlockTime);
+
+    // Calculate expected next block time based on latest block timestamp
+    const latestBlockTimestamp = new Date(
+      latestBlock.header.globalVariables.timestamp,
+    ).getTime();
+    const expectedNextBlockTime = latestBlockTimestamp + avgBlockTimeMs;
+
+    // Set up interval to update countdown every second
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      const timeLeftMs = expectedNextBlockTime - now;
+
+      // Format the countdown time, allowing negative values
+      let formattedTime = formatDuration(Math.abs(timeLeftMs) / 1000, true);
+      if (timeLeftMs < 0 && formattedTime !== "just now") {
+        formattedTime = `-${formattedTime}`;
+      }
+      setNextBlockCountdown(formattedTime);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [avarageBlockTime, latestBlocks]);
 
   const formattedFees = formatFees(avarageFees);
 
@@ -147,10 +189,10 @@ export const Landing: FC = () => {
               data={totalAmountOfContracts24h}
             />
             <InfoBadge
-              title="Average block time"
-              isLoading={loadingAvarageBlockTime}
+              title={`Next expected block (avg. ${averageBlockTimeFormatted})`}
+              isLoading={loadingAvarageBlockTime || !nextBlockCountdown}
               error={errorAvarageBlockTime}
-              data={averageBlockTimeFormatted}
+              data={nextBlockCountdown ?? "Calculating..."}
             />
           </div>
           <div className="flex flex-col gap-4 md:flex-row">
