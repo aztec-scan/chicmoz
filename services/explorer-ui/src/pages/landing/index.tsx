@@ -91,7 +91,9 @@ export const Landing: FC = () => {
 
       // Format the countdown time, allowing negative values
       let formattedTime = formatDuration(Math.abs(timeLeftMs) / 1000, true);
-      if (timeLeftMs < 0 && formattedTime !== "just now") {
+      if (formattedTime === "just now") {
+        formattedTime = "now";
+      } else if (timeLeftMs < 0) {
         formattedTime = `-${formattedTime}`;
       }
       setNextBlockCountdown(formattedTime);
