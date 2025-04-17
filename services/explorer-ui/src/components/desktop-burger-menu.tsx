@@ -80,6 +80,14 @@ export const DesktopBurgerMenu = ({
             </Link>
 
             <Link
+              to={routes.networkHealth.route}
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+            >
+              {routes.networkHealth.title}
+            </Link>
+
+            <Link
               to={routes.dev.route}
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-2 text-sm text-white hover:text-gray-400"
