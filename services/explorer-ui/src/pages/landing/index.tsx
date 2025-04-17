@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type FC } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
+import { NextBlockCountdown } from "~/components/next-block-countdown";
 import {
   HealthStatus,
   useAvarageBlockTime,
@@ -57,73 +58,6 @@ export const Landing: FC = () => {
     Number(avarageBlockTime) / 1000,
     true,
   );
-
-  // Add state for the next block countdown
-  const [nextBlockCountdown, setNextBlockCountdown] = useState<string | null>(
-    null,
-  );
-  // Add state to store UI delay offset (default: 6000ms = 6 seconds)
-  const [uiDelayOffset, setUiDelayOffset] = useState<number>(6000);
-
-  // Calculate and update UI delay offset when new blocks arrive
-  useEffect(() => {
-    if (!latestBlocks?.length || !latestBlocks[0]?.header?.globalVariables?.timestamp) {
-      return;
-    }
-    
-    const latestBlock = latestBlocks[0];
-    const blockTimestamp = new Date(
-      latestBlock.header.globalVariables.timestamp
-    ).getTime();
-    const now = Date.now();
-    
-    // Calculate how much delay there is between block timestamp and UI detection
-    // Only update if the delay is reasonable (to avoid outliers)
-    const calculatedDelay = now - blockTimestamp;
-    if (calculatedDelay > 0 && calculatedDelay < 30000) { // Ignore if > 30 seconds
-      setUiDelayOffset(calculatedDelay);
-    }
-  }, [latestBlocks]);
-
-  // Set up countdown timer for next expected block
-  useEffect(() => {
-    // Only proceed if we have average block time and latest blocks
-    if (!avarageBlockTime || !latestBlocks?.length) {
-      return;
-    }
-
-    const latestBlock = latestBlocks[0];
-    if (!latestBlock.header.globalVariables.timestamp) {
-      return;
-    }
-
-    // Convert average block time to milliseconds
-    const avgBlockTimeMs = Number(avarageBlockTime);
-
-    // Calculate expected next block time based on latest block timestamp
-    // Add the UI delay offset to account for network/processing delays
-    const latestBlockTimestamp = new Date(
-      latestBlock.header.globalVariables.timestamp,
-    ).getTime();
-    const expectedNextBlockTime = latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
-
-    // Set up interval to update countdown every second
-    const intervalId = setInterval(() => {
-      const now = Date.now();
-      const timeLeftMs = expectedNextBlockTime - now;
-
-      // Format the countdown time, allowing negative values
-      let formattedTime = formatDuration(Math.abs(timeLeftMs) / 1000, true);
-      if (formattedTime === "just now") {
-        formattedTime = "now";
-      } else if (timeLeftMs < 0) {
-        formattedTime = `-${formattedTime}`;
-      }
-      setNextBlockCountdown(formattedTime);
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [avarageBlockTime, latestBlocks, uiDelayOffset]);
 
   const formattedFees = formatFees(avarageFees);
 
@@ -213,11 +147,11 @@ export const Landing: FC = () => {
               error={errorAmountContracts24h}
               data={totalAmountOfContracts24h}
             />
-            <InfoBadge
-              title={`Next expected block (avg. ${averageBlockTimeFormatted})`}
-              isLoading={loadingAvarageBlockTime || !nextBlockCountdown}
+            <NextBlockCountdown
+              latestBlocks={latestBlocks}
+              averageBlockTime={avarageBlockTime}
+              isLoading={loadingAvarageBlockTime}
               error={errorAvarageBlockTime}
-              data={nextBlockCountdown ?? "Calculating..."}
             />
           </div>
           <div className="flex flex-col gap-4 md:flex-row">
