@@ -14,10 +14,18 @@ primary:
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_sandbox')\gexec
         select 'CREATE DATABASE ethereum_listener_testnet'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_testnet')\gexec
+        select 'CREATE DATABASE ethereum_listener_local_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_local_devnet')\gexec
+        select 'CREATE DATABASE ethereum_listener_remote_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_remote_devnet')\gexec
         SELECT 'CREATE DATABASE explorer_api_sandbox'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_sandbox')\gexec
         SELECT 'CREATE DATABASE explorer_api_testnet'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_testnet')\gexec
+        SELECT 'CREATE DATABASE explorer_api_local_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_local_devnet')\gexec
+        SELECT 'CREATE DATABASE explorer_api_remote_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_remote_devnet')\gexec
         SELECT 'CREATE DATABASE auth'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'auth')\gexec
         \c auth

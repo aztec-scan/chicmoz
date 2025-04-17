@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
+import { NextBlockCountdown } from "~/components/next-block-countdown";
 import {
   HealthStatus,
   useAvarageBlockTime,
@@ -15,7 +16,7 @@ import {
   useTotalTxEffectsLast24h,
 } from "~/hooks";
 import { mapLatestBlocks } from "~/lib/map-for-table";
-import { formatDuration, formatFees } from "~/lib/utils";
+import { formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import { TxEffectTableLanding } from "./tx-effect-table-landing";
 
@@ -52,11 +53,6 @@ export const Landing: FC = () => {
     isLoading: loadingAvarageBlockTime,
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
-
-  const averageBlockTimeFormatted = formatDuration(
-    Number(avarageBlockTime) / 1000,
-    true,
-  );
 
   const formattedFees = formatFees(avarageFees);
 
@@ -146,11 +142,11 @@ export const Landing: FC = () => {
               error={errorAmountContracts24h}
               data={totalAmountOfContracts24h}
             />
-            <InfoBadge
-              title="Average block time"
+            <NextBlockCountdown
+              latestBlocks={latestBlocks}
+              averageBlockTime={avarageBlockTime}
               isLoading={loadingAvarageBlockTime}
               error={errorAvarageBlockTime}
-              data={averageBlockTimeFormatted}
             />
           </div>
           <div className="flex flex-col gap-4 md:flex-row">
