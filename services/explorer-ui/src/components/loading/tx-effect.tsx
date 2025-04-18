@@ -3,11 +3,11 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 
 interface LoadingDetailsProps {
   title: string;
-  empyData: { label: string; value: string | undefined }[];
+  emptyData: { label: string; value: string | undefined }[];
 }
 export const LoadingDetails: FC<LoadingDetailsProps> = ({
   title,
-  empyData,
+  emptyData,
 }) => {
   return (
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
