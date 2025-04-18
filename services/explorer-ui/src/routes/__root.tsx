@@ -155,6 +155,10 @@ export const routes = {
       },
     },
   },
+  networkHealth: {
+    route: "/network-health",
+    title: "Network Health",
+  },
 };
 
 function notFoundComponent() {

@@ -9,6 +9,10 @@ export const BlockAPI = {
 
     return validateResponse(chicmozL2BlockLightSchema, response.data);
   },
+  getBlocksByStatus: async (): Promise<ChicmozL2BlockLight[]> => {
+    const response = await client.get(aztecExplorer.getL2BlocksByStatus);
+    return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
+  },
   getLatestHeight: async (): Promise<number> => {
     const response = await client.get(aztecExplorer.getL2LatestHeight);
     return validateResponse(z.number(), response.data);

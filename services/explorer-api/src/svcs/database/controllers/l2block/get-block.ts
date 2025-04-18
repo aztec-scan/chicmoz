@@ -76,6 +76,46 @@ export const getBlock = async (
   return res[0];
 };
 
+/**
+ * Get one block for each finalization status
+ * @returns Array of blocks, one for each distinct finalization status
+ */
+export const getBlocksByFinalizationStatus = async (): Promise<
+  ChicmozL2BlockLight[]
+> => {
+  // Get distinct finalization statuses
+  const distinctStatuses = await db()
+    .selectDistinct({
+      status: l2BlockFinalizationStatusTable.status,
+    })
+    .from(l2BlockFinalizationStatusTable);
+
+  // For each status, get the block with the highest block number
+  const blocks: ChicmozL2BlockLight[] = [];
+
+  for (const { status } of distinctStatuses) {
+    // Get the block with the highest block number for this status
+    const latestBlockForStatus = await db()
+      .select({
+        blockHash: l2BlockFinalizationStatusTable.l2BlockHash,
+      })
+      .from(l2BlockFinalizationStatusTable)
+      .where(eq(l2BlockFinalizationStatusTable.status, status))
+      .orderBy(desc(l2BlockFinalizationStatusTable.l2BlockNumber))
+      .limit(1); // Only get one block per status
+
+    if (latestBlockForStatus.length > 0) {
+      const blockHash = latestBlockForStatus[0].blockHash;
+      const block = await getBlock(blockHash);
+      if (block) {
+        blocks.push(block);
+      }
+    }
+  }
+
+  return blocks;
+};
+
 type GetBlocksArgs = GetBlocksByHeight | GetBlocksByHash | GetBlocksByRange;
 
 const _getBlocks = async (
