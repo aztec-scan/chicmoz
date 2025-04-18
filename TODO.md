@@ -6,108 +6,97 @@
 - When a re-org occurs, the current implementation deletes the old block and replaces it with the new one.
 - This approach loses the information about the orphaned chain, making it unavailable for troubleshooting.
 
-## Proposed Solutions
+## Chosen Solution: Add orphan-related fields to the L2Block schema
 
-### 1. Add an 'isOrphaned' field to the L2Block schema
-
-Pros:
-
-- Simple to implement
-- Allows for easy filtering of the main chain vs orphaned blocks
-
-Cons:
-
-- May complicate queries that assume one block per height
-- Requires updating all queries to filter out orphaned blocks
-
-Implementation:
+### Implementation Details
 
 1. Modify the l2Block table in root.ts:
+
    ```typescript
    export const l2Block = pgTable(
      "l2Block",
      {
-       hash: varchar("hash").primaryKey().notNull().<HexString>(),
+       hash: varchar("hash").primaryKey().notNull().$type<HexString>(),
        height: bigint("height", { mode: "bigint" }).notNull(),
-       isOrphaned: boolean("is_orphaned").notNull().default(false),
+       orphan_timestamp: timestamp("orphan_timestamp"),
+       orphan_hasOrphanedParent: boolean("orphan_hasOrphanedParent"),
      },
      (t) => ({
        heightIdx: index("height_idx").on(t.height),
-     })
+     }),
    );
    ```
-2. Remove the unique constraint on height
-3. Update the block storage logic to set isOrphaned=true on the old block instead of deleting it
-4. Update all queries to filter out orphaned blocks unless explicitly requested
 
-### 2. Create a separate table for orphaned blocks
+2. Update the ChicmozL2Block type in packages/types/src/aztec/l2Block.ts:
 
-Pros:
-
-- Keeps the main chain clean and queries simple
-- Allows for easy access to orphaned blocks when needed
-
-Cons:
-
-- Requires more storage
-- Slightly more complex to implement
-
-Implementation:
-
-1. Create a new table for orphaned blocks:
    ```typescript
-   export const orphanedL2Block = pgTable(
-     "orphanedL2Block",
-     {
-       hash: varchar("hash").primaryKey().notNull().<HexString>(),
-       height: bigint("height", { mode: "bigint" }).notNull(),
-       orphanedAt: timestamp("orphaned_at").notNull().defaultNow(),
-     }
-   );
+   export const chicmozL2BlockSchema = z.object({
+     // ... existing fields ...
+     orphan: z
+       .object({
+         timestamp: z.date(),
+         hasOrphanedParent: z.boolean(),
+       })
+       .optional(),
+   });
    ```
-2. When a re-org occurs, move the old block to the orphanedL2Block table instead of deleting it
-3. Implement a new API endpoint or query parameter to allow fetching orphaned blocks when needed
 
-### 3. Implement a chain history table
+3. Remove the unique constraint on height (if it exists)
 
-Pros:
+4. Update the block storage logic:
 
-- Provides a complete history of all chain reorganizations
-- Allows for advanced analysis of network behavior
+   - When storing a new block, check if a block with the same height already exists (but different hash)
+   - If it does, update the existing block's orphan_timestamp and set orphan_hasOrphanedParent to false
+   - If it does, update the existing block in the database with orphan_timestamp and set orphan_hasOrphanedParent to false
+     - Then update all the blocks in the database with an higher height AND orphan_timstamp === null
+       - Set orphan_timestamp to the current time
+       - Set orphan_hasOrphanedParent to true
+   - For the new block being added, set orphan_timestamp to null and orphan_hasOrphanedParent to false, then store to DB
 
-Cons:
+5. Update block retrieval logic:
 
-- More complex to implement and maintain
-- Requires more storage
+   - all retreival functions using l2Block schema should be updated to only retreive blocks with orphan_timestamp === null
+   - double-check that indeed all used functions are updated, this is IMPORTANT
 
-Implementation:
+6. Update API endpoints:
 
-1. Create a new table for chain history:
-   ```typescript
-   export const chainHistory = pgTable(
-     "chainHistory",
-     {
-       id: uuid("id").primaryKey().defaultRandom(),
-       blockHash: varchar("block_hash").notNull().<HexString>(),
-       height: bigint("height", { mode: "bigint" }).notNull(),
-       parentHash: varchar("parent_hash").notNull().<HexString>(),
-       status: varchar("status").notNull(), // 'main', 'orphaned'
-       createdAt: timestamp("created_at").notNull().defaultNow(),
-       orphanedAt: timestamp("orphaned_at"),
-     }
-   );
-   ```
-2. Update the block processing logic to maintain this history table
-3. Implement queries to reconstruct the chain state at any point in time
+   - add two new endpoints to retrieve orphaned blocks
+     - GET /l2/blocks/orphaned
+       - Returns all blocks with orphan_timestamp not null, make sure to sort them like latestBlocks-endpoint
+     - GET /l2/reorgs
+       - returns a list of reorgs, each containing below (sorted by timestamp):
+         - orphanedBlockHash
+         - height
+         - timestamp
+         - nbrOfOrphanedBlocks
+       - ensure that this type is added to packages/types
+   - edit existing endpoint to include orphaned blocks in the response
+     - GET /l2/blocks/:blockHash
+       - If the block is orphaned, include the following fields in the response. (Otherwise `.orphan` is undefined)
+         - orphan: {
+           timestamp: Date,
+           hasOrphanedParent: boolean
+           }
 
-## Recommendation
+7. Update the explorer UI:
+   - On the block details page, display the orphan status and timestamp
+   - Add a separate section for reorgs giving an overview of reorgs and links to their orphaned blocks
 
-Option 2 (Create a separate table for orphaned blocks) provides a good balance between simplicity and functionality. It keeps the main chain queries clean while still preserving information about orphaned blocks for troubleshooting purposes.
+## Advantages of this approach
 
-Next steps:
+- Preserves all block data, including orphaned blocks
+- Allows for easy querying of both main chain and orphaned blocks
+- Provides information about the orphan status and timing
+- Maintains backward compatibility with existing queries by using optional fields
 
-1. Implement the chosen solution
-2. Update the block processing logic in `services/explorer-api/src/events/received/on-block/index.ts`
-3. Add new API endpoints or query parameters to access orphaned block data
-4. Update documentation to reflect the new behavior and available data
-5. Consider implementing a cleanup job to remove very old orphaned blocks if storage becomes an issue
+## Next steps
+
+1. Implement the schema changes in the database
+2. Update the block processing logic in \`services/explorer-api/src/events/received/on-block/index.ts\`
+3. Modify block retrieval functions to filter out orphaned blocks
+4. run `cd ~/c/chicmoz/services/explorer-api && yarn build` until it works
+5. add the new API endpoints to the explorer API
+6. prompt user to run the migration script to update the database schema
+7. Update the explorer UI to display orphan information
+8. run `cd ~/c/chicmoz/services/explorer-ui && yarn build` until it works
+9. Update documentation to reflect the new behavior and available data
