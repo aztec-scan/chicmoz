@@ -76,12 +76,11 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   }, [averageBlockTime, latestBlocks, uiDelayOffset]);
 
   // Get the appropriate fill color class based on progress
-  const getFillColorClass = (daprogress: number) => {
-    console.log("progress", daprogress);
+  const getFillColorClass = () => {
     if (isOverdue) {
       return "bg-red";
     }
-    if (daprogress < 75) {
+    if (progress < 75) {
       return "bg-yellow";
     }
     return "bg-green";
@@ -109,9 +108,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
       {`Expected next block ${getFormattedTimeLeft()}`}
       <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-3">
         <div
-          className={`${getFillColorClass(
-            progress,
-          )} h-2.5 rounded-full transition-all duration-300`}
+          className={`${getFillColorClass()} h-2.5 rounded-full transition-all duration-300`}
           style={{ width: `${progress}%` }}
         />
       </div>
