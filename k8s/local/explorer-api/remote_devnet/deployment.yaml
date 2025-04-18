@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-api-remote-devnet-label
+  name: explorer-api-remote-devnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-api-remote-devnet-label
+  template:
+    metadata:
+      labels:
+        app: explorer-api-remote-devnet-label
+    spec:
+      initContainers:
+        - name: run-migrations
+          image: explorer-api:latest
+          command: ["yarn", "run", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-remote-devnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: explorer-api:latest
+          resources:
+            limits:
+              memory: 600Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
+          name: explorer-api
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-remote-devnet
+          env:
+            - name: INSTANCE_NAME
+              value: "remote_devnet_explorer-api"
+            - name: L2_NETWORK_ID
+              value: "DEVNET"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

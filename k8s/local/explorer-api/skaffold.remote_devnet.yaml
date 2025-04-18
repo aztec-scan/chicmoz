@@ -9,4 +9,6 @@ deploy:
 manifests:
   rawYaml:
     - ./remote_devnet/postgres-config.yaml
+    - ./remote_devnet/service.yaml
+    - ./remote_devnet/ingress.yaml
     - ./remote_devnet/deployment.yaml

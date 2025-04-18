@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-event-publisher-remote-devnet-service
+  namespace: chicmoz
+spec:
+  selector:
+    app: websocket-event-publisher-remote-devnet-label
+  ports:
+    - name: websocket
+      protocol: TCP
+      port: 80
+      targetPort: websocket-port
