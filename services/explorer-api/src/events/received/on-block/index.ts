@@ -6,24 +6,17 @@ import {
   generateL2TopicName,
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import {
-  ChicmozL2Block,
-  ChicmozL2TxEffect,
-  HexString,
-} from "@chicmoz-pkg/types";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { ChicmozL2Block, ChicmozL2TxEffect } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
-import { getBlock } from "../../../svcs/database/controllers/l2block/get-block.js";
 import { ensureFinalizationStatusStored } from "../../../svcs/database/controllers/l2block/store.js";
 import { controllers } from "../../../svcs/database/index.js";
-import { l2Block } from "../../../svcs/database/schema/l2block/index.js";
 import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
 import { storeContracts } from "./contracts.js";
+import { detectReorg, handleReorg } from "./reorg-handler.js";
 
 const truncateString = (value: string) => {
   const startHash = value.substring(0, 100);
@@ -86,23 +79,11 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
     `🧢 Storing block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
   );
 
-  // First check if a block with the same height but different hash already exists
-  const existingBlock = await getBlock(parsedBlock.height);
+  // Check for reorg using a named constant
+  const reorgDetected = await detectReorg(parsedBlock);
 
-  if (existingBlock && existingBlock.hash !== parsedBlock.hash) {
-    // This is a re-org!
-    logger.warn(
-      `Re-org detected at height ${parsedBlock.height}. Existing hash: ${existingBlock.hash}, new hash: ${parsedBlock.hash}`,
-    );
-
-    // Get current timestamp
-    const now = new Date();
-
-    // 1. Update the existing block's orphan timestamp and set hasOrphanedParent to false
-    await markBlockAsOrphaned(existingBlock.hash, now, false);
-
-    // 2. Update all blocks with a higher height to be orphaned with hasOrphanedParent=true
-    await markHigherBlocksAsOrphaned(parsedBlock.height, now);
+  if (reorgDetected) {
+    await handleReorg(parsedBlock);
   }
 
   // Set orphan fields to null/false for the new block
@@ -143,52 +124,6 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
     });
 
   await emit.l2BlockFinalizationUpdate(storeRes?.finalizationUpdate ?? null);
-};
-
-/**
- * Mark a block as orphaned
- */
-const markBlockAsOrphaned = async (
-  blockHash: HexString,
-  timestamp: Date,
-  hasOrphanedParent: boolean,
-) => {
-  logger.info(
-    `Marking block ${blockHash} as orphaned. hasOrphanedParent: ${hasOrphanedParent}`,
-  );
-
-  await db()
-    .update(l2Block)
-    .set({
-      orphan_timestamp: timestamp,
-      orphan_hasOrphanedParent: hasOrphanedParent,
-    })
-    .where(eq(l2Block.hash, blockHash));
-};
-
-/**
- * Mark all blocks with height > targetHeight and orphan_timestamp === null as orphaned
- */
-const markHigherBlocksAsOrphaned = async (
-  targetHeight: bigint,
-  timestamp: Date,
-) => {
-  logger.info(
-    `Marking all blocks with height > ${targetHeight} as orphaned with parent`,
-  );
-
-  // Find all blocks with higher height that aren't already orphaned
-  const higherBlocks = await db()
-    .select({ hash: l2Block.hash })
-    .from(l2Block)
-    .where(
-      and(gt(l2Block.height, targetHeight), isNull(l2Block.orphan_timestamp)),
-    );
-
-  // Mark them all as orphaned with hasOrphanedParent=true
-  for (const block of higherBlocks) {
-    await markBlockAsOrphaned(block.hash, timestamp, true);
-  }
 };
 
 const pendingTxsHook = async (txEffects: ChicmozL2TxEffect[]) => {
