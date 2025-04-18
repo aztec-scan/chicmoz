@@ -21,30 +21,29 @@ export const BlockDetails: FC = () => {
     setSelectedTab(value as TabId);
   };
   const {
-    data: latestBlock,
+    data: block,
     isLoading,
     error,
   } = useGetBlockByIdentifier(blockNumber);
 
-  const height = latestBlock?.height;
+  const height = block?.height;
   const {
     data: blockTxEffects,
     isLoading: txEffectsLoading,
     error: txEffectsError,
   } = useGetTxEffectsByBlockHeight(height);
 
-  if (!latestBlock) return <div> No block hash</div>;
+  if (!block) {
+    return <div> No block hash</div>;
+  }
 
+  const isTxLoading = isLoading || txEffectsLoading;
   const renderTabContent = () => {
     switch (selectedTab) {
       case "txEffects":
-        const isTxLoading =
-          isLoading ||
-          txEffectsLoading ||
-          blockTxEffects?.length !== latestBlock.body?.txEffects?.length;
         return (
           <TxEffectsTable
-            txEffects={getTxEffects(blockTxEffects, latestBlock)}
+            txEffects={getTxEffects(blockTxEffects, block)}
             isLoading={isTxLoading}
             error={error ?? txEffectsError}
           />
@@ -65,7 +64,7 @@ export const BlockDetails: FC = () => {
           <h1 className="hidden md:block md:mt-8">Block Details</h1>
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
-          {latestBlock.orphan && (
+          {block.orphan && (
             <div className="bg-red-50 border border-red-200 rounded-lg shadow-md p-4 mb-4">
               <div className="flex items-center">
                 <svg
@@ -91,7 +90,7 @@ export const BlockDetails: FC = () => {
             </div>
           )}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay data={getBlockDetails(latestBlock)} />
+            <KeyValueDisplay data={getBlockDetails(block)} />
           </div>
         </div>
         <OptionButtons
