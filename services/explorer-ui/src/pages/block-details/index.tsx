@@ -46,6 +46,7 @@ export const BlockDetails: FC = () => {
             txEffects={getTxEffects(blockTxEffects, block)}
             isLoading={isTxLoading}
             error={error ?? txEffectsError}
+            showPending={false}
           />
         );
       case "contracts":

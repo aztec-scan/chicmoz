@@ -57,6 +57,7 @@ export const TxEffects: FC = () => {
             txEffects={mapLatestTxEffects(latestTxEffectsData, latestBlocks)}
             isLoading={isLoading || isLoadingTxEffects}
             error={error ?? txEffectsError}
+            showPending={false}
           />
         ) : (
           <div>No data</div>

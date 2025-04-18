@@ -1,16 +1,18 @@
-import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types"
-import { useMemo, useState, type FC } from "react"
-import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema"
-import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table"
-import { useGetLatestTxEffects, usePendingTxs } from "~/hooks"
-import { mapLatestTxEffects } from "~/lib/map-for-table"
+import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import { useMemo, useState, type FC } from "react";
+import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
+import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
+import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
+import { mapLatestTxEffects } from "~/lib/map-for-table";
 
 interface TxEffectTableLandingProps {
   latestBlocks?: ChicmozL2BlockLight[];
 }
 
-export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({ latestBlocks }) => {
-  const [showPendingTxs, setShowPendingTxs] = useState(true)
+export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
+  latestBlocks,
+}) => {
+  const [showPendingTxs, setShowPendingTxs] = useState(false);
   const { data: pendingTxs } = usePendingTxs();
   const {
     data: latestTxEffectsData,
@@ -20,13 +22,13 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({ latestBloc
 
   const toggleShowPendingTx = (checked: boolean) => {
     setShowPendingTxs(checked);
-  }
+  };
 
   const txEffectData = useMemo(() => {
-
-    const mappedLatestTxEffects = (!latestTxEffectsData || !latestBlocks)
-      ? []
-      : mapLatestTxEffects(latestTxEffectsData, latestBlocks);
+    const mappedLatestTxEffects =
+      !latestTxEffectsData || !latestBlocks
+        ? []
+        : mapLatestTxEffects(latestTxEffectsData, latestBlocks);
 
     if (!showPendingTxs || !pendingTxs || !latestTxEffectsData) {
       return mappedLatestTxEffects;
@@ -55,9 +57,10 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({ latestBloc
         title="Latest Tx Effects"
         error={txEffectsError}
         disableSizeSelector={true}
-        handleDisablePendingTx={toggleShowPendingTx}
+        handleTogglePendingTx={toggleShowPendingTx}
         nbrOfPendingTxs={pendingTxs?.length}
+        showPending={showPendingTxs}
       />
     </>
-  )
-}
+  );
+};
