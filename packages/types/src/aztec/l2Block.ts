@@ -48,7 +48,7 @@ export const chicmozL2BlockSchema = z.object({
   ),
   orphan: z
     .object({
-      timestamp: z.date(),
+      timestamp: z.coerce.date(),
       hasOrphanedParent: z.boolean(),
     })
     .optional(),
