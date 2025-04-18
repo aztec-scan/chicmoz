@@ -56,7 +56,7 @@ export const TxEffectDetails: FC = () => {
   }
 
   // No data found
-  // TODO: Make propper error page when no transaction is found
+  // TODO: Make proper error page when no transaction is found
   if (!txEffects) {
     return <div>No Tx effect found</div>;
   }
