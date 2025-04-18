@@ -7,7 +7,7 @@ export const getEmptyTxEffectData = (hash?: string, timestamp?: number) => [
   },
   {
     label: "CREATED AS PENDING TX",
-    value: formatTimeSince(timestamp),
+    value: `${formatTimeSince(timestamp)} ago`,
   },
   {
     label: "TRANSACTION FEE (FPA)",
