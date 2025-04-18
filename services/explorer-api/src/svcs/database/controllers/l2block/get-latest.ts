@@ -15,16 +15,20 @@ export const getLatestHeight = async (
 ): Promise<bigint | null> => {
   const { includeOrphaned = false } = options;
 
-  let query = db().select({ height: l2Block.height }).from(l2Block);
-
-  if (!includeOrphaned) {
-    query = query.where(isNull(l2Block.orphan_timestamp));
-  }
-
-  const latestBlockNumber = await query
-    .orderBy(desc(l2Block.height))
-    .limit(1)
-    .execute();
+  // Execute the appropriate query based on the includeOrphaned flag
+  const latestBlockNumber = await (includeOrphaned
+    ? db()
+        .select({ height: l2Block.height })
+        .from(l2Block)
+        .orderBy(desc(l2Block.height))
+        .limit(1)
+    : db()
+        .select({ height: l2Block.height })
+        .from(l2Block)
+        .where(isNull(l2Block.orphan_timestamp))
+        .orderBy(desc(l2Block.height))
+        .limit(1)
+  ).execute();
 
   if (latestBlockNumber.length === 0) {
     return null;
