@@ -13,9 +13,9 @@
     --grey-dark: hsl(0, 0%, 73%); /* #bbbbbb */
     --grey-light: hsl(255, 12%, 94%); /* #EEEDF1 */
     --blue: hsl(227, 92%, 62%); /* #456cf7 */
-    --green: hsl(158, 54%, 42%); /* #31A67B */
+    --green: hsl(158, 60%, 45%); /* #31A67B */
     --red: hsl(7, 100%, 70%); /* #FF7764 */
-    --yellow: hsl(49, 100%, 72%); /* #FFE471 */
+    --yellow: hsl(49, 90%, 70%); /* #FFE471 */
     --purple-dark: hsl(262, 36%, 21%); /* #302249 */
     --purple-light: hsl(251, 45%, 56%); /* #715EC2 */
 
@@ -57,9 +57,9 @@
 
     /* Keep accent colors but adjusted for dark mode */
     --blue: hsl(227, 70%, 60%);
-    --green: hsl(158, 54%, 45%);
-    --red: hsl(7, 90%, 65%);
-    --yellow: hsl(49, 90%, 65%);
+    --green: hsl(158, 60%, 45%);
+    --red: hsl(7, 100%, 70%);
+    --yellow: hsl(49, 80%, 75%);
 
     /* Adjust the purples for dark mode */
     --purple-dark: hsl(262, 36%, 75%);

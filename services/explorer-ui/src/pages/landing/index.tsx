@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { type FC } from "react";
+import { useEffect, useState, type FC } from "react";
+import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
-import { NextBlockCountdown } from "~/components/next-block-countdown";
 import {
   HealthStatus,
   useAvarageBlockTime,
@@ -16,11 +16,23 @@ import {
   useTotalTxEffectsLast24h,
 } from "~/hooks";
 import { mapLatestBlocks } from "~/lib/map-for-table";
-import { formatFees } from "~/lib/utils";
+import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import { TxEffectTableLanding } from "./tx-effect-table-landing";
 
 export const Landing: FC = () => {
+  // Refresh counter to force table updates for "Age" column
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
+  // Update refreshCounter every second to refresh time displays
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRefreshCounter((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const { systemHealth } = useSystemHealth();
   const { data: latestBlocks, isLoading, error } = useLatestBlocks();
   const {
@@ -86,6 +98,9 @@ export const Landing: FC = () => {
     title = `Aztecscan: ${latestBlocks[0].height}`;
   }
   useSubTitle(title);
+
+  const showBlockCountdownProgress =
+    !loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime;
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       {isConclusivlyDown && (
@@ -111,7 +126,7 @@ export const Landing: FC = () => {
               Explore the power of privacy on Aztec
             </h5>
           </div>
-          <div className="grid grid-cols-2 gap-3 my-14 md:my-20 md:grid-cols-3 md:gap-5">
+          <div className="grid grid-cols-2 gap-3 mt-14 mb-10 md:mt-20 md:mb-10 md:grid-cols-3 md:gap-5">
             <InfoBadge
               title="Total transactions"
               isLoading={loadingTotalEffects}
@@ -142,16 +157,30 @@ export const Landing: FC = () => {
               error={errorAmountContracts24h}
               data={totalAmountOfContracts24h}
             />
-            <NextBlockCountdown
-              latestBlocks={latestBlocks}
-              averageBlockTime={avarageBlockTime}
+            <InfoBadge
+              title="Average block time"
               isLoading={loadingAvarageBlockTime}
               error={errorAvarageBlockTime}
+              data={
+                avarageBlockTime
+                  ? formatDuration(Number(avarageBlockTime) / 1000, true)
+                  : "calculating..."
+              }
             />
           </div>
+          {showBlockCountdownProgress && (
+            <div>
+              <BlockCountdownProgress
+                latestBlocks={latestBlocks}
+                averageBlockTime={avarageBlockTime}
+              />
+            </div>
+          )}
+
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
               <BlocksTable
+                key={`blocks-table-${refreshCounter}`}
                 title="Latest Blocks"
                 blocks={mapLatestBlocks(latestBlocks)}
                 isLoading={isLoading}
@@ -160,7 +189,10 @@ export const Landing: FC = () => {
               />
             </div>
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
-              <TxEffectTableLanding latestBlocks={latestBlocks} />
+              <TxEffectTableLanding
+                key={`tx-effects-table-${refreshCounter}`}
+                latestBlocks={latestBlocks}
+              />
             </div>
           </div>
         </>
