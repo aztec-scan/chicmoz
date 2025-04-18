@@ -5,7 +5,16 @@ import {
   HexString,
   chicmozL2BlockLightSchema,
 } from "@chicmoz-pkg/types";
-import { and, asc, desc, eq, getTableColumns } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  isNotNull,
+  isNull,
+} from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
 import {
@@ -52,23 +61,39 @@ type GetBlocksByRange = {
   getType: GetTypes.Range;
 };
 
-export const getBlocks = async ({
-  from,
-  to,
-}: {
-  from: bigint | undefined;
-  to: bigint | undefined;
-}): Promise<ChicmozL2BlockLight[]> => {
-  return _getBlocks({ from, to, getType: GetTypes.Range });
+/**
+ * Options for retrieving blocks
+ */
+export interface BlockQueryOptions {
+  /**
+   * Whether to include orphaned blocks
+   * @default false
+   */
+  includeOrphaned?: boolean;
+}
+
+export const getBlocks = async (
+  {
+    from,
+    to,
+  }: {
+    from: bigint | undefined;
+    to: bigint | undefined;
+  },
+  options: BlockQueryOptions = {},
+): Promise<ChicmozL2BlockLight[]> => {
+  return _getBlocks({ from, to, getType: GetTypes.Range }, options);
 };
 
 export const getBlock = async (
   heightOrHash: bigint | HexString,
+  options: BlockQueryOptions = {},
 ): Promise<ChicmozL2BlockLight | null> => {
   const res = await _getBlocks(
     typeof heightOrHash === "bigint"
       ? { height: heightOrHash, getType: GetTypes.BlockHeight }
       : { hash: heightOrHash, getType: GetTypes.BlockHash },
+    options,
   );
   if (res.length === 0) {
     return null;
@@ -78,11 +103,12 @@ export const getBlock = async (
 
 /**
  * Get one block for each finalization status
+ * @param options Options for retrieving blocks
  * @returns Array of blocks, one for each distinct finalization status
  */
-export const getBlocksByFinalizationStatus = async (): Promise<
-  ChicmozL2BlockLight[]
-> => {
+export const getBlocksByFinalizationStatus = async (
+  options: BlockQueryOptions = {},
+): Promise<ChicmozL2BlockLight[]> => {
   // Get distinct finalization statuses
   const distinctStatuses = await db()
     .selectDistinct({
@@ -95,18 +121,33 @@ export const getBlocksByFinalizationStatus = async (): Promise<
 
   for (const { status } of distinctStatuses) {
     // Get the block with the highest block number for this status
-    const latestBlockForStatus = await db()
+    const { includeOrphaned = false } = options;
+
+    const query = db()
       .select({
         blockHash: l2BlockFinalizationStatusTable.l2BlockHash,
       })
       .from(l2BlockFinalizationStatusTable)
-      .where(eq(l2BlockFinalizationStatusTable.status, status))
+      .innerJoin(
+        l2Block,
+        eq(l2BlockFinalizationStatusTable.l2BlockHash, l2Block.hash),
+      )
+      .where(
+        includeOrphaned
+          ? eq(l2BlockFinalizationStatusTable.status, status)
+          : and(
+              eq(l2BlockFinalizationStatusTable.status, status),
+              isNull(l2Block.orphan_timestamp),
+            ),
+      );
+
+    const latestBlockForStatus = await query
       .orderBy(desc(l2BlockFinalizationStatusTable.l2BlockNumber))
       .limit(1); // Only get one block per status
 
     if (latestBlockForStatus.length > 0) {
       const blockHash = latestBlockForStatus[0].blockHash;
-      const block = await getBlock(blockHash);
+      const block = await getBlock(blockHash, options);
       if (block) {
         blocks.push(block);
       }
@@ -120,7 +161,9 @@ type GetBlocksArgs = GetBlocksByHeight | GetBlocksByHash | GetBlocksByRange;
 
 const _getBlocks = async (
   args: GetBlocksArgs,
+  options: BlockQueryOptions = {},
 ): Promise<ChicmozL2BlockLight[]> => {
+  const { includeOrphaned = false } = options;
   const whereRange =
     args.getType === GetTypes.Range ? getBlocksWhereRange(args) : undefined;
 
@@ -181,17 +224,39 @@ const _getBlocks = async (
 
   switch (args.getType) {
     case GetTypes.BlockHeight:
-      whereQuery =
-        args.height === -1n
-          ? joinQuery.orderBy(desc(l2Block.height)).limit(1)
-          : joinQuery.where(eq(l2Block.height, args.height)).limit(1);
+      if (args.height === -1n) {
+        // Get latest block
+        whereQuery = joinQuery;
+        if (!includeOrphaned) {
+          whereQuery = whereQuery.where(isNull(l2Block.orphan_timestamp));
+        }
+        whereQuery = whereQuery.orderBy(desc(l2Block.height)).limit(1);
+      } else {
+        // Get specific height
+        whereQuery = joinQuery
+          .where(
+            includeOrphaned
+              ? eq(l2Block.height, args.height)
+              : and(
+                  eq(l2Block.height, args.height),
+                  isNull(l2Block.orphan_timestamp),
+                ),
+          )
+          .limit(1);
+      }
       break;
     case GetTypes.BlockHash:
+      // When getting by hash, we don't filter orphaned blocks because
+      // we might want to retrieve a specific orphaned block
       whereQuery = joinQuery.where(eq(l2Block.hash, args.hash)).limit(1);
       break;
     case GetTypes.Range:
       whereQuery = joinQuery
-        .where(whereRange)
+        .where(
+          includeOrphaned
+            ? whereRange
+            : and(whereRange, isNull(l2Block.orphan_timestamp)),
+        )
         .orderBy(desc(l2Block.height))
         .limit(DB_MAX_BLOCKS);
       break;
@@ -236,6 +301,13 @@ const _getBlocks = async (
       proofVerifiedOnL1: result.l1L2ProofVerified?.l1BlockTimestamp
         ? result.l1L2ProofVerified
         : undefined,
+      // Include orphan information if it exists
+      orphan: result.orphan_timestamp
+        ? {
+            timestamp: result.orphan_timestamp,
+            hasOrphanedParent: result.orphan_hasOrphanedParent ?? false,
+          }
+        : undefined,
       header: {
         lastArchive: result.header_LastArchive,
         totalFees: result.header_TotalFees,
@@ -262,4 +334,92 @@ const _getBlocks = async (
     blocks.push(await chicmozL2BlockLightSchema.parseAsync(blockData));
   }
   return blocks;
+};
+
+/**
+ * Get all orphaned blocks
+ * @param limit Maximum number of orphaned blocks to return
+ * @returns Array of orphaned blocks
+ */
+export const getOrphanedBlocks = async (
+  limit: number = DB_MAX_BLOCKS,
+): Promise<ChicmozL2BlockLight[]> => {
+  // Find all orphaned blocks
+  const orphanedBlockHashes = await db()
+    .select({ hash: l2Block.hash })
+    .from(l2Block)
+    .where(isNotNull(l2Block.orphan_timestamp))
+    .orderBy(desc(l2Block.orphan_timestamp), desc(l2Block.height))
+    .limit(limit)
+    .execute();
+
+  const blocks: ChicmozL2BlockLight[] = [];
+
+  // Get full block data for each orphaned block
+  for (const { hash } of orphanedBlockHashes) {
+    const block = await getBlock(hash, { includeOrphaned: true });
+    if (block) {
+      blocks.push(block);
+    }
+  }
+
+  return blocks;
+};
+
+/**
+ * Get information about reorgs
+ * @returns Array of reorg events with details about orphaned blocks
+ */
+export const getReorgs = async (): Promise<
+  {
+    orphanedBlockHash: HexString;
+    height: bigint;
+    timestamp: Date;
+    nbrOfOrphanedBlocks: number;
+  }[]
+> => {
+  // Get all root orphaned blocks (those with hasOrphanedParent = false)
+  const rootOrphanedBlocks = await db()
+    .select({
+      hash: l2Block.hash,
+      height: l2Block.height,
+      timestamp: l2Block.orphan_timestamp,
+    })
+    .from(l2Block)
+    .where(
+      and(
+        isNotNull(l2Block.orphan_timestamp),
+        eq(l2Block.orphan_hasOrphanedParent, false),
+      ),
+    )
+    .orderBy(desc(l2Block.orphan_timestamp))
+    .execute();
+
+  const result = [];
+
+  // For each root orphaned block, count how many children it has
+  for (const rootBlock of rootOrphanedBlocks) {
+    if (!rootBlock.timestamp) {continue;}
+
+    // Count orphaned blocks with the same timestamp (these are all part of the same re-org)
+    const childCount = await db()
+      .select({ count: count() })
+      .from(l2Block)
+      .where(
+        and(
+          eq(l2Block.orphan_timestamp, rootBlock.timestamp),
+          eq(l2Block.orphan_hasOrphanedParent, true),
+        ),
+      )
+      .execute();
+
+    result.push({
+      orphanedBlockHash: rootBlock.hash,
+      height: rootBlock.height,
+      timestamp: new Date(rootBlock.timestamp),
+      nbrOfOrphanedBlocks: (childCount[0]?.count || 0) + 1, // +1 for the root block itself
+    });
+  }
+
+  return result;
 };

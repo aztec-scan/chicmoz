@@ -16,6 +16,7 @@ import { controllers } from "../../../svcs/database/index.js";
 import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
 import { storeContracts } from "./contracts.js";
+import { detectReorg, handleReorg } from "./reorg-handler.js";
 
 const truncateString = (value: string) => {
   const startHash = value.substring(0, 100);
@@ -29,7 +30,9 @@ const hackyLogBlock = (b: L2Block) => {
   const logString = blockString
     .split(":")
     .map((v) => {
-      if (v.length > 200 && v.includes(",")) { return truncateString(v); }
+      if (v.length > 200 && v.includes(",")) {
+        return truncateString(v);
+      }
 
       return v;
     })
@@ -75,6 +78,18 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
   logger.info(
     `🧢 Storing block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
   );
+
+  // Check for reorg using a named constant
+  const reorgDetected = await detectReorg(parsedBlock);
+
+  if (reorgDetected) {
+    await handleReorg(parsedBlock);
+  }
+
+  // Set orphan fields to null/false for the new block
+  parsedBlock.orphan = undefined;
+
+  // Store the new block
   const storeRes = await controllers.l2Block
     .store(parsedBlock)
     .catch(async (e) => {
@@ -83,6 +98,8 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
           `Failed to store block ${parsedBlock.height} after retry: ${e}`,
         );
       }
+
+      // If we still get an error, we'll try the old approach as fallback
       const shouldRetry = await handleDuplicateBlockError(
         e as Error,
         `block ${parsedBlock.height}`,
@@ -93,16 +110,19 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
           await deleteL2BlockByHeight(parsedBlock.height);
         },
       );
+
       if (shouldRetry) {
         return storeBlock(parsedBlock, true);
       } else {
-        await ensureFinalizationStatusStored( // NOTE: this is currently assuming that the error is a duplicate error
+        await ensureFinalizationStatusStored(
+          // NOTE: this is currently assuming that the error is a duplicate error
           parsedBlock.hash,
           parsedBlock.height,
           parsedBlock.finalizationStatus,
         );
       }
     });
+
   await emit.l2BlockFinalizationUpdate(storeRes?.finalizationUpdate ?? null);
 };
 
