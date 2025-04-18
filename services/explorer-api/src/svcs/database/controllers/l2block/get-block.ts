@@ -5,7 +5,7 @@ import {
   HexString,
   chicmozL2BlockLightSchema,
 } from "@chicmoz-pkg/types";
-import { and, asc, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
 import {
@@ -74,6 +74,52 @@ export const getBlock = async (
     return null;
   }
   return res[0];
+};
+
+/**
+ * Get one block for each finalization status
+ * @returns Array of blocks, one for each distinct finalization status
+ */
+export const getBlocksByFinalizationStatus = async (): Promise<ChicmozL2BlockLight[]> => {
+  // Get distinct finalization statuses with their most recent blocks
+  const maxBlockNumbers = db()
+    .select({
+      status: l2BlockFinalizationStatusTable.status,
+      maxBlockNumber: sql<string>`MAX(${l2BlockFinalizationStatusTable.l2BlockNumber})`,
+    })
+    .from(l2BlockFinalizationStatusTable)
+    .groupBy(l2BlockFinalizationStatusTable.status)
+    .as("max_blocks");
+    
+  const statusesWithBlocks = await db()
+    .select({
+      status: l2BlockFinalizationStatusTable.status,
+      blockHash: l2BlockFinalizationStatusTable.l2BlockHash,
+    })
+    .from(l2BlockFinalizationStatusTable)
+    .innerJoin(
+      maxBlockNumbers,
+      and(
+        eq(l2BlockFinalizationStatusTable.status, maxBlockNumbers.status),
+        eq(l2BlockFinalizationStatusTable.l2BlockNumber, maxBlockNumbers.maxBlockNumber)
+      )
+    );
+
+  // If no blocks found, return empty array
+  if (!statusesWithBlocks.length) {
+    return [];
+  }
+
+  // Get full block data for each of the blocks we found
+  const blocks: ChicmozL2BlockLight[] = [];
+  for (const { blockHash } of statusesWithBlocks) {
+    const block = await getBlock(blockHash);
+    if (block) {
+      blocks.push(block);
+    }
+  }
+
+  return blocks;
 };
 
 type GetBlocksArgs = GetBlocksByHeight | GetBlocksByHash | GetBlocksByRange;

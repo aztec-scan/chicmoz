@@ -121,3 +121,21 @@ export const GET_BLOCKS = asyncHandler(async (req, res) => {
   );
   res.status(200).send(blocksData);
 });
+
+export const openapi_GET_BLOCKS_BY_FINALIZATION_STATUS: OpenAPIObject["paths"] = {
+  "/l2/blocks/by-status": {
+    get: {
+      tags: ["L2", "blocks"],
+      summary: "Get one block for each finalization status",
+      responses: blockResponseArray,
+    },
+  },
+};
+
+export const GET_BLOCKS_BY_FINALIZATION_STATUS = asyncHandler(async (_req, res) => {
+  const blocksData = await dbWrapper.getLatest(
+    ["l2", "blocks", "by-status"],
+    () => db.l2Block.getBlocksByFinalizationStatus(),
+  );
+  res.status(200).send(blocksData);
+});

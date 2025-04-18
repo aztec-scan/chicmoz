@@ -4,28 +4,9 @@ import { BlockStatusBadge } from "~/components/block-status-badge";
 import { NextBlockCountdown } from "~/components/next-block-countdown";
 import { useAvarageBlockTime, useLatestBlocks, useSubTitle } from "~/hooks";
 import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { useBlocksByFinalizationStatus } from "~/hooks/api/blocks";
 import { routes } from "~/routes/__root";
 import { Link } from "@tanstack/react-router";
-
-// Helper function to group blocks by finalization status
-const groupBlocksByFinalizationStatus = (blocks: ChicmozL2BlockLight[]) => {
-  const grouped = new Map<string, ChicmozL2BlockLight>();
-  
-  blocks.forEach(block => {
-    const status = String(block.finalizationStatus);
-    
-    // If we haven't seen this status or this block is newer than what we have
-    if (!grouped.has(status) || 
-        grouped.get(status)!.header.globalVariables.timestamp < 
-        block.header.globalVariables.timestamp) {
-      grouped.set(status, block);
-    }
-  });
-  
-  return Array.from(grouped.entries()).sort((a, b) => 
-    a[0].localeCompare(b[0])
-  );
-};
 
 export const NetworkHealth: FC = () => {
   useSubTitle("Network Health");
@@ -33,6 +14,7 @@ export const NetworkHealth: FC = () => {
   const { data: latestBlocks, isLoading: blocksLoading, error: blocksError } = useLatestBlocks();
   const { data: avgBlockTime, isLoading: avgTimeLoading, error: avgTimeError } = useAvarageBlockTime();
   const { data: validators, isLoading: validatorsLoading, error: validatorsError } = useL1L2Validators();
+  const { data: blocksByFinalizationStatus, isLoading: blocksByStatusLoading, error: blocksByStatusError } = useBlocksByFinalizationStatus();
 
   // Count validators with VALIDATING status
   const validatingCount = useMemo(() => {
@@ -43,11 +25,14 @@ export const NetworkHealth: FC = () => {
   // Get total validators count
   const totalValidators = validators?.length || 0;
   
-  // Group blocks by finalization status
+  // Transform blocks by status to format expected by UI
   const blocksByStatus = useMemo(() => {
-    if (!latestBlocks) return [];
-    return groupBlocksByFinalizationStatus(latestBlocks);
-  }, [latestBlocks]);
+    if (!blocksByFinalizationStatus) return [];
+    return blocksByFinalizationStatus.map((block) => [
+      String(block.finalizationStatus), 
+      block
+    ] as [string, ChicmozL2BlockLight]);
+  }, [blocksByFinalizationStatus]);
 
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
@@ -99,10 +84,10 @@ export const NetworkHealth: FC = () => {
       {/* Finalization Status Section */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
         <h2 className="mb-4">Latest Blocks by Finalization Status</h2>
-        {blocksLoading ? (
+        {blocksByStatusLoading ? (
           <p>Loading blocks...</p>
-        ) : blocksError ? (
-          <p>Error loading blocks: {blocksError.message}</p>
+        ) : blocksByStatusError ? (
+          <p>Error loading blocks: {blocksByStatusError.message}</p>
         ) : blocksByStatus.length === 0 ? (
           <p>No blocks available</p>
         ) : (
