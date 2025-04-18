@@ -98,6 +98,9 @@ export const Landing: FC = () => {
     title = `Aztecscan: ${latestBlocks[0].height}`;
   }
   useSubTitle(title);
+
+  const showBlockCountdownProgress =
+    !loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime;
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       {isConclusivlyDown && (
@@ -165,19 +168,14 @@ export const Landing: FC = () => {
               }
             />
           </div>
-
-          {/* Block Countdown Progress Bar */}
-          {!loadingAvarageBlockTime &&
-            !isLoading &&
-            latestBlocks &&
-            avarageBlockTime && (
-              <div>
-                <BlockCountdownProgress
-                  latestBlocks={latestBlocks}
-                  averageBlockTime={avarageBlockTime}
-                />
-              </div>
-            )}
+          {showBlockCountdownProgress && (
+            <div>
+              <BlockCountdownProgress
+                latestBlocks={latestBlocks}
+                averageBlockTime={avarageBlockTime}
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
