@@ -49,7 +49,9 @@ export const onCatchupBlock = async (
 // TODO: onCatchupRequestFromExplorerApi
 
 export const onPendingTxs = async (txs: TxHash[]) => {
-  if (!txs || txs.length === 0) {return;}
+  if (!txs || txs.length === 0) {
+    return;
+  }
 
   await publishMessage("PENDING_TXS_EVENT", {
     txs: txs.map((tx) => {

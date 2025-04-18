@@ -89,7 +89,9 @@ const checkDocsStatus = () => {
   const totalOpenApiPaths = Object.keys(openApiPaths).length;
   try {
     const doubleUsagesOfPaths = 1; // TODO: currently there is one path that is used by POST and GET, this is correct. However this simple check-docs-status function should be improved to accept this case.
-    assert(totalPaths - totalStatsPaths - doubleUsagesOfPaths === totalOpenApiPaths);
+    assert(
+      totalPaths - totalStatsPaths - doubleUsagesOfPaths === totalOpenApiPaths,
+    );
   } catch (e) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     logger.error(
@@ -124,6 +126,7 @@ export const init = ({ router }: { router: Router }) => {
   );
 
   router.get(paths.txs, controller.GET_PENDING_TXS);
+  router.get(paths.txByHash, controller.GET_PENDING_TX_BY_HASH);
 
   router.get(paths.contractClass, controller.GET_L2_REGISTERED_CONTRACT_CLASS);
   router.get(

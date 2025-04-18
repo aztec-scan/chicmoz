@@ -15,17 +15,23 @@ export const startPolling = () => {
 };
 
 export const stopPolling = () => {
-  if (pollInterval) clearInterval(pollInterval);
+  if (pollInterval) {
+    clearInterval(pollInterval);
+  }
 };
 
 const internalOnPendingTxs = async (pendingTxs: Tx[]) => {
   const pendingTxsHashes = await Promise.all(
-    pendingTxs.map((tx) => tx.getTxHash())
+    pendingTxs.map((tx) => {
+      return tx.getTxHash();
+    }),
   );
   const newPendingTxsHashes = pendingTxsHashes.filter(
-    (tx) => !handledTxs.includes(tx.toString())
+    (tx) => !handledTxs.includes(tx.toString()),
   );
-  if (newPendingTxsHashes.length === 0) return;
+  if (newPendingTxsHashes.length === 0) {
+    return;
+  }
   await onPendingTxs(newPendingTxsHashes);
   handledTxs = pendingTxsHashes.map((tx) => tx.toString());
 };
