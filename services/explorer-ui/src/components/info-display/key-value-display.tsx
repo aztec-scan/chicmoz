@@ -1,9 +1,9 @@
-import { FC } from "react";
+import { type FC } from "react";
 import { KeyValueRow } from "./key-value-row";
 
 export interface DetailItem {
   label: string;
-  value: string;
+  value?: string;
   link?: string;
   extLink?: string;
 }

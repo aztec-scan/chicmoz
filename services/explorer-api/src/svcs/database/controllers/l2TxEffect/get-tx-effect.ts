@@ -62,7 +62,9 @@ export const getTxEffectByBlockHeightAndIndex = async (
     getType: GetTypes.BlockHeightAndIndex,
   });
 
-  if (res.length === 0) {return null;}
+  if (res.length === 0) {
+    return null;
+  }
 
   return res[0];
 };
@@ -156,12 +158,6 @@ const _getTxEffects = async (
   return z.array(chicmozL2TxEffectDeluxeSchema).parse(txEffects);
 };
 
-export const getTxEffectByTxHash = async (
-  txHash: HexString,
-): Promise<ChicmozL2TxEffectDeluxe | null> => {
-  return getTxEffectDynamicWhere(eq(txEffect.txHash, txHash));
-};
-
 export const getTxEffectByHash = async (
   hash: HexString,
 ): Promise<ChicmozL2TxEffectDeluxe | null> => {
@@ -186,7 +182,9 @@ export const getTxEffectDynamicWhere = async (
     .limit(1)
     .execute();
 
-  if (dbRes.length === 0) {return null;}
+  if (dbRes.length === 0) {
+    return null;
+  }
 
   const nestedData = await getTxEffectNestedByHash(dbRes[0].txHash);
 
