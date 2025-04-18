@@ -18,7 +18,7 @@ export const LoadingDetails: FC<LoadingDetailsProps> = ({
         </div>
         <div className="flex flex-col gap-4 mt-4">
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay data={empyData} />
+            <KeyValueDisplay data={emptyData} />
           </div>
         </div>
       </div>

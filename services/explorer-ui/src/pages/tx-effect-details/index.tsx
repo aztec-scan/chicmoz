@@ -33,7 +33,7 @@ export const TxEffectDetails: FC = () => {
     return (
       <LoadingDetails
         title="Tx Effects Details"
-        empyData={getEmptyTxEffectData()}
+        emptyData={getEmptyTxEffectData()}
       />
     );
   }
@@ -47,7 +47,7 @@ export const TxEffectDetails: FC = () => {
     return (
       <LoadingDetails
         title="Pending Transaction"
-        empyData={getEmptyTxEffectData(
+        emptyData={getEmptyTxEffectData(
           pendingTx.hash,
           pendingTx.birthTimestamp,
         )}
