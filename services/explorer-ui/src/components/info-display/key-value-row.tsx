@@ -3,10 +3,11 @@ import { type FC } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { CopyableText } from "../copy-text";
 import { BlockStatusBadge } from "../block-status-badge";
+import { Loader } from "../loader";
 
 interface KeyValueRowProps {
   label: string;
-  value: string;
+  value?: string;
   link?: string;
   isLast?: boolean;
   extLink?: string;
@@ -19,6 +20,7 @@ enum DisplayType {
   HEX = "hex",
   EXTERNAL_LINK = "external-link",
   BADGE = "badge",
+  LOADING = "loading",
 }
 
 export const KeyValueRow: FC<KeyValueRowProps> = ({
@@ -29,19 +31,41 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   extLink,
 }) => {
   let displayType = DisplayType.TEXT;
-  if (link) { displayType = DisplayType.LINK; }
-  else if (label === "data") { displayType = DisplayType.TEXTAREA; }
-  else if (value.startsWith("0x")) { displayType = DisplayType.HEX; }
-  else if (extLink) { displayType = DisplayType.EXTERNAL_LINK; }
-  else if (label.includes("status")) { displayType = DisplayType.BADGE; }
-
+  if (link) {
+    displayType = DisplayType.LINK;
+  } else if (label === "data") {
+    displayType = DisplayType.TEXTAREA;
+  } else if (!value) {
+    displayType = DisplayType.LOADING;
+  } else if (value.startsWith("0x")) {
+    displayType = DisplayType.HEX;
+  } else if (extLink) {
+    displayType = DisplayType.EXTERNAL_LINK;
+  } else if (label.includes("status")) {
+    displayType = DisplayType.BADGE;
+  }
   const commonTextClasses = "text-sm flex-grow text-end justify-end ";
+
+  if (!value) {
+    return (
+      <div
+        key={label}
+        className={`flex items-center gap-2 py-3 ${
+          !isLast ? "border-b border-gray-200 dark:border-gray-700" : ""
+        }`}
+      >
+        <span className="text-gray-600 dark:text-gray-300 w-1/3">{label}</span>
+        <Loader amount={1} />
+      </div>
+    );
+  }
 
   return (
     <div
       key={label}
-      className={`flex items-center gap-2 py-3 ${!isLast ? "border-b border-gray-200 dark:border-gray-700" : ""
-        }`}
+      className={`flex items-center gap-2 py-3 ${
+        !isLast ? "border-b border-gray-200 dark:border-gray-700" : ""
+      }`}
     >
       <span className="text-gray-600 dark:text-gray-300 w-1/3">{label}</span>
       {displayType === DisplayType.TEXT && (
