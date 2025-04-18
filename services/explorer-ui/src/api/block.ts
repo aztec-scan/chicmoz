@@ -1,4 +1,4 @@
-import { type ChicmozL2BlockLight, chicmozL2BlockLightSchema } from "@chicmoz-pkg/types";
+import { type ChicmozL2BlockLight, type ChicmozReorg, chicmozL2BlockLightSchema, chicmozReorgSchema } from "@chicmoz-pkg/types";
 import client, { validateResponse } from "./client";
 import { aztecExplorer } from "~/service/constants";
 import { z } from "zod";
@@ -12,6 +12,14 @@ export const BlockAPI = {
   getBlocksByStatus: async (): Promise<ChicmozL2BlockLight[]> => {
     const response = await client.get(aztecExplorer.getL2BlocksByStatus);
     return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
+  },
+  getOrphanedBlocks: async (): Promise<ChicmozL2BlockLight[]> => {
+    const response = await client.get(aztecExplorer.getL2OrphanedBlocks);
+    return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
+  },
+  getReorgs: async (): Promise<ChicmozReorg[]> => {
+    const response = await client.get(aztecExplorer.getL2Reorgs);
+    return validateResponse(z.array(chicmozReorgSchema), response.data);
   },
   getLatestHeight: async (): Promise<number> => {
     const response = await client.get(aztecExplorer.getL2LatestHeight);
