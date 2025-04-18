@@ -91,15 +91,26 @@
 
 ## Next steps
 
-1. Implement the type changes in `packages/types/src/aztec/l2Block.ts`
-2. run `cd ~/c/chicmoz/packages/types && yarn build` until it works
-3. Update the block processing logic in \`services/explorer-api/src/events/received/on-block/index.ts\`
-4. run `cd ~/c/chicmoz/services/explorer-api && yarn build` until it works
-5. Implement the schema changes in the database
-6. Modify block retrieval functions to filter out orphaned blocks
+1. ✅ Implement the type changes in `packages/types/src/aztec/l2Block.ts`
+2. ✅ run `cd ~/c/chicmoz/packages/types && yarn build` until it works
+3. ✅ Update the block processing logic in \`services/explorer-api/src/events/received/on-block/index.ts\`
+4. ✅ run `cd ~/c/chicmoz/services/explorer-api && yarn build` until it works
+5. Implement the schema changes in the database:
+   - Create a migration script to add the new fields to the l2Block table
+   - Run the migration on the database
+6. Modify block retrieval functions to filter out orphaned blocks:
+   - Update all query functions in `get-block.ts` to only retrieve blocks with orphan_timestamp === null by default
+   - Add new functions to specifically retrieve orphaned blocks
 7. run `cd ~/c/chicmoz/services/explorer-api && yarn build` until it works
-8. add the new API endpoints to the explorer API
-9. prompt user to run the migration script to update the database schema
-10. Update the explorer UI to display orphan information
+8. Add the new API endpoints to the explorer API:
+   - GET /l2/blocks/orphaned
+   - GET /l2/reorgs
+   - Update GET /l2/blocks/:blockHash to include orphan information
+9. Test the new functionality:
+   - Create test cases for reorgs
+   - Verify orphaned blocks are properly marked and retrievable
+10. Update the explorer UI to display orphan information:
+    - Add orphan status indicators on the block details page
+    - Create a new section for viewing reorgs and orphaned blocks
 11. run `cd ~/c/chicmoz/services/explorer-ui && yarn build` until it works
 12. Update documentation to reflect the new behavior and available data
