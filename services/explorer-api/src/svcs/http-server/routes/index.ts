@@ -104,9 +104,9 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.latestHeight, controller.GET_LATEST_HEIGHT);
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);
+  router.get(paths.blocksByStatus, controller.GET_BLOCKS_BY_FINALIZATION_STATUS);
   router.get(paths.block, controller.GET_BLOCK);
   router.get(paths.blocks, controller.GET_BLOCKS);
-  router.get(paths.blocksByStatus, controller.GET_BLOCKS_BY_FINALIZATION_STATUS);
   router.get(paths.feeRecipients, controller.GET_L2_FEE_RECIPIENTS);
 
   router.get(paths.txEffects, controller.GET_L2_TX_EFFECTS);
