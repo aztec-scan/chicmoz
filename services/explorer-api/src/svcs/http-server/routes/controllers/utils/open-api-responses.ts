@@ -16,6 +16,7 @@ import {
   chicmozL2SequencerSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
+  chicmozReorgSchema,
   chicmozSearchResultsSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
@@ -176,6 +177,16 @@ export const l1L2ValidatorResponseArray = getResponse(
 export const l1L2ValidatorHistoryResponse = getResponse(
   chicmozL1L2ValidatorHistorySchema,
   "l1L2ValidatorHistory",
+);
+
+// Clean BigInt fields in Reorg schema
+const cleanedReorgSchema = chicmozReorgSchema.extend({
+  height: z.string(), // Convert height from BigInt to string
+});
+export const reorgResponse = getResponse(cleanedReorgSchema, "reorg");
+export const reorgResponseArray = getResponse(
+  z.array(cleanedReorgSchema),
+  "reorgArray",
 );
 
 const cleanedSequencerDeluxeSchema = chicmozL2SequencerDeluxeSchema.extend({

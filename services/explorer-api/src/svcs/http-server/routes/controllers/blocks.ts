@@ -5,7 +5,7 @@ import {
   getBlockByHeightOrHashSchema,
   getBlocksSchema,
 } from "../paths_and_validation.js";
-import { blockResponse, blockResponseArray, dbWrapper } from "./utils/index.js";
+import { blockResponse, blockResponseArray, dbWrapper, reorgResponseArray } from "./utils/index.js";
 
 export const openapi_GET_LATEST_HEIGHT: OpenAPIObject["paths"] = {
   "/l2/latest-height": {
@@ -144,3 +144,39 @@ export const GET_BLOCKS_BY_FINALIZATION_STATUS = asyncHandler(
     res.status(200).send(blocksData);
   },
 );
+
+export const openapi_GET_ORPHANED_BLOCKS: OpenAPIObject["paths"] = {
+  "/l2/blocks/orphaned": {
+    get: {
+      tags: ["L2", "blocks"],
+      summary: "Get all orphaned blocks",
+      responses: blockResponseArray,
+    },
+  },
+};
+
+export const GET_ORPHANED_BLOCKS = asyncHandler(async (_req, res) => {
+  const orphanedBlocksData = await dbWrapper.getLatest(
+    ["l2", "blocks", "orphaned"],
+    () => db.l2Block.getOrphanedBlocks(),
+  );
+  res.status(200).send(orphanedBlocksData);
+});
+
+export const openapi_GET_REORGS: OpenAPIObject["paths"] = {
+  "/l2/reorgs": {
+    get: {
+      tags: ["L2", "blocks"],
+      summary: "Get information about chain reorganizations",
+      responses: reorgResponseArray,
+    },
+  },
+};
+
+export const GET_REORGS = asyncHandler(async (_req, res) => {
+  const reorgsData = await dbWrapper.getLatest(
+    ["l2", "reorgs"],
+    () => db.l2Block.getReorgs(),
+  );
+  res.status(200).send(reorgsData);
+});
