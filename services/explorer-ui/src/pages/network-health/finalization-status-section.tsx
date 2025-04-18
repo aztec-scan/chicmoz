@@ -1,10 +1,8 @@
-import {
-  type ChicmozL2BlockFinalizationStatus,
-  type ChicmozL2BlockLight,
-} from "@chicmoz-pkg/types";
+import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { useMemo, type FC } from "react";
 import { BlockStatusBadge } from "~/components/block-status-badge";
+import { Loader } from "~/components/loader";
 import { useBlocksByFinalizationStatus } from "~/hooks/api/blocks";
 import { routes } from "~/routes/__root";
 import { type BlockWithStatuses } from "./types";
@@ -85,7 +83,7 @@ export const FinalizationStatusSection: FC = () => {
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
       <h2 className="mb-4">Latest Blocks by Finalization Status</h2>
       {blocksByStatusLoading ? (
-        <p>Loading blocks...</p>
+        <Loader amount={5} />
       ) : blocksByStatusError ? (
         <p>Error loading blocks: {blocksByStatusError.message}</p>
       ) : blocksWithStatuses.length === 0 ? (
@@ -103,16 +101,10 @@ export const FinalizationStatusSection: FC = () => {
             </thead>
             <tbody>
               {blocksWithStatuses.map(({ block, statuses }) => (
-                <tr
-                  key={block.hash}
-                  className="border-t dark:border-gray-700"
-                >
+                <tr key={block.hash} className="border-t dark:border-gray-700">
                   <td className="px-4 py-2 flex flex-wrap gap-1">
                     {statuses.map((status) => (
-                      <BlockStatusBadge
-                        key={status}
-                        status={status as ChicmozL2BlockFinalizationStatus}
-                      />
+                      <BlockStatusBadge key={status} status={status} />
                     ))}
                   </td>
                   <td className="px-4 py-2">
