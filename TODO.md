@@ -91,12 +91,15 @@
 
 ## Next steps
 
-1. Implement the schema changes in the database
-2. Update the block processing logic in \`services/explorer-api/src/events/received/on-block/index.ts\`
-3. Modify block retrieval functions to filter out orphaned blocks
+1. Implement the type changes in `packages/types/src/aztec/l2Block.ts`
+2. run `cd ~/c/chicmoz/packages/types && yarn build` until it works
+3. Update the block processing logic in \`services/explorer-api/src/events/received/on-block/index.ts\`
 4. run `cd ~/c/chicmoz/services/explorer-api && yarn build` until it works
-5. add the new API endpoints to the explorer API
-6. prompt user to run the migration script to update the database schema
-7. Update the explorer UI to display orphan information
-8. run `cd ~/c/chicmoz/services/explorer-ui && yarn build` until it works
-9. Update documentation to reflect the new behavior and available data
+5. Implement the schema changes in the database
+6. Modify block retrieval functions to filter out orphaned blocks
+7. run `cd ~/c/chicmoz/services/explorer-api && yarn build` until it works
+8. add the new API endpoints to the explorer API
+9. prompt user to run the migration script to update the database schema
+10. Update the explorer UI to display orphan information
+11. run `cd ~/c/chicmoz/services/explorer-ui && yarn build` until it works
+12. Update documentation to reflect the new behavior and available data
