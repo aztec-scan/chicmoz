@@ -1,7 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
 import { and, desc, eq, getTableColumns, isNotNull } from "drizzle-orm";
-import { l2Block } from "../../schema/index.js"; // Added import for l2Block
+import { l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceAztecScanNotes,
@@ -26,7 +26,7 @@ export const getL2DeployedContractInstanceByAddress = async (
         l2ContractInstanceDeployerMetadataTable,
       ),
       aztecScanNotes: getTableColumns(l2ContractInstanceAztecScanNotes),
-      isOrphaned: isNotNull(l2Block.orphan_timestamp), // Using the imported isNotNull function
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
@@ -89,6 +89,6 @@ export const getL2DeployedContractInstanceByAddress = async (
     verifiedDeploymentArguments,
     deployerMetadata,
     aztecScanNotes,
-    isOrphaned: Boolean(isOrphaned), // Ensure isOrphaned is boolean
+    isOrphaned: Boolean(isOrphaned),
   });
 };

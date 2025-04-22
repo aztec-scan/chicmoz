@@ -5,7 +5,12 @@ import {
   getBlockByHeightOrHashSchema,
   getBlocksSchema,
 } from "../paths_and_validation.js";
-import { blockResponse, blockResponseArray, dbWrapper, reorgResponseArray } from "./utils/index.js";
+import {
+  blockResponse,
+  blockResponseArray,
+  dbWrapper,
+  reorgResponseArray,
+} from "./utils/index.js";
 
 export const openapi_GET_LATEST_HEIGHT: OpenAPIObject["paths"] = {
   "/l2/latest-height": {
@@ -174,9 +179,8 @@ export const openapi_GET_REORGS: OpenAPIObject["paths"] = {
 };
 
 export const GET_REORGS = asyncHandler(async (_req, res) => {
-  const reorgsData = await dbWrapper.getLatest(
-    ["l2", "reorgs"],
-    () => db.l2Block.getReorgs(),
+  const reorgsData = await dbWrapper.getLatest(["l2", "reorgs"], () =>
+    db.l2Block.getReorgs(),
   );
   res.status(200).send(reorgsData);
 });
@@ -194,7 +198,7 @@ export const openapi_GET_ORPHANED_BLOCKS_LIMITED: OpenAPIObject["paths"] = {
 export const GET_ORPHANED_BLOCKS_LIMITED = asyncHandler(async (_req, res) => {
   const orphanedBlocksData = await dbWrapper.getLatest(
     ["l2", "blocks", "orphans"],
-    () => db.l2Block.getOrphanedBlocks(100), // Limit to 100 blocks
+    () => db.l2Block.getOrphanedBlocks(100),
   );
   res.status(200).send(orphanedBlocksData);
 });

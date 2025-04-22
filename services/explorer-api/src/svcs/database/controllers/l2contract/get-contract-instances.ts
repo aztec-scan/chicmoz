@@ -35,7 +35,7 @@ export const getL2DeployedContractInstances = async ({
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
-      isOrphaned: isNotNull(l2Block.orphan_timestamp), // Using the imported isNotNull function
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .leftJoin(
@@ -81,7 +81,7 @@ export const getL2DeployedContractInstances = async ({
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
       aztecScanNotes: null,
-      isOrphaned: Boolean(r.isOrphaned), // Ensure isOrphaned is boolean
+      isOrphaned: Boolean(r.isOrphaned),
     });
   });
 
@@ -102,7 +102,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
-      isOrphaned: isNotNull(l2Block.orphan_timestamp), // Using the imported isNotNull function
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
@@ -147,7 +147,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
       aztecScanNotes: null,
-      isOrphaned: Boolean(r.isOrphaned), // Ensure isOrphaned is boolean
+      isOrphaned: Boolean(r.isOrphaned),
     });
   });
 };
@@ -167,7 +167,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
         l2ContractInstanceDeployerMetadataTable,
       ),
       blockHeight: l2Block.height,
-      isOrphaned: isNotNull(l2Block.orphan_timestamp), // Using the imported isNotNull function
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
@@ -218,7 +218,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
       aztecScanNotes: null,
-      isOrphaned: Boolean(r.isOrphaned || false), // Ensure isOrphaned is boolean
+      isOrphaned: Boolean(r.isOrphaned || false),
     });
   });
 };

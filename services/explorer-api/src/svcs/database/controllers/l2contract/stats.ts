@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, count, eq, gt, lt } from "drizzle-orm";
+import { and, count, eq, gt, isNull, lt } from "drizzle-orm";
 import {
   globalVariables,
   header,
@@ -8,10 +8,11 @@ import {
 } from "../../../database/schema/index.js";
 
 export const getTotalContracts = async (): Promise<number> => {
-  // TODO: filter on orphaned
   const dbRes = await db()
     .select({ count: count() })
     .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
+    .where(isNull(l2Block.orphan_timestamp))
     .execute();
   return dbRes[0].count;
 };
@@ -19,7 +20,6 @@ export const getTotalContracts = async (): Promise<number> => {
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 export const getTotalContractsLast24h = async (): Promise<number> => {
-  // TODO: filter on orphaned
   const dbRes = await db()
     .select({ count: count() })
     .from(l2ContractClassRegistered)
@@ -30,6 +30,7 @@ export const getTotalContractsLast24h = async (): Promise<number> => {
       and(
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
+        isNull(l2Block.orphan_timestamp),
       ),
     )
     .execute();

@@ -1,20 +1,24 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { sql } from "drizzle-orm";
-import { globalVariables, header } from "../../../database/schema/index.js";
+import { eq, isNull, sql } from "drizzle-orm";
+import {
+  globalVariables,
+  header,
+  l2Block,
+} from "../../../database/schema/index.js";
 
 export const getAverageFees = async (): Promise<string> => {
-  // TODO: filter on orphaned
   const dbRes = await db()
     .select({
       average: sql<string>`cast(avg(${header.totalFees}) as numeric)`,
     })
     .from(header)
+    .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
+    .where(isNull(l2Block.orphan_timestamp))
     .execute();
   return dbRes[0].average.split(".")[0];
 };
 
 export const getAverageBlockTime = async (): Promise<string> => {
-  // TODO: filter on orphaned
   const dbRes = await db()
     .select({
       count: sql<number>`count(${globalVariables.id})`,
@@ -22,9 +26,14 @@ export const getAverageBlockTime = async (): Promise<string> => {
       lastTimestamp: sql<number>`max(${globalVariables.timestamp})`,
     })
     .from(globalVariables)
+    .innerJoin(header, eq(globalVariables.headerId, header.id))
+    .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
+    .where(isNull(l2Block.orphan_timestamp))
     .execute();
 
-  if (dbRes[0].count < 2) {return "0";}
+  if (dbRes[0].count < 2) {
+    return "0";
+  }
   const averageBlockTime =
     (dbRes[0].lastTimestamp - dbRes[0].firstTimestamp) / (dbRes[0].count - 1);
   return Math.round(averageBlockTime).toString();

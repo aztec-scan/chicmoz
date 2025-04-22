@@ -119,7 +119,7 @@ const _getTxEffects = async (
       blockHeight: l2Block.height,
       blockHash: l2Block.hash,
       timestamp: globalVariables.timestamp,
-      isOrphaned: isNotNull(l2Block.orphan_timestamp), // Using the imported isNotNull function
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2Block)
     .innerJoin(body, eq(l2Block.hash, body.blockHash))
@@ -163,9 +163,7 @@ const _getTxEffects = async (
         ...txEffect,
         txBirthTimestamp: txEffect.txBirthTimestamp.valueOf(),
         ...nestedData,
-        // Ensure revertCode is an object with a code property
         revertCode: { code: txEffect.revertCode },
-        // Ensure these are arrays and explicitly typed as string[]
         noteHashes: Array.isArray(txEffect.noteHashes)
           ? txEffect.noteHashes
           : ([] as string[]),
@@ -175,18 +173,15 @@ const _getTxEffects = async (
         l2ToL1Msgs: Array.isArray(txEffect.l2ToL1Msgs)
           ? txEffect.l2ToL1Msgs
           : ([] as string[]),
-        // Add privateLogs as string[][]
         privateLogs: Array.isArray(txEffect.privateLogs)
           ? txEffect.privateLogs
           : ([] as string[][]),
-        // Add other missing properties
         publicLogs: Array.isArray(txEffect.publicLogs)
           ? txEffect.publicLogs
           : ([] as string[][]),
         contractClassLogs: Array.isArray(txEffect.contractClassLogs)
           ? txEffect.contractClassLogs
           : ([] as string[][]),
-        // Ensure isOrphaned is boolean
         isOrphaned: Boolean(txEffect.isOrphaned),
       };
     }),
@@ -210,7 +205,7 @@ export const getTxEffectDynamicWhere = async (
       blockHeight: l2Block.height,
       blockHash: l2Block.hash,
       timestamp: globalVariables.timestamp,
-      isOrphaned: isNotNull(l2Block.orphan_timestamp), // Using the imported isNotNull function
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(txEffect)
     .innerJoin(body, eq(txEffect.bodyId, body.id))
@@ -231,9 +226,7 @@ export const getTxEffectDynamicWhere = async (
     ...dbRes[0],
     txBirthTimestamp: dbRes[0].txBirthTimestamp.valueOf(),
     ...nestedData,
-    // Ensure revertCode is an object with a code property
     revertCode: { code: dbRes[0].revertCode },
-    // Ensure these are arrays and explicitly typed as string[]
     noteHashes: (Array.isArray(dbRes[0].noteHashes)
       ? dbRes[0].noteHashes
       : []) as string[],
@@ -243,18 +236,15 @@ export const getTxEffectDynamicWhere = async (
     l2ToL1Msgs: Array.isArray(dbRes[0].l2ToL1Msgs)
       ? dbRes[0].l2ToL1Msgs
       : ([] as string[]),
-    // Add privateLogs as string[][]
     privateLogs: (Array.isArray(dbRes[0].privateLogs)
       ? dbRes[0].privateLogs
       : []) as string[][],
-    // Add other missing properties
     publicLogs: (Array.isArray(dbRes[0].publicLogs)
       ? dbRes[0].publicLogs
       : []) as string[][],
     contractClassLogs: (Array.isArray(dbRes[0].contractClassLogs)
       ? dbRes[0].contractClassLogs
       : []) as ChicmozL2TxEffect["contractClassLogs"],
-    // Ensure isOrphaned is boolean
     isOrphaned: Boolean(dbRes[0].isOrphaned),
   };
 
