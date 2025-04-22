@@ -1,6 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, isNotNull } from "drizzle-orm";
+import { l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceAztecScanNotes,
@@ -25,8 +26,10 @@ export const getL2DeployedContractInstanceByAddress = async (
         l2ContractInstanceDeployerMetadataTable,
       ),
       aztecScanNotes: getTableColumns(l2ContractInstanceAztecScanNotes),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
+    .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
     .innerJoin(
       l2ContractClassRegistered,
       and(
@@ -77,6 +80,7 @@ export const getL2DeployedContractInstanceByAddress = async (
     verifiedDeploymentArguments,
     deployerMetadata,
     aztecScanNotes,
+    isOrphaned,
   } = result[0];
 
   return parseDeluxe({
@@ -85,5 +89,6 @@ export const getL2DeployedContractInstanceByAddress = async (
     verifiedDeploymentArguments,
     deployerMetadata,
     aztecScanNotes,
+    isOrphaned: Boolean(isOrphaned),
   });
 };

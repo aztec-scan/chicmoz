@@ -14,6 +14,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_BLOCKS, // TODO: rename to L2_GET_BLOCKS?
   ...controller.openapi_GET_BLOCKS_BY_FINALIZATION_STATUS,
   ...controller.openapi_GET_ORPHANED_BLOCKS,
+  ...controller.openapi_GET_ORPHANED_BLOCKS_LIMITED,
   ...controller.openapi_GET_REORGS,
 
   ...controller.openapi_GET_L2_FEE_RECIPIENTS,
@@ -110,6 +111,7 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);
   router.get(paths.blocksByStatus, controller.GET_BLOCKS_BY_FINALIZATION_STATUS);
   router.get(paths.orphanedBlocks, controller.GET_ORPHANED_BLOCKS);
+  router.get(paths.orphanedBlocksLimited, controller.GET_ORPHANED_BLOCKS_LIMITED);
   router.get(paths.reorgs, controller.GET_REORGS);
   router.get(paths.block, controller.GET_BLOCK);
   router.get(paths.blocks, controller.GET_BLOCKS);

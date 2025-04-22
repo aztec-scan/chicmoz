@@ -6,7 +6,17 @@ import {
   chicmozL2TxEffectDeluxeSchema,
 } from "@chicmoz-pkg/types";
 import assert from "assert";
-import { SQL, and, asc, desc, eq, getTableColumns, gte, lt } from "drizzle-orm";
+import {
+  SQL,
+  and,
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  isNotNull,
+  lt,
+} from "drizzle-orm";
 import { z } from "zod";
 import { DB_MAX_TX_EFFECTS } from "../../../../environment.js";
 import {
@@ -35,7 +45,7 @@ type GetTxEffectsByBlockHeightRange = {
   getType: GetTypes.BlockHeightRange;
 };
 
-export const getTxEffectNestedByHash = async (
+const getTxEffectNestedByHash = async (
   txEffectHash: string,
 ): Promise<Pick<ChicmozL2TxEffect, "publicDataWrites">> => {
   const publicDataWrites = await db()
@@ -107,7 +117,9 @@ const _getTxEffects = async (
     .select({
       ...getTableColumns(txEffect),
       blockHeight: l2Block.height,
+      blockHash: l2Block.hash,
       timestamp: globalVariables.timestamp,
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2Block)
     .innerJoin(body, eq(l2Block.hash, body.blockHash))
@@ -144,13 +156,33 @@ const _getTxEffects = async (
 
   const dbRes = await whereQuery.execute();
 
-  const txEffects = await Promise.all(
+  const txEffects: ChicmozL2TxEffectDeluxe[] = await Promise.all(
     dbRes.map(async (txEffect) => {
       const nestedData = await getTxEffectNestedByHash(txEffect.txHash);
       return {
         ...txEffect,
         txBirthTimestamp: txEffect.txBirthTimestamp.valueOf(),
         ...nestedData,
+        revertCode: { code: txEffect.revertCode },
+        noteHashes: Array.isArray(txEffect.noteHashes)
+          ? txEffect.noteHashes
+          : ([] as string[]),
+        nullifiers: Array.isArray(txEffect.nullifiers)
+          ? txEffect.nullifiers
+          : ([] as string[]),
+        l2ToL1Msgs: Array.isArray(txEffect.l2ToL1Msgs)
+          ? txEffect.l2ToL1Msgs
+          : ([] as string[]),
+        privateLogs: Array.isArray(txEffect.privateLogs)
+          ? txEffect.privateLogs
+          : ([] as string[][]),
+        publicLogs: Array.isArray(txEffect.publicLogs)
+          ? txEffect.publicLogs
+          : ([] as string[][]),
+        contractClassLogs: Array.isArray(txEffect.contractClassLogs)
+          ? txEffect.contractClassLogs
+          : ([] as string[][]),
+        isOrphaned: Boolean(txEffect.isOrphaned),
       };
     }),
   );
@@ -171,7 +203,9 @@ export const getTxEffectDynamicWhere = async (
     .select({
       ...getTableColumns(txEffect),
       blockHeight: l2Block.height,
+      blockHash: l2Block.hash,
       timestamp: globalVariables.timestamp,
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(txEffect)
     .innerJoin(body, eq(txEffect.bodyId, body.id))
@@ -188,9 +222,31 @@ export const getTxEffectDynamicWhere = async (
 
   const nestedData = await getTxEffectNestedByHash(dbRes[0].txHash);
 
-  return chicmozL2TxEffectDeluxeSchema.parse({
+  const toParse: ChicmozL2TxEffectDeluxe = {
     ...dbRes[0],
     txBirthTimestamp: dbRes[0].txBirthTimestamp.valueOf(),
     ...nestedData,
-  });
+    revertCode: { code: dbRes[0].revertCode },
+    noteHashes: (Array.isArray(dbRes[0].noteHashes)
+      ? dbRes[0].noteHashes
+      : []) as string[],
+    nullifiers: (Array.isArray(dbRes[0].nullifiers)
+      ? dbRes[0].nullifiers
+      : []) as string[],
+    l2ToL1Msgs: Array.isArray(dbRes[0].l2ToL1Msgs)
+      ? dbRes[0].l2ToL1Msgs
+      : ([] as string[]),
+    privateLogs: (Array.isArray(dbRes[0].privateLogs)
+      ? dbRes[0].privateLogs
+      : []) as string[][],
+    publicLogs: (Array.isArray(dbRes[0].publicLogs)
+      ? dbRes[0].publicLogs
+      : []) as string[][],
+    contractClassLogs: (Array.isArray(dbRes[0].contractClassLogs)
+      ? dbRes[0].contractClassLogs
+      : []) as ChicmozL2TxEffect["contractClassLogs"],
+    isOrphaned: Boolean(dbRes[0].isOrphaned),
+  };
+
+  return chicmozL2TxEffectDeluxeSchema.parse(toParse);
 };

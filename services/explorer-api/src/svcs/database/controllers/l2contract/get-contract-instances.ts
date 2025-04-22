@@ -1,6 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, isNotNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import {
@@ -12,7 +12,8 @@ import {
 import { getBlocksWhereRange } from "../utils.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
 
-const DEFAULT_SORT = (desc(l2ContractInstanceDeployed.version), desc(l2Block.height));
+const DEFAULT_SORT =
+  (desc(l2ContractInstanceDeployed.version), desc(l2Block.height));
 
 export const getL2DeployedContractInstances = async ({
   fromHeight,
@@ -34,6 +35,7 @@ export const getL2DeployedContractInstances = async ({
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .leftJoin(
@@ -72,13 +74,14 @@ export const getL2DeployedContractInstances = async ({
     .orderBy(DEFAULT_SORT)
     .limit(DB_MAX_CONTRACTS);
 
-
   const parsed = result.map((r) => {
     return parseDeluxe({
       contractClass: r.class,
       instance: r.instance,
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
+      aztecScanNotes: null,
+      isOrphaned: Boolean(r.isOrphaned),
     });
   });
 
@@ -99,6 +102,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
@@ -114,6 +118,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
         ),
       ),
     )
+    .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
       and(
@@ -141,6 +146,8 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       instance: r.instance,
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
+      aztecScanNotes: null,
+      isOrphaned: Boolean(r.isOrphaned),
     });
   });
 };
@@ -160,6 +167,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
         l2ContractInstanceDeployerMetadataTable,
       ),
       blockHeight: l2Block.height,
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
@@ -175,10 +183,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
         ),
       ),
     )
-    .leftJoin(
-      l2Block,
-      eq(l2ContractInstanceDeployed.blockHash, l2Block.hash),
-    )
+    .leftJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
       and(
@@ -197,7 +202,12 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
         ),
       ),
     )
-    .where(eq(l2ContractInstanceDeployed.currentContractClassId, currentContractClassId))
+    .where(
+      eq(
+        l2ContractInstanceDeployed.currentContractClassId,
+        currentContractClassId,
+      ),
+    )
     .orderBy(desc(l2ContractInstanceDeployed.version))
     .limit(DB_MAX_CONTRACTS);
 
@@ -207,6 +217,8 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
       instance: r.instance,
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
+      aztecScanNotes: null,
+      isOrphaned: Boolean(r.isOrphaned || false),
     });
   });
 };

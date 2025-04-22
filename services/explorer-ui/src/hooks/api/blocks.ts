@@ -32,6 +32,20 @@ export const useOrphanedBlocks = () => {
 };
 
 /**
+ * Hook to fetch a limited number of orphaned blocks
+ */
+export const useOrphanedBlocksLimited = () => {
+  return useQuery<ChicmozL2BlockLight[], Error>({
+    queryKey: ["blocks", "orphaned", "limited"],
+    queryFn: async () => {
+      const data = await BlockAPI.getOrphanedBlocksLimited();
+      return data;
+    },
+    refetchInterval: REFETCH_INTERVAL,
+  });
+};
+
+/**
  * Hook to fetch reorgs
  */
 export const useReorgs = () => {

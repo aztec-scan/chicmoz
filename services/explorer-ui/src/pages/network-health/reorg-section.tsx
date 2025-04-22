@@ -31,7 +31,7 @@ export const ReorgSection: FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
-      <h2 className="mb-4">Recent Chain Reorgs (very much WIP)</h2>
+      <h2 className="mb-4">Recent Chain Reorgs</h2>
       {reorgsLoading ? (
         <Loader amount={10} />
       ) : reorgsError ? (

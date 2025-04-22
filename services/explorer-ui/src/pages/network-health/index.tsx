@@ -2,6 +2,7 @@ import { type FC } from "react";
 import { useSubTitle } from "~/hooks";
 import { BlockProductionSection } from "./block-production-section";
 import { FinalizationStatusSection } from "./finalization-status-section";
+import { OrphanedBlocksSection } from "./orphaned-blocks-section";
 import { ReorgSection } from "./reorg-section";
 import { ValidatorStatusSection } from "./validator-status-section";
 
@@ -18,6 +19,7 @@ export const NetworkHealth: FC = () => {
       <ValidatorStatusSection />
       <FinalizationStatusSection />
       <ReorgSection />
+      <OrphanedBlocksSection />
     </div>
   );
 };

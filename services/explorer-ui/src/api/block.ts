@@ -17,6 +17,10 @@ export const BlockAPI = {
     const response = await client.get(aztecExplorer.getL2OrphanedBlocks);
     return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
   },
+  getOrphanedBlocksLimited: async (): Promise<ChicmozL2BlockLight[]> => {
+    const response = await client.get(aztecExplorer.getL2OrphanedBlocksLimited);
+    return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
+  },
   getReorgs: async (): Promise<ChicmozReorg[]> => {
     const response = await client.get(aztecExplorer.getL2Reorgs);
     return validateResponse(z.array(chicmozReorgSchema), response.data);
