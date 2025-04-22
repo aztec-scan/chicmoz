@@ -72,7 +72,7 @@ export const FinalizationStatusSection: FC = () => {
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
         Currently we are refactoring so that we will have fewer, less
         complicated statuses. In the meantime, the UI is displaying the new
-        simpler statuses, expcept for this table, where we are showing both. It
+        simpler statuses, except for this table, where we are showing both. It
         also becomes painfully clear that the detailed status does not have the
         correct ordering of finalization.
       </p>
