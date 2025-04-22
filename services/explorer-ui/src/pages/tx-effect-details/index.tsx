@@ -1,15 +1,16 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+import { LoadingDetails } from "~/components/loading/tx-effect";
+import { getEmptyTxEffectData } from "~/components/loading/util";
+import { OrphanedBanner } from "~/components/orphaned-banner";
 import {
   useGetTxEffectByHash,
   usePendingTxsByHash,
   useSubTitle,
 } from "~/hooks";
-import { getTxEffectData } from "./utils";
 import { TabsSection } from "./tabs-section";
-import { LoadingDetails } from "~/components/loading/tx-effect";
-import { getEmptyTxEffectData } from "~/components/loading/util";
+import { getTxEffectData } from "./utils";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -72,6 +73,9 @@ export const TxEffectDetails: FC = () => {
           </h2>
         </div>
         <div className="flex flex-col gap-4 mt-4">
+          {"isOrphaned" in txEffects && txEffects.isOrphaned ? (
+            <OrphanedBanner type="tx-effect" />
+          ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getTxEffectData(txEffects)} />
           </div>

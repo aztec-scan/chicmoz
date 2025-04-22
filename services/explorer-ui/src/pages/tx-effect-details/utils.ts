@@ -45,7 +45,11 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
   {
     label: "BLOCK NUMBER",
     value: data.blockHeight.toString(),
-    link: `/blocks/${data.blockHeight}`,
+  },
+  {
+    label: "BLOCK HASH",
+    value: data.blockHash,
+    link: `/blocks/${data.blockHash}`,
   },
   { label: "MINED ON CHAIN", value: formatTimeSince(data.timestamp) },
   {

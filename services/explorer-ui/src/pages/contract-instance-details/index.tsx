@@ -1,6 +1,7 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+import { OrphanedBanner } from "~/components/orphaned-banner";
 import { useContractInstance, useSubTitle } from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import {
@@ -19,10 +20,18 @@ export const ContractInstanceDetails: FC = () => {
     error,
   } = useContractInstance(address);
 
-  if (!address) <div> No contract address</div>;
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error</div>;
-  if (!contractInstanceDetails) return <div>No data</div>;
+  if (!address) {
+    <div> No contract address</div>;
+  }
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error</div>;
+  }
+  if (!contractInstanceDetails) {
+    return <div>No data</div>;
+  }
 
   const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
     getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
@@ -39,6 +48,10 @@ export const ContractInstanceDetails: FC = () => {
           </h2>
         </div>
         <div className="flex flex-col gap-4 mt-8">
+          {"isOrphaned" in contractInstanceDetails &&
+          contractInstanceDetails.isOrphaned ? (
+            <OrphanedBanner type="contract-instance" />
+          ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getContractData(contractInstanceDetails)} />
           </div>

@@ -2,6 +2,7 @@ import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
+import { OrphanedBanner } from "~/components/orphaned-banner";
 import { useContractClass, useContractClasses, useSubTitle } from "~/hooks";
 import { TabSection } from "./tabs-section";
 import { getContractClassKeyValueData } from "./util";
@@ -20,8 +21,12 @@ export const ContractClassDetails: FC = () => {
     includeArtifactJson: true,
   });
 
-  if (!id) return <div>No classId</div>;
-  if (!version) return <div>No version provided</div>;
+  if (!id) {
+    return <div>No classId</div>;
+  }
+  if (!version) {
+    return <div>No version provided</div>;
+  }
 
   const selectedVersion = selectedVersionWithArtifactRes?.data
     ? selectedVersionWithArtifactRes.data
@@ -43,6 +48,11 @@ export const ContractClassDetails: FC = () => {
       </div>
 
       <div className="flex flex-col gap-4 mt-8">
+        {selectedVersion &&
+        "isOrphaned" in selectedVersion &&
+        selectedVersion.isOrphaned ? (
+          <OrphanedBanner type="contract-class" />
+        ) : null}
         <div className="bg-white rounded-lg shadow-md p-4">
           {contractClassesRes.isLoading && <Loader amount={1} />}
           {contractClassesRes.error && <div>error</div>}
