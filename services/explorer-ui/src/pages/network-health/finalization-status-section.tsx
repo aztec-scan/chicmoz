@@ -21,16 +21,13 @@ export const FinalizationStatusSection: FC = () => {
     );
   }
 
-  // Ensure we have an entry for each possible detailed status value
   const blocksWithStatuses = useMemo<BlockWithStatuses[]>(() => {
     if (!blocksByFinalizationStatus) {
       return [];
     }
 
-    // Define all possible status values based on ChicmozL2BlockFinalizationStatus enum
     const allPossibleStatuses = [0, 1, 2, 3, 4, 5];
 
-    // Sort all blocks by status (highest first), then by height (descending)
     const sortedBlocks = [...blocksByFinalizationStatus].sort((a, b) => {
       const statusDiff =
         Number(b.finalizationStatus) - Number(a.finalizationStatus);
@@ -40,13 +37,9 @@ export const FinalizationStatusSection: FC = () => {
       return Number(b.height) - Number(a.height);
     });
 
-    // Create result array with exactly one entry for each possible status
     const result: BlockWithStatuses[] = [];
 
-    // For each possible status, find the best block to represent it
     for (const statusValue of allPossibleStatuses) {
-      // Find the block with the exact status value, or the highest status block
-      // that can represent this status
       const bestBlock =
         sortedBlocks.find(
           (block) => Number(block.finalizationStatus) === statusValue,
@@ -60,7 +53,6 @@ export const FinalizationStatusSection: FC = () => {
       }
     }
 
-    // Sort by status (highest first)
     result.sort((a, b) => b.statuses[0] - a.statuses[0]);
 
     return result;
