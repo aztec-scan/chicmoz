@@ -8,6 +8,7 @@ export const aztecExplorer = {
   getL2BlocksByHeightRange: "l2/blocks",
   getL2BlocksByStatus: "l2/blocks/by-status",
   getL2OrphanedBlocks: "l2/blocks/orphaned",
+  getL2OrphanedBlocksLimited: "l2/blocks/orphans",
   getL2Reorgs: "l2/reorgs",
   getL2TxEffects: "l2/tx-effects",
   getL2TxEffectByHash: "l2/tx-effects/",

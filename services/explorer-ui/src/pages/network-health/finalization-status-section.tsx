@@ -81,7 +81,7 @@ export const FinalizationStatusSection: FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
-      <h2 className="mb-4">Latest Blocks by Finalization Status (WIP)</h2>
+      <h2 className="mb-4">Latest Blocks by Finalization Status</h2>
       {blocksByStatusLoading ? (
         <Loader amount={5} />
       ) : blocksByStatusError ? (

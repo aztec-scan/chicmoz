@@ -26,6 +26,7 @@ export const paths = {
   blocks: "/l2/blocks",
   blocksByStatus: "/l2/blocks/by-status",
   orphanedBlocks: "/l2/blocks/orphaned",
+  orphanedBlocksLimited: "/l2/blocks/orphans",
   reorgs: "/l2/reorgs",
 
   txEffects: "/l2/tx-effects",

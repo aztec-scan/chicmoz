@@ -180,3 +180,21 @@ export const GET_REORGS = asyncHandler(async (_req, res) => {
   );
   res.status(200).send(reorgsData);
 });
+
+export const openapi_GET_ORPHANED_BLOCKS_LIMITED: OpenAPIObject["paths"] = {
+  "/l2/blocks/orphans": {
+    get: {
+      tags: ["L2", "blocks"],
+      summary: "Get the last 100 orphaned blocks",
+      responses: blockResponseArray,
+    },
+  },
+};
+
+export const GET_ORPHANED_BLOCKS_LIMITED = asyncHandler(async (_req, res) => {
+  const orphanedBlocksData = await dbWrapper.getLatest(
+    ["l2", "blocks", "orphans"],
+    () => db.l2Block.getOrphanedBlocks(100), // Limit to 100 blocks
+  );
+  res.status(200).send(orphanedBlocksData);
+});
