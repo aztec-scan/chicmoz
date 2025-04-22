@@ -5,6 +5,7 @@ import { BlockStatusBadge } from "~/components/block-status-badge";
 import { Loader } from "~/components/loader";
 import { useBlocksByFinalizationStatus } from "~/hooks/api/blocks";
 import { routes } from "~/routes/__root";
+import { truncateHashString } from "~/lib/create-hash-string";
 import { type BlockWithStatuses } from "./types";
 
 export const FinalizationStatusSection: FC = () => {
@@ -94,37 +95,46 @@ export const FinalizationStatusSection: FC = () => {
             <thead>
               <tr>
                 <th className="px-4 py-2 text-left">Finalization Status</th>
+                <th className="px-4 py-2 text-left">Detailed Status</th>
                 <th className="px-4 py-2 text-left">Block Height</th>
                 <th className="px-4 py-2 text-left">Block Hash</th>
                 <th className="px-4 py-2 text-left">Date & Time</th>
               </tr>
             </thead>
             <tbody>
-              {blocksWithStatuses.map(({ block, statuses }) => (
-                <tr key={block.hash} className="border-t dark:border-gray-700">
-                  <td className="px-4 py-2 flex flex-wrap gap-1">
-                    {statuses.map((status) => (
-                      <BlockStatusBadge key={status} status={status} />
-                    ))}
-                  </td>
-                  <td className="px-4 py-2">
-                    <Link
-                      to={`${routes.blocks.route}/${block.height}`}
-                      className="text-purple-light hover:underline"
-                    >
-                      {String(block.height)}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 font-mono text-xs truncate max-w-[150px]">
-                    {block.hash}
-                  </td>
-                  <td className="px-4 py-2">
-                    {new Date(
-                      block.header.globalVariables.timestamp,
-                    ).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+              {blocksWithStatuses.flatMap(({ block, statuses }) => 
+                statuses.map((status) => (
+                  <tr key={`${block.hash}-${status}`} className="border-t dark:border-gray-700">
+                    <td className="px-4 py-2">
+                      <BlockStatusBadge status={status} />
+                    </td>
+                    <td className="px-4 py-2">
+                      <BlockStatusBadge status={status} useSimplifiedStatuses={false} />
+                    </td>
+                    <td className="px-4 py-2">
+                      <Link
+                        to={`${routes.blocks.route}/${block.height}`}
+                        className="text-purple-light hover:underline"
+                      >
+                        {String(block.height)}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-2">
+                      <Link
+                        to={`${routes.blocks.route}/${block.hash}`}
+                        className="text-purple-light font-mono text-xs"
+                      >
+                        {truncateHashString(block.hash)}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(
+                        block.header.globalVariables.timestamp,
+                      ).toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
