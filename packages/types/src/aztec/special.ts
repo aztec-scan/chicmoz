@@ -62,6 +62,7 @@ export const chicmozL2ContractInstanceDeluxeSchema = z.lazy(() => {
     ...chicmozL2ContractInstanceDeployedEventSchema.shape,
     ...chicmozL2ContractClassRegisteredEventSchema.shape,
     blockHeight: chicmozL2BlockSchema.shape.height.optional(),
+    isOrphaned: z.boolean(),
     deployerMetadata:
       chicmozL2ContractInstanceDeployerMetadataSchema.optional(),
     verifiedDeploymentArguments:
@@ -76,6 +77,8 @@ export type ChicmozL2ContractInstanceDeluxe = z.infer<
 export const chicmozL2TxEffectDeluxeSchema = z.object({
   ...chicmozL2TxEffectSchema.shape,
   blockHeight: z.lazy(() => chicmozL2BlockSchema.shape.height),
+  blockHash: z.lazy(() => chicmozL2BlockSchema.shape.hash),
+  isOrphaned: z.boolean(),
   txBirthTimestamp: z.number(),
   timestamp: z.lazy(
     () =>
