@@ -21,7 +21,7 @@ export const ContractInstanceDetails: FC = () => {
   } = useContractInstance(address);
 
   if (!address) {
-    <div> No contract address</div>;
+    return <div>No contract address</div>;
   }
   if (isLoading) {
     return <div>Loading...</div>;
