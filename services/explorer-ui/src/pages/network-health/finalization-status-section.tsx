@@ -1,11 +1,10 @@
-import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { useMemo, type FC } from "react";
 import { BlockStatusBadge } from "~/components/block-status-badge";
 import { Loader } from "~/components/loader";
 import { useBlocksByFinalizationStatus } from "~/hooks/api/blocks";
-import { routes } from "~/routes/__root";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { routes } from "~/routes/__root";
 import { type BlockWithStatuses } from "./types";
 
 export const FinalizationStatusSection: FC = () => {
@@ -22,60 +21,47 @@ export const FinalizationStatusSection: FC = () => {
     );
   }
 
-  // Transform blocks and assign multiple statuses to each block
+  // Ensure we have an entry for each possible detailed status value
   const blocksWithStatuses = useMemo<BlockWithStatuses[]>(() => {
     if (!blocksByFinalizationStatus) {
       return [];
     }
 
-    // Get unique blocks by hash
-    const uniqueBlocksMap = new Map<string, ChicmozL2BlockLight>();
-    for (const block of blocksByFinalizationStatus) {
-      uniqueBlocksMap.set(block.hash, block);
-    }
+    // Define all possible status values based on ChicmozL2BlockFinalizationStatus enum
+    const allPossibleStatuses = [0, 1, 2, 3, 4, 5];
 
-    // Convert to array and sort by status (highest first), then by height (descending)
-    const uniqueBlocks = Array.from(uniqueBlocksMap.values()).sort((a, b) => {
+    // Sort all blocks by status (highest first), then by height (descending)
+    const sortedBlocks = [...blocksByFinalizationStatus].sort((a, b) => {
       const statusDiff =
         Number(b.finalizationStatus) - Number(a.finalizationStatus);
       if (statusDiff !== 0) {
         return statusDiff;
       }
-      return Number(b.height) - Number(a.height); // Secondary sort by height (descending)
+      return Number(b.height) - Number(a.height);
     });
 
-    // For each block, determine which statuses it should represent
+    // Create result array with exactly one entry for each possible status
     const result: BlockWithStatuses[] = [];
 
-    for (let i = 0; i < uniqueBlocks.length; i++) {
-      const block = uniqueBlocks[i];
-      const currentStatus = Number(block.finalizationStatus);
+    // For each possible status, find the best block to represent it
+    for (const statusValue of allPossibleStatuses) {
+      // Find the block with the exact status value, or the highest status block
+      // that can represent this status
+      const bestBlock =
+        sortedBlocks.find(
+          (block) => Number(block.finalizationStatus) === statusValue,
+        ) ?? sortedBlocks[0]; // Fallback to highest block if none found
 
-      // Determine the lowest status this block should represent
-      let lowestStatus = 0;
-      if (i < uniqueBlocks.length - 1) {
-        // Find the next block with a different status
-        let nextIndex = i + 1;
-        while (
-          nextIndex < uniqueBlocks.length &&
-          Number(uniqueBlocks[nextIndex].finalizationStatus) === currentStatus
-        ) {
-          nextIndex++;
-        }
-
-        if (nextIndex < uniqueBlocks.length) {
-          lowestStatus = Number(uniqueBlocks[nextIndex].finalizationStatus) + 1;
-        }
+      if (bestBlock) {
+        result.push({
+          block: bestBlock,
+          statuses: [statusValue],
+        });
       }
-
-      // Create array of statuses for this block
-      const statuses: number[] = [];
-      for (let status = currentStatus; status >= lowestStatus; status--) {
-        statuses.push(status);
-      }
-
-      result.push({ block, statuses });
     }
+
+    // Sort by status (highest first)
+    result.sort((a, b) => b.statuses[0] - a.statuses[0]);
 
     return result;
   }, [blocksByFinalizationStatus]);
@@ -83,6 +69,13 @@ export const FinalizationStatusSection: FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
       <h2 className="mb-4">Latest Blocks by Finalization Status</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Currently we are refactoring so that we will have fewer, less
+        complicated statuses. In the meantime, the UI is displaying the new
+        simpler statuses, expcept for this table, where we are showing both. It
+        also becomes painfully clear that the detailed status does not have the
+        correct ordering of finalization.
+      </p>
       {blocksByStatusLoading ? (
         <Loader amount={5} />
       ) : blocksByStatusError ? (
@@ -102,14 +95,20 @@ export const FinalizationStatusSection: FC = () => {
               </tr>
             </thead>
             <tbody>
-              {blocksWithStatuses.flatMap(({ block, statuses }) => 
+              {blocksWithStatuses.flatMap(({ block, statuses }) =>
                 statuses.map((status) => (
-                  <tr key={`${block.hash}-${status}`} className="border-t dark:border-gray-700">
+                  <tr
+                    key={`${block.hash}-${status}`}
+                    className="border-t dark:border-gray-700"
+                  >
                     <td className="px-4 py-2">
                       <BlockStatusBadge status={status} />
                     </td>
                     <td className="px-4 py-2">
-                      <BlockStatusBadge status={status} useSimplifiedStatuses={false} />
+                      <BlockStatusBadge
+                        status={status}
+                        useSimplifiedStatuses={false}
+                      />
                     </td>
                     <td className="px-4 py-2">
                       <Link
@@ -133,7 +132,7 @@ export const FinalizationStatusSection: FC = () => {
                       ).toLocaleString()}
                     </td>
                   </tr>
-                ))
+                )),
               )}
             </tbody>
           </table>

@@ -6,6 +6,24 @@ interface BlockStatusBadgeProps {
   useSimplifiedStatuses?: boolean;
 }
 
+const red = {
+  backgroundColor: "#FEE2E2",
+  color: "#991B1B",
+  borderColor: "#EF4444",
+};
+
+const orange = {
+  backgroundColor: "#FFEDD5",
+  color: "#9A3412",
+  borderColor: "#F97316",
+};
+
+const green = {
+  backgroundColor: "#DCFCE7",
+  color: "#166534",
+  borderColor: "#22C55E",
+};
+
 export const BlockStatusBadge: React.FC<BlockStatusBadgeProps> = ({
   status,
   className = "",
@@ -18,27 +36,27 @@ export const BlockStatusBadge: React.FC<BlockStatusBadgeProps> = ({
     switch (status) {
       case ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED:
         badgeText = "Proposed";
-        badgeStyle = {
-          backgroundColor: "#FEE2E2",
-          color: "#991B1B",
-          borderColor: "#EF4444",
-        };
+        badgeStyle = red;
         break;
-      case ChicmozL2BlockFinalizationStatus.L1_MINED_PROVEN:
-        badgeText = "Finalized";
-        badgeStyle = {
-          backgroundColor: "#DCFCE7",
-          color: "#166534",
-          borderColor: "#22C55E",
-        };
+      case ChicmozL2BlockFinalizationStatus.L1_SEEN_PROPOSED:
+        badgeText = "Proposed";
+        badgeStyle = red;
+        break;
+      case ChicmozL2BlockFinalizationStatus.L1_MINED_PROPOSED:
+        badgeText = "Proposed";
+        badgeStyle = red;
+        break;
+      case ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN:
+        badgeText = "Proven";
+        badgeStyle = orange;
+        break;
+      case ChicmozL2BlockFinalizationStatus.L1_SEEN_PROVEN:
+        badgeText = "Proven";
+        badgeStyle = orange;
         break;
       default:
-        badgeText = "Proven";
-        badgeStyle = {
-          backgroundColor: "#FFEDD5",
-          color: "#9A3412",
-          borderColor: "#F97316",
-        };
+        badgeText = "Finalized";
+        badgeStyle = green;
     }
   } else {
     switch (status) {
