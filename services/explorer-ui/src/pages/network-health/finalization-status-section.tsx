@@ -66,7 +66,7 @@ export const FinalizationStatusSection: FC = () => {
         complicated statuses. In the meantime, the UI is displaying the new
         simpler statuses, except for this table, where we are showing both. It
         also becomes painfully clear that the detailed status is not always
-        correct in block height ordering.
+        correct for each block height.
       </p>
       {blocksByStatusLoading ? (
         <Loader amount={5} />
