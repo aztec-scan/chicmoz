@@ -1,4 +1,3 @@
-import { type WebsocketUpdateMessageReceiver } from "@chicmoz-pkg/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { WS_URL } from "~/service/constants";
