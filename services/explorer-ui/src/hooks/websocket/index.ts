@@ -1,6 +1,8 @@
+import { type WebsocketUpdateMessageReceiver } from "@chicmoz-pkg/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { WS_URL } from "~/service/constants";
+import { useTabVisibility } from "~/hooks/useTabVisibility";
 import { handleWebSocketMessage } from "./message-callbacks";
 
 export type WsReadyStateText =
@@ -30,20 +32,23 @@ const WS_RECONNECTING = 5;
 let websocketInstance: WebSocket | null = null;
 let connectionAttempts = 0;
 const MAX_RETRY_ATTEMPTS = 3;
-let isTabActive = !document.hidden; // Initialize based on current visibility state
 
 // Function to create and configure WebSocket
 const createWebSocket = (
   queryClient: ReturnType<typeof useQueryClient>,
   setReadyState: (state: keyof WsReadyState) => void,
+  isActive: boolean,
 ): WebSocket => {
   connectionAttempts++;
   const ws = new WebSocket(WS_URL);
 
   ws.onopen = () => {
-    console.log("WebSocket Connected");
+    console.log("WebSocket Connected", ws.readyState);
     connectionAttempts = 0; // Reset connection attempts on successful connection
-    setReadyState(ws.readyState as keyof WsReadyState);
+    // Force the readyState to OPEN (1) instead of relying on ws.readyState
+    // which might not be updated immediately
+    setReadyState(1 as keyof WsReadyState);
+    console.log("Set readyState to:", wsReadyStateText[1]);
   };
 
   ws.onmessage = async (event) => {
@@ -62,7 +67,7 @@ const createWebSocket = (
     console.log("WebSocket Disconnected");
 
     // If tab is inactive, set special state
-    if (!isTabActive) {
+    if (!isActive) {
       setReadyState(WS_TAB_INACTIVE as keyof WsReadyState);
     } else {
       setReadyState(ws.readyState as keyof WsReadyState);
@@ -81,11 +86,12 @@ const createWebSocket = (
 
 export const useWebSocketConnection = (): WsReadyStateText => {
   const queryClient = useQueryClient();
+  const isTabActive = useTabVisibility();
   const [readyState, setReadyState] = useState<keyof WsReadyState>(
     WebSocket.CONNECTING,
   );
 
-  // Handle page visibility changes
+  // Handle WebSocket connection based on tab visibility
   useEffect(() => {
     // Function to initialize or reconnect WebSocket
     const initializeWebSocket = () => {
@@ -114,43 +120,42 @@ export const useWebSocketConnection = (): WsReadyStateText => {
         !websocketInstance ||
         websocketInstance.readyState === WebSocket.CLOSED
       ) {
-        websocketInstance = createWebSocket(queryClient, setReadyState);
+        console.log("Creating new WebSocket instance");
+        websocketInstance = createWebSocket(queryClient, setReadyState, isTabActive);
       } else {
         // Update readyState to match existing connection
-        setReadyState(websocketInstance.readyState as keyof WsReadyState);
-      }
-    };
-    
-    const handleVisibilityChange = () => {
-      isTabActive = !document.hidden;
-      console.log(`Tab is now ${isTabActive ? "active" : "inactive"}`);
-
-      if (isTabActive) {
-        // Tab became active, check WebSocket status and reconnect if needed
-        if (
-          !websocketInstance ||
-          websocketInstance.readyState !== WebSocket.OPEN
-        ) {
-          console.log("Tab active - checking WebSocket connection");
-          initializeWebSocket();
+        console.log("Using existing WebSocket, readyState:", websocketInstance.readyState);
+        // If it's open, make sure UI reflects that
+        if (websocketInstance.readyState === WebSocket.OPEN) {
+          setReadyState(1 as keyof WsReadyState);
+        } else {
+          setReadyState(websocketInstance.readyState as keyof WsReadyState);
         }
-      } else {
-        // Tab became inactive, update state
-        setReadyState(WS_TAB_INACTIVE as keyof WsReadyState);
       }
     };
 
-    // Add visibility change listener
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    // Initialize or update WebSocket when tab visibility changes
+    if (isTabActive) {
+      // Tab is active, check WebSocket status and connect if needed
+      if (
+        !websocketInstance ||
+        websocketInstance.readyState !== WebSocket.OPEN
+      ) {
+        console.log("Tab active - checking WebSocket connection");
+        initializeWebSocket();
+      } else {
+        // Make sure state reflects open connection
+        setReadyState(1 as keyof WsReadyState);
+      }
+    } else {
+      // Tab is inactive, update state
+      setReadyState(WS_TAB_INACTIVE as keyof WsReadyState);
+    }
 
-    // Initialize WebSocket on first render
-    initializeWebSocket();
+    // No need for visibility event listeners here as they're in useTabVisibility
 
-    // Cleanup
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [queryClient]);
+    // Cleanup not needed here
+  }, [queryClient, isTabActive]);
 
   return wsReadyStateText[readyState];
 };
