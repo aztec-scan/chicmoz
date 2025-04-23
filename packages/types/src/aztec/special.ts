@@ -13,6 +13,7 @@ import {
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
 
 export const aztecScanNoteSchema = z.object({
+  name: z.string(),
   origin: z.string(),
   comment: z.string(),
   relatedL1ContractAddresses: z

@@ -5,6 +5,7 @@ import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
+  l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployed,
   l2ContractInstanceDeployerMetadataTable,
   l2ContractInstanceVerifiedDeploymentArguments,
@@ -14,6 +15,73 @@ import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
 
 const DEFAULT_SORT =
   (desc(l2ContractInstanceDeployed.version), desc(l2Block.height));
+
+export const getL2DeployedContractInstancesWithAztecScanNotes = async (
+  includeArtifactJson?: boolean,
+): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
+  const result = await db()
+    .select({
+      instance: getTableColumns(l2ContractInstanceDeployed),
+      class: getContractClassRegisteredColumns(includeArtifactJson),
+      verifiedDeploymentArguments: getTableColumns(
+        l2ContractInstanceVerifiedDeploymentArguments,
+      ),
+      deployerMetadata: getTableColumns(
+        l2ContractInstanceDeployerMetadataTable,
+      ),
+      aztecScanNotes: getTableColumns(l2ContractInstanceAztecScanNotes),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
+    })
+    .from(l2ContractInstanceAztecScanNotes)
+    .innerJoin(
+      l2ContractInstanceDeployed,
+      eq(l2ContractInstanceAztecScanNotes.address, l2ContractInstanceDeployed.address)
+    )
+    .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
+    .innerJoin(
+      l2ContractClassRegistered,
+      and(
+        eq(
+          l2ContractInstanceDeployed.currentContractClassId,
+          l2ContractClassRegistered.contractClassId,
+        ),
+        eq(
+          l2ContractInstanceDeployed.version,
+          l2ContractClassRegistered.version,
+        ),
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceVerifiedDeploymentArguments,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceVerifiedDeploymentArguments.address,
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceDeployerMetadataTable,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceDeployerMetadataTable.address,
+      ),
+    );
+
+  return result.map(({
+    instance,
+    class: contractClass,
+    verifiedDeploymentArguments,
+    deployerMetadata,
+    aztecScanNotes,
+    isOrphaned,
+  }) => parseDeluxe({
+    contractClass,
+    instance,
+    verifiedDeploymentArguments,
+    deployerMetadata,
+    aztecScanNotes,
+    isOrphaned: Boolean(isOrphaned),
+  }));
+};
 
 export const getL2DeployedContractInstances = async ({
   fromHeight,

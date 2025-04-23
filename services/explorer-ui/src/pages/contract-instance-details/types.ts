@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DetailItem } from "~/components/info-display/key-value-display";
+import { type DetailItem } from "~/components/info-display/key-value-display";
 
 export type tabId = "verifiedDeployment" | "contactDetails" | "aztecScanNotes";
 

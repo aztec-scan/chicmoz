@@ -1,11 +1,11 @@
-import { type ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { routes } from "~/routes/__root";
-import { DataTableColumnHeader } from "~/components/data-table";
-import { type ContractClass } from "./schema";
-import { truncateHashString } from "~/lib/create-hash-string";
+import { type ColumnDef } from "@tanstack/react-table";
 import { CopyableText } from "~/components/copy-text";
+import { DataTableColumnHeader } from "~/components/data-table";
+import { truncateHashString } from "~/lib/create-hash-string";
+import { routes } from "~/routes/__root";
 import { getClassVersionLink } from "../utils";
+import { type ContractClass } from "./schema";
 
 const text = {
   blockHash: "BLOCK HASH",
@@ -30,13 +30,15 @@ export const contractsTableColumns: ColumnDef<ContractClass>[] = [
         return getClassVersionLink(
           row.getValue("contractClassId"),
           1,
-          truncateHashString(row.getValue("contractClassId"))
+          truncateHashString(row.getValue("contractClassId")),
         );
       } else {
-        return <CopyableText
-          toCopy={row.getValue("contractClassId")}
-          text={truncateHashString(row.getValue("contractClassId"))}
-        />;
+        return (
+          <CopyableText
+            toCopy={row.getValue("contractClassId")}
+            text={truncateHashString(row.getValue("contractClassId"))}
+          />
+        );
       }
     },
     enableSorting: false,
@@ -54,7 +56,7 @@ export const contractsTableColumns: ColumnDef<ContractClass>[] = [
     cell: ({ row }) =>
       getClassVersionLink(
         row.getValue("contractClassId"),
-        row.getValue("version")
+        row.getValue("version"),
       ),
     enableSorting: true,
     enableHiding: false,
@@ -106,7 +108,9 @@ export const contractsTableColumns: ColumnDef<ContractClass>[] = [
     ),
     cell: ({ row }) => {
       const hash = row.getValue("blockHash");
-      if (typeof hash !== "string") return null;
+      if (typeof hash !== "string") {
+        return null;
+      }
       const r = `${routes.blocks.route}/${hash}`;
       const truncatedTxHash = `${hash.slice(0, 6)}...${hash.slice(-4)}`;
       return (
