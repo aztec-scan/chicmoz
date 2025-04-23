@@ -1,4 +1,5 @@
 import {
+  aztecScanNoteSchema,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeluxeSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
@@ -8,8 +9,20 @@ import {
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
+import { z } from "zod";
 import { aztecExplorer } from "~/service/constants";
 import client, { validateResponse } from "./client";
+
+const contractInstancesWithAztecScanNotesSchema = z.lazy(() =>
+  z.object({
+    ...chicmozL2ContractInstanceDeluxeSchema.schema.shape,
+    aztecScanNotes: aztecScanNoteSchema,
+  }),
+);
+
+export type ChicmozL2ContractInstanceWithAztecScanNotes = z.infer<
+  typeof contractInstancesWithAztecScanNotesSchema
+>;
 
 export const ContractL2API = {
   getContractClass: async ({
@@ -92,6 +105,17 @@ export const ContractL2API = {
     const response = await client.get(aztecExplorer.getL2ContractInstances);
     return validateResponse(
       chicmozL2ContractInstanceDeluxeSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstancesWithAztecScanNotes: async (): Promise<
+    ChicmozL2ContractInstanceWithAztecScanNotes[]
+  > => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstancesWithAztecScanNotes,
+    );
+    return validateResponse(
+      contractInstancesWithAztecScanNotesSchema.array(),
       response.data,
     );
   },

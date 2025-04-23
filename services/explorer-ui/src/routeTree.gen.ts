@@ -20,6 +20,7 @@ import { Route as NetworkHealthImport } from './routes/network-health'
 
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
+const EcosystemLazyImport = createFileRoute('/ecosystem')()
 const DevLazyImport = createFileRoute('/dev')()
 const AztecscanHealthLazyImport = createFileRoute('/aztecscan-health')()
 const AboutUsLazyImport = createFileRoute('/about-us')()
@@ -56,6 +57,11 @@ const FeeRecipientsLazyRoute = FeeRecipientsLazyImport.update({
 } as any).lazy(() =>
   import('./routes/fee-recipients.lazy').then((d) => d.Route),
 )
+
+const EcosystemLazyRoute = EcosystemLazyImport.update({
+  path: '/ecosystem',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/ecosystem.lazy').then((d) => d.Route))
 
 const DevLazyRoute = DevLazyImport.update({
   path: '/dev',
@@ -208,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevLazyImport
       parentRoute: typeof rootRoute
     }
+    '/ecosystem': {
+      id: '/ecosystem'
+      path: '/ecosystem'
+      fullPath: '/ecosystem'
+      preLoaderRoute: typeof EcosystemLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/fee-recipients': {
       id: '/fee-recipients'
       path: '/fee-recipients'
@@ -304,6 +317,7 @@ export const routeTree = rootRoute.addChildren({
   AboutUsLazyRoute,
   AztecscanHealthLazyRoute,
   DevLazyRoute,
+  EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
   BlocksBlockNumberLazyRoute,
@@ -332,6 +346,7 @@ export const routeTree = rootRoute.addChildren({
         "/about-us",
         "/aztecscan-health",
         "/dev",
+        "/ecosystem",
         "/fee-recipients",
         "/privacy-policy",
         "/blocks/$blockNumber",
@@ -363,6 +378,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/dev": {
       "filePath": "dev.lazy.tsx"
+    },
+    "/ecosystem": {
+      "filePath": "ecosystem.lazy.tsx"
     },
     "/fee-recipients": {
       "filePath": "fee-recipients.lazy.tsx"

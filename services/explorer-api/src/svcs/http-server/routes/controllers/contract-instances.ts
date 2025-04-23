@@ -22,6 +22,7 @@ import {
   getContractInstancesByBlockHashSchema,
   getContractInstancesByCurrentContractClassIdSchema,
   getContractInstancesSchema,
+  getContractInstancesWithAztecScanNotesSchema,
   postVerifiedContractInstanceSchema,
 } from "../paths_and_validation.js";
 import {
@@ -479,5 +480,35 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     });
 
     res.status(200).send("Contract instance registered");
+  },
+);
+
+export const openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES: OpenAPIObject["paths"] = {
+  "/l2/contract-instances/with-aztec-scan-notes": {
+    get: {
+      tags: ["L2", "contract-instances"],
+      summary: "Get all contract instances with aztec scan notes",
+      parameters: [
+        {
+          name: "includeArtifactJson",
+          in: "query",
+          schema: {
+            type: "boolean",
+          },
+        },
+      ],
+      responses: contractInstanceResponseArray,
+    },
+  },
+};
+
+export const GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES = asyncHandler(
+  async (req, res) => {
+    const { includeArtifactJson } = getContractInstancesWithAztecScanNotesSchema.parse(req).query;
+    const instances = await dbWrapper.getLatest(
+      ["l2", "contract-instances", "with-aztec-scan-notes", includeArtifactJson ? "with-artifact" : "without-artifact"],
+      () => db.l2Contract.getL2DeployedContractInstancesWithAztecScanNotes(includeArtifactJson),
+    );
+    res.status(200).send(instances);
   },
 );

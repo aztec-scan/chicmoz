@@ -9,7 +9,7 @@ const TanStackRouterDevtools =
     ? lazy(() =>
         import("@tanstack/router-devtools").then((res) => ({
           default: res.TanStackRouterDevtools,
-        }))
+        })),
       )
     : () => null;
 
@@ -114,6 +114,10 @@ export const routes = {
   termsAndConditions: {
     route: "/terms-and-conditions",
     title: "Terms and Conditions",
+  },
+  ecosystem: {
+    route: "/ecosystem",
+    title: "Ecosystem",
   },
   feeRecipients: {
     route: "/fee-recipients",
