@@ -1,5 +1,5 @@
 import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
-import { useMemo, useState, type FC } from "react";
+import { useEffect, useMemo, useState, type FC } from "react";
 import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
@@ -12,7 +12,10 @@ interface TxEffectTableLandingProps {
 export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
   latestBlocks,
 }) => {
-  const [showPendingTxs, setShowPendingTxs] = useState(false);
+  const [showPendingTxs, setShowPendingTxs] = useState(true);
+  const [pendingTxCount, setPendingTxCount] = useState<number | undefined>(
+    undefined,
+  );
   const { data: pendingTxs } = usePendingTxs();
   const {
     data: latestTxEffectsData,
@@ -20,8 +23,14 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
     error: txEffectsError,
   } = useGetLatestTxEffects();
 
-  const toggleShowPendingTx = (checked: boolean) => {
-    setShowPendingTxs(checked);
+  useEffect(() => {
+    if (pendingTxs?.length !== pendingTxCount) {
+      setPendingTxCount(pendingTxs?.length);
+    }
+  }, [pendingTxs?.length, pendingTxCount]);
+
+  const toggleShowPendingTx = () => {
+    setShowPendingTxs(!showPendingTxs);
   };
 
   const txEffectData = useMemo(() => {
@@ -57,9 +66,9 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
         title="Latest Tx Effects"
         error={txEffectsError}
         disableSizeSelector={true}
-        handleTogglePendingTx={toggleShowPendingTx}
-        nbrOfPendingTxs={pendingTxs?.length}
         showPending={showPendingTxs}
+        handleTogglePendingTx={toggleShowPendingTx}
+        nbrOfPendingTxs={pendingTxCount}
       />
     </>
   );
