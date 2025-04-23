@@ -1,5 +1,7 @@
 import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
 import { useEffect, useState, type FC } from "react";
+import { useTabVisibility } from "~/hooks/useTabVisibility";
+import { useWebSocketConnection } from "~/hooks/websocket";
 import { formatDuration } from "~/lib/utils";
 
 interface BlockCountdownProgressProps {
@@ -11,6 +13,8 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   latestBlocks,
   averageBlockTime,
 }) => {
+  const isTabActive = useTabVisibility();
+  const wsConnectionState = useWebSocketConnection();
   const [progress, setProgress] = useState<number>(0);
   const [uiDelayOffset, setUiDelayOffset] = useState<number>(6000);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -77,6 +81,10 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
 
   // Get the appropriate fill color class based on progress
   const getFillColorClass = () => {
+    if (!isTabActive || wsConnectionState !== "OPEN") {
+      return "bg-gray-400"; // Use a neutral color for inactive/disconnected state
+    }
+
     if (isOverdue) {
       return "bg-red";
     }
@@ -88,6 +96,15 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
 
   // Format the time with +/- 3 second window for "now"
   const getFormattedTimeLeft = () => {
+    // First check connection status
+    if (!isTabActive) {
+      return "waiting - tab inactive";
+    }
+
+    if (wsConnectionState !== "OPEN") {
+      return `waiting - websocket ${wsConnectionState.toLowerCase()}`;
+    }
+
     if (timeLeft === null) {
       return "calculating...";
     }
