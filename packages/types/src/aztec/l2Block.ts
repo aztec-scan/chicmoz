@@ -19,10 +19,10 @@ import {
 
 export enum ChicmozL2BlockFinalizationStatus {
   L2_NODE_SEEN_PROPOSED = 0,
-  L2_NODE_SEEN_PROVEN = 1,
-  L1_SEEN_PROPOSED = 2,
-  L1_SEEN_PROVEN = 3,
-  L1_MINED_PROPOSED = 4,
+  L1_SEEN_PROPOSED = 1,
+  L1_MINED_PROPOSED = 2,
+  L2_NODE_SEEN_PROVEN = 3,
+  L1_SEEN_PROVEN = 4,
   L1_MINED_PROVEN = 5,
 }
 

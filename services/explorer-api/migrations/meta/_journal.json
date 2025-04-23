@@ -15,6 +15,13 @@
       "when": 1744975050648,
       "tag": "0001_pale_madame_web",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1745390180019,
+      "tag": "0002_finalizationStatus-correctly-ordered",
+      "breakpoints": true
     }
   ]
 }
