@@ -21,18 +21,6 @@ import { routes } from "~/routes/__root";
 import { TxEffectTableLanding } from "./tx-effect-table-landing";
 
 export const Landing: FC = () => {
-  // Refresh counter to force table updates for "Age" column
-  const [refreshCounter, setRefreshCounter] = useState(0);
-
-  // Update refreshCounter every second to refresh time displays
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setRefreshCounter((prev) => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
   const { systemHealth } = useSystemHealth();
   const { data: latestBlocks, isLoading, error } = useLatestBlocks();
   const {
@@ -180,7 +168,6 @@ export const Landing: FC = () => {
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
               <BlocksTable
-                key={`blocks-table-${refreshCounter}`}
                 title="Latest Blocks"
                 blocks={mapLatestBlocks(latestBlocks)}
                 isLoading={isLoading}
@@ -189,10 +176,7 @@ export const Landing: FC = () => {
               />
             </div>
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
-              <TxEffectTableLanding
-                key={`tx-effects-table-${refreshCounter}`}
-                latestBlocks={latestBlocks}
-              />
+              <TxEffectTableLanding latestBlocks={latestBlocks} />
             </div>
           </div>
         </>

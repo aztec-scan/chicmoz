@@ -6,13 +6,14 @@ import { routes } from "~/routes/__root";
 import type { BlockTableSchema } from "./blocks-schema";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { BlockStatusBadge } from "../block-status-badge";
+import { TimeAgoCell } from "../formated-time-cell";
 
 const text = {
   height: "HEIGHT",
   blockHash: "BLOCK HASH",
   txEffectsLength: "NBR OF TXS",
   timeSince: "AGE",
-  blockStatus: "BLOCK STATUS"
+  blockStatus: "BLOCK STATUS",
 };
 
 export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
@@ -49,7 +50,9 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
     ),
     cell: ({ row }) => {
       const blockHash = row.getValue("blockHash");
-      if (typeof blockHash !== "string") { return null; }
+      if (typeof blockHash !== "string") {
+        return null;
+      }
       const r = `${routes.blocks.route}/${blockHash}`;
       return (
         <div className="text-purple-light font-mono">
@@ -70,11 +73,8 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const formattedTime = formatTimeSince(
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        row.getValue("timestamp") as unknown as number,
-      );
-      return <div className="text-purple-dark">{formattedTime}</div>;
+      const timestamp = Number(row.getValue("timestamp"));
+      return <TimeAgoCell timestamp={timestamp} />;
     },
     enableSorting: true,
     enableHiding: false,
@@ -104,7 +104,10 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
       />
     ),
     cell: ({ row }) => (
-      <BlockStatusBadge className="font-mono" status={row.getValue("blockStatus")} />
+      <BlockStatusBadge
+        className="font-mono"
+        status={row.getValue("blockStatus")}
+      />
     ),
     enableSorting: false,
     enableHiding: false,

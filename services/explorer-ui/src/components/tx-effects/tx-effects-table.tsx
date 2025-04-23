@@ -11,7 +11,6 @@ interface Props {
   error?: Error | null;
   disableSizeSelector?: boolean;
   handleTogglePendingTx?: (checked: boolean) => void;
-  showPending: boolean;
   nbrOfPendingTxs?: number;
 }
 
@@ -23,7 +22,6 @@ export const TxEffectsTable: FC<Props> = ({
   disableSizeSelector,
   handleTogglePendingTx,
   nbrOfPendingTxs,
-  showPending,
 }) => {
   if (!txEffects) {
     return <div>No data</div>;
@@ -41,10 +39,10 @@ export const TxEffectsTable: FC<Props> = ({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="terms2"
-                  onCheckedChange={() =>
-                    handleTogglePendingTx(!showPending)
+                  onCheckedChange={(checked) =>
+                    handleTogglePendingTx(Boolean(checked))
                   }
-                  checked={showPending}
+                  defaultChecked={true}
                 />
                 <label
                   htmlFor="terms2"
