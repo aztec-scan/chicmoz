@@ -57,9 +57,9 @@ export const ContractInstanceDetails: FC = () => {
           </div>
         </div>
       </div>
-      {verifiedDeploymentArguments?.length ??
-      deployerMetadata?.length ??
-      aztecScanNotes?.length ? (
+      {(verifiedDeploymentArguments?.length > 0 ||
+      deployerMetadata?.length > 0 ||
+      aztecScanNotes?.length > 0) ? (
         <div className="mt-5">
           <TabsSection
             verifiedDeploymentData={verifiedDeploymentArguments}
