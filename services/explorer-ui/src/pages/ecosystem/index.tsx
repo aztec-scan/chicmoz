@@ -36,18 +36,22 @@ export const Ecosystem: FC = () => {
   return (
     <div className="flex flex-col items-center">
       <h1>Ecosystem</h1>
-
       <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-2/3 mb-6">
-        <h3>⚠️ Disclaimer ⚠️</h3>
-        <p className="mb-4">
-          The contracts listed here are contracts that aztecscan.xyz has
-          manually added with AztecScanNotes. It means that they have a known
-          origin. IT DOES NOT MEAN THAT THEY ARE A) AUDITED OR B) SAFE TO USE.
-          <br />
-          <br />
-          Please do your own research and due diligence before interacting with
-          any of these contracts.
-        </p>
+        <ul className="list-disc list-inside">
+          <li>Sepolia ETH Faucet: TODO</li>
+          <li>Aztec Faucet: TODO</li>
+          <li>
+            <a
+              href="https://aztec.network/ecosystem"
+              target="_blank"
+              rel="noreferrer"
+              className="text-purple-light hover:font-bold"
+            >
+              Aztec Ecosystem Page
+            </a>
+          </li>
+        </ul>
+
         <div className="border-t border-gray-200 pt-3 mt-4">
           <button
             onClick={toggleMetadata}
@@ -68,8 +72,6 @@ export const Ecosystem: FC = () => {
               </>
             )}
           </button>
-
-          {/* Collapsible content */}
           <div
             className={`overflow-hidden transition-all duration-300 ${
               isMetadataExpanded
@@ -77,7 +79,7 @@ export const Ecosystem: FC = () => {
                 : "max-h-0 opacity-0"
             }`}
           >
-            <h3 className="m-0">Contract Metadata</h3>
+            <h3>Contract Metadata</h3>
             <p className="mb-4">
               There are four things that add metadata to contracts:
               AztecScanNotes, uploading artifact, verifying deployment, and
@@ -151,6 +153,18 @@ export const Ecosystem: FC = () => {
             </p>
           </div>
         </div>
+      </div>
+      <div className="flex flex-wrap md:w-2/3 mb-6">
+        <p className="text-sm text-gray-600 mb-4 px-4">
+          ⚠️ Disclaimer ⚠️ The contracts listed here are contracts that
+          aztecscan.xyz has manually added with AztecScanNotes. It means that
+          they have a known origin. IT DOES NOT MEAN THAT THEY ARE A) AUDITED OR
+          B) SAFE TO USE.
+          <br />
+          <br />
+          Please do your own research and due diligence before interacting with
+          any of these contracts.
+        </p>
       </div>
 
       {isLoading && <div className="text-center">Loading contracts...</div>}
