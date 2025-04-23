@@ -81,7 +81,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <div className="min-w-full">
+      <div className="w-full">
         {isLoading && <Loader amount={10} />}
         {!isLoading && (
           <Table className="border-spacing-x-1">
@@ -117,15 +117,16 @@ function DataTableHeader<TData, TValue>({
                 {header.isPlaceholder ||
                   flexRender(
                     header.column.columnDef.header,
-                    header.getContext()
+                    header.getContext(),
                   )}
                 <div
                   {...{
                     onDoubleClick: () => header.column.resetSize(),
                     onMouseDown: header.getResizeHandler(),
                     onTouchStart: header.getResizeHandler(),
-                    className: `resizer ${table.options.columnResizeDirection
-                      } ${header.column.getIsResizing() ? "isResizing" : ""}`,
+                    className: `min-h-3 resizer ${
+                      table.options.columnResizeDirection
+                    } ${header.column.getIsResizing() ? "isResizing" : ""}`,
                   }}
                 />
               </TableHead>
@@ -153,7 +154,7 @@ function DataTableBody<TData, TValue>({
             className={cn(
               row.getCanExpand()
                 ? "cursor-pointer hover:bg-grey-dark/10 hover:text-pink "
-                : ""
+                : "",
             )}
           >
             {row.getVisibleCells().map((cell) => (

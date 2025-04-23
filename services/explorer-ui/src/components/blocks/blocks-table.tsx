@@ -11,7 +11,6 @@ interface Props {
   disableSizeSelector?: boolean;
 }
 
-// TODO: Maybe make this a generic component
 export const BlocksTable: FC<Props> = ({
   title,
   blocks,
@@ -19,12 +18,19 @@ export const BlocksTable: FC<Props> = ({
   error,
   disableSizeSelector,
 }) => {
-  if (error) { return <p className="text-red-500">{error.message}</p>; }
+  if (error) {
+    return <p className="text-red-500">{error.message}</p>;
+  }
 
   return (
     <section className="relative mx-0 w-full transition-all">
       <div className="space-y-4 bg-white rounded-lg p-5">
-        {title && <h3 className="ml-0.5">{title}</h3>}
+        {title && (
+          <div className="flex flex-row justify-between md:min-h-16">
+            <h3 className="ml-0.5">{title}</h3>
+          </div>
+        )}
+
         <DataTable
           isLoading={isLoading}
           data={blocks ?? []}
