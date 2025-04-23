@@ -115,10 +115,6 @@ export const routes = {
     route: "/terms-and-conditions",
     title: "Terms and Conditions",
   },
-  verifiedContractInstances: {
-    route: "/verified-contract-instances",
-    title: "Verified Contract Instances",
-  },
   feeRecipients: {
     route: "/fee-recipients",
     title: "Fee Recipients",

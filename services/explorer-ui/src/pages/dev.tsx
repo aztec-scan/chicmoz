@@ -142,14 +142,6 @@ stack:          ${error.stack}
           <h3>Internal</h3>
           <p>
             <Link
-              to={routes.verifiedContractInstances.route}
-              className="text-purple-light hover:font-bold"
-            >
-              {routes.verifiedContractInstances.title}
-            </Link>
-          </p>
-          <p>
-            <Link
               to={routes.feeRecipients.route}
               className="text-purple-light hover:font-bold"
             >

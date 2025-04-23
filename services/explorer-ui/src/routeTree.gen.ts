@@ -18,9 +18,6 @@ import { Route as NetworkHealthImport } from './routes/network-health'
 
 // Create Virtual Routes
 
-const VerifiedContractInstancesLazyImport = createFileRoute(
-  '/verified-contract-instances',
-)()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const DevLazyImport = createFileRoute('/dev')()
@@ -45,14 +42,6 @@ const ContractsClassesIdVersionsVersionLazyImport = createFileRoute(
 )()
 
 // Create/Update Routes
-
-const VerifiedContractInstancesLazyRoute =
-  VerifiedContractInstancesLazyImport.update({
-    path: '/verified-contract-instances',
-    getParentRoute: () => rootRoute,
-  } as any).lazy(() =>
-    import('./routes/verified-contract-instances.lazy').then((d) => d.Route),
-  )
 
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
@@ -233,13 +222,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyPolicyLazyImport
       parentRoute: typeof rootRoute
     }
-    '/verified-contract-instances': {
-      id: '/verified-contract-instances'
-      path: '/verified-contract-instances'
-      fullPath: '/verified-contract-instances'
-      preLoaderRoute: typeof VerifiedContractInstancesLazyImport
-      parentRoute: typeof rootRoute
-    }
     '/blocks/$blockNumber': {
       id: '/blocks/$blockNumber'
       path: '/blocks/$blockNumber'
@@ -324,7 +306,6 @@ export const routeTree = rootRoute.addChildren({
   DevLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
-  VerifiedContractInstancesLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
   TxEffectsHashLazyRoute,
@@ -353,7 +334,6 @@ export const routeTree = rootRoute.addChildren({
         "/dev",
         "/fee-recipients",
         "/privacy-policy",
-        "/verified-contract-instances",
         "/blocks/$blockNumber",
         "/l1/contract-events",
         "/tx-effects/$hash",
@@ -389,9 +369,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
-    },
-    "/verified-contract-instances": {
-      "filePath": "verified-contract-instances.lazy.tsx"
     },
     "/blocks/$blockNumber": {
       "filePath": "blocks/$blockNumber.lazy.tsx"
