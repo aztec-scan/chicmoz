@@ -29,8 +29,8 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
     }
   }, [pendingTxs?.length, pendingTxCount]);
 
-  const toggleShowPendingTx = (checked: boolean) => {
-    setShowPendingTxs(checked);
+  const toggleShowPendingTx = () => {
+    setShowPendingTxs(!showPendingTxs);
   };
 
   const txEffectData = useMemo(() => {
@@ -66,6 +66,7 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
         title="Latest Tx Effects"
         error={txEffectsError}
         disableSizeSelector={true}
+        showPending={showPendingTxs}
         handleTogglePendingTx={toggleShowPendingTx}
         nbrOfPendingTxs={pendingTxCount}
       />
