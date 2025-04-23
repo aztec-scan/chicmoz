@@ -33,7 +33,7 @@ export const TxEffectsTable: FC<Props> = ({
   }
   return (
     <section className="relative mx-0 w-full transition-all">
-      <div className="space-y-4 bg-white rounded-lg p-5 ">
+      <div className="space-y-4 bg-white rounded-lg p-5">
         {title && (
           <div className="flex flex-row justify-between md:min-h-20">
             <h3 className="ml-0.5">{title}</h3>
