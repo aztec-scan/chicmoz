@@ -8,7 +8,12 @@ interface TimeAgoCellProps {
 export const TimeAgoCell = ({ timestamp }: TimeAgoCellProps) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tick = useTimeTick();
+
   const formattedTime = formatTimeSince(timestamp);
 
-  return <div className="text-purple-dark">{formattedTime}</div>;
+  return (
+    <div key={tick} className="text-purple-dark">
+      {formattedTime}
+    </div>
+  );
 };

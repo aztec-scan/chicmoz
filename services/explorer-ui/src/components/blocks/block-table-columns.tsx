@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
-import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import type { BlockTableSchema } from "./blocks-schema";
 import { truncateHashString } from "~/lib/create-hash-string";

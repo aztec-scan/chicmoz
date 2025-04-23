@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState, type FC } from "react";
+import { type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
