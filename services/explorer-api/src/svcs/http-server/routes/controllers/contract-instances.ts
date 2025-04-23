@@ -1,3 +1,4 @@
+import { generateSchema } from "@anatine/zod-openapi";
 import { NoirCompiledContract } from "@aztec/aztec.js";
 import {
   VerifyInstanceDeploymentPayload,
@@ -5,6 +6,7 @@ import {
   generateVerifyInstancePayload,
   verifyArtifactPayload,
   verifyInstanceDeploymentPayload,
+  verifyInstanceDeploymentPayloadSchema,
 } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import {
@@ -14,6 +16,7 @@ import {
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
+import { z } from "zod";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
 import { controllers as db } from "../../../database/index.js";
@@ -208,6 +211,13 @@ export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
   },
 );
 
+const verifyContractRequestBody = generateSchema(
+  z.object({
+    ...postVerifiedContractInstanceSchema.schema.shape.body.shape,
+    verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema.schema,
+  }),
+);
+
 export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: OpenAPIObject["paths"] =
   {
     "/l2/contract-instances/{address}": {
@@ -228,35 +238,23 @@ export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: OpenAPIObject[
         requestBody: {
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                required: ["verifiedDeploymentArguments"],
-                properties: {
-                  deployerMetadata: {
-                    type: "object",
-                  },
-                  verifiedDeploymentArguments: {
-                    type: "object",
-                    required: ["publicKeysString", "salt", "deployer", "constructorArgs", "stringifiedArtifactJson"],
-                  },
-                },
-              },
+              schema: verifyContractRequestBody,
             },
           },
         },
         responses: {
           "200": {
-            description: "Contract instance verification successful"
+            description: "Contract instance verification successful",
           },
           "400": {
-            description: "Bad request or verification failed"
+            description: "Bad request or verification failed",
           },
           "404": {
-            description: "Contract instance not found"
+            description: "Contract instance not found",
           },
           "500": {
-            description: "Internal server error"
-          }
+            description: "Internal server error",
+          },
         },
       },
     },
@@ -483,31 +481,41 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
   },
 );
 
-export const openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES: OpenAPIObject["paths"] = {
-  "/l2/contract-instances/with-aztec-scan-notes": {
-    get: {
-      tags: ["L2", "contract-instances"],
-      summary: "Get all contract instances with aztec scan notes",
-      parameters: [
-        {
-          name: "includeArtifactJson",
-          in: "query",
-          schema: {
-            type: "boolean",
+export const openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-instances/with-aztec-scan-notes": {
+      get: {
+        tags: ["L2", "contract-instances"],
+        summary: "Get all contract instances with aztec scan notes",
+        parameters: [
+          {
+            name: "includeArtifactJson",
+            in: "query",
+            schema: {
+              type: "boolean",
+            },
           },
-        },
-      ],
-      responses: contractInstanceResponseArray,
+        ],
+        responses: contractInstanceResponseArray,
+      },
     },
-  },
-};
+  };
 
 export const GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES = asyncHandler(
   async (req, res) => {
-    const { includeArtifactJson } = getContractInstancesWithAztecScanNotesSchema.parse(req).query;
+    const { includeArtifactJson } =
+      getContractInstancesWithAztecScanNotesSchema.parse(req).query;
     const instances = await dbWrapper.getLatest(
-      ["l2", "contract-instances", "with-aztec-scan-notes", includeArtifactJson ? "with-artifact" : "without-artifact"],
-      () => db.l2Contract.getL2DeployedContractInstancesWithAztecScanNotes(includeArtifactJson),
+      [
+        "l2",
+        "contract-instances",
+        "with-aztec-scan-notes",
+        includeArtifactJson ? "with-artifact" : "without-artifact",
+      ],
+      () =>
+        db.l2Contract.getL2DeployedContractInstancesWithAztecScanNotes(
+          includeArtifactJson,
+        ),
     );
     res.status(200).send(instances);
   },
