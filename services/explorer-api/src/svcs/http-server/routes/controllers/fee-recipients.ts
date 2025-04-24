@@ -18,6 +18,5 @@ export const GET_L2_FEE_RECIPIENTS = asyncHandler(async (_req, res) => {
     ["l2", "fee-recipients"],
     db.l2Block.getFeeRecipients,
   );
-  if (!feeRecipients) {throw new Error("Fee recipients not found");}
-  res.status(200).send(feeRecipients);
+  res.status(200).json(JSON.parse(feeRecipients));
 });

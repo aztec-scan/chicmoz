@@ -25,7 +25,7 @@ export const GET_L2_SEQUENCERS = asyncHandler(async (_req, res) => {
     db.l2.getAllSequencers,
   );
   if (!sequencers) {throw new Error("Sequencers not found");}
-  res.status(200).send(sequencers);
+  res.status(200).json(JSON.parse(sequencers));
 });
 
 export const openapi_GET_L2_SEQUENCER: OpenAPIObject["paths"] = {
@@ -53,6 +53,5 @@ export const GET_L2_SEQUENCER = asyncHandler(async (req, res) => {
   const sequencer = await dbWrapper.getLatest(["l2", "sequencers", enr], () =>
     db.l2.getSequencerByEnr(enr),
   );
-  if (!sequencer) {throw new Error("Sequencer not found");}
-  res.status(200).send(sequencer);
+  res.status(200).json(JSON.parse(sequencer));
 });

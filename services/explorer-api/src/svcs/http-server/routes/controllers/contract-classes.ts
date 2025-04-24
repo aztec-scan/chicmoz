@@ -72,7 +72,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
           includeArtifactJson,
         ),
     );
-    res.status(200).send(contractClass);
+    res.status(200).json(JSON.parse(contractClass));
   },
 );
 
@@ -111,7 +111,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = asyncHandler(
           includeArtifactJson,
         }),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -134,7 +134,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
       () =>
         db.l2Contract.getL2RegisteredContractClasses({ includeArtifactJson }),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -201,7 +201,7 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
         JSON.parse(contractClassString),
       );
       if (dbContractClass.artifactJson) {
-        res.status(200).send(dbContractClass);
+        res.status(200).json(dbContractClass);
         return;
       }
     }

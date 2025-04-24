@@ -76,7 +76,7 @@ export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
       includeArtifactJson,
     ),
   );
-  res.status(200).send(instanceData);
+  res.status(200).json(JSON.parse(instanceData));
 });
 
 export const openapi_GET_L2_CONTRACT_INSTANCES: OpenAPIObject["paths"] = {
@@ -117,7 +117,7 @@ export const GET_L2_CONTRACT_INSTANCES = asyncHandler(async (req, res) => {
         includeArtifactJson,
       }),
   );
-  res.status(200).send(instances);
+  res.status(200).json(JSON.parse(instances));
 });
 
 export const openapi_GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH: OpenAPIObject["paths"] =
@@ -162,7 +162,7 @@ export const GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH = asyncHandler(
           includeArtifactJson,
         ),
     );
-    res.status(200).send(instances);
+    res.status(200).json(JSON.parse(instances));
   },
 );
 
@@ -207,7 +207,7 @@ export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
           includeArtifactJson,
         ),
     );
-    res.status(200).send(instances);
+    res.status(200).json(JSON.parse(instances));
   },
 );
 
@@ -325,7 +325,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         ),
     );
     const dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
-      JSON.parse(contractClassString!),
+      JSON.parse(contractClassString),
     );
     if (!dbContractClass) {
       res.status(500).send("Contract class found in DB is not valid");
@@ -479,7 +479,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       logger.warn(`Failed to cache contract instance(${address}): ${err}`);
     });
 
-    res.status(200).send("Contract instance registered");
+    res.status(200).json(newContractInstance);
   },
 );
 
@@ -519,6 +519,6 @@ export const GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES = asyncHandler(
           includeArtifactJson,
         ),
     );
-    res.status(200).send(instances);
+    res.status(200).json(JSON.parse(instances));
   },
 );

@@ -19,5 +19,5 @@ export const GET_L1_CONTRACT_EVENTS = asyncHandler(async (_req, res) => {
     ["l1", "contract-events"],
     () => db.l1.contractEvents.get(),
   );
-  res.status(200).send(contractEventsData);
+  res.status(200).json(JSON.parse(contractEventsData));
 });
