@@ -143,7 +143,7 @@ export const openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT: OpenAPIObject["
     "/l2/contract-classes/{classId}/versions/{version}": {
       post: {
         description:
-          "Please check out https://github.com/aztec-scan/chicmoz/blob/main/packages/contract-verification/src/artifact/verify-payload.ts for more information on how the artifact verification works.",
+          "Please check out our SDK for how to verify contract class artifact",
         tags: ["L2", "contract-classes"],
         summary: "Register and verify contract class artifact",
         parameters: [

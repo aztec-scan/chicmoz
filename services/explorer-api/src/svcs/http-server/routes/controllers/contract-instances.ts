@@ -223,7 +223,7 @@ export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: OpenAPIObject[
     "/l2/contract-instances/{address}": {
       post: {
         description:
-          "Please check out https://github.com/aztec-scan/chicmoz/blob/main/packages/contract-verification/src/instance-deployment/verify-payload.ts for how the payload is verified",
+          "Please check out our SDK for how to verify contract instance deployment",
         tags: ["L2", "contract-instances"],
         summary: "Verify contract instance deployment",
         parameters: [

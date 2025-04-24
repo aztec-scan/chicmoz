@@ -12,7 +12,9 @@ export const genereateOpenApiSpec = (): OpenAPIObject => ({
 
 Currently there is no sign-up process for an API key. There will however be rate limits in place.
 
-This is also subject to change, and the latest updates on this will always be available here.`,
+This is also subject to change, and the latest updates on this will always be available here.
+
+Expirimental SDK can be found here: https://github.com/aztec-scan/aztec-scan-sdk`,
     contact: {
       name: "Github",
       url: "https://github.com/aztec-scan/chicmoz",
