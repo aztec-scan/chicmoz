@@ -25,7 +25,7 @@ export const GET_L1_L2_VALIDATORS = asyncHandler(async (_req, res) => {
     db.l1.getAllL1L2Validators,
   );
   if (!validators) {throw new Error("Validators not found");}
-  res.status(200).send(validators);
+  res.status(200).json(JSON.parse(validators));
 });
 
 export const openapi_GET_L1_L2_VALIDATOR: OpenAPIObject["paths"] = {
@@ -55,8 +55,7 @@ export const GET_L1_L2_VALIDATOR = asyncHandler(async (req, res) => {
     ["l1", "l2-validators", attesterAddress],
     () => db.l1.getL1L2Validator(attesterAddress),
   );
-  if (!validator) {throw new Error("Validator not found");}
-  res.status(200).send(validator);
+  res.status(200).json(JSON.parse(validator));
 });
 
 export const openapi_GET_L1_L2_VALIDATOR_HISTORY: OpenAPIObject["paths"] = {
@@ -86,5 +85,5 @@ export const GET_L1_L2_VALIDATOR_HISTORY = asyncHandler(async (req, res) => {
     ["l1", "l2-validators", attesterAddress, "history"],
     () => db.l1.getL1L2ValidatorHistory(attesterAddress),
   );
-  res.status(200).send(history);
+  res.status(200).json(JSON.parse(history));
 });

@@ -29,5 +29,5 @@ export const openapi_L2_SEARCH: OpenAPIObject["paths"] = {
 export const L2_SEARCH = asyncHandler(async (req, res) => {
   const { q } = getSearchSchema.parse(req).query;
   const searchResults = await db.l2.search(q);
-  res.status(200).send(searchResults);
+  res.status(200).json(searchResults);
 });

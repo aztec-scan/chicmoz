@@ -1,8 +1,8 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
-import { dbWrapper, txResponse, txResponseArray } from "./utils/index.js";
 import { getTxEffectsByTxHashSchema } from "../paths_and_validation.js";
+import { dbWrapper, txResponse, txResponseArray } from "./utils/index.js";
 
 export const openapi_GET_PENDING_TXS: OpenAPIObject["paths"] = {
   "/l2/txs": {
@@ -19,7 +19,7 @@ export const GET_PENDING_TXS = asyncHandler(async (_req, res) => {
   const txsData = await dbWrapper.getLatest(["l2", "txs"], () =>
     db.l2Tx.getTxs(),
   );
-  res.status(200).send(txsData);
+  res.status(200).json(JSON.parse(txsData));
 });
 
 export const openapi_GET_PENDING_TX_BY_HASH: OpenAPIObject["paths"] = {
@@ -48,5 +48,5 @@ export const GET_PENDING_TX_BY_HASH = asyncHandler(async (req, res) => {
   const txsData = await dbWrapper.getLatest(["l2", "txs", txEffectHash], () =>
     db.l2Tx.getTxByHash(txEffectHash),
   );
-  res.status(200).send(txsData);
+  res.status(200).json(JSON.parse(txsData));
 });
