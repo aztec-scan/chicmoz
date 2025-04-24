@@ -29,6 +29,7 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-n": "15.0.0 || 16.0.0 ",
     "eslint-plugin-promise": "6.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "5.2.2"
   },
   "scripts": {
@@ -38,7 +39,8 @@
     "dev": "yarn node build/index.js",
     "start": "yarn node --unhandled-rejections=strict --enable-source-maps build/index.js",
     "lint": "yarn run lint-base --ext .ts .",
-    "lint-base": "yarn run g:lint"
+    "lint-base": "yarn run g:lint",
+    "register-artifact": "node --loader ts-node/esm scripts/register-artifact.ts"
   },
   "type": "module"
 }
