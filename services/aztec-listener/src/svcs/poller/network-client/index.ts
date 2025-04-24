@@ -95,6 +95,14 @@ const callNodeFunction = async <K extends keyof AztecNode>(
 export const init = async () => {
   logger.info(`Initializing Aztec node client with ${AZTEC_RPC_URL}`);
   aztecNode = createAztecNodeClient(AZTEC_RPC_URL);
+  logger.info("Checking validator stats...");
+  //sleep 5 seconds
+  const stats = await aztecNode.getValidatorsStats();
+  logger.info(JSON.stringify(stats, null, 2));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  logger.info(
+    "Validator stats checked======================================================",
+  );
   return getFreshInfo();
 };
 
