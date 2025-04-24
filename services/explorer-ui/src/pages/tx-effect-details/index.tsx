@@ -11,6 +11,7 @@ import {
 } from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import { getTxEffectData } from "./utils";
+import { useTimeTick } from "~/hooks/useTimeTick";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -22,9 +23,13 @@ export const TxEffectDetails: FC = () => {
     isLoading: isTxEffectsLoading,
     error: txEffectsError,
   } = useGetTxEffectByHash(hash);
+  const tick = useTimeTick();
 
-  const { data: pendingTx, isLoading: isPendingTxLoading } =
-    usePendingTxsByHash(hash);
+  const {
+    data: pendingTx,
+    isLoading: isPendingTxLoading,
+    error: pendingTxError,
+  } = usePendingTxsByHash(hash);
 
   if (!hash) {
     return <div>No txEffect hash</div>;
@@ -39,10 +44,6 @@ export const TxEffectDetails: FC = () => {
     );
   }
 
-  if (txEffectsError) {
-    return <div>Error loading transaction details</div>;
-  }
-
   // Pending TX exists but no tx effects yet
   if (pendingTx && !txEffects) {
     return (
@@ -53,6 +54,16 @@ export const TxEffectDetails: FC = () => {
           pendingTx.birthTimestamp,
         )}
       />
+    );
+  }
+
+  if (txEffectsError && pendingTxError) {
+    return (
+      <div>
+        <p>txEffect message: {txEffectsError.message}</p>
+        <p>Pending tx message: {pendingTxError.message}</p>
+        <p>Error loading transaction details</p>
+      </div>
     );
   }
 

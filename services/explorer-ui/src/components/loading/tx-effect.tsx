@@ -13,7 +13,7 @@ export const LoadingDetails: FC<LoadingDetailsProps> = ({
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div>
         <div className="flex flex-wrap m-3">
-          <h3 className="text-primary md:hidden">Tx Effects Details</h3>
+          <h3 className="text-primary md:hidden">{title}</h3>
           <h2 className="hidden md:block md:mt-8 md:text-primary">{title}</h2>
         </div>
         <div className="flex flex-col gap-4 mt-4">
