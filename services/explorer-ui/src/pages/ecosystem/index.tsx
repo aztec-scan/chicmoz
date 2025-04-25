@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
-import { InfoBadge } from "~/components/info-badge";
+import { InfoCard } from "~/components/info-card";
 import { useContractInstancesWithAztecScanNotes, useSubTitle } from "~/hooks";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
@@ -180,25 +180,29 @@ export const Ecosystem: FC = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full md:w-2/3">
-        {contractsList.map((contract, index) => (
-          <Link
-            key={index}
-            to={`${routes.contracts.route}${routes.contracts.children.instances.route}/${contract.address}`}
-            className="block hover:no-underline"
-          >
-            <InfoBadge
-              title={truncateHashString(contract.address)}
-              data={contract.name}
-              isLoading={isLoading}
-              error={error}
-            />
-            {contract.comment && (
-              <p className="text-sm text-gray-600 mt-1 px-4">
-                {contract.comment}
-              </p>
-            )}
-          </Link>
-        ))}
+        {contractsList.map((contract, index) => {
+          const contractUrl = `${routes.contracts.route}${routes.contracts.children.instances.route}/${contract.address}`;
+
+          return (
+            <div key={index} className="relative">
+              <InfoCard
+                title={
+                  <Link to={contractUrl} className="hover:no-underline">
+                    {truncateHashString(contract.address)}
+                  </Link>
+                }
+                header={
+                  <Link to={contractUrl} className="hover:no-underline">
+                    {contract.name}
+                  </Link>
+                }
+                details={contract.comment}
+                isLoading={isLoading}
+                error={error}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
