@@ -180,11 +180,11 @@ export const Ecosystem: FC = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full md:w-2/3">
-        {contractsList.map((contract, index) => {
+        {contractsList.map((contract) => {
           const contractUrl = `${routes.contracts.route}${routes.contracts.children.instances.route}/${contract.address}`;
 
           return (
-            <div key={index} className="relative">
+            <div key={contract.address} className="relative">
               <InfoCard
                 title={
                   <Link to={contractUrl} className="hover:no-underline">
