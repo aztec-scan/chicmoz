@@ -151,6 +151,14 @@ export const openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION: OpenAPIObject["path
               type: "string",
             },
           },
+          {
+            name: "functionSelector",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
         ],
         responses: contractClassUtilityFunctionResponse,
       },
