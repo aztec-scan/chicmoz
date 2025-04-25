@@ -1,9 +1,13 @@
-import { FC } from "react"
-import { GenericListDisplay } from "~/components/info-display/generic-list-display"
+import { type FC } from "react";
+import { GenericListDisplay } from "~/components/info-display/generic-list-display";
 
 interface NullifierProps {
-  nullifiers: string[]
+  nullifiers: string[];
 }
 export const Nullifiers: FC<NullifierProps> = ({ nullifiers }) => (
-  <GenericListDisplay title="Nullifiers" items={nullifiers} itemLabel="Nullifier" />
-)
+  <GenericListDisplay
+    title="Nullifiers"
+    items={nullifiers}
+    itemLabel="Nullifier"
+  />
+);
