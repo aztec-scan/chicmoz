@@ -110,8 +110,8 @@ export const MobileHeader = ({
               </div>
             ))}
             <div className="flex items-center justify-between">
-              <span className="text-white"></span>
-              <ThemeToggle />
+              <span></span>
+              <ThemeToggle size={7} />
             </div>
           </div>
         </div>

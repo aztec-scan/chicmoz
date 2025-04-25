@@ -70,7 +70,7 @@ export const DesktopBurgerMenu = ({
               </div>
             ))}
             <div className="flex flex-row justify-end items-center px-4 pt-2">
-              <ThemeToggle />
+              <ThemeToggle size={5} />
             </div>
           </div>
         </div>
