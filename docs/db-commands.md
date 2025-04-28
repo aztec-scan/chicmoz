@@ -39,6 +39,28 @@ kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-p
 
 # Find specific tables in explorer_api_testnet database
 kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE '%l2_contract_instance_verified%' OR table_name LIKE '%l2_contract_instance_deployer%');\""
+
+# Find tables related to contract classes or artifacts
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE '%contract_class%' OR table_name LIKE '%artifact%');\""
+
+# Find tables related to deployment or verification
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE '%deploy%' OR table_name LIKE '%verif%');\""
+
+# Find tables related to Aztec Scan notes
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE '%aztec_scan%';\""
+```
+
+## Viewing Table Structure
+
+```bash
+# View table structure
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"\d table_name;\""
+
+# Example: View structure of l2_contract_class_registered
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"\d l2_contract_class_registered;\""
+
+# Example: View structure of l2_contract_instance_deployed
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"\d l2_contract_instance_deployed;\""
 ```
 
 ## Querying Specific Tables
@@ -57,6 +79,41 @@ kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-p
 kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_devnet -c \"SELECT * FROM l2_contract_instance_deployer_metadata;\""
 ```
 
+## Contract Class and Deployment Queries
+
+```bash
+# Find contract classes with artifactJson
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT contract_class_id, artifact_contract_name FROM l2_contract_class_registered WHERE artifact_json IS NOT NULL;\""
+
+# Count total deployed contracts
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM l2_contract_instance_deployed;\""
+
+# Count contracts deployed with a specific contract class
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM l2_contract_instance_deployed WHERE current_contract_class_id = '0x07cec63fc8993153bfd64b5a9005af4e80414788c5d25763474db5f516f97d06';\""
+
+# Get sample of deployed contract addresses for a specific contract class
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT address FROM l2_contract_instance_deployed WHERE current_contract_class_id = '0x07cec63fc8993153bfd64b5a9005af4e80414788c5d25763474db5f516f97d06' LIMIT 5;\""
+
+# View deployers of contracts
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT address, current_contract_class_id, deployer FROM l2_contract_instance_deployed LIMIT 5;\""
+```
+
+## AztecScanNotes Queries
+
+```bash
+# List all AztecScanNotes
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT * FROM l2_contract_instance_aztec_scan_notes;\""
+
+# Delete all AztecScanNotes (use with caution)
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"DELETE FROM l2_contract_instance_aztec_scan_notes;\""
+
+# Insert AztecScanNotes from constants file (example with proper SQL quoting)
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"
+INSERT INTO l2_contract_instance_aztec_scan_notes (address, origin, comment, name)
+VALUES
+('0x09db977a84f23f5294fd98a94f282bcaeefac30f5d3d546fd2413d8e7784b1ea', 'Aztec Team', 'This is one of the first contracts deployed testing the default token contract in Aztec-packages. The token is called ''SHIPPED''', 'SHIPPED token');\""
+```
+
 ## Table Information
 
 ### l2_contract_instance_verified_deployment_arguments
@@ -68,3 +125,18 @@ kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-p
 
 - **Columns**: id, address, contract_identifier, details, creator_name, creator_contact, app_url, repo_url, uploaded_at, reviewed_at
 - **Status**: Exists but empty in both testnet and devnet (as of check date)
+
+### l2_contract_class_registered
+
+- **Columns**: block_hash, contract_class_id, version, artifact_hash, private_functions_root, packed_bytecode, artifact_json, artifact_contract_name, contract_type
+- **Status**: Contains contract classes, some with artifactJson
+
+### l2_contract_instance_deployed
+
+- **Columns**: id, block_hash, address, version, salt, current_contract_class_id, original_contract_class_id, initialization_hash, deployer, masterNullifierPublicKey, masterIncomingViewingPublicKey, masterOutgoingViewingPublicKey, masterTaggingPublicKey
+- **Status**: Contains information about deployed contracts
+
+### l2_contract_instance_aztec_scan_notes
+
+- **Columns**: address, origin, comment, related_l1_contract_addresses, uploaded_at, updated_at, name
+- **Status**: Contains metadata about contracts for display in Aztec Scan
