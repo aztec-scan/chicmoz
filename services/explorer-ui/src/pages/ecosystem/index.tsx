@@ -33,6 +33,20 @@ export const Ecosystem: FC = () => {
       };
     });
   }, [data]);
+  const sdkLink = (
+    <>
+      Please refer to{" "}
+      <a
+        href="https://github.com/aztec-scan/aztec-scan-sdk"
+        target="_blank"
+        rel="noreferrer"
+        className="text-purple-light hover:font-bold"
+      >
+        our SDK
+      </a>{" "}
+      for more information.
+    </>
+  );
   return (
     <div className="flex flex-col items-center">
       <h1>Ecosystem</h1>
@@ -108,14 +122,7 @@ export const Ecosystem: FC = () => {
               Anyone can upload an artifact to a contract. This will add the
               artifact to the contract and make it available for anyone to see.
               <br />
-              <a
-                href="https://docs.aztecscan.xyz/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-purple-light hover:font-bold"
-              >
-                Please refer to the docs for more information.
-              </a>
+              {sdkLink}
             </p>
 
             <h4 className="font-medium mt-3">Verified Deployment</h4>
@@ -125,16 +132,8 @@ export const Ecosystem: FC = () => {
               verifies the deployment arguments and makes them available for
               anyone to see.
               <br />
-              <a
-                href="https://docs.aztecscan.xyz/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-purple-light hover:font-bold"
-              >
-                Please refer to the docs for more information.
-              </a>
+              {sdkLink}
             </p>
-
             <h4 className="font-medium mt-3">Deployer Details</h4>
             <p className="mb-4">
               Deployer details are a way to add metadata to the deployer of a
@@ -142,14 +141,7 @@ export const Ecosystem: FC = () => {
               It adds the contact information and makes it available for anyone
               to see.
               <br />
-              <a
-                href="https://docs.aztecscan.xyz/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-purple-light hover:font-bold"
-              >
-                Please refer to the docs for more information.
-              </a>
+              {sdkLink}
             </p>
           </div>
         </div>

@@ -2,6 +2,10 @@ import { AztecAddress, AztecScanNote, L2NetworkId } from "@chicmoz-pkg/types";
 
 export const SERVICE_NAME = "explorer-api";
 
+/* ⚠️ Aztec Scan Notes ⚠️
+    Aztec Scan Notes are a way to add metadata to contracts on Aztec Scan. Preferably this should be done through the Aztec Scan UI, but for now we are adding them here manually.
+    If you want to have your contract added here, please create a PR to this file.
+*/
 export const AZTEC_SCAN_NOTES: Record<
   L2NetworkId,
   Record<AztecAddress, AztecScanNote>
@@ -28,13 +32,13 @@ export const AZTEC_SCAN_NOTES: Record<
       comment:
         "This is one of the first contracts deployed testing the default token contract in Aztec-packages. The token is called 'SHIPPED'",
     },
-    "0x2e993924cdc5b9d1566f2669969fd07d7b8035eb2ab8ee6fe737df72d8b567ae": {
+    "0x0179dbec1536d883c06f20e8ce02ff0c0ecb3c96e97650ad2257c7bc988ded7c": {
       name: "nemi.fi PoolManager",
       origin: "Published in ecosystem Signal group pre public testnet launch",
       comment:
         "This is the PoolManager singleton contract for nemi.fi. It manages all liquidity pools and routes swaps.",
     },
-    "0x0763f606a2e3813914e0ee331b1ad6673e05216569c199b34e7c0549fb4a0e5f": {
+    "0x2e993924cdc5b9d1566f2669969fd07d7b8035eb2ab8ee6fe737df72d8b567ae": {
       name: "Obsidion Webauthn Authenticator",
       origin: "Published in ecosystem Signal group pre public testnet launch",
       comment:
