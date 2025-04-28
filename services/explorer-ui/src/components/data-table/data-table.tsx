@@ -143,7 +143,7 @@ function DataTableBody<TData, TValue>({
   flatten,
   columns,
 }: DataTableChildProps<TData, TValue>) {
-  const rowHeight = "h-12";
+  const rowHeight = "h-10";
 
   const groupedRows = ({ table }: DataTableChildProps<TData, TValue>) => {
     return table.getRowModel().rows?.map((row) => {
