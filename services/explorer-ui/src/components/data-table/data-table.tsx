@@ -143,6 +143,8 @@ function DataTableBody<TData, TValue>({
   flatten,
   columns,
 }: DataTableChildProps<TData, TValue>) {
+  const rowHeight = "h-12";
+
   const groupedRows = ({ table }: DataTableChildProps<TData, TValue>) => {
     return table.getRowModel().rows?.map((row) => {
       return (
@@ -152,6 +154,7 @@ function DataTableBody<TData, TValue>({
             data-state={row.getIsSelected() && "selected"}
             onClick={() => row.toggleExpanded()}
             className={cn(
+              rowHeight,
               row.getCanExpand()
                 ? "cursor-pointer hover:bg-grey-dark/10 hover:text-pink "
                 : "",
@@ -176,7 +179,11 @@ function DataTableBody<TData, TValue>({
     return table.getRowModel().flatRows?.map((row) => {
       return (
         <Fragment key={row.id}>
-          <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+          <TableRow
+            key={row.id}
+            data-state={row.getIsSelected() && "selected"}
+            className={rowHeight}
+          >
             {row.getVisibleCells().map((cell) => (
               <TableCell
                 key={cell.id}
