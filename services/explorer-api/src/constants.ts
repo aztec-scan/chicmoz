@@ -2,6 +2,10 @@ import { AztecAddress, AztecScanNote, L2NetworkId } from "@chicmoz-pkg/types";
 
 export const SERVICE_NAME = "explorer-api";
 
+/* ⚠️ Aztec Scan Notes ⚠️
+    Aztec Scan Notes are a way to add metadata to contracts on Aztec Scan. Preferably this should be done through the Aztec Scan UI, but for now we are adding them here manually.
+    If you want to have your contract added here, please create a PR to this file.
+*/
 export const AZTEC_SCAN_NOTES: Record<
   L2NetworkId,
   Record<AztecAddress, AztecScanNote>
