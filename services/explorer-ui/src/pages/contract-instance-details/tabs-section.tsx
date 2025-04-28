@@ -1,10 +1,10 @@
-import { FC, useState } from "react";
+import { useState, type FC } from "react";
 import {
-  DetailItem,
   KeyValueDisplay,
+  type DetailItem,
 } from "~/components/info-display/key-value-display";
 import { OptionButtons } from "~/components/option-buttons";
-import { TabId, verifiedDeploymentTabs } from "./types";
+import { verifiedDeploymentTabs, type TabId } from "./types";
 
 interface PillSectionProps {
   verifiedDeploymentData?: DetailItem[];

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 
 interface PrivateLogsArgs {

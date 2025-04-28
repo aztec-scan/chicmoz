@@ -57,13 +57,17 @@ export const ContractInstanceDetails: FC = () => {
           </div>
         </div>
       </div>
-      <div className="mt-5">
-        <TabsSection
-          verifiedDeploymentData={verifiedDeploymentArguments}
-          deployerMetadata={deployerMetadata}
-          aztecScanNotes={aztecScanNotes}
-        />
-      </div>
+      {verifiedDeploymentArguments?.length ??
+      deployerMetadata?.length ??
+      aztecScanNotes?.length ? (
+        <div className="mt-5">
+          <TabsSection
+            verifiedDeploymentData={verifiedDeploymentArguments}
+            deployerMetadata={deployerMetadata}
+            aztecScanNotes={aztecScanNotes}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -5,7 +5,10 @@ import {
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { ContractL2API } from "~/api";
+import {
+  ChicmozL2ContractInstanceWithAztecScanNotes,
+  ContractL2API,
+} from "~/api";
 import { REFETCH_INTERVAL, queryKeyGenerator } from "./utils";
 
 export const useContractClasses = (
@@ -41,7 +44,8 @@ export const useContractClass = ({
       classId,
       version,
     }),
-    queryFn: () => ContractL2API.getContractClass({ classId, version, includeArtifactJson }),
+    queryFn: () =>
+      ContractL2API.getContractClass({ classId, version, includeArtifactJson }),
   });
 };
 
@@ -79,6 +83,16 @@ export const useLatestContractInstances = (): UseQueryResult<
   return useQuery<ChicmozL2ContractInstanceDeluxe[], Error>({
     queryKey: queryKeyGenerator.latestContractInstances,
     queryFn: () => ContractL2API.getContractInstances(),
+  });
+};
+
+export const useContractInstancesWithAztecScanNotes = (): UseQueryResult<
+  ChicmozL2ContractInstanceWithAztecScanNotes[],
+  Error
+> => {
+  return useQuery<ChicmozL2ContractInstanceWithAztecScanNotes[], Error>({
+    queryKey: queryKeyGenerator.contractInstancesWithAztecScanNotes,
+    queryFn: () => ContractL2API.getContractInstancesWithAztecScanNotes(),
   });
 };
 

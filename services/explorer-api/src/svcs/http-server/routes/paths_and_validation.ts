@@ -48,6 +48,7 @@ export const paths = {
 
   contractInstancesByContractClassId: `/l2/contract-classes/:${contractClassId}/contract-instances`,
   contractInstancesByBlockHash: `/l2/blocks/:${blockHash}/contract-instances`,
+  contractInstancesWithAztecScanNotes: "/l2/contract-instances/with-aztec-scan-notes",
   contractInstance: `/l2/contract-instances/:${address}`,
   contractInstances: "/l2/contract-instances",
 
@@ -210,4 +211,8 @@ export const getSequencerSchema = z.object({
   params: z.object({
     enr: chicmozL2SequencerSchema.shape.enr,
   }),
+});
+
+export const getContractInstancesWithAztecScanNotesSchema = z.object({
+  query: contractIncludeArtifactJson,
 });

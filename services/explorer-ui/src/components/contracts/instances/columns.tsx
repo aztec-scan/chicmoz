@@ -28,7 +28,9 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
     ),
     cell: ({ row }) => {
       const address = row.getValue("address");
-      if (typeof address !== "string") return null;
+      if (typeof address !== "string") {
+        return null;
+      }
       const r = `${routes.contracts.route}/${routes.contracts.children.instances.route}/${address}`;
       const truncatedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
       return (
@@ -104,7 +106,9 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
     ),
     cell: ({ row }) => {
       const blockHash = row.getValue("blockHash");
-      if (typeof blockHash !== "string") return null;
+      if (typeof blockHash !== "string") {
+        return null;
+      }
       const r = `${routes.blocks.route}/${blockHash}`;
       const truncatedBlockHash = `${blockHash.slice(0, 6)}...${blockHash.slice(
         -4,

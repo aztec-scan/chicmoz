@@ -125,6 +125,7 @@ export const run = async () => {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
       aztecScanNotes: {
+        name: "Token contract",
         origin: "This contract was deployed by the event-cannon",
         comment: "IT'S USING THE OVERRIDE METHOD ONLY AVAILABLE IN DEV",
         relatedL1ContractAddresses: [
@@ -184,6 +185,7 @@ export const run = async () => {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
       aztecScanNotes: {
+        name: "Token Bridge contract",
         origin: "This contract was deployed by the event-cannon",
         comment: "IT'S USING THE OVERRIDE METHOD ONLY AVAILABLE IN DEV",
         relatedL1ContractAddresses: [

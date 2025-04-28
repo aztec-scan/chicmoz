@@ -45,7 +45,7 @@ export const GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS = asyncHandler(
       ["l2", "contract-classes", contractClassId, "private-functions"],
       () => db.l2Contract.getL2ContractClassPrivateFunctions(contractClassId),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -97,7 +97,7 @@ export const GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION = asyncHandler(
           functionSelector,
         ),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -131,7 +131,7 @@ export const GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS = asyncHandler(
       ["l2", "contract-classes", contractClassId, "utility-functions"],
       () => db.l2Contract.getL2ContractClassUtilityFunctions(contractClassId),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -145,6 +145,14 @@ export const openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION: OpenAPIObject["path
         parameters: [
           {
             name: "classId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+          {
+            name: "functionSelector",
             in: "path",
             required: true,
             schema: {
@@ -175,6 +183,6 @@ export const GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION = asyncHandler(
           functionSelector,
         ),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );

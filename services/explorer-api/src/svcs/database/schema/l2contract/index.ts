@@ -127,6 +127,7 @@ export const l2ContractInstanceAztecScanNotes = pgTable(
   "l2_contract_instance_aztec_scan_notes",
   {
     address: generateAztecAddressColumn("address").notNull().primaryKey(), // NOTE: not using address as FK enables us to store notes on startup (without a finished indexing process of the chain)
+    name: varchar("name").notNull(),
     origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
     relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),

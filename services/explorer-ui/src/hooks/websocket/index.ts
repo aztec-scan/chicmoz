@@ -47,7 +47,6 @@ const createWebSocket = (
     // Force the readyState to OPEN (1) instead of relying on ws.readyState
     // which might not be updated immediately
     setReadyState(1 as keyof WsReadyState);
-    console.log("Set readyState to:", wsReadyStateText[1]);
   };
 
   ws.onmessage = async (event) => {
@@ -63,7 +62,7 @@ const createWebSocket = (
   };
 
   ws.onclose = () => {
-    console.log("WebSocket Disconnected");
+    console.log("WebSocket Disconnected", ws.readyState);
 
     // If tab is inactive, set special state
     if (!isActive) {
@@ -119,11 +118,9 @@ export const useWebSocketConnection = (): WsReadyStateText => {
         !websocketInstance ||
         websocketInstance.readyState === WebSocket.CLOSED
       ) {
-        console.log("Creating new WebSocket instance");
         websocketInstance = createWebSocket(queryClient, setReadyState, isTabActive);
       } else {
         // Update readyState to match existing connection
-        console.log("Using existing WebSocket, readyState:", websocketInstance.readyState);
         // If it's open, make sure UI reflects that
         if (websocketInstance.readyState === WebSocket.OPEN) {
           setReadyState(1 as keyof WsReadyState);
@@ -140,7 +137,6 @@ export const useWebSocketConnection = (): WsReadyStateText => {
         !websocketInstance ||
         websocketInstance.readyState !== WebSocket.OPEN
       ) {
-        console.log("Tab active - checking WebSocket connection");
         initializeWebSocket();
       } else {
         // Make sure state reflects open connection

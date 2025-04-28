@@ -60,7 +60,8 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS: OpenAPIObject["paths"] =
 
 export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
   async (req, res) => {
-    const { contractClassId, version } = getContractClassSchema.parse(req).params;
+    const { contractClassId, version } =
+      getContractClassSchema.parse(req).params;
     const { includeArtifactJson } = getContractClassSchema.parse(req).query;
     const contractClass = await dbWrapper.get(
       ["l2", "contract-classes", contractClassId, version],
@@ -71,7 +72,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
           includeArtifactJson,
         ),
     );
-    res.status(200).send(contractClass);
+    res.status(200).json(JSON.parse(contractClass));
   },
 );
 
@@ -99,7 +100,8 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS: OpenAPIObj
 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = asyncHandler(
   async (req, res) => {
-    const { contractClassId } = getContractClassesByCurrentClassIdSchema.parse(req).params;
+    const { contractClassId } =
+      getContractClassesByCurrentClassIdSchema.parse(req).params;
     const includeArtifactJson = false;
     const contractClasses = await dbWrapper.getLatest(
       ["l2", "contract-classes", contractClassId],
@@ -109,7 +111,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS = asyncHandler(
           includeArtifactJson,
         }),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -132,7 +134,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
       () =>
         db.l2Contract.getL2RegisteredContractClasses({ includeArtifactJson }),
     );
-    res.status(200).send(contractClasses);
+    res.status(200).json(JSON.parse(contractClasses));
   },
 );
 
@@ -140,6 +142,8 @@ export const openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT: OpenAPIObject["
   {
     "/l2/contract-classes/{classId}/versions/{version}": {
       post: {
+        description:
+          "Please check out our SDK for how to verify contract class artifact",
         tags: ["L2", "contract-classes"],
         summary: "Register and verify contract class artifact",
         parameters: [
@@ -188,7 +192,8 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
 
     const contractClassString = await dbWrapper.get(
       ["l2", "contract-classes", contractClassId, version],
-      () => db.l2Contract.getL2RegisteredContractClass(contractClassId, version)
+      () =>
+        db.l2Contract.getL2RegisteredContractClass(contractClassId, version),
     );
     let dbContractClass;
     if (contractClassString) {
@@ -196,7 +201,7 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
         JSON.parse(contractClassString),
       );
       if (dbContractClass.artifactJson) {
-        res.status(200).send(dbContractClass);
+        res.status(200).json(dbContractClass);
         return;
       }
     }

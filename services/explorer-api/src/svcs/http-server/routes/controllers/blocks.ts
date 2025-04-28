@@ -35,7 +35,7 @@ export const openapi_GET_LATEST_HEIGHT: OpenAPIObject["paths"] = {
 
 export const GET_LATEST_HEIGHT = asyncHandler(async (_req, res) => {
   const latestHeight = await dbWrapper.getLatestHeight();
-  res.status(200).send(JSON.stringify(latestHeight.toString()));
+  res.status(200).json(JSON.parse(latestHeight.toString()));
 });
 
 export const openapi_GET_LATEST_BLOCK: OpenAPIObject["paths"] = {
@@ -53,10 +53,7 @@ export const GET_LATEST_BLOCK = asyncHandler(async (_req, res) => {
     ["l2", "blocks"],
     db.l2Block.getLatestBlock,
   );
-  if (!latestBlockData) {
-    throw new Error("Latest block not found");
-  }
-  res.status(200).send(latestBlockData);
+  res.status(200).json(JSON.parse(latestBlockData));
 });
 
 export const openapi_GET_BLOCK: OpenAPIObject["paths"] = {
@@ -92,7 +89,7 @@ export const GET_BLOCK = asyncHandler(async (req, res) => {
   const blockData = await dbWrapper.get(["l2", "blocks", heightOrHash], () =>
     db.l2Block.getBlock(heightOrHash),
   );
-  res.status(200).send(blockData);
+  res.status(200).json(JSON.parse(blockData));
 });
 
 export const openapi_GET_BLOCKS: OpenAPIObject["paths"] = {
@@ -126,7 +123,7 @@ export const GET_BLOCKS = asyncHandler(async (req, res) => {
   const blocksData = await dbWrapper.getLatest(["l2", "blocks", from, to], () =>
     db.l2Block.getBlocks({ from, to }),
   );
-  res.status(200).send(blocksData);
+  res.status(200).json(JSON.parse(blocksData));
 });
 
 export const openapi_GET_BLOCKS_BY_FINALIZATION_STATUS: OpenAPIObject["paths"] =
@@ -146,7 +143,7 @@ export const GET_BLOCKS_BY_FINALIZATION_STATUS = asyncHandler(
       ["l2", "blocks", "by-status"],
       () => db.l2Block.getBlocksByFinalizationStatus(),
     );
-    res.status(200).send(blocksData);
+    res.status(200).json(JSON.parse(blocksData));
   },
 );
 
@@ -165,7 +162,7 @@ export const GET_ORPHANED_BLOCKS = asyncHandler(async (_req, res) => {
     ["l2", "blocks", "orphaned"],
     () => db.l2Block.getOrphanedBlocks(),
   );
-  res.status(200).send(orphanedBlocksData);
+  res.status(200).json(JSON.parse(orphanedBlocksData));
 });
 
 export const openapi_GET_REORGS: OpenAPIObject["paths"] = {
@@ -182,7 +179,7 @@ export const GET_REORGS = asyncHandler(async (_req, res) => {
   const reorgsData = await dbWrapper.getLatest(["l2", "reorgs"], () =>
     db.l2Block.getReorgs(),
   );
-  res.status(200).send(reorgsData);
+  res.status(200).json(JSON.parse(reorgsData));
 });
 
 export const openapi_GET_ORPHANED_BLOCKS_LIMITED: OpenAPIObject["paths"] = {
@@ -200,5 +197,5 @@ export const GET_ORPHANED_BLOCKS_LIMITED = asyncHandler(async (_req, res) => {
     ["l2", "blocks", "orphans"],
     () => db.l2Block.getOrphanedBlocks(100),
   );
-  res.status(200).send(orphanedBlocksData);
+  res.status(200).json(JSON.parse(orphanedBlocksData));
 });

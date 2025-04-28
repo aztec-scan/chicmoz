@@ -27,7 +27,7 @@ export const GET_L2_TX_EFFECTS = asyncHandler(async (_req, res) => {
   const txEffectsData = await dbWrapper.getLatest(["l2", "txEffects"], () =>
     db.l2TxEffect.getLatestTxEffects(),
   );
-  res.status(200).send(txEffectsData);
+  res.status(200).json(JSON.parse(txEffectsData));
 });
 
 export const openapi_GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT: OpenAPIObject["paths"] =
@@ -58,7 +58,7 @@ export const GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT = asyncHandler(
       ["l2", "blocks", blockHeight, "txEffects"],
       () => db.l2TxEffect.getTxEffectsByBlockHeight(blockHeight),
     );
-    res.status(200).send(txEffectsData);
+    res.status(200).json(JSON.parse(txEffectsData));
   },
 );
 
@@ -103,7 +103,7 @@ export const GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX = asyncHandler(
           txEffectIndex,
         ),
     );
-    res.status(200).send(txEffectsData);
+    res.status(200).json(JSON.parse(txEffectsData));
   },
 );
 
@@ -136,6 +136,6 @@ export const GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH = asyncHandler(
       ["l2", "txEffects", txEffectHash],
       () => db.l2TxEffect.getTxEffectByHash(txEffectHash),
     );
-    res.status(200).send(txEffectsData);
+    res.status(200).json(JSON.parse(txEffectsData));
   },
 );
