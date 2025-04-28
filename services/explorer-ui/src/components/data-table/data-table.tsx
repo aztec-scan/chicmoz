@@ -81,7 +81,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <div className="min-w-full">
+      <div className="w-full">
         {isLoading && <Loader amount={10} />}
         {!isLoading && (
           <Table className="border-spacing-x-1">
@@ -117,15 +117,16 @@ function DataTableHeader<TData, TValue>({
                 {header.isPlaceholder ||
                   flexRender(
                     header.column.columnDef.header,
-                    header.getContext()
+                    header.getContext(),
                   )}
                 <div
                   {...{
                     onDoubleClick: () => header.column.resetSize(),
                     onMouseDown: header.getResizeHandler(),
                     onTouchStart: header.getResizeHandler(),
-                    className: `resizer ${table.options.columnResizeDirection
-                      } ${header.column.getIsResizing() ? "isResizing" : ""}`,
+                    className: `min-h-3 resizer ${
+                      table.options.columnResizeDirection
+                    } ${header.column.getIsResizing() ? "isResizing" : ""}`,
                   }}
                 />
               </TableHead>
@@ -142,6 +143,8 @@ function DataTableBody<TData, TValue>({
   flatten,
   columns,
 }: DataTableChildProps<TData, TValue>) {
+  const rowHeight = "h-10";
+
   const groupedRows = ({ table }: DataTableChildProps<TData, TValue>) => {
     return table.getRowModel().rows?.map((row) => {
       return (
@@ -151,9 +154,10 @@ function DataTableBody<TData, TValue>({
             data-state={row.getIsSelected() && "selected"}
             onClick={() => row.toggleExpanded()}
             className={cn(
+              rowHeight,
               row.getCanExpand()
                 ? "cursor-pointer hover:bg-grey-dark/10 hover:text-pink "
-                : ""
+                : "",
             )}
           >
             {row.getVisibleCells().map((cell) => (
@@ -175,7 +179,11 @@ function DataTableBody<TData, TValue>({
     return table.getRowModel().flatRows?.map((row) => {
       return (
         <Fragment key={row.id}>
-          <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+          <TableRow
+            key={row.id}
+            data-state={row.getIsSelected() && "selected"}
+            className={rowHeight}
+          >
             {row.getVisibleCells().map((cell) => (
               <TableCell
                 key={cell.id}
