@@ -103,7 +103,7 @@ export const getVerifiedContractInstanceDeploymentData = (
         },
         {
           label: "CONSTRUCTOR ARGS",
-          value: data.verifiedDeploymentArguments.constructorArgs.join(", "),
+          value: data.verifiedDeploymentArguments.constructorArgs.join(", ") ?? "[]",
         },
       ]
     : undefined;
