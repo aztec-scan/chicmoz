@@ -33,8 +33,8 @@ export const chicmozL2DroppedTxSchema = z.object({
   reason: chicmozL2DroppedTxReasonSchema,
   previousState: chicmozL2DroppedTxPreviousStateSchema,
   orphanedTxEffectHash: hexStringSchema.optional(),
-  createdAt: z.number().optional(),
-  droppedAt: z.number().optional(),
+  createdAt: z.coerce.date(),
+  droppedAt: z.coerce.date(),
 });
 
 /**

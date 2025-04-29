@@ -177,11 +177,8 @@ const storeOrphanedTxEffectsAsDropped = async (
         reason: ChicmozL2DroppedTxReason.REORG,
         previousState: ChicmozL2DroppedTxPreviousState.INCLUDED,
         orphanedTxEffectHash: tx.txHash,
-        createdAt:
-          tx.txBirthTimestamp instanceof Date
-            ? tx.txBirthTimestamp.getTime()
-            : undefined,
-        droppedAt: timestamp.getTime(),
+        createdAt: tx.txBirthTimestamp,
+        droppedAt: timestamp,
       });
     } catch (error) {
       const errorMessage =

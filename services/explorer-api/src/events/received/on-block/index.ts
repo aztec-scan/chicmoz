@@ -79,7 +79,6 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
     `🧢 Storing block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
   );
 
-  // Check for reorg using a named constant
   const reorgDetected = await detectReorg(parsedBlock);
 
   if (reorgDetected) {
