@@ -37,7 +37,7 @@ Add a new table for dropped transactions in the system. Dropped transactions can
 
 ### Migration
 
-- [ ] Create a database migration for the new table
+- [x] Create a database migration for the new table
 
 ## Implementation Details
 
