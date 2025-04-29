@@ -23,12 +23,12 @@ Add a new table for dropped transactions in the system. Dropped transactions can
 
 ### Controller Implementation
 
-`services/explorer-api/src/svcs/database/controllers/l2/dropped-tx/index.ts` (look at `services/explorer-api/src/svcs/database/controllers/l2Tx/index.ts` for inspiration)
+`services/explorer-api/src/svcs/database/controllers/dropped-tx/index.ts` (look at `services/explorer-api/src/svcs/database/controllers/l2Tx/index.ts` for inspiration)
 
-- [ ] Create a controller for the `dropped_tx` table with:
-  - [ ] Store method for dropped transactions
-  - [ ] Get methods to retrieve dropped transactions
-  - [ ] Query methods by source type (reorg vs. stale)
+- [x] Create a controller for the `dropped_tx` table with:
+  - [x] Store method for dropped transactions
+  - [x] Get methods to retrieve dropped transactions
+  - [x] Query methods by source type (reorg vs. stale)
 
 ### Integration with Existing Code
 
