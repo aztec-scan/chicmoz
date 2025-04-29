@@ -11,15 +11,15 @@ Add a new table for dropped transactions in the system. Dropped transactions can
 
 ### Schema and Database Changes
 
-- [ ] Create a new zod-schema for `droppedTx` in `packages/types/src/aztec/l2TxEffect.ts`
+- [x] Create a new zod-schema for `droppedTx` in `packages/types/src/aztec/l2TxEffect.ts`
   - previousState: `pending`, `included` (enum)
   - optional orphaned txEffect.hash as foreign key
   - txHash
   - createdAt
   - droppedAt
-- [ ] Create a new `dropped_tx` schema definition `services/explorer-api/src/svcs/database/schema/l2/dropped-tx/index.ts` (look at `services/explorer-api/src/svcs/database/schema/l2block/body.ts` for inspiration)
-- [ ] Add appropriate relations to other tables (txEffect, l2Tx) (look at `services/explorer-api/src/svcs/database/schema/l2block/relations.ts` for inspiration)
-- [ ] Update database schema exports
+- [x] Create a new `dropped_tx` schema definition `services/explorer-api/src/svcs/database/schema/dropped-tx/index.ts` (look at `services/explorer-api/src/svcs/database/schema/l2block/body.ts` for inspiration)
+- [x] Add appropriate relations to other tables (txEffect, l2Tx) (look at `services/explorer-api/src/svcs/database/schema/l2block/relations.ts` for inspiration)
+- [x] Update database schema exports
 
 ### Controller Implementation
 

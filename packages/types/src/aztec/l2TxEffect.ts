@@ -10,6 +10,19 @@ export const chicmozL2PendingTxSchema = z.object({
 });
 
 /**
+ * Represents a transaction that was dropped from the system.
+ * This could be due to a reorg or becoming stale.
+ */
+export const chicmozL2DroppedTxSchema = z.object({
+  txHash: hexStringSchema,
+  reason: z.enum(['reorg', 'stale']),
+  previousState: z.enum(['pending', 'included']),
+  orphanedTxEffectHash: hexStringSchema.optional(),
+  createdAt: z.number().optional(),
+  droppedAt: z.number().optional(),
+});
+
+/**
  * Represents effects of a transaction on the L2 state.
  */
 export const chicmozL2TxEffectSchema = z.object({
@@ -37,3 +50,4 @@ export const chicmozL2TxEffectSchema = z.object({
 
 export type ChicmozL2PendingTx = z.infer<typeof chicmozL2PendingTxSchema>;
 export type ChicmozL2TxEffect = z.infer<typeof chicmozL2TxEffectSchema>;
+export type ChicmozL2DroppedTx = z.infer<typeof chicmozL2DroppedTxSchema>;

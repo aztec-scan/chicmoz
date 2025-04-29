@@ -40,7 +40,7 @@ export async function getSequencerByEnr(
       )
       .limit(1)
       .execute();
-    if (sequencerRes.length === 0) return null;
+    if (sequencerRes.length === 0) {return null;}
     const errors = await tx
       .select()
       .from(l2RpcNodeErrorTable)

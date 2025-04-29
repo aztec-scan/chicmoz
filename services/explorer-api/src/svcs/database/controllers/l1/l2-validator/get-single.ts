@@ -63,6 +63,6 @@ export async function getL1L2Validator(
       ),
     };
   });
-  if (!res.attester) return null;
+  if (!res.attester) {return null;}
   return chicmozL1L2ValidatorSchema.parse(res);
 }

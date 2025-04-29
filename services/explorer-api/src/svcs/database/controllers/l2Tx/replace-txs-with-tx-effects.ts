@@ -13,7 +13,7 @@ export const replaceTxsWithTxEffects = async (
         .delete(l2Tx)
         .where(eq(l2Tx.hash, txEffect.txHash))
         .returning();
-      if (!tx) continue;
+      if (!tx) {continue;}
       logger.info(`🕐🔥 Replacing tx with txEffect: ${txEffect.txHash}`);
       if (tx[0]?.birthTimestamp) {
         await dbTx
