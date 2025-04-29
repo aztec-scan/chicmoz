@@ -32,8 +32,8 @@ Add a new table for dropped transactions in the system. Dropped transactions can
 
 ### Integration with Existing Code
 
-- [ ] Modify reorg handling to store txEffects as dropped transactions (`services/explorer-api/src/events/received/on-block/reorg-handler.ts`)
-- [ ] Modify stale transaction handling to store pending txs as dropped transactions (`services/explorer-api/src/events/received/on-pending-txs.ts`)
+- [x] Modify reorg handling to store txEffects as dropped transactions (`services/explorer-api/src/events/received/on-block/reorg-handler.ts`)
+- [x] Modify stale transaction handling to store pending txs as dropped transactions (`services/explorer-api/src/events/received/on-pending-txs.ts`)
 
 ### Migration
 

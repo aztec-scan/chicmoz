@@ -1,17 +1,19 @@
+import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  type ChicmozL2DroppedTx,
+  ChicmozL2DroppedTx,
+  ChicmozL2DroppedTxPreviousState,
+  ChicmozL2DroppedTxReason,
   chicmozL2DroppedTxSchema,
 } from "@chicmoz-pkg/types";
 import { eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
-import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { droppedTx } from "../../../database/schema/dropped-tx/index.js";
 
 /**
  * Get dropped transactions by reason (reorg or stale)
  */
 export const getDroppedTxsByReason = async (
-  reason: "reorg" | "stale"
+  reason: ChicmozL2DroppedTxReason,
 ): Promise<ChicmozL2DroppedTx[]> => {
   const res = await db()
     .select({
@@ -40,7 +42,7 @@ export const getDroppedTxsByReason = async (
  * Get dropped transactions by previous state (pending or included)
  */
 export const getDroppedTxsByPreviousState = async (
-  previousState: "pending" | "included"
+  previousState: ChicmozL2DroppedTxPreviousState,
 ): Promise<ChicmozL2DroppedTx[]> => {
   const res = await db()
     .select({

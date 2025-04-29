@@ -2,12 +2,27 @@ import { z } from "zod";
 import { aztecAddressSchema, hexStringSchema } from "../general.js";
 import { frNumberSchema, frSchema } from "./utils.js";
 
-
 export const chicmozL2PendingTxSchema = z.object({
   // TODO: this schema needs to be properly defined, perhaps merged with txEffect
   hash: hexStringSchema,
   birthTimestamp: z.number(),
 });
+
+export enum ChicmozL2DroppedTxReason {
+  REORG = "reorg",
+  STALE = "stale",
+}
+export enum ChicmozL2DroppedTxPreviousState {
+  PENDING = "pending",
+  INCLUDED = "included",
+}
+
+export const chicmozL2DroppedTxReasonSchema = z.nativeEnum(
+  ChicmozL2DroppedTxReason,
+);
+export const chicmozL2DroppedTxPreviousStateSchema = z.nativeEnum(
+  ChicmozL2DroppedTxPreviousState,
+);
 
 /**
  * Represents a transaction that was dropped from the system.
@@ -15,8 +30,8 @@ export const chicmozL2PendingTxSchema = z.object({
  */
 export const chicmozL2DroppedTxSchema = z.object({
   txHash: hexStringSchema,
-  reason: z.enum(['reorg', 'stale']),
-  previousState: z.enum(['pending', 'included']),
+  reason: chicmozL2DroppedTxReasonSchema,
+  previousState: chicmozL2DroppedTxPreviousStateSchema,
   orphanedTxEffectHash: hexStringSchema.optional(),
   createdAt: z.number().optional(),
   droppedAt: z.number().optional(),
@@ -33,7 +48,7 @@ export const chicmozL2TxEffectSchema = z.object({
       }
       return val;
     },
-    z.object({ code: z.number() })
+    z.object({ code: z.number() }),
   ),
   txHash: hexStringSchema,
   txBirthTimestamp: z.number().optional(),
@@ -44,7 +59,12 @@ export const chicmozL2TxEffectSchema = z.object({
   publicDataWrites: z.array(z.object({ leafSlot: frSchema, value: frSchema })),
   privateLogs: z.array(z.array(frSchema)),
   publicLogs: z.array(z.array(frSchema)),
-  contractClassLogs: z.array(z.object({ contractAddress: aztecAddressSchema, fields: z.array(frSchema) })),
+  contractClassLogs: z.array(
+    z.object({
+      contractAddress: aztecAddressSchema,
+      fields: z.array(frSchema),
+    }),
+  ),
   contractClassLogsLength: frNumberSchema,
 });
 

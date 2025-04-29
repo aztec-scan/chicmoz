@@ -1,11 +1,11 @@
+import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  chicmozL2DroppedTxSchema,
+  ChicmozL2DroppedTx,
   HexString,
-  type ChicmozL2DroppedTx,
+  chicmozL2DroppedTxSchema,
 } from "@chicmoz-pkg/types";
 import { asc, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
-import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { droppedTx } from "../../../database/schema/dropped-tx/index.js";
 
 export const getDroppedTxs = async (): Promise<ChicmozL2DroppedTx[]> => {
@@ -54,3 +54,4 @@ export const getDroppedTxByHash = async (
     droppedAt: res[0].droppedAt.getTime(),
   });
 };
+
