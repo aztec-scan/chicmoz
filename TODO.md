@@ -11,21 +11,29 @@ Add a new table for dropped transactions in the system. Dropped transactions can
 
 ### Schema and Database Changes
 
-- [ ] Create a new `droppedTx` schema definition
-- [ ] Add appropriate relations to other tables (txEffect, l2Tx)
+- [ ] Create a new zod-schema for `droppedTx` in `packages/types/src/aztec/l2TxEffect.ts`
+  - previousState: `pending`, `included` (enum)
+  - optional orphaned txEffect.hash as foreign key
+  - txHash
+  - createdAt
+  - droppedAt
+- [ ] Create a new `dropped_tx` schema definition `services/explorer-api/src/svcs/database/schema/l2/dropped-tx/index.ts` (look at `services/explorer-api/src/svcs/database/schema/l2block/body.ts` for inspiration)
+- [ ] Add appropriate relations to other tables (txEffect, l2Tx) (look at `services/explorer-api/src/svcs/database/schema/l2block/relations.ts` for inspiration)
 - [ ] Update database schema exports
 
 ### Controller Implementation
 
-- [ ] Create a controller for the `droppedTx` table with:
+`services/explorer-api/src/svcs/database/controllers/l2/dropped-tx/index.ts` (look at `services/explorer-api/src/svcs/database/controllers/l2Tx/index.ts` for inspiration)
+
+- [ ] Create a controller for the `dropped_tx` table with:
   - [ ] Store method for dropped transactions
   - [ ] Get methods to retrieve dropped transactions
   - [ ] Query methods by source type (reorg vs. stale)
 
 ### Integration with Existing Code
 
-- [ ] Modify reorg handling to store txEffects as dropped transactions
-- [ ] Modify stale transaction handling to store pending txs as dropped transactions
+- [ ] Modify reorg handling to store txEffects as dropped transactions (`services/explorer-api/src/events/received/on-block/reorg-handler.ts`)
+- [ ] Modify stale transaction handling to store pending txs as dropped transactions (`services/explorer-api/src/events/received/on-pending-txs.ts`)
 
 ### Migration
 
@@ -35,13 +43,14 @@ Add a new table for dropped transactions in the system. Dropped transactions can
 
 ### Database Schema
 
-The new `droppedTx` table will contain:
+The new `dropped_tx` table will contain:
 
-- Transaction hash (primary key)
-- Source type (txEffect or tx)
-- Reason for dropping (reorg or stale)
-- Timestamp when dropped
-- Original transaction data
+- txHash (primary key)
+- reason (enum: `reorg`, `stale`)
+- previousState: `pending`, `included` (enum)
+- optional orphaned txEffect.hash as foreign key
+- createdAt
+- droppedAt
 
 ### Controller Methods
 
