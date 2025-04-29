@@ -59,17 +59,15 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
   }, [latestTxEffectsData, latestBlocks, pendingTxs, showPendingTxs]);
 
   return (
-    <>
-      <TxEffectsTable
-        txEffects={txEffectData}
-        isLoading={isLoadingTxEffects}
-        title="Latest Tx Effects"
-        error={txEffectsError}
-        disableSizeSelector={true}
-        showPending={showPendingTxs}
-        handleTogglePendingTx={toggleShowPendingTx}
-        nbrOfPendingTxs={pendingTxCount}
-      />
-    </>
+    <TxEffectsTable
+      txEffects={txEffectData}
+      isLoading={isLoadingTxEffects}
+      title="Latest Tx Effects"
+      error={txEffectsError}
+      disableSizeSelector={true}
+      showPending={showPendingTxs}
+      handleTogglePendingTx={toggleShowPendingTx}
+      nbrOfPendingTxs={pendingTxCount}
+    />
   );
 };

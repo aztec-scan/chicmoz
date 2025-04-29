@@ -1,5 +1,7 @@
 import { verifyInstanceDeploymentPayloadSchema } from "@chicmoz-pkg/contract-verification";
 import {
+  NODE_ENV,
+  NodeEnv,
   chicmozL2BlockSchema,
   chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozL2SequencerSchema,
@@ -48,7 +50,8 @@ export const paths = {
 
   contractInstancesByContractClassId: `/l2/contract-classes/:${contractClassId}/contract-instances`,
   contractInstancesByBlockHash: `/l2/blocks/:${blockHash}/contract-instances`,
-  contractInstancesWithAztecScanNotes: "/l2/contract-instances/with-aztec-scan-notes",
+  contractInstancesWithAztecScanNotes:
+    "/l2/contract-instances/with-aztec-scan-notes",
   contractInstance: `/l2/contract-instances/:${address}`,
   contractInstances: "/l2/contract-instances",
 
@@ -177,8 +180,9 @@ export const getVerifiedContractInstanceSchema = getContractInstanceSchema;
 
 export const postVerifiedContractInstanceSchema = z.lazy(() => {
   let overrideAztecOriginNotes = {};
-  if (process.env.NODE_ENV === "production") {
+  if (NODE_ENV === NodeEnv.PROD) {
     overrideAztecOriginNotes = {
+      reviewedAt: true,
       aztecScanNotes: true,
     };
   }

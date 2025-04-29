@@ -10,8 +10,9 @@ import {
 } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import {
+  NODE_ENV,
+  NodeEnv,
   chicmozL2ContractClassRegisteredEventSchema,
-  chicmozL2ContractInstanceDeluxeSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
@@ -19,6 +20,7 @@ import { OpenAPIObject } from "openapi3-ts/oas31";
 import { z } from "zod";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
+import { l2Contract } from "../../../database/controllers/index.js";
 import { controllers as db } from "../../../database/index.js";
 import {
   getContractInstanceSchema,
@@ -432,48 +434,30 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     }
 
     const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
-    const aztecScanNotesRes = await db.l2.updateContractInstanceAztecScanNotes({
-      contractInstanceAddress: address,
-      aztecScanNotes,
+    if (NODE_ENV !== NodeEnv.PROD) {
+      const aztecScanNotesRes =
+        await db.l2.updateContractInstanceAztecScanNotes({
+          contractInstanceAddress: address,
+          aztecScanNotes,
+        });
+
+      if (!aztecScanNotesRes) {
+        res.status(500).send("Failed to update aztec scan notes");
+        return;
+      }
+    }
+
+    await db.l2Contract.updateContractInstanceDeployerMetadata({
+      address,
+      ...cleanDeployerMetadata,
     });
 
-    if (!aztecScanNotesRes) {
-      res.status(500).send("Failed to update aztec scan notes");
-      return;
-    }
-
-    const metaDataStoreRes =
-      await db.l2Contract.updateContractInstanceDeployerMetadata({
-        address,
-        ...cleanDeployerMetadata,
-      });
-
-    if (!metaDataStoreRes) {
-      res.status(500).send("Failed to update deployer metadata");
-      return;
-    }
-
-    const newContractInstance = JSON.stringify(
-      chicmozL2ContractInstanceDeluxeSchema.parse({
-        ...dbContractInstance,
-        ...dbContractClass,
-        verifiedDeploymentArguments: {
-          ...verificationPayload,
-          address,
-          stringifiedArtifactJson: artifactString,
-        },
-        aztecScanNotes,
-        deployerMetadata: {
-          ...deployerMetadata,
-          address,
-          uploadedAt: metaDataStoreRes.uploadedAt,
-        },
-      }),
-    );
+    const newContractInstance =
+      await l2Contract.getL2DeployedContractInstanceByAddress(address, true);
 
     await setEntry(
       contractInstanceKeys(address),
-      newContractInstance,
+      JSON.stringify(newContractInstance),
       CACHE_TTL_SECONDS,
     ).catch((err) => {
       logger.warn(`Failed to cache contract instance(${address}): ${err}`);
