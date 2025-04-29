@@ -34,7 +34,7 @@ import {
   type U128Like,
   type WrappedFieldLike,
 } from '@aztec/aztec.js';
-import SimpleLoggingContractArtifactJson from '../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json' assert { type: 'json' };
+import SimpleLoggingContractArtifactJson from '../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json' assert { type: 'json' };
 export const SimpleLoggingContractArtifact = loadContractArtifact(SimpleLoggingContractArtifactJson as NoirCompiledContract);
 
 
@@ -131,6 +131,9 @@ export class SimpleLoggingContract extends ContractBase {
     
     /** constructor() */
     constructor: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+
+    /** decrese_counter_public(counter_id: field) */
+    decrese_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** get_counter_value(counter_id: field) */
     get_counter_value: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
