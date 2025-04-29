@@ -10,6 +10,7 @@ export const queryKeyGenerator = {
   latestTxEffects: ["latestTxEffects"],
   pendingTxs: ["pendingTxs"],
   pendingTxsByHash: (hash: string) => ["pendingTxs", hash],
+  droppedTxByHash: (hash: string) => ["droppedTxByHash", hash],
   latestBlock: ["latestBlock"],
   latestBlocks: ["latestBlocks"],
   blockByHeight: (height: string) => ["blockByHeight", height],

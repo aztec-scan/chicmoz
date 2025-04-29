@@ -17,7 +17,7 @@ export const storeDroppedTx = async (tx: ChicmozL2DroppedTx): Promise<void> => {
     .onConflictDoNothing()
     .returning();
   if (res.length > 0) {
-    logger.info(`🗑️ Transaction dropped: ${tx.txHash}, reason: ${tx.reason}`);
+    logger.info(`🗑️ Transaction dropped: ${tx.txHash} reason: ${tx.reason}`);
   }
 };
 

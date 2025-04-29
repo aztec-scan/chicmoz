@@ -18,6 +18,7 @@ export const aztecExplorer = {
   getL2TxEffectsByHeightRange: "",
   getL2PendingTxs: "l2/txs",
   getL2PendingTxsByHash: (hash: string) => `l2/txs/${hash}`,
+  getL2DroppedTxByHash: (hash: string) => `l2/dropped-txs/${hash}`,
   getL2ContractClassByIdAndVersion: (classId: string, version: string) =>
     `l2/contract-classes/${classId}/versions/${version}`,
   getL2ContractClasses: (classId?: string) =>
