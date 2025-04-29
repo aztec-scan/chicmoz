@@ -8,7 +8,7 @@ import {
   retryUntil,
   waitForPXE,
 } from "@aztec/aztec.js";
-import { createL1Clients, deployL1Contract } from "@aztec/ethereum";
+import { L1Deployer, createExtendedL1Client } from "@aztec/ethereum";
 import {
   TestERC20Abi,
   TestERC20Bytecode,
@@ -52,35 +52,36 @@ export const run = async () => {
   logger.info("🐰 Deploying accounts...");
   await publicDeployAccounts(wallet, wallets, pxe);
 
-  const { walletClient, publicClient } = createL1Clients(
-    [ETHEREUM_RPC_URL],
-    MNEMONIC,
-  );
+  const l1Client = createExtendedL1Client([ETHEREUM_RPC_URL], MNEMONIC);
 
+  const l1Deployer = new L1Deployer(l1Client, undefined);
+
+  const underlyingERC20Address = await l1Deployer.deploy(
+    {
+      contractAbi: TestERC20Abi,
+      contractBytecode: TestERC20Bytecode,
+    },
+    ["Test Token", "TEST", l1Client.account.address],
+  );
   logger.info("🐰 Deploying contracts...");
-  const underlyingERC20Address = await deployL1Contract(
-    walletClient,
-    publicClient,
-    TestERC20Abi,
-    TestERC20Bytecode,
-    ["Test Token", "TEST", walletClient.account.address],
-  ).then(({ address }) => address);
+
   logger.info(
     `🐰 Underlying ERC20 deployed at ${underlyingERC20Address.toString()}`,
   );
+
   logger.info("🐰 Deploying TokenPortal contract...");
-  const { address: tokenPortalAddress } = await deployL1Contract(
-    walletClient,
-    publicClient,
-    TokenPortalAbi,
-    TokenPortalBytecode,
+  const tokenPortalAddress = await l1Deployer.deploy(
+    {
+      contractAbi: TokenPortalAbi,
+      contractBytecode: TokenPortalBytecode,
+    },
     [],
   );
   logger.info(`🐰 TokenPortal deployed at ${tokenPortalAddress.toString()}`);
   const tokenPortal = getContract({
     address: tokenPortalAddress.toString(),
     abi: TokenPortalAbi,
-    client: walletClient,
+    client: l1Client,
   });
 
   const owner = wallet.getAddress();
@@ -167,8 +168,7 @@ export const run = async () => {
     underlyingERC20Address,
     undefined,
     l1ContractAddresses.outboxAddress,
-    publicClient,
-    walletClient,
+    l1Client,
     createLogger("L1TokenPortalManager-public"),
   );
   const l1TokenManager = l1TokenPortalManager.getTokenManager();
@@ -178,9 +178,7 @@ export const run = async () => {
   const l1TokenBalance = 1000000n;
   const bridgeAmount = 100n;
 
-  const ethAccount = EthAddress.fromString(
-    (await walletClient.getAddresses())[0],
-  );
+  const ethAccount = EthAddress.fromString((await l1Client.getAddresses())[0]);
 
   const l2Token = token;
   const l2Bridge = bridge;
