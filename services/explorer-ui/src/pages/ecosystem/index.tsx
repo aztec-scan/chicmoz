@@ -51,9 +51,23 @@ export const Ecosystem: FC = () => {
     <div className="flex flex-col items-center">
       <h1>Ecosystem</h1>
       <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-2/3 mb-6">
+        <p className="mb-4">
+          Welcome to Aztec Scan's Ecosystem page! Here we list user-uploaded
+          metadata for contracts in order to increase discoverability. This is
+          currently a work in progress. Any suggestions or feedback are welcome
+          as an issue on our github.
+        </p>
         <ul className="list-disc list-inside">
-          <li>Sepolia ETH Faucet: TODO</li>
-          <li>Aztec Faucet: TODO</li>
+          <li>
+            <a
+              href="https://bridge.human.tech/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-purple-light hover:font-bold"
+            >
+              Bridge funds from Ethereum to Aztec
+            </a>
+          </li>
           <li>
             <a
               href="https://aztec.network/ecosystem"
