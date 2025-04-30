@@ -60,7 +60,7 @@ export const TxEffectDetails: FC = () => {
             </h2>
           </div>
           <div className="flex flex-col gap-4 mt-4">
-            <DroppedBanner reason={droppedTx.reason} />
+            <DroppedBanner />
             <div className="bg-white rounded-lg shadow-md p-4">
               <KeyValueDisplay data={getDroppedTxEffectData(droppedTx)} />
             </div>

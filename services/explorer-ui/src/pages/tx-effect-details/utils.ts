@@ -56,23 +56,6 @@ export const getDroppedTxEffectData = (data: ChicmozL2DroppedTx) => [
     value: new Date(data.droppedAt).toLocaleString(),
   },
   {
-    label: "REASON",
-    value: data.reason,
-  },
-  {
-    label: "PREVIOUS STATE",
-    value: data.previousState,
-  },
-  ...(data.orphanedTxEffectHash
-    ? [
-        {
-          label: "ORPHANED TX EFFECT HASH",
-          value: data.orphanedTxEffectHash,
-          link: `/tx-effects/${data.orphanedTxEffectHash}`,
-        },
-      ]
-    : []),
-  {
     label: "RAW DATA",
     value: "View raw data",
     extLink: `${API_URL}/${aztecExplorer.getL2DroppedTxByHash(data.txHash)}`,
