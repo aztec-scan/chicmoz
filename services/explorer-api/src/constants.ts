@@ -62,11 +62,11 @@ export const AZTEC_SCAN_NOTES: Record<
       comment:
         "This contract is an account contract we use to deploy our contracts, which also has an ability to do fee sponsoring as FPC.",
     },
-  },
-  {
     "0x0df0b722ec3e476c556ff437981e10f75fae34f441dffd76e3c9c0a6d240f410": {
-      "name": "zkSnacks NFT collection",
-      "origin": "Published in ecosystem Signal group pre public testnet launch",
-      "comment": "This contract is the zkSnacks NFT collection. The first NFT collection on Aztec testnet. Get the taste of privacy. zksnacks.nemi.fi",
-  }
+      name: "zkSnacks NFT collection",
+      origin: "Published in ecosystem Signal group pre public testnet launch",
+      comment:
+        "This contract is the zkSnacks NFT collection. The first NFT collection on Aztec testnet. Get the taste of privacy. zksnacks.nemi.fi",
+    },
+  },
 };
