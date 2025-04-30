@@ -101,10 +101,15 @@ const checkValidatorStats = async () => {
   }
 };
 
+const sleep = async (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 export const init = async () => {
   logger.info(`Initializing Aztec node client with ${AZTEC_RPC_URL}`);
   aztecNode = createAztecNodeClient(AZTEC_RPC_URL);
   await checkValidatorStats();
+  await sleep(1000);
   return getFreshInfo();
 };
 
@@ -112,45 +117,26 @@ export const getFreshInfo = async (): Promise<{
   chainInfo: ChicmozChainInfo;
   sequencer: ChicmozL2Sequencer;
 }> => {
-  const nodeVersion = await callNodeFunction("getNodeVersion");
-  logger.info(`🧋 Aztec node version: ${nodeVersion}`);
-  const rollupVersion = await callNodeFunction("getVersion");
-  logger.info(`🧋 Aztec rollup version: ${rollupVersion}`);
-  const chainId = await callNodeFunction("getChainId");
-  logger.info(`🧋 Aztec chain id: ${chainId}`);
-  const enr = await callNodeFunction("getEncodedEnr");
-  logger.info(`🧋 Aztec enr: ${enr}`);
-  const contractAddresses = await callNodeFunction("getL1ContractAddresses");
-  logger.info(
-    `🧋 Aztec contract addresses: ${JSON.stringify(contractAddresses)}`,
-  );
-  const protocolContractAddresses = await callNodeFunction(
-    "getProtocolContractAddresses",
-  );
-  logger.info(
-    `🧋 Aztec protocol contract addresses: ${JSON.stringify(
-      protocolContractAddresses,
-    )}`,
-  );
+  const {
+    nodeVersion,
+    l1ChainId,
+    rollupVersion,
+    enr,
+    l1ContractAddresses,
+    protocolContractAddresses,
+  } = await callNodeFunction("getNodeInfo");
   const nodeInfo: NodeInfo = {
     nodeVersion,
-    l1ChainId: chainId,
+    l1ChainId,
     rollupVersion,
     enr:
-      enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX
+      enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX // NOTE: this is to anonymize the node
         ? L2_NETWORK_ID
         : undefined,
-    l1ContractAddresses: contractAddresses,
+    l1ContractAddresses: l1ContractAddresses,
     protocolContractAddresses: protocolContractAddresses,
   };
-  try {
-    await callNodeFunction("getNodeInfo");
-    logger.info(
-      `!!!! Aztec node info fetched successfully, perhaps switch back to this?`,
-    );
-  } catch (e) {
-    logger.debug(`nodeInfo not available: ${(e as Error).message}`);
-  }
+  logger.info(`🧋 ${JSON.stringify(nodeInfo, null, 2)}`);
 
   const chainInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
   onChainInfo(chainInfo).catch((e) => {
