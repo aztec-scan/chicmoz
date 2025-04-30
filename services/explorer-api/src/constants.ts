@@ -68,5 +68,29 @@ export const AZTEC_SCAN_NOTES: Record<
       comment:
         "This contract is the zkSnacks NFT collection. The first NFT collection on Aztec testnet. Get the taste of privacy. zksnacks.nemi.fi",
     },
+    "0x2ab7cf582347c8a2834e0faf98339372118275997e14c5a77054bb345362e878": {
+      name: "Clean USDC",
+      origin: "Published in ecosystem Signal group pre public testnet launch",
+      comment:
+        "This is the Clean USDC Token contract deployed by bridge.human.tech",
+      relatedL1ContractAddresses: [
+        {
+          address: "0x24ca8bf6d17d0f6844eacee733fa183d343c1dc4",
+          note: "Test USDC on Sepolia",
+        },
+      ],
+    },
+    "0x2d964ce22db58c33f6e3e29cd2c2550ca310610f4917955ecb59bc7b6f97d6a7": {
+      name: "Human Tech Bridge",
+      origin: "Published in ecosystem Signal group pre public testnet launch",
+      comment:
+        "This is the bridge contract deployed by bridge.human.tech. It allows users to bridge assets from Sepolia to Aztec testnet.",
+      relatedL1ContractAddresses: [
+        {
+          address: "0x7e73a94be39327533faa90947cae5fc215349287",
+          note: "Bridge portal contract on Sepolia",
+        },
+      ],
+    },
   },
 };
