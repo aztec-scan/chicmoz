@@ -1,6 +1,7 @@
 export * from "./block";
 export * from "./chain-info";
 export * from "./contract";
+export * from "./dropped-tx";
 export * from "./search";
 export * from "./sequencer";
 export * from "./stats";

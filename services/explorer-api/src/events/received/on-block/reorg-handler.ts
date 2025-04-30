@@ -16,6 +16,7 @@ export const detectReorg = async (
 
 /**
  * Handles a re-org by marking the existing block and higher blocks as orphaned
+ * and storing their transactions as dropped
  * @returns The number of blocks that were orphaned (including the original block)
  */
 export const handleReorg = async (
@@ -36,7 +37,6 @@ export const handleReorg = async (
     existingBlock.hash,
     parsedBlock.height,
   );
-
   logger.warn(
     `Completed re-org handling at height ${parsedBlock.height}. Total orphaned blocks: ${totalOrphaned}`,
   );

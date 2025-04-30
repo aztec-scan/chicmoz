@@ -36,9 +36,9 @@ export const getBlocksWhereRange = ({
 }) => {
   let whereRange;
   if (to && from) {
-    if (from > to) throw new Error("Invalid range: from is greater than to");
+    if (from > to) {throw new Error("Invalid range: from is greater than to");}
     if (to - from > DB_MAX_BLOCKS)
-      throw new Error("Invalid range: too wide of a range requested");
+      {throw new Error("Invalid range: too wide of a range requested");}
     whereRange = and(gte(l2Block.height, from), lt(l2Block.height, to));
   } else if (from) {
     whereRange = and(

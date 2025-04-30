@@ -1,11 +1,12 @@
+import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { type ChicmozL2TxEffect } from "@chicmoz-pkg/types";
 import { eq } from "drizzle-orm";
-import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { l2Tx } from "../../../database/schema/l2tx/index.js";
 import { logger } from "../../../../logger.js";
+import { l2Tx } from "../../../database/schema/l2tx/index.js";
+import { removeDroppedTxByHash } from "../../controllers/dropped-tx/remove.js";
 
 export const replaceTxsWithTxEffects = async (
-  txEffects: ChicmozL2TxEffect[]
+  txEffects: ChicmozL2TxEffect[],
 ): Promise<void> => {
   return await db().transaction(async (dbTx) => {
     for (const txEffect of Object.values(txEffects)) {
@@ -13,8 +14,16 @@ export const replaceTxsWithTxEffects = async (
         .delete(l2Tx)
         .where(eq(l2Tx.hash, txEffect.txHash))
         .returning();
-      if (!tx) continue;
-      logger.info(`🕐🔥 Replacing tx with txEffect: ${txEffect.txHash}`);
+      if (!tx) {
+        continue;
+      }
+
+      logger.info(
+        `🕐🔥 Replacing tx with txEffect: ${txEffect.txHash} and ensuring that there is no dropped tx stored`,
+      );
+
+      await removeDroppedTxByHash(txEffect.txHash);
+
       if (tx[0]?.birthTimestamp) {
         await dbTx
           .update(l2Tx)

@@ -140,3 +140,31 @@ VALUES
 
 - **Columns**: address, origin, comment, related_l1_contract_addresses, uploaded_at, updated_at, name
 - **Status**: Contains metadata about contracts for display in Aztec Scan
+
+## Dropped Transactions Queries
+
+```bash
+# List the latest 100 dropped transactions
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT tx_hash, reason, previous_state, orphaned_tx_effect_hash, created_at, dropped_at FROM dropped_tx ORDER BY dropped_at DESC LIMIT 100;\""
+
+# Count dropped transactions by reason
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT reason, COUNT(*) as count FROM dropped_tx GROUP BY reason ORDER BY count DESC;\""
+
+# Count dropped transactions by previous state
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT previous_state, COUNT(*) as count FROM dropped_tx GROUP BY previous_state ORDER BY count DESC;\""
+
+# Count total dropped transactions
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM dropped_tx;\""
+
+# Find dropped transactions with specific reason
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT * FROM dropped_tx WHERE reason = 'INVALID_STATE_TRANSITION' LIMIT 10;\""
+
+# View structure of dropped_tx table
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"\d dropped_tx;\""
+```
+
+### dropped_tx
+
+- **Columns**: tx_hash (primary key), reason, previous_state, orphaned_tx_effect_hash, created_at, dropped_at
+- **Purpose**: Stores information about transactions that were dropped and did not produce a transaction effect
+- **Related**: Can be linked to tx_effect table through orphaned_tx_effect_hash when a transaction is dropped due to being orphaned

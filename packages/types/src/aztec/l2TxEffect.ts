@@ -1,12 +1,24 @@
 import { z } from "zod";
-import { aztecAddressSchema, hexStringSchema } from "../general.js";
+import {
+  aztecAddressSchema,
+  hexStringSchema,
+} from "../general.js";
 import { frNumberSchema, frSchema } from "./utils.js";
-
 
 export const chicmozL2PendingTxSchema = z.object({
   // TODO: this schema needs to be properly defined, perhaps merged with txEffect
   hash: hexStringSchema,
   birthTimestamp: z.number(),
+});
+
+/**
+ * Represents a transaction that was dropped from the system.
+ * This could be due to a reorg or becoming stale.
+ */
+export const chicmozL2DroppedTxSchema = z.object({
+  txHash: hexStringSchema,
+  createdAt: z.coerce.date(),
+  droppedAt: z.coerce.date(),
 });
 
 /**
@@ -20,7 +32,7 @@ export const chicmozL2TxEffectSchema = z.object({
       }
       return val;
     },
-    z.object({ code: z.number() })
+    z.object({ code: z.number() }),
   ),
   txHash: hexStringSchema,
   txBirthTimestamp: z.number().optional(),
@@ -31,9 +43,15 @@ export const chicmozL2TxEffectSchema = z.object({
   publicDataWrites: z.array(z.object({ leafSlot: frSchema, value: frSchema })),
   privateLogs: z.array(z.array(frSchema)),
   publicLogs: z.array(z.array(frSchema)),
-  contractClassLogs: z.array(z.object({ contractAddress: aztecAddressSchema, fields: z.array(frSchema) })),
+  contractClassLogs: z.array(
+    z.object({
+      contractAddress: aztecAddressSchema,
+      fields: z.array(frSchema),
+    }),
+  ),
   contractClassLogsLength: frNumberSchema,
 });
 
 export type ChicmozL2PendingTx = z.infer<typeof chicmozL2PendingTxSchema>;
 export type ChicmozL2TxEffect = z.infer<typeof chicmozL2TxEffectSchema>;
+export type ChicmozL2DroppedTx = z.infer<typeof chicmozL2DroppedTxSchema>;

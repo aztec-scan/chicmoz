@@ -4,10 +4,13 @@ import {
   generateL2TopicName,
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import { chicmozL2PendingTxSchema } from "@chicmoz-pkg/types";
+import {
+  chicmozL2PendingTxSchema,
+} from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../constants.js";
 import { L2_NETWORK_ID } from "../../environment.js";
 import { logger } from "../../logger.js";
+import { storeDroppedTx } from "../../svcs/database/controllers/dropped-tx/store.js";
 import {
   deleteTx,
   getTxs,
@@ -28,13 +31,23 @@ const onPendingTxs = async ({ txs }: PendingTxsEvent) => {
   }
   if (staleTxs.length > 0) {
     // TODO: perhaps emit an event to websockets?
-    logger.info(`🕐🕐🕐 Stale txs: ${staleTxs.length}. Deleting...`);
+    logger.info(
+      `🕐🕐🕐 Stale txs: ${staleTxs.length}. Storing as dropped and then deleting...`,
+    );
     for (const tx of staleTxs) {
       try {
+        // Store as dropped transaction before deleting
+        await storeDroppedTx({
+          txHash: tx.hash,
+          createdAt: new Date(tx.birthTimestamp),
+          droppedAt: new Date(),
+        });
+
+        // Then delete the pending transaction
         await deleteTx(tx.hash);
       } catch (e) {
         logger.error(
-          `Error deleting stale tx ${tx.hash}: ${(e as Error).stack}`,
+          `Error handling stale tx ${tx.hash}: ${(e as Error).stack}`,
         );
       }
     }

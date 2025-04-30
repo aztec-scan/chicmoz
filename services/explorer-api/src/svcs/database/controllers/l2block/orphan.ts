@@ -1,8 +1,15 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { HexString } from "@chicmoz-pkg/types";
+import {
+  HexString,
+} from "@chicmoz-pkg/types";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
-import { l2Block } from "../../../database/schema/l2block/index.js";
+import {
+  body,
+  l2Block,
+  txEffect,
+} from "../../../database/schema/l2block/index.js";
+import { storeDroppedTx } from "../../controllers/dropped-tx/store.js";
 
 /**
  * Mark a block as orphaned with the specified parent status
@@ -84,6 +91,9 @@ export const handleReorgOrphaning = async (
       })
       .where(eq(l2Block.hash, originalBlockHash));
 
+    // Find transaction effects in the orphaned block and store them as dropped
+    await storeOrphanedTxEffectsAsDropped(dbTx, originalBlockHash, now);
+
     // 2. Find and mark all higher blocks as orphaned with parent
     const higherBlocks = await dbTx
       .select({ hash: l2Block.hash })
@@ -103,6 +113,9 @@ export const handleReorgOrphaning = async (
           orphan_hasOrphanedParent: true,
         })
         .where(eq(l2Block.hash, block.hash));
+
+      // Store transaction effects from this block as dropped
+      await storeOrphanedTxEffectsAsDropped(dbTx, block.hash, now);
     }
 
     const totalOrphaned = orphanedChildrenCount + 1; // +1 for the original block
@@ -112,4 +125,62 @@ export const handleReorgOrphaning = async (
 
     return totalOrphaned;
   });
+};
+
+/**
+ * Find transaction effects in an orphaned block and store them as dropped transactions
+ */
+const storeOrphanedTxEffectsAsDropped = async (
+  dbTx: ReturnType<typeof db>,
+  blockHash: HexString,
+  timestamp: Date,
+): Promise<void> => {
+  // Find the body ID for this block
+  const blockBody = await dbTx
+    .select({ id: body.id })
+    .from(body)
+    .where(eq(body.blockHash, blockHash))
+    .limit(1);
+
+  if (blockBody.length === 0) {
+    logger.warn(`No body found for orphaned block ${blockHash}`);
+    return;
+  }
+
+  const bodyId = blockBody[0].id;
+
+  // Find all transaction effects in this body
+  const txEffects = await dbTx
+    .select({
+      txHash: txEffect.txHash,
+      txBirthTimestamp: txEffect.txBirthTimestamp,
+    })
+    .from(txEffect)
+    .where(eq(txEffect.bodyId, bodyId));
+
+  if (txEffects.length === 0) {
+    logger.info(`No transaction effects found in orphaned block ${blockHash}`);
+    return;
+  }
+
+  logger.info(
+    `Found ${txEffects.length} transaction effects to mark as dropped in block ${blockHash}`,
+  );
+
+  // Store each transaction effect as a dropped transaction
+  for (const tx of txEffects) {
+    try {
+      await storeDroppedTx({
+        txHash: tx.txHash,
+        createdAt: tx.txBirthTimestamp,
+        droppedAt: timestamp,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error(
+        `Failed to store dropped transaction ${tx.txHash}: ${errorMessage}`,
+      );
+    }
+  }
 };

@@ -11,7 +11,7 @@ export async function getAllL1L2Validators(): Promise<
     .select(getTableColumns(l1L2ValidatorTable))
     .from(l1L2ValidatorTable)
     .execute();
-  if (!res.length) return null;
+  if (!res.length) {return null;}
   const dbSingles = await Promise.all(
     res.map((validator) => getL1L2Validator(validator.attester))
   );

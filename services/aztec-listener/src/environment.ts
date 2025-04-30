@@ -7,7 +7,7 @@ export const BLOCK_POLL_INTERVAL_MS = z.coerce
   .parse(process.env.BLOCK_POLL_INTERVAL_MS);
 export const TX_POLL_INTERVAL_MS = z.coerce
   .number()
-  .default(500)
+  .default(1000) // NOTE: https://github.com/aztec-scan/chicmoz/issues/430#issuecomment-2841287541
   .parse(process.env.TX_POLL_INTERVAL_MS);
 export const CHAIN_INFO_POLL_INTERVAL_MS = z.coerce
   .number()
