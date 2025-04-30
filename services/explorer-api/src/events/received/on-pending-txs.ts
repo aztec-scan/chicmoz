@@ -5,8 +5,6 @@ import {
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
 import {
-  ChicmozL2DroppedTxPreviousState,
-  ChicmozL2DroppedTxReason,
   chicmozL2PendingTxSchema,
 } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../constants.js";
@@ -41,8 +39,6 @@ const onPendingTxs = async ({ txs }: PendingTxsEvent) => {
         // Store as dropped transaction before deleting
         await storeDroppedTx({
           txHash: tx.hash,
-          reason: ChicmozL2DroppedTxReason.STALE,
-          previousState: ChicmozL2DroppedTxPreviousState.PENDING,
           createdAt: new Date(tx.birthTimestamp),
           droppedAt: new Date(),
         });

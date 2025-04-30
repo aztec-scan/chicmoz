@@ -1,7 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  ChicmozL2DroppedTxPreviousState,
-  ChicmozL2DroppedTxReason,
   HexString,
 } from "@chicmoz-pkg/types";
 import { and, eq, gt, isNull } from "drizzle-orm";
@@ -174,9 +172,6 @@ const storeOrphanedTxEffectsAsDropped = async (
     try {
       await storeDroppedTx({
         txHash: tx.txHash,
-        reason: ChicmozL2DroppedTxReason.REORG,
-        previousState: ChicmozL2DroppedTxPreviousState.INCLUDED,
-        orphanedTxEffectHash: tx.txHash,
         createdAt: tx.txBirthTimestamp,
         droppedAt: timestamp,
       });

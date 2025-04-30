@@ -1,11 +1,11 @@
-- [ ] add API-endpoint
-  - [ ] route
-  - [ ] open-api
-  - [ ] use db-controller and cache with redis
-- [ ] update frontend to use endpoint
-  - [ ] several files to get the http-call response to page file
-  - [ ] update txEffectDetails page to also detect if tx is dropped.
-    - [ ] if dropped: display banner, like orphan banner that informs user
+- [x] add API-endpoint
+  - [x] route
+  - [x] open-api
+  - [x] use db-controller and cache with redis
+- [x] update frontend to use endpoint
+  - [x] several files to get the http-call response to page file
+  - [x] update txEffectDetails page to also detect if tx is dropped.
+    - [x] if dropped: display banner, like orphan banner that informs user
 
 Files to look at for API-endpoint:
 

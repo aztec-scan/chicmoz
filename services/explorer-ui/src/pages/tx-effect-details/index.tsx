@@ -12,7 +12,7 @@ import {
   useSubTitle,
 } from "~/hooks";
 import { TabsSection } from "./tabs-section";
-import { getTxEffectData } from "./utils";
+import { getDroppedTxEffectData, getTxEffectData } from "./utils";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -62,20 +62,7 @@ export const TxEffectDetails: FC = () => {
           <div className="flex flex-col gap-4 mt-4">
             <DroppedBanner reason={droppedTx.reason} />
             <div className="bg-white rounded-lg shadow-md p-4">
-              <KeyValueDisplay
-                data={{
-                  "Transaction Hash": droppedTx.txHash,
-                  "Dropped At": new Date(droppedTx.droppedAt).toLocaleString(),
-                  Reason: droppedTx.reason,
-                  "Previous State": droppedTx.previousState,
-                  ...(droppedTx.orphanedTxEffectHash
-                    ? {
-                        "Orphaned Tx Effect Hash":
-                          droppedTx.orphanedTxEffectHash,
-                      }
-                    : {}),
-                }}
-              />
+              <KeyValueDisplay data={getDroppedTxEffectData(droppedTx)} />
             </div>
           </div>
         </div>

@@ -8,16 +8,12 @@ export const storeDroppedTx = async (tx: ChicmozL2DroppedTx): Promise<void> => {
     .insert(droppedTx)
     .values({
       txHash: tx.txHash,
-      reason: tx.reason,
-      previousState: tx.previousState,
-      orphanedTxEffectHash: tx.orphanedTxEffectHash,
-      createdAt: tx.createdAt ? new Date(tx.createdAt) : new Date(),
-      droppedAt: tx.droppedAt ? new Date(tx.droppedAt) : new Date(),
+      createdAt: tx.createdAt,
+      droppedAt: tx.droppedAt,
     })
     .onConflictDoNothing()
     .returning();
   if (res.length > 0) {
-    logger.info(`🗑️ Transaction dropped: ${tx.txHash} reason: ${tx.reason}`);
+    logger.info(`🗑️ Stored dropped tx: ${tx.txHash}`);
   }
 };
-

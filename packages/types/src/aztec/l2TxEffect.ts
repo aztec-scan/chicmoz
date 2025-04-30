@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { aztecAddressSchema, hexStringSchema } from "../general.js";
+import {
+  aztecAddressSchema,
+  hexStringSchema,
+} from "../general.js";
 import { frNumberSchema, frSchema } from "./utils.js";
 
 export const chicmozL2PendingTxSchema = z.object({
@@ -8,31 +11,12 @@ export const chicmozL2PendingTxSchema = z.object({
   birthTimestamp: z.number(),
 });
 
-export enum ChicmozL2DroppedTxReason {
-  REORG = "reorg",
-  STALE = "stale",
-}
-export enum ChicmozL2DroppedTxPreviousState {
-  PENDING = "pending",
-  INCLUDED = "included",
-}
-
-export const chicmozL2DroppedTxReasonSchema = z.nativeEnum(
-  ChicmozL2DroppedTxReason,
-);
-export const chicmozL2DroppedTxPreviousStateSchema = z.nativeEnum(
-  ChicmozL2DroppedTxPreviousState,
-);
-
 /**
  * Represents a transaction that was dropped from the system.
  * This could be due to a reorg or becoming stale.
  */
 export const chicmozL2DroppedTxSchema = z.object({
   txHash: hexStringSchema,
-  reason: chicmozL2DroppedTxReasonSchema,
-  previousState: chicmozL2DroppedTxPreviousStateSchema,
-  orphanedTxEffectHash: aztecAddressSchema.optional(),
   createdAt: z.coerce.date(),
   droppedAt: z.coerce.date(),
 });

@@ -23,9 +23,6 @@ export const getDroppedTxs = async (): Promise<ChicmozL2DroppedTx[]> => {
   return z.array(chicmozL2DroppedTxSchema).parse(
     res.map((tx) => ({
       txHash: tx.txHash,
-      reason: tx.reason,
-      previousState: tx.previousState,
-      orphanedTxEffectHash: tx.orphanedTxEffectHash,
       createdAt: tx.createdAt.getTime(),
       droppedAt: tx.droppedAt.getTime(),
     })),
@@ -47,9 +44,6 @@ export const getDroppedTxByHash = async (
 
   return chicmozL2DroppedTxSchema.parse({
     txHash: res[0].txHash,
-    reason: res[0].reason,
-    previousState: res[0].previousState,
-    orphanedTxEffectHash: res[0].orphanedTxEffectHash,
     createdAt: res[0].createdAt.getTime(),
     droppedAt: res[0].droppedAt.getTime(),
   });

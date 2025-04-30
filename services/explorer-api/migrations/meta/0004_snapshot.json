@@ -1,5 +1,5 @@
 {
-  "id": "cafeea7d-5c6e-48ab-bda2-7cc47ea41785",
+  "id": "cfa97c25-8fdf-449b-9c28-78f1c8c9e797",
   "prevId": "c849a9d9-9dc7-4e53-b28e-34dea468d03e",
   "version": "7",
   "dialect": "postgresql",
@@ -105,51 +105,21 @@
           "primaryKey": true,
           "notNull": true
         },
-        "reason": {
-          "name": "reason",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "previous_state": {
-          "name": "previous_state",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "orphaned_tx_effect_hash": {
-          "name": "orphaned_tx_effect_hash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         },
         "dropped_at": {
           "name": "dropped_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "dropped_tx_orphaned_tx_effect_hash_tx_effect_tx_hash_fk": {
-          "name": "dropped_tx_orphaned_tx_effect_hash_tx_effect_tx_hash_fk",
-          "tableFrom": "dropped_tx",
-          "tableTo": "tx_effect",
-          "columnsFrom": ["orphaned_tx_effect_hash"],
-          "columnsTo": ["tx_hash"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -1076,29 +1046,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.tx": {
-      "name": "tx",
-      "schema": "",
-      "columns": {
-        "hash": {
-          "name": "hash",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "birth_timestamp": {
-          "name": "birth_timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "public.l2_contract_class_registered": {
       "name": "l2_contract_class_registered",
       "schema": "",
@@ -1690,6 +1637,29 @@
           "columns": ["contract_class_id", "utility_function_selector_value"]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "public.tx": {
+      "name": "tx",
+      "schema": "",
+      "columns": {
+        "hash": {
+          "name": "hash",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "birth_timestamp": {
+          "name": "birth_timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "public.l1_generic_contract_event": {

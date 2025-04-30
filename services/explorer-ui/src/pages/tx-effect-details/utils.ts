@@ -1,4 +1,4 @@
-import { type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
+import { type ChicmozL2DroppedTx, type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
 import { formatTimeSince } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
 import { type TabId } from "./types";
@@ -43,6 +43,39 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
     label: "RAW DATA",
     value: "View raw data",
     extLink: `${API_URL}/${aztecExplorer.getL2TxEffectByHash}${data.txHash}`,
+  },
+];
+
+export const getDroppedTxEffectData = (data: ChicmozL2DroppedTx) => [
+  {
+    label: "TRANSACTION HASH",
+    value: data.txHash,
+  },
+  {
+    label: "DROPPED AT",
+    value: new Date(data.droppedAt).toLocaleString(),
+  },
+  {
+    label: "REASON",
+    value: data.reason,
+  },
+  {
+    label: "PREVIOUS STATE",
+    value: data.previousState,
+  },
+  ...(data.orphanedTxEffectHash
+    ? [
+        {
+          label: "ORPHANED TX EFFECT HASH",
+          value: data.orphanedTxEffectHash,
+          link: `/tx-effects/${data.orphanedTxEffectHash}`,
+        },
+      ]
+    : []),
+  {
+    label: "RAW DATA",
+    value: "View raw data",
+    extLink: `${API_URL}/${aztecExplorer.getL2DroppedTxByHash(data.txHash)}`,
   },
 ];
 

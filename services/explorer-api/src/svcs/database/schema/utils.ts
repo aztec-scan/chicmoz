@@ -1,7 +1,5 @@
 import {
   ChicmozL2BlockFinalizationStatus,
-  ChicmozL2DroppedTxPreviousState,
-  ChicmozL2DroppedTxReason,
   ContractType,
   L2NetworkId,
 } from "@chicmoz-pkg/types";
@@ -65,7 +63,3 @@ export const l2BlockFinalizationStatusDbEnum = (name: string) =>
   smallint(name).$type<ChicmozL2BlockFinalizationStatus>();
 export const contractTypeDbEnum = (name: string) =>
   varchar(name).$type<ContractType>();
-export const droppedTxPreviousStateDbEnum = (name: string) =>
-  varchar(name).$type<ChicmozL2DroppedTxPreviousState>();
-export const droppedTxReasonDbEnum = (name: string) =>
-  varchar(name).$type<ChicmozL2DroppedTxReason>();
