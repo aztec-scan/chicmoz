@@ -97,6 +97,7 @@ export const onL2RpcNodeError = (
     return;
   }
   logger.info(`❌ publishing L2_RPC_NODE_ERROR_EVENT...`);
+  event.nodeError.message = event.nodeError.message.replace(AZTEC_RPC_URL, "xxx.xxx.xxx.xxx");
   publishMessageSync("L2_RPC_NODE_ERROR_EVENT", event);
 };
 
