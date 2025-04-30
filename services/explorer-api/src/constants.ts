@@ -32,7 +32,7 @@ export const AZTEC_SCAN_NOTES: Record<
       comment:
         "This is one of the first contracts deployed testing the default token contract in Aztec-packages. The token is called 'SHIPPED'",
     },
-    "0x0179dbec1536d883c06f20e8ce02ff0c0ecb3c96e97650ad2257c7bc988ded7c": {
+    "0x1534cadfd4566b8ba7e4ad87f499db5e2df5f76d6014a04d19e14bf2018ee266": {
       name: "nemi.fi PoolManager",
       origin: "Published in ecosystem Signal group pre public testnet launch",
       comment:
@@ -63,4 +63,10 @@ export const AZTEC_SCAN_NOTES: Record<
         "This contract is an account contract we use to deploy our contracts, which also has an ability to do fee sponsoring as FPC.",
     },
   },
+  {
+    "0x0df0b722ec3e476c556ff437981e10f75fae34f441dffd76e3c9c0a6d240f410": {
+      "name": "zkSnacks NFT collection",
+      "origin": "Published in ecosystem Signal group pre public testnet launch",
+      "comment": "This contract is the zkSnacks NFT collection. The first NFT collection on Aztec testnet. Get the taste of privacy. zksnacks.nemi.fi",
+  }
 };
