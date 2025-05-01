@@ -32,7 +32,7 @@ export const TxEffectDetails: FC = () => {
     useGetDroppedTxByHash(hash);
 
   if (!hash) {
-    return <div>No txEffect hash</div>;
+    return <LoadingDetails title="No transaction hash found" />;
   }
 
   if (isTxEffectsLoading && isPendingTxLoading && isDroppedTxLoading) {
@@ -87,10 +87,11 @@ export const TxEffectDetails: FC = () => {
   // TODO: Make proper error page when no transaction is found
   if (!txEffects) {
     return (
-      <div>
-        No transaction found. (Perhaps it has just not reached our indexer yet,
-        that might take a couple of seconds.)
-      </div>
+      <LoadingDetails
+        title="No transaction found."
+        description="Perhaps it has just not reached our indexer yet,
+        that might take a couple of seconds."
+      />
     );
   }
 

@@ -38,9 +38,6 @@ export const BlockDetails: FC = () => {
     error: txEffectsError,
   } = useGetTxEffectsByBlockHeight(height);
 
-  if (!block) {
-    return <LoadingDetails title="No Block found" emptyData={[]} />;
-  }
   if (isLoading) {
     return (
       <LoadingDetails
@@ -70,6 +67,14 @@ export const BlockDetails: FC = () => {
     }
   };
 
+  if (!block) {
+    return (
+      <LoadingDetails
+        title="No Block found"
+        description={`Please check if the block height ${blockNumber} is correct`}
+      />
+    );
+  }
   return (
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div>

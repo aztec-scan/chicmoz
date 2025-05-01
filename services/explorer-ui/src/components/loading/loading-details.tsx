@@ -3,10 +3,12 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 
 interface LoadingDetailsProps {
   title: string;
-  emptyData: { label: string; value: string | undefined }[];
+  description?: string;
+  emptyData?: { label: string; value: string | undefined }[];
 }
 export const LoadingDetails: FC<LoadingDetailsProps> = ({
   title,
+  description,
   emptyData,
 }) => {
   return (
@@ -18,7 +20,8 @@ export const LoadingDetails: FC<LoadingDetailsProps> = ({
         </div>
         <div className="flex flex-col gap-4 mt-4">
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay data={emptyData} />
+            {description && <h4 className="text-primary">{description}</h4>}
+            <KeyValueDisplay data={emptyData ? emptyData : []} />
           </div>
         </div>
       </div>
