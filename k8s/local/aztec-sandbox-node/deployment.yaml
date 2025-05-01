@@ -23,8 +23,8 @@ spec:
             limits:
               memory: 1500Mi
               cpu: 1000m
+          command: ["node"]
           args:
-            - node
             - ./aztec/dest/bin/index.js
             - start
             - --sandbox
@@ -32,7 +32,6 @@ spec:
             - name: pxe-port
               containerPort: 8081
               protocol: TCP
-
           env:
             # NOTE: So far this file in aztec-packages seems to be closest to the truth: yarn-project/aztec/src/cli/aztec_start_options.ts (also boxes/docker-compose.yml is a good place)
             #- name: DEBUG
