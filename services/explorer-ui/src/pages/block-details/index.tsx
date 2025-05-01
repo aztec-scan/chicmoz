@@ -11,11 +11,13 @@ import {
 } from "~/hooks";
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails, getTxEffects } from "./util";
+import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
     from: "/blocks/$blockNumber",
   });
+
   useSubTitle(`Block ${blockNumber}`);
   const [selectedTab, setSelectedTab] = useState<TabId>("txEffects");
   const onOptionSelect = (value: string) => {
@@ -67,6 +69,9 @@ export const BlockDetails: FC = () => {
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
           {block.orphan ? <OrphanedBanner type="block" /> : null}
+          {!block.orphan && (
+            <AdjecentBlockButtons blockNumber={parseInt(blockNumber)} />
+          )}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getBlockDetails(block)} />
           </div>
