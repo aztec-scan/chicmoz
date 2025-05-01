@@ -33,7 +33,14 @@
       name="keywords"
       content="aztec, block explorer, blockchain, chicmoz, aztecscan, aztec scan"
     />
-
+    <script>
+      var script = document.createElement("script");
+      script.async = true;
+      script.defer = true;
+      script.dataset.domain = window.location.host; // Set script data-domain dynamically
+      script.src = "https://plausible.sooth.dev/js/script.js";
+      document.head.append(script);
+    </script>
     <title>Aztec-Scan</title>
   </head>
   <body>
