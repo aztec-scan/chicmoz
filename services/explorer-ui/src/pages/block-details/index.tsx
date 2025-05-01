@@ -1,4 +1,4 @@
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OptionButtons } from "~/components/option-buttons";
@@ -16,6 +16,8 @@ export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
     from: "/blocks/$blockNumber",
   });
+  const navigate = useNavigate();
+
   useSubTitle(`Block ${blockNumber}`);
   const [selectedTab, setSelectedTab] = useState<TabId>("txEffects");
   const onOptionSelect = (value: string) => {
@@ -38,6 +40,12 @@ export const BlockDetails: FC = () => {
     return <div> No block hash</div>;
   }
 
+  const navigateToBlock = (blockNum: number) => {
+    void navigate({
+      to: "/blocks/$blockNumber",
+      params: { blockNumber: blockNum.toString() },
+    });
+  };
   const isTxLoading = isLoading || txEffectsLoading;
   const renderTabContent = () => {
     switch (selectedTab) {
@@ -67,6 +75,20 @@ export const BlockDetails: FC = () => {
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
           {block.orphan ? <OrphanedBanner type="block" /> : null}
+          <div className="flex justify-between ml-2 mr-2">
+            <button
+              onClick={() => navigateToBlock(parseInt(blockNumber) - 1)}
+              className="text-sm text-primary underline hover:text-primary/70 transition-colors"
+            >
+              Previous Block
+            </button>
+            <button
+              onClick={() => navigateToBlock(parseInt(blockNumber) + 1)}
+              className="text-sm text-primary underline hover:text-primary/70 transition-colors"
+            >
+              Next Block
+            </button>
+          </div>
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getBlockDetails(block)} />
           </div>
