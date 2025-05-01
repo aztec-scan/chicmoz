@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OptionButtons } from "~/components/option-buttons";
@@ -13,12 +13,12 @@ import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails, getTxEffects } from "./util";
 import { LoadingDetails } from "~/components/loading/tx-effect";
 import { getEmptyBlockData } from "~/components/loading/util";
+import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
     from: "/blocks/$blockNumber",
   });
-  const navigate = useNavigate();
 
   useSubTitle(`Block ${blockNumber}`);
   const [selectedTab, setSelectedTab] = useState<TabId>("txEffects");
@@ -50,12 +50,6 @@ export const BlockDetails: FC = () => {
     );
   }
 
-  const navigateToBlock = (blockNum: number) => {
-    void navigate({
-      to: "/blocks/$blockNumber",
-      params: { blockNumber: blockNum.toString() },
-    });
-  };
   const isTxLoading = isLoading || txEffectsLoading;
   const renderTabContent = () => {
     switch (selectedTab) {
@@ -85,20 +79,9 @@ export const BlockDetails: FC = () => {
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
           {block.orphan ? <OrphanedBanner type="block" /> : null}
-          <div className="flex justify-between ml-2 mr-2">
-            <button
-              onClick={() => navigateToBlock(parseInt(blockNumber) - 1)}
-              className="text-sm text-primary underline hover:text-primary/70 transition-colors"
-            >
-              Previous Block
-            </button>
-            <button
-              onClick={() => navigateToBlock(parseInt(blockNumber) + 1)}
-              className="text-sm text-primary underline hover:text-primary/70 transition-colors"
-            >
-              Next Block
-            </button>
-          </div>
+          {!block.orphan && (
+            <AdjecentBlockButtons blockNumber={parseInt(blockNumber)} />
+          )}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getBlockDetails(block)} />
           </div>
