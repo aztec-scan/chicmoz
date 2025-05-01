@@ -2,7 +2,6 @@ import { FC, useState } from "react";
 import { OptionButtons } from "~/components/option-buttons";
 import { PrivateLogs } from "./tabs/private-logs";
 import { PublicLogs } from "./tabs/public-logs";
-import { GenericListDisplay } from "~/components/info-display/generic-list-display";
 import { ValueListDisplay } from "~/components/info-display/value-list-display";
 import { PublicDataWrites } from "./tabs/public-data-write";
 import { ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
