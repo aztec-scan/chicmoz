@@ -15,7 +15,7 @@ export const ValueListDisplay: FC<ValueListDisplayProps> = ({
     <div>
       {values.map((value, index) => (
         <div
-          key={index}
+          key={value}
           className={`flex items-center justify-end py-3 ${
             index !== values.length - 1
               ? "border-b border-gray-200 dark:border-gray-700"
