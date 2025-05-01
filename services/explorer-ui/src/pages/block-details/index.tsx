@@ -12,6 +12,7 @@ import {
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails, getTxEffects } from "./util";
 import { LoadingDetails } from "~/components/loading/tx-effect";
+import { getEmptyBlockData } from "~/components/loading/util";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
@@ -38,7 +39,15 @@ export const BlockDetails: FC = () => {
   } = useGetTxEffectsByBlockHeight(height);
 
   if (!block) {
-    return <LoadingDetails title="Block details" emptyData={[]} />;
+    return <LoadingDetails title="No Block found" emptyData={[]} />;
+  }
+  if (isLoading) {
+    return (
+      <LoadingDetails
+        title="Loading block details"
+        emptyData={getEmptyBlockData()}
+      />
+    );
   }
 
   const navigateToBlock = (blockNum: number) => {
