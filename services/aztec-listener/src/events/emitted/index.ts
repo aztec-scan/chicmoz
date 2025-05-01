@@ -75,6 +75,10 @@ export const onL2SequencerInfo = async (sequencer: ChicmozL2Sequencer) => {
   await publishMessage("SEQUENCER_INFO_EVENT", event);
 };
 
+const IP_ADDRESS = AZTEC_RPC_URL.split("//")[1].split(":")[0];
+const replaceIpAddress = (str: string) =>
+  str.replaceAll(IP_ADDRESS, "xxx.xxx.xxx.xxx");
+
 export const onL2RpcNodeError = (
   rpcNodeError: Omit<
     ChicmozL2RpcNodeError,
@@ -97,7 +101,9 @@ export const onL2RpcNodeError = (
     return;
   }
   logger.info(`❌ publishing L2_RPC_NODE_ERROR_EVENT...`);
-  event.nodeError.message = event.nodeError.message.replace(AZTEC_RPC_URL, "xxx.xxx.xxx.xxx");
+  event.nodeError.cause = replaceIpAddress(event.nodeError.cause);
+  event.nodeError.stack = replaceIpAddress(event.nodeError.stack);
+  event.nodeError.message = replaceIpAddress(event.nodeError.message);
   publishMessageSync("L2_RPC_NODE_ERROR_EVENT", event);
 };
 
