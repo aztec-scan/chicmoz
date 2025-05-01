@@ -92,5 +92,11 @@ export const AZTEC_SCAN_NOTES: Record<
         },
       ],
     },
+    "0x266b64330cd6dedba8bae1a28c1abacb2a08148a229d7670f8d872340c937a08": {
+      name: "Blocksense Network",
+      origin: "Published in ecosystem Signal group pre public testnet launch",
+      comment:
+        "Decentralized oracle protocol that securely brings real-world data onto blockchains using zero-knowledge proofs and game-theoretic consensus mechanism.",
+    },
   },
 };
