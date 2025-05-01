@@ -11,6 +11,7 @@ import {
 } from "~/hooks";
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails, getTxEffects } from "./util";
+import { LoadingDetails } from "~/components/loading/tx-effect";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
@@ -37,7 +38,7 @@ export const BlockDetails: FC = () => {
   } = useGetTxEffectsByBlockHeight(height);
 
   if (!block) {
-    return <div> No block hash</div>;
+    return <LoadingDetails title="Block details" emptyData={[]} />;
   }
 
   const navigateToBlock = (blockNum: number) => {
