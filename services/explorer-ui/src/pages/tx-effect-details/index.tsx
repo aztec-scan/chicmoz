@@ -2,7 +2,7 @@ import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { DroppedBanner } from "~/components/dropped-banner";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
-import { LoadingDetails } from "~/components/loading/tx-effect";
+import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyTxEffectData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import {
@@ -32,7 +32,7 @@ export const TxEffectDetails: FC = () => {
     useGetDroppedTxByHash(hash);
 
   if (!hash) {
-    return <div>No txEffect hash</div>;
+    return <LoadingDetails title="No transaction hash found" />;
   }
 
   if (isTxEffectsLoading && isPendingTxLoading && isDroppedTxLoading) {
@@ -86,7 +86,13 @@ export const TxEffectDetails: FC = () => {
   // No data found
   // TODO: Make proper error page when no transaction is found
   if (!txEffects) {
-    return <div>No transaction found. (Perhaps it has just not reached our indexer yet, that might take a couple of seconds.)</div>;
+    return (
+      <LoadingDetails
+        title="No transaction found."
+        description="Perhaps it has just not reached our indexer yet,
+        that might take a couple of seconds."
+      />
+    );
   }
 
   // Success state - data is available
