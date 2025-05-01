@@ -44,7 +44,7 @@ export const TxEffectDetails: FC = () => {
     );
   }
 
-  if (txEffectsError) {
+  if (txEffectsError && !pendingTx) {
     return <div>Error loading transaction details</div>;
   }
 
