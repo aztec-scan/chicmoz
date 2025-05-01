@@ -11,7 +11,7 @@ import {
 } from "~/hooks";
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails, getTxEffects } from "./util";
-import { LoadingDetails } from "~/components/loading/tx-effect";
+import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyBlockData } from "~/components/loading/util";
 import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 
@@ -74,8 +74,10 @@ export const BlockDetails: FC = () => {
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div>
         <div className="flex flex-wrap m-5">
-          <h2 className="mt-2 text-primary md:hidden">Block Details</h2>
-          <h1 className="hidden md:block md:mt-8">Block Details</h1>
+          <h3 className="text-primary md:hidden">Block Details</h3>
+          <h2 className="hidden md:block md:mt-8 md:text-primary">
+            Block Details
+          </h2>
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
           {block.orphan ? <OrphanedBanner type="block" /> : null}
