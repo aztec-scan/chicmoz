@@ -4,9 +4,7 @@ import {
   generateL2TopicName,
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import {
-  chicmozL2PendingTxSchema,
-} from "@chicmoz-pkg/types";
+import { chicmozL2PendingTxSchema } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../constants.js";
 import { L2_NETWORK_ID } from "../../environment.js";
 import { logger } from "../../logger.js";
@@ -22,6 +20,9 @@ const onPendingTxs = async ({ txs }: PendingTxsEvent) => {
   const dbTxs = await getTxs();
   const staleTxs = dbTxs.filter(
     (dbTx) => !txs.some((tx) => tx.hash === dbTx.hash),
+  );
+  logger.info(
+    `🕐 Pening txs: ${txs.length}, stale txs: ${staleTxs.length}, db txs: ${dbTxs.length}`,
   );
   for (const tx of txs) {
     const res = chicmozL2PendingTxSchema.parse(tx);

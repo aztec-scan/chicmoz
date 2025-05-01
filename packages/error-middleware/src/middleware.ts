@@ -23,14 +23,22 @@ export const createErrorMiddleware = (logger: Logger): ErrorRequestHandler => {
       res
         .status(500)
         .send(
-          "Aztec indexer has not been able to index any blocks from chain yet"
+          "Aztec indexer has not been able to index any blocks from chain yet",
         );
+      return;
+    }
+    if (
+      err instanceof Error &&
+      err.message.startsWith("CACHE_ERROR") &&
+      err.message.endsWith("not found")
+    ) {
+      res.status(404).json();
       return;
     }
 
     if (err instanceof Error) {
       logger.error(
-        `Error-handler: name: ${err.name}, message: ${err.message} (for route: ${_req.originalUrl})`
+        `Error-handler: name: ${err.name}, message: ${err.message} (for route: ${_req.originalUrl})`,
       );
       if (err.stack) {
         logger.error(`Error-handler: stack: ${err.stack}`);
