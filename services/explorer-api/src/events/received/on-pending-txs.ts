@@ -21,10 +21,13 @@ const onPendingTxs = async ({ txs }: PendingTxsEvent) => {
   const staleTxs = dbTxs.filter(
     (dbTx) => !txs.some((tx) => tx.hash === dbTx.hash),
   );
-  logger.info(
-    `🕐 Pening txs: ${txs.length}, stale txs: ${staleTxs.length}, db txs: ${dbTxs.length}`,
+  const newTxs = txs.filter(
+    (tx) => !dbTxs.some((dbTx) => tx.hash === dbTx.hash),
   );
-  for (const tx of txs) {
+  logger.info(
+    `🕐 total pending txs: ${txs.length}, new txs: ${newTxs.length}, stale txs: ${staleTxs.length}`,
+  );
+  for (const tx of newTxs) {
     const res = chicmozL2PendingTxSchema.parse(tx);
     await storeL2Tx(res).catch((e) => {
       handleDuplicateError(e as Error, `tx ${res.hash}`);
@@ -32,12 +35,10 @@ const onPendingTxs = async ({ txs }: PendingTxsEvent) => {
   }
   if (staleTxs.length > 0) {
     // TODO: perhaps emit an event to websockets?
-    logger.info(
-      `🕐🕐🕐 Stale txs: ${staleTxs.length}. Storing as dropped and then deleting...`,
-    );
     for (const tx of staleTxs) {
       try {
         // Store as dropped transaction before deleting
+        logger.info(`🗑️🕐 trying to store tx as dropped ${tx.hash}`);
         await storeDroppedTx({
           txHash: tx.hash,
           createdAt: new Date(tx.birthTimestamp),

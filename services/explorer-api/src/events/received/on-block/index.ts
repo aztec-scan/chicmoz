@@ -126,7 +126,7 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
 };
 
 const pendingTxsHook = async (txEffects: ChicmozL2TxEffect[]) => {
-  await controllers.l2Tx.replaceTxsWithTxEffects(txEffects);
+  await controllers.l2Tx.removePendingAndDroppedTx(txEffects);
 };
 
 export const blockHandler: EventHandler = {
