@@ -5,7 +5,7 @@ import { logger } from "../../../../logger.js";
 import { l2Tx } from "../../../database/schema/l2tx/index.js";
 import { removeDroppedTxByHash } from "../../controllers/dropped-tx/remove.js";
 
-export const replaceTxsWithTxEffects = async (
+export const removePendingAndDroppedTx = async (
   txEffects: ChicmozL2TxEffect[],
 ): Promise<void> => {
   return await db().transaction(async (dbTx) => {
@@ -17,12 +17,15 @@ export const replaceTxsWithTxEffects = async (
       if (!tx) {
         continue;
       }
+      logger.info(`🕐🔥 deleted pending tx ${txEffect.txHash}`);
 
-      logger.info(
-        `🕐🔥 Replacing tx with txEffect: ${txEffect.txHash} and ensuring that there is no dropped tx stored`,
-      );
-
-      await removeDroppedTxByHash(txEffect.txHash);
+      try {
+        await removeDroppedTxByHash(txEffect.txHash);
+      } catch (e) {
+        logger.error(
+          `Error removing dropped tx ${txEffect.txHash}: ${(e as Error).stack}`,
+        );
+      }
 
       if (tx[0]?.birthTimestamp) {
         await dbTx
