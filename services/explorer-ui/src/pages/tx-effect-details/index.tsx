@@ -86,7 +86,7 @@ export const TxEffectDetails: FC = () => {
   // No data found
   // TODO: Make proper error page when no transaction is found
   if (!txEffects) {
-    return <div>No transaction found. (Perhaps it has just not reached our indexer yet)</div>;
+    return <div>No transaction found. (Perhaps it has just not reached our indexer yet, that might take a couple of seconds.)</div>;
   }
 
   // Success state - data is available
