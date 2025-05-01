@@ -49,7 +49,7 @@ export const TxEffectDetails: FC = () => {
   }
 
   // Dropped transaction - display dropped banner with details
-  if (droppedTx) {
+  if (!txEffects && !pendingTx && droppedTx) {
     return (
       <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
         <div>
