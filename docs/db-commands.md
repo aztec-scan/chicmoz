@@ -168,3 +168,19 @@ kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-p
 - **Columns**: tx_hash (primary key), reason, previous_state, orphaned_tx_effect_hash, created_at, dropped_at
 - **Purpose**: Stores information about transactions that were dropped and did not produce a transaction effect
 - **Related**: Can be linked to tx_effect table through orphaned_tx_effect_hash when a transaction is dropped due to being orphaned
+
+## Transaction Effect Queries
+
+```bash
+# Count all non-orphaned transaction effects
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM tx_effect te JOIN body b ON te.body_id = b.id JOIN \\\"l2Block\\\" lb ON b.block_hash = lb.hash WHERE lb.orphan_timestamp IS NULL;\""
+
+# Count non-orphaned transaction effects after a specific block height
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM tx_effect te JOIN body b ON te.body_id = b.id JOIN \\\"l2Block\\\" lb ON b.block_hash = lb.hash WHERE lb.height > <BLOCK_HEIGHT> AND lb.orphan_timestamp IS NULL;\""
+
+# Example: Count non-orphaned transaction effects after block height 19902
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM tx_effect te JOIN body b ON te.body_id = b.id JOIN \\\"l2Block\\\" lb ON b.block_hash = lb.hash WHERE lb.height > 19902 AND lb.orphan_timestamp IS NULL;\""
+
+# List non-orphaned transaction effects with details after a specific block height (limited to 10)
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT te.tx_hash, lb.height, te.index, te.revert_code FROM tx_effect te JOIN body b ON te.body_id = b.id JOIN \\\"l2Block\\\" lb ON b.block_hash = lb.hash WHERE lb.height > <BLOCK_HEIGHT> AND lb.orphan_timestamp IS NULL ORDER BY lb.height, te.index LIMIT 10;\""
+```
