@@ -14,11 +14,14 @@ export const useLatestBlock = (): UseQueryResult<
 };
 
 export const useGetBlockByIdentifier = (
-  heightOrHash: string
+  heightOrHash: string,
 ): UseQueryResult<ChicmozL2BlockLight, Error> => {
   return useQuery<ChicmozL2BlockLight, Error>({
     queryKey: queryKeyGenerator.blockByHeight(heightOrHash),
-    queryFn: () => heightOrHash.startsWith("0x") ? BlockAPI.getBlockByHash(heightOrHash) : BlockAPI.getBlockByHeight(heightOrHash),
+    queryFn: () =>
+      heightOrHash.startsWith("0x")
+        ? BlockAPI.getBlockByHash(heightOrHash)
+        : BlockAPI.getBlockByHeight(heightOrHash),
   });
 };
 
@@ -29,5 +32,15 @@ export const useLatestBlocks = (): UseQueryResult<
   return useQuery<ChicmozL2BlockLight[], Error>({
     queryKey: queryKeyGenerator.latestBlocks,
     queryFn: () => BlockAPI.getBlocksByHeightRange(),
+  });
+};
+
+export const useBlocksByRange = (
+  start: number,
+  end: number,
+): UseQueryResult<ChicmozL2BlockLight[], Error> => {
+  return useQuery<ChicmozL2BlockLight[], Error>({
+    queryKey: queryKeyGenerator.blockByRange(start, end),
+    queryFn: () => BlockAPI.getBlocksByHeightRange(start, end),
   });
 };
