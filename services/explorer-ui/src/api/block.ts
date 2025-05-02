@@ -1,4 +1,9 @@
-import { type ChicmozL2BlockLight, type ChicmozReorg, chicmozL2BlockLightSchema, chicmozReorgSchema } from "@chicmoz-pkg/types";
+import {
+  type ChicmozL2BlockLight,
+  type ChicmozReorg,
+  chicmozL2BlockLightSchema,
+  chicmozReorgSchema,
+} from "@chicmoz-pkg/types";
 import client, { validateResponse } from "./client";
 import { aztecExplorer } from "~/service/constants";
 import { z } from "zod";
@@ -31,28 +36,32 @@ export const BlockAPI = {
   },
   getBlockByHeight: async (height: string): Promise<ChicmozL2BlockLight> => {
     const response = await client.get(
-      `${aztecExplorer.getL2BlockByHeight}${height}`
+      `${aztecExplorer.getL2BlockByHeight}${height}`,
     );
     return validateResponse(chicmozL2BlockLightSchema, response.data);
   },
   getBlocksByHeightRange: async (
     start?: number,
-    end?: number
+    end?: number,
   ): Promise<ChicmozL2BlockLight[]> => {
-    const params: { start?: number; end?: number } = {};
-    if (start) params.start = start;
-    if (end) params.end = end;
+    const params: { from?: number; to?: number } = {};
+    if (start) {
+      params.from = start;
+    }
+    if (end) {
+      params.to = end;
+    }
     const response = await client.get(
       `${aztecExplorer.getL2BlocksByHeightRange}`,
       {
         params,
-      }
+      },
     );
     return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
   },
   getBlockByHash: async (hash: string): Promise<ChicmozL2BlockLight> => {
     const response = await client.get(
-      `${aztecExplorer.getL2BlockByHash}${hash}`
+      `${aztecExplorer.getL2BlockByHash}${hash}`,
     );
     return validateResponse(chicmozL2BlockLightSchema, response.data);
   },
