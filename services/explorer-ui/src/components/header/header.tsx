@@ -43,7 +43,12 @@ export const Header = () => {
       to: routes.aztecscanHealth.route,
       group: "aztec",
     },
-    // TODO: add ecosystem
+    {
+      key: "aztecEcosystem",
+      name: routes.ecosystem.title,
+      to: routes.ecosystem.route,
+      group: "aztec",
+    },
     {
       key: "networkHealth",
       name: routes.networkHealth.title,
