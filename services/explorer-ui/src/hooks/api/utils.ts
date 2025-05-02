@@ -14,6 +14,7 @@ export const queryKeyGenerator = {
   latestBlock: ["latestBlock"],
   latestBlocks: ["latestBlocks"],
   blockByHeight: (height: string) => ["blockByHeight", height],
+  blockByRange: (min: number, max: number) => ["blockRange", min, max],
   totalTxEffects: [statsKey, "totalTxEffects"],
   totalTxEffectsLast24h: [statsKey, "totalTxEffectsLast24h"],
   totalContracts: [statsKey, "totalContracts"],
