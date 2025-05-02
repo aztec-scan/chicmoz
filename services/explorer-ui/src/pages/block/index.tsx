@@ -37,6 +37,7 @@ export const Blocks: FC = () => {
   }, [latestBlocksData, startBlock, endBlock]);
 
   // Use range-based query once we have a range
+  // Add 1 to end value because backend uses exclusive upper bound [from, to)
   const {
     data: rangeBlocks,
     isLoading,
@@ -44,7 +45,7 @@ export const Blocks: FC = () => {
     refetch,
   } = useBlocksByRange(
     startBlock ?? 1,
-    endBlock ?? (startBlock ? startBlock + 9 : 10),
+    endBlock !== undefined ? endBlock + 1 : startBlock ? startBlock + 10 : 11,
   );
 
   // Refetch when range changes
@@ -55,7 +56,6 @@ export const Blocks: FC = () => {
   }, [startBlock, endBlock, refetch]);
 
   const handleRangeChange = (start: number, end: number) => {
-    console.log(`Range changed: ${start} - ${end}`);
     setStartBlock(start);
     setEndBlock(end);
   };
