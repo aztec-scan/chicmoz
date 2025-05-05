@@ -13,9 +13,11 @@ export const ContractInstancesTab: FC<ContractInstancesProps> = ({ data }) => {
     isLoading: isLoadingInstances,
     error: errorInstances,
   } = data;
+  const description = `Total amount of instances: ${instancesData?.length}`;
   return (
     <ContractInstancesTable
       title="Latest Contract Instances"
+      description={description}
       contracts={mapContractInstances(instancesData)}
       isLoading={isLoadingInstances}
       error={errorInstances}
