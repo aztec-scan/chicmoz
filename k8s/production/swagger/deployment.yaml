@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: swagger-label
+  name: swagger-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swagger-label
+  template:
+    metadata:
+      labels:
+        app: swagger-label
+    spec:
+      containers:
+        - image: swaggerapi/swagger-ui:latest
+          name: swagger
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            - name: SWAGGER_JSON_URL
+              value: "https://api.devnet.aztecscan.xyz/v1/temporary-api-key/open-api-specification"
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 200m

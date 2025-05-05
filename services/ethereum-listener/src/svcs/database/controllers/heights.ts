@@ -1,6 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { and, eq, getTableColumns } from "drizzle-orm";
 import { logger } from "../../../logger.js";
+import { getEarliestRollupBlockNumber } from "../../../network-client/client/index.js";
 import { heightsTable } from "../schema.js";
 
 export type PartialDbError = {
@@ -114,6 +115,8 @@ export const setHeight = async ({
   }
 };
 
+let earliestBlockNumberRes: Promise<bigint> | undefined;
+
 export const getHeights = async ({
   contractName,
   contractAddress,
@@ -137,9 +140,14 @@ export const getHeights = async ({
     )
     .limit(1);
   if (!res.length) {
+    if (!earliestBlockNumberRes) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      earliestBlockNumberRes = getEarliestRollupBlockNumber();
+    }
+    const earliestBlockNumber = await earliestBlockNumberRes;
     return {
-      latestPendingHeight: latestHeight ?? 0n,
-      latestFinalizedHeight: 0n,
+      latestPendingHeight: latestHeight ?? earliestBlockNumber,
+      latestFinalizedHeight: earliestBlockNumber,
     };
   }
 

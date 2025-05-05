@@ -1,24 +1,31 @@
 import assert from "assert";
 import bodyParser from "body-parser";
 import { Router } from "express";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { ARTIFACT_BODY_LIMIT } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import * as controller from "./controllers/index.js";
 import { paths } from "./paths_and_validation.js";
 
-export const openApiPaths = {
+export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_LATEST_HEIGHT,
   ...controller.openapi_GET_LATEST_BLOCK,
   ...controller.openapi_GET_BLOCK,
   ...controller.openapi_GET_BLOCKS, // TODO: rename to L2_GET_BLOCKS?
+  ...controller.openapi_GET_BLOCKS_BY_FINALIZATION_STATUS,
+  ...controller.openapi_GET_ORPHANED_BLOCKS,
+  ...controller.openapi_GET_ORPHANED_BLOCKS_LIMITED,
+  ...controller.openapi_GET_REORGS,
 
   ...controller.openapi_GET_L2_FEE_RECIPIENTS,
 
+  ...controller.openapi_GET_L2_TX_EFFECTS,
   ...controller.openapi_GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT,
   ...controller.openapi_GET_L2_TX_EFFECT_BY_BLOCK_HEIGHT_AND_INDEX,
   ...controller.openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH,
 
   ...controller.openapi_GET_PENDING_TXS,
+  ...controller.openapi_GET_DROPPED_TX_BY_HASH,
 
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASS,
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS,
@@ -26,8 +33,8 @@ export const openApiPaths = {
 
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS,
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION,
-  ...controller.openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS,
-  ...controller.openapi_GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION,
+  ...controller.openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS,
+  ...controller.openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION,
 
   ...controller.openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT,
 
@@ -35,8 +42,10 @@ export const openApiPaths = {
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCE,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES,
+  ...controller.openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
+  ...controller.openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT,
 
-  ...controller.openapi_SEARCH, // TODO: rename to L2_SEARCH?
+  ...controller.openapi_L2_SEARCH,
 
   ...controller.openapi_GET_L1_L2_VALIDATORS,
   ...controller.openapi_GET_L1_L2_VALIDATOR,
@@ -79,11 +88,15 @@ const otherPaths = [
 ];
 
 const checkDocsStatus = () => {
+  // TODO: this can be improved when this issue is complete: https://github.com/aztec-scan/chicmoz/issues/374
   const totalPaths = Object.keys(paths).length;
   const totalStatsPaths = otherPaths.length;
   const totalOpenApiPaths = Object.keys(openApiPaths).length;
   try {
-    assert(totalPaths - totalStatsPaths === totalOpenApiPaths);
+    const doubleUsagesOfPaths = 1; // TODO: currently there is one path that is used by POST and GET, this is correct. However this simple check-docs-status function should be improved to accept this case.
+    assert(
+      totalPaths - totalStatsPaths - doubleUsagesOfPaths === totalOpenApiPaths,
+    );
   } catch (e) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     logger.error(
@@ -98,6 +111,10 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.latestHeight, controller.GET_LATEST_HEIGHT);
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);
+  router.get(paths.blocksByStatus, controller.GET_BLOCKS_BY_FINALIZATION_STATUS);
+  router.get(paths.orphanedBlocks, controller.GET_ORPHANED_BLOCKS);
+  router.get(paths.orphanedBlocksLimited, controller.GET_ORPHANED_BLOCKS_LIMITED);
+  router.get(paths.reorgs, controller.GET_REORGS);
   router.get(paths.block, controller.GET_BLOCK);
   router.get(paths.blocks, controller.GET_BLOCKS);
   router.get(paths.feeRecipients, controller.GET_L2_FEE_RECIPIENTS);
@@ -117,6 +134,8 @@ export const init = ({ router }: { router: Router }) => {
   );
 
   router.get(paths.txs, controller.GET_PENDING_TXS);
+  router.get(paths.txByHash, controller.GET_PENDING_TX_BY_HASH);
+  router.get(paths.droppedTxByHash, controller.GET_DROPPED_TX_BY_HASH);
 
   router.get(paths.contractClass, controller.GET_L2_REGISTERED_CONTRACT_CLASS);
   router.get(
@@ -137,12 +156,12 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION,
   );
   router.get(
-    paths.contractClassUnconstrainedFunctions,
-    controller.GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTIONS,
+    paths.contractClassUtilityFunctions,
+    controller.GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS,
   );
   router.get(
-    paths.contractClassUnconstrainedFunction,
-    controller.GET_L2_CONTRACT_CLASS_UNCONSTRAINED_FUNCTION,
+    paths.contractClassUtilityFunction,
+    controller.GET_L2_CONTRACT_CLASS_UTILITY_FUNCTION,
   );
 
   router.post(
@@ -169,6 +188,7 @@ export const init = ({ router }: { router: Router }) => {
     paths.contractInstancesByContractClassId,
     controller.GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
   );
+  router.get(paths.contractInstancesWithAztecScanNotes, controller.GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES);
   router.get(paths.contractInstance, controller.GET_L2_CONTRACT_INSTANCE);
   router.get(paths.contractInstances, controller.GET_L2_CONTRACT_INSTANCES);
 

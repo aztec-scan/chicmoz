@@ -39,8 +39,7 @@ export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
     displayData.push({
       label: "DEPLOYER CONTRACT 🤖",
       value:
-        "This is a contract deployed by the hard-coded deployer. This message will only appear in development mode. But linking to verified contracts for good measure.",
-      link: routes.verifiedContractInstances.route,
+        "This is a contract deployed by the hard-coded deployer. This message will only appear in development mode.",
     });
   }
   return displayData;
@@ -104,7 +103,7 @@ export const getVerifiedContractInstanceDeploymentData = (
         },
         {
           label: "CONSTRUCTOR ARGS",
-          value: data.verifiedDeploymentArguments.constructorArgs.join(", "),
+          value: data.verifiedDeploymentArguments.constructorArgs.join(", ") ?? "[]",
         },
       ]
     : undefined;
@@ -138,5 +137,26 @@ export const getVerifiedContractInstanceDeploymentData = (
         },
       ]
     : undefined;
-  return { verifiedDeploymentArguments, deployerMetadata };
+  const aztecScanNotes = data.aztecScanNotes
+    ? [
+        {
+          label: "ORIGIN",
+          value: data.aztecScanNotes.origin,
+        },
+        {
+          label: "COMMENT",
+          value: data.aztecScanNotes.comment,
+        },
+        {
+          label: "RELATED L1 CONTRACT ADDRESSES",
+          value:
+            JSON.stringify(
+              data.aztecScanNotes.relatedL1ContractAddresses,
+              null,
+              2,
+            ) ?? "None",
+        },
+      ]
+    : undefined;
+  return { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes };
 };

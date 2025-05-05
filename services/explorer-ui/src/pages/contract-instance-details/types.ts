@@ -1,9 +1,13 @@
 import { z } from "zod";
-import { DetailItem } from "~/components/info-display/key-value-display";
+import { type DetailItem } from "~/components/info-display/key-value-display";
 
-export type tabId = "verifiedDeployment" | "contactDetails";
+export type tabId = "verifiedDeployment" | "contactDetails" | "aztecScanNotes";
 
-export const tabIds = ["verifiedDeployment", "contactDetails"] as const;
+export const tabIds = [
+  "verifiedDeployment",
+  "contactDetails",
+  "aztecScanNotes",
+] as const;
 
 export const tabIdSchema = z.enum(tabIds);
 export type TabId = z.infer<typeof tabIdSchema>;
@@ -17,6 +21,7 @@ export type Tab = z.infer<typeof tabSchema>;
 export const verifiedDeploymentTabs: Tab[] = [
   { id: "verifiedDeployment", label: "Verified deployment" },
   { id: "contactDetails", label: "Contact details" },
+  { id: "aztecScanNotes", label: "Aztec Scan notes" },
 ];
 
 export interface VerifiedDeploymentData {
@@ -30,4 +35,10 @@ export interface ContactDetailsData {
   externalUrls: { data: DetailItem[] };
   creatorName: { data: DetailItem[] };
   contact: { data: DetailItem[] };
+}
+
+export interface AztecScanNotesData {
+  origin: { data: DetailItem[] };
+  comment: { data: DetailItem[] };
+  relatedL1ContractAddresses: { data: DetailItem[] };
 }

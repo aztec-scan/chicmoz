@@ -1,37 +1,20 @@
-import { type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
+import { type ChicmozL2DroppedTx, type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
 import { formatTimeSince } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
-import { TabId } from "./types";
+import { type TabId } from "./types";
 
 export type TxEffectDataType =
   | string[][]
   | string[]
   | Array<{ logs: Array<{ data: Buffer; contractAddress: string }> }>
   | Array<{
-    logs: Array<{
-      data: Buffer;
-      maskedContractAddress: string;
-    }>;
-  }>
+      logs: Array<{
+        data: Buffer;
+        maskedContractAddress: string;
+      }>;
+    }>
   | Array<{ logs: Array<{ data: Buffer }> }>
   | Array<{ leafSlot: string; value: string }>;
-
-export const naiveDecode = (data: string[]): string => {
-  let counterZero = 0;
-  let counterAbove128 = 0;
-  const charCodes: number[] = data
-    ?.map((hex) => parseInt(hex, 16))
-    .map((charCode) => {
-      if (charCode === 0) counterZero++;
-      if (charCode > 128) counterAbove128++;
-      return charCode;
-    });
-  const isNoWeirdChars = counterZero + counterAbove128 === 0;
-  const isProbablyAReadableString =
-    isNoWeirdChars || data.length - charCodes.indexOf(0) === counterZero;
-  const res = charCodes.map((char) => String.fromCharCode(char)).join("");
-  return isProbablyAReadableString ? res : data.join("\n");
-};
 
 export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
   {
@@ -45,7 +28,11 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
   {
     label: "BLOCK NUMBER",
     value: data.blockHeight.toString(),
-    link: `/blocks/${data.blockHeight}`,
+  },
+  {
+    label: "BLOCK HASH",
+    value: data.blockHash,
+    link: `/blocks/${data.blockHash}`,
   },
   { label: "MINED ON CHAIN", value: formatTimeSince(data.timestamp) },
   {
@@ -59,8 +46,24 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
   },
 ];
 
+export const getDroppedTxEffectData = (data: ChicmozL2DroppedTx) => [
+  {
+    label: "TRANSACTION HASH",
+    value: data.txHash,
+  },
+  {
+    label: "DROPPED AT",
+    value: new Date(data.droppedAt).toLocaleString(),
+  },
+  {
+    label: "RAW DATA",
+    value: "View raw data",
+    extLink: `${API_URL}/${aztecExplorer.getL2DroppedTxByHash(data.txHash)}`,
+  },
+];
+
 export const mapTxEffectsData = (
-  data?: ChicmozL2TxEffectDeluxe
+  data?: ChicmozL2TxEffectDeluxe,
 ): Record<TabId, boolean> => {
   return {
     privateLogs: !!data?.privateLogs?.length,

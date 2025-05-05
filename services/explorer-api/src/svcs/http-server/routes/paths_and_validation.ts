@@ -1,5 +1,7 @@
 import { verifyInstanceDeploymentPayloadSchema } from "@chicmoz-pkg/contract-verification";
 import {
+  NODE_ENV,
+  NodeEnv,
   chicmozL2BlockSchema,
   chicmozL2ContractInstanceDeployerMetadataSchema,
   chicmozL2SequencerSchema,
@@ -15,7 +17,7 @@ export const blockHash = "blockHash";
 export const txEffectIndex = "txEffectIndex";
 export const txEffectHash = "txEffectHash";
 export const address = "address";
-export const classId = "classId";
+export const contractClassId = "contractClassId";
 export const version = "version";
 export const functionSelector = "functionSelector";
 
@@ -24,6 +26,10 @@ export const paths = {
   latestBlock: "/l2/blocks/latest",
   block: `/l2/blocks/:${heightOrHash}`,
   blocks: "/l2/blocks",
+  blocksByStatus: "/l2/blocks/by-status",
+  orphanedBlocks: "/l2/blocks/orphaned",
+  orphanedBlocksLimited: "/l2/blocks/orphans",
+  reorgs: "/l2/reorgs",
 
   txEffects: "/l2/tx-effects",
   txEffectsByBlockHeight: `/l2/blocks/:${blockHeight}/tx-effects`,
@@ -31,18 +37,23 @@ export const paths = {
   txEffectsByTxEffectHash: `/l2/tx-effects/:${txEffectHash}`,
 
   txs: "/l2/txs",
+  txByHash: `/l2/txs/:${txEffectHash}`,
 
-  contractClass: `/l2/contract-classes/:${classId}/versions/:${version}`,
-  contractClassesByClassId: `/l2/contract-classes/:${classId}`,
+  droppedTxByHash: `/l2/dropped-txs/:${txEffectHash}`,
+
+  contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
+  contractClassesByClassId: `/l2/contract-classes/:${contractClassId}`,
   contractClasses: `/l2/contract-classes`,
 
-  contractClassPrivateFunctions: `/l2/contract-classes/:${classId}/private-functions`,
-  contractClassPrivateFunction: `/l2/contract-classes/:${classId}/private-functions/:${functionSelector}`,
-  contractClassUnconstrainedFunctions: `/l2/contract-classes/:${classId}/unconstrained-functions`,
-  contractClassUnconstrainedFunction: `/l2/contract-classes/:${classId}/unconstrained-functions/:${functionSelector}`,
+  contractClassPrivateFunctions: `/l2/contract-classes/:${contractClassId}/private-functions`,
+  contractClassPrivateFunction: `/l2/contract-classes/:${contractClassId}/private-functions/:${functionSelector}`,
+  contractClassUtilityFunctions: `/l2/contract-classes/:${contractClassId}/utility-functions`,
+  contractClassUtilityFunction: `/l2/contract-classes/:${contractClassId}/utility-functions/:${functionSelector}`,
 
-  contractInstancesByContractClassId: `/l2/contract-classes/:${classId}/contract-instances`,
+  contractInstancesByContractClassId: `/l2/contract-classes/:${contractClassId}/contract-instances`,
   contractInstancesByBlockHash: `/l2/blocks/:${blockHash}/contract-instances`,
+  contractInstancesWithAztecScanNotes:
+    "/l2/contract-instances/with-aztec-scan-notes",
   contractInstance: `/l2/contract-instances/:${address}`,
   contractInstances: "/l2/contract-instances",
 
@@ -127,32 +138,33 @@ export const getContractInstancesByBlockHashSchema = z.object({
 
 export const getContractClassSchema = z.object({
   params: z.object({
-    [classId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
     [version]: z.coerce.number().nonnegative(),
   }),
   query: contractIncludeArtifactJson,
 });
 
-export const getContractClassesByClassIdSchema = z.object({
+export const getContractClassesByCurrentClassIdSchema = z.object({
   params: z.object({
-    [classId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
   }),
 });
 
 export const getContractClassPrivateFunctionsSchema = z.object({
   params: z.object({
-    [classId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
   }),
 });
 export const getContractClassPrivateFunctionSchema = z.object({
   params: z.object({
-    [classId]: hexStringSchema,
+    [contractClassId]: hexStringSchema,
     [functionSelector]: z.coerce.number().nonnegative(),
   }),
 });
-export const getContractClassUnconstrainedFunctionsSchema =
+
+export const getContractClassUtilityFunctionsSchema =
   getContractClassPrivateFunctionsSchema;
-export const getContractClassUnconstrainedFunctionSchema =
+export const getContractClassUtilityFunctionSchema =
   getContractClassPrivateFunctionSchema;
 
 export const postContrctClassArtifactSchema = z.lazy(() => {
@@ -163,12 +175,19 @@ export const postContrctClassArtifactSchema = z.lazy(() => {
     }),
   });
 });
-export const getContractInstancesByContractClassIdSchema =
-  getContractClassesByClassIdSchema;
+export const getContractInstancesByCurrentContractClassIdSchema =
+  getContractClassesByCurrentClassIdSchema;
 
 export const getVerifiedContractInstanceSchema = getContractInstanceSchema;
 
 export const postVerifiedContractInstanceSchema = z.lazy(() => {
+  let overrideAztecOriginNotes = {};
+  if (NODE_ENV === NodeEnv.PROD) {
+    overrideAztecOriginNotes = {
+      reviewedAt: true,
+      aztecScanNotes: true,
+    };
+  }
   return z.object({
     ...getContractInstanceSchema.shape,
     body: z.object({
@@ -176,9 +195,10 @@ export const postVerifiedContractInstanceSchema = z.lazy(() => {
         .omit({
           address: true,
           uploadedAt: true,
+          ...overrideAztecOriginNotes,
         })
         .optional(),
-      verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema
+      verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema,
     }),
   });
 });
@@ -197,4 +217,8 @@ export const getSequencerSchema = z.object({
   params: z.object({
     enr: chicmozL2SequencerSchema.shape.enr,
   }),
+});
+
+export const getContractInstancesWithAztecScanNotesSchema = z.object({
+  query: contractIncludeArtifactJson,
 });

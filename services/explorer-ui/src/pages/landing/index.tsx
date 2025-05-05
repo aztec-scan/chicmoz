@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
+import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
 import {
@@ -52,14 +54,6 @@ export const Landing: FC = () => {
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
 
-  useSubTitle(latestBlocks?.[0]?.height.toString() ?? routes.home.title);
-
-
-  const averageBlockTimeFormatted = formatDuration(
-    Number(avarageBlockTime) / 1000,
-    true,
-  );
-
   const formattedFees = formatFees(avarageFees);
 
   const isAnyComponentLoading =
@@ -84,23 +78,43 @@ export const Landing: FC = () => {
     !isAnyComponentLoading &&
     !isThereAnyComponentData;
 
+  let title = routes.home.title;
+  if (isConclusivlyDown) {
+    title = "Aztecscan: DOWN";
+  }
+  if (latestBlocks?.[0]?.height) {
+    title = `Aztecscan: ${latestBlocks[0].height}`;
+  }
+  useSubTitle(title);
+
+  const showBlockCountdownProgress =
+    !loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime;
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       {isConclusivlyDown && (
         <div className="flex flex-col bg-white w-full h-96 justify-between rounded-lg shadow-md mt-20">
           <div className="flex flex-col items-center justify-center h-full">
             <h3>System is down</h3>
-            <p>{systemHealth.reason}</p>
+            <Link
+              to={routes.aztecscanHealth.route}
+              className="text-primary dark:text-white underline"
+            >
+              Check health page for details
+            </Link>
           </div>
         </div>
       )}
       {!isConclusivlyDown && (
         <>
           <div className=" flex flex-wrap justify-center my-14 md:my-20">
-            <h1 className="hidden md:text-primary md:dark:text-white">Explore the power of privacy on Aztec</h1>
-            <h5 className="text-primary dark:text-white">Explore the power of privacy on Aztec</h5>
+            <h1 className="hidden md:block md:text-primary md:dark:text-white">
+              Explore the power of privacy on Aztec
+            </h1>
+            <h5 className="text-primary dark:text-white md:hidden">
+              Explore the power of privacy on Aztec
+            </h5>
           </div>
-          <div className="grid grid-cols-2 gap-3 my-14 md:my-20 md:grid-cols-3 md:gap-5">
+          <div className="grid grid-cols-2 gap-3 mt-14 mb-10 md:mt-20 md:mb-10 md:grid-cols-3 md:gap-5">
             <InfoBadge
               title="Total transactions"
               isLoading={loadingTotalEffects}
@@ -135,9 +149,22 @@ export const Landing: FC = () => {
               title="Average block time"
               isLoading={loadingAvarageBlockTime}
               error={errorAvarageBlockTime}
-              data={averageBlockTimeFormatted}
+              data={
+                avarageBlockTime
+                  ? formatDuration(Number(avarageBlockTime) / 1000, true)
+                  : "calculating..."
+              }
             />
           </div>
+          {showBlockCountdownProgress && (
+            <div>
+              <BlockCountdownProgress
+                latestBlocks={latestBlocks}
+                averageBlockTime={avarageBlockTime}
+              />
+            </div>
+          )}
+
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
               <BlocksTable

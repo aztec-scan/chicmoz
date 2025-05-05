@@ -5,5 +5,5 @@ export const l2BlockFinalizationUpdate = async (
   update: ChicmozL2BlockFinalizationUpdateEvent | null
 ) => {
   if (update)
-    await publishMessage("L2_BLOCK_FINALIZATION_UPDATE_EVENT", update);
+    {await publishMessage("L2_BLOCK_FINALIZATION_UPDATE_EVENT", update);}
 };

@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/src/assets/aztec-icon.svg" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/src/assets/aztec-scan-brandkit/AS logo purple.svg"
+    />
     <link rel="canonical" href="https://aztecscan.xyz" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
@@ -29,7 +33,14 @@
       name="keywords"
       content="aztec, block explorer, blockchain, chicmoz, aztecscan, aztec scan"
     />
-
+    <script>
+      var script = document.createElement("script");
+      script.async = true;
+      script.defer = true;
+      script.dataset.domain = window.location.hostname; // Set script data-domain dynamically
+      script.src = "https://plausible.sooth.dev/js/script.js";
+      document.head.append(script);
+    </script>
     <title>Aztec-Scan</title>
   </head>
   <body>

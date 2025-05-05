@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { DISCORD_URL } from "~/service/constants";
 
 export const AboutUs: FC = () => {
   return (
@@ -13,24 +14,11 @@ export const AboutUs: FC = () => {
         </p>
         <br />
         <p>
-          Obscura is a platform dedicated to simplifying the development of
-          privacy-oriented applications on blockchain technology. It provides a
-          solid foundation, offering RPC endpoints, APIs, and SDKs to streamline
-          app development on leading privacy-focused blockchains. These tools
-          are designed to help developers efficiently construct, deploy, and
-          maintain applications that prioritize user privacy, leveraging
-          Obscura's specialized infrastructure.
-        </p>
-        <br />
-        <p>
-          The easiest way to find us is following{" "}
-          <a
-            href="https://x.com/Obscura_Build"
-            className="text-purple-light hover:font-bold"
-          >
-            @Obscura_Build
-          </a>{" "}
-          on X.
+          Easiest way to connect with us is to join our{" "}
+          <a href={DISCORD_URL} className="text-purple-light hover:font-bold">
+            Discord server
+          </a>
+          .
         </p>
       </div>
     </div>

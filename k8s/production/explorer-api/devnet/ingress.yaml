@@ -5,6 +5,7 @@ metadata:
   namespace: chicmoz-prod
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://docs.aztecscan.xyz"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/auth-url: http://auth-service.chicmoz-prod.svc.cluster.local
     nginx.ingress.kubernetes.io/auth-response-headers: x-api-key

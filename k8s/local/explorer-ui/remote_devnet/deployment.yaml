@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-ui-remote-devnet-label
+  name: explorer-ui-remote-devnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-ui-remote-devnet-label
+  template:
+    metadata:
+      labels:
+        app: explorer-ui-remote-devnet-label
+    spec:
+      containers:
+        - image: explorer-ui-remote-devnet:latest
+          name: explorer-ui-remote-devnet
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP

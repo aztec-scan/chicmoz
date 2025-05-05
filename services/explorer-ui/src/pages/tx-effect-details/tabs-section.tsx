@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 import { OptionButtons } from "~/components/option-buttons";
 import { PrivateLogs } from "./tabs/private-logs";
 import { PublicLogs } from "./tabs/public-logs";
-import { GenericListDisplay } from "~/components/info-display/generic-list-display";
+import { ValueListDisplay } from "~/components/info-display/value-list-display";
 import { PublicDataWrites } from "./tabs/public-data-write";
 import { ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
 import { mapTxEffectsData } from "./utils";
@@ -28,11 +28,11 @@ export const TabsSection: FC<PillSectionProps> = ({
       case "publicLogs":
         return <PublicLogs logs={txEffects.publicLogs} />;
       case "nullifiers":
-        return <GenericListDisplay title="Nullifiers" itemLabel="Nullifier" items={txEffects.nullifiers} />;
+        return <ValueListDisplay title="Nullifiers" values={txEffects.nullifiers} />;
       case "noteHashes":
-        return <GenericListDisplay title="Note hashes" itemLabel="Note hashes" items={txEffects.noteHashes} />;
+        return <ValueListDisplay title="Note hashes" values={txEffects.noteHashes} />;
       case "l2ToL1Msgs":
-        return <GenericListDisplay title="L2 to L1 messages" itemLabel="L2 to L1 message" items={txEffects.l2ToL1Msgs} />;
+        return <ValueListDisplay title="L2 to L1 messages" values={txEffects.l2ToL1Msgs} />;
       case "publicDataWrites":
         return <PublicDataWrites writes={txEffects.publicDataWrites} />;
       default:

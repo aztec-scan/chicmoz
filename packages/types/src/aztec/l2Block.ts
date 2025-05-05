@@ -4,7 +4,10 @@ import {
   ethAddressSchema,
   hexStringSchema,
 } from "../general.js";
-import { chicmozL1L2BlockProposedSchema, chicmozL1L2ProofVerifiedSchema } from "../index.js";
+import {
+  chicmozL1L2BlockProposedSchema,
+  chicmozL1L2ProofVerifiedSchema,
+} from "../index.js";
 import { deepPartial } from "../utils.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
 import {
@@ -16,10 +19,10 @@ import {
 
 export enum ChicmozL2BlockFinalizationStatus {
   L2_NODE_SEEN_PROPOSED = 0,
-  L2_NODE_SEEN_PROVEN = 1,
-  L1_SEEN_PROPOSED = 2,
-  L1_SEEN_PROVEN = 3,
-  L1_MINED_PROPOSED = 4,
+  L1_SEEN_PROPOSED = 1,
+  L1_MINED_PROPOSED = 2,
+  L2_NODE_SEEN_PROVEN = 3,
+  L1_SEEN_PROVEN = 4,
   L1_MINED_PROVEN = 5,
 }
 
@@ -38,11 +41,17 @@ export const chicmozL2BlockSchema = z.object({
   height: z.coerce.bigint().nonnegative(),
   finalizationStatus: chicmozL2BlockFinalizationStatusSchema,
   proposedOnL1: z.lazy(() =>
-    chicmozL1L2BlockProposedSchema.omit({ l2BlockNumber: true }).optional()
+    chicmozL1L2BlockProposedSchema.omit({ l2BlockNumber: true }).optional(),
   ),
   proofVerifiedOnL1: z.lazy(() =>
-    chicmozL1L2ProofVerifiedSchema.omit({ l2BlockNumber: true }).optional()
+    chicmozL1L2ProofVerifiedSchema.omit({ l2BlockNumber: true }).optional(),
   ),
+  orphan: z
+    .object({
+      timestamp: z.coerce.date(),
+      hasOrphanedParent: z.boolean(),
+    })
+    .optional(),
   archive: z.object({
     root: frSchema,
     nextAvailableLeafIndex: z.number(),

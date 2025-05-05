@@ -1,27 +1,37 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  ChicmozL2ContractInstanceUpdatedEvent,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeployedEvent,
   type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
-  type ChicmozL2UnconstrainedFunctionBroadcastedEvent,
+  type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { and, eq } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
+  l2ContractInstanceUpdate,
   l2ContractInstanceVerifiedDeploymentArguments,
   l2PrivateFunction,
-  l2UnconstrainedFunction,
+  l2UtilityFunction,
 } from "../../../database/schema/l2contract/index.js";
 
-export const storeContractInstance = async (
+export const storeContractInstanceDeployed = async (
   instance: ChicmozL2ContractInstanceDeployedEvent,
 ): Promise<void> => {
   const { publicKeys, ...rest } = instance;
   await db()
     .insert(l2ContractInstanceDeployed)
     .values({ ...publicKeys, ...rest });
+};
+
+export const storeContractInstanceUpdated = async (
+  instance: ChicmozL2ContractInstanceUpdatedEvent,
+): Promise<void> => {
+  await db()
+    .insert(l2ContractInstanceUpdate)
+    .values({ ...instance });
 };
 
 export const storeContractInstanceVerifiedDeploymentArguments = async (
@@ -77,17 +87,16 @@ export const storePrivateFunction = async (
     });
 };
 
-export const storeUnconstrainedFunction = async (
-  unconstrainedFunctionBroadcast: ChicmozL2UnconstrainedFunctionBroadcastedEvent,
+export const storeUtilityFunction = async (
+  utilityFunctionBroadcast: ChicmozL2UtilityFunctionBroadcastedEvent,
 ): Promise<void> => {
-  const { unconstrainedFunction, ...rest } = unconstrainedFunctionBroadcast;
+  const { utilityFunction, ...rest } = utilityFunctionBroadcast;
   await db()
-    .insert(l2UnconstrainedFunction)
+    .insert(l2UtilityFunction)
     .values({
       ...rest,
-      unconstrainedFunction_selector_value:
-        unconstrainedFunction.selector.value,
-      unconstrainedFunction_metadataHash: unconstrainedFunction.metadataHash,
-      unconstrainedFunction_bytecode: unconstrainedFunction.bytecode,
+      utilityFunction_selector_value: utilityFunction.selector.value,
+      utilityFunction_metadataHash: utilityFunction.metadataHash,
+      utilityFunction_bytecode: utilityFunction.bytecode,
     });
 };

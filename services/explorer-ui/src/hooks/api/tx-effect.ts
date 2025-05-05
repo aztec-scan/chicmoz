@@ -20,8 +20,9 @@ export const useGetTxEffectByHash = (
 export const useGetTxEffectsByBlockHeight = (
   height: bigint | string | number | undefined,
 ): UseQueryResult<ChicmozL2TxEffectDeluxe[], Error> => {
-  if (typeof height === "string" && height?.startsWith("0x"))
+  if (typeof height === "string" && height?.startsWith("0x")) {
     throw new Error("Invalid block height");
+  }
   return useQuery<ChicmozL2TxEffectDeluxe[], Error>({
     queryKey: queryKeyGenerator.txEffectsByBlockHeight(height),
     queryFn: () =>
@@ -56,8 +57,12 @@ export const useGetLatestTxEffects = (): UseQueryResult<
     queryKey: queryKeyGenerator.latestTxEffects,
     queryFn: async () => {
       const latestTxEffects = await TxEffectsAPI.getLatestTxEffects();
-      if (!latestTxEffects) return [];
-      if (latestTxEffects.length === 0) return [];
+      if (!latestTxEffects) {
+        return [];
+      }
+      if (latestTxEffects.length === 0) {
+        return [];
+      }
       let blockTxEffects: ChicmozL2TxEffectDeluxe[] = [];
       let currentBlockHeight = latestTxEffects[0].blockHeight;
       latestTxEffects.forEach((txEffect) => {

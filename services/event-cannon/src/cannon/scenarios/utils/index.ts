@@ -6,10 +6,11 @@ import {
   AztecNode,
   BatchCall,
   Contract,
+  ContractFunctionInteraction,
   DeploySentTx,
   Fr,
-  FunctionCall,
   FunctionSelector,
+  FunctionType,
   NoirCompiledContract,
   PXE,
   SentTx,
@@ -17,20 +18,22 @@ import {
 } from "@aztec/aztec.js";
 import {
   broadcastPrivateFunction,
-  broadcastUnconstrainedFunction,
+  broadcastUtilityFunction,
   deployInstance,
   registerContractClass,
 } from "@aztec/aztec.js/deployment";
-import { deriveSigningKey } from "@aztec/circuits.js";
-import { FunctionType } from "@aztec/foundation/abi";
 import { ContractClassRegisteredEvent } from "@aztec/protocol-contracts/class-registerer";
+import { deriveSigningKey } from "@aztec/stdlib/keys";
 import {
   generateVerifyArtifactPayload,
   generateVerifyArtifactUrl,
   generateVerifyInstancePayload,
   generateVerifyInstanceUrl,
 } from "@chicmoz-pkg/contract-verification";
-import { ChicmozL2ContractInstanceDeployerMetadata } from "@chicmoz-pkg/types";
+import {
+  ChicmozL2ContractInstanceDeployerMetadata,
+  jsonStringify,
+} from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { callExplorerApi } from "./explorer-api.js";
@@ -55,7 +58,7 @@ export const getFunctionSpacer = (type: FunctionType) => {
   if (type === FunctionType.PRIVATE) {
     return type + "       ";
   }
-  if (type === FunctionType.UNCONSTRAINED) {
+  if (type === FunctionType.UTILITY) {
     return type + " ";
   }
   return type + "        ";
@@ -119,17 +122,19 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
   }
   const contractClassLogs = block.body.txEffects
     .flatMap((txEffect) => (txEffect ? [txEffect.contractClassLogs] : []))
-    .flatMap((txLog) => txLog.unrollLogs());
+    .flatMap((txLog) => txLog.flat());
 
   const contractClasses = await Promise.all(
     contractClassLogs
       .filter((log) =>
-        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log.data),
+        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log),
       )
-      .map((log) => ContractClassRegisteredEvent.fromLog(log.data))
+      .map((log) => ContractClassRegisteredEvent.fromLog(log))
       .map((e) => e.toContractClassPublic()),
   );
 
+  logger.info(`  Found ${contractClasses.length} contract classes`);
+  logger.info(`${jsonStringify(contractClassLogs)}`);
   return contractClasses[0]?.id.toString();
 };
 
@@ -145,8 +150,10 @@ export const deployContract = async <T extends Contract>({
   node: AztecNode;
 }): Promise<T> => {
   logger.info(`DEPLOYING ${contractLoggingName}`);
+
   const contractTx = deployFn();
   const hash = (await contractTx.getTxHash()).toString();
+
   logger.info(`📫 ${contractLoggingName} txHash: ${hash} (Deploying contract)`);
   const deployedContract = await contractTx.deployed();
   const receipt = await contractTx.wait();
@@ -154,7 +161,7 @@ export const deployContract = async <T extends Contract>({
   const newClassId = await getNewContractClassId(node, receipt.blockNumber);
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
-    : `(🍎 attached classId: ${deployedContract.instance.contractClassId.toString()})`;
+    : `(🍎 attached currentclassId: ${deployedContract.instance.currentContractClassId.toString()})`;
   logger.info(
     `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );
@@ -189,20 +196,16 @@ export const broadcastFunctions = async ({
         `Broadcasting private function ${fn.name}`,
       );
     }
-    if (fn.functionType === FunctionType.UNCONSTRAINED) {
+    if (fn.functionType === FunctionType.UTILITY) {
       const selector = await FunctionSelector.fromNameAndParameters(
         fn.name,
         fn.parameters,
       );
       await logAndWaitForTx(
         (
-          await broadcastUnconstrainedFunction(
-            wallet,
-            contract.artifact,
-            selector,
-          )
+          await broadcastUtilityFunction(wallet, contract.artifact, selector)
         ).send(),
-        `Broadcasting unconstrained function ${fn.name}`,
+        `Broadcasting utility function ${fn.name}`,
       );
     }
   }
@@ -225,10 +228,8 @@ export const publicDeployAccounts = async (
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
   }
-  const deployCalls: FunctionCall[] = [
-    await (
-      await registerContractClass(sender, SchnorrAccountContractArtifact)
-    ).request(),
+  const deployCalls: ContractFunctionInteraction[] = [
+    await registerContractClass(sender, SchnorrAccountContractArtifact),
     ...((
       await Promise.all(
         notPubliclyDeployedAccounts.map(async (contractMetadata) => {
@@ -238,12 +239,10 @@ export const publicDeployAccounts = async (
             );
             return undefined;
           }
-          return (
-            await deployInstance(sender, contractMetadata.contractInstance)
-          ).request();
+          return deployInstance(sender, contractMetadata.contractInstance);
         }),
       )
-    ).filter((call) => call !== undefined) as FunctionCall[]),
+    ).filter((call) => call !== undefined) as ContractFunctionInteraction[]),
   ];
   const batch = new BatchCall(sender, deployCalls);
   await batch.send().wait();
@@ -289,9 +288,7 @@ export const verifyContractInstanceDeployment = async ({
   );
 
   const postData = JSON.stringify({
-    verifiedDeploymentArguments: generateVerifyInstancePayload(
-      verifyArgs,
-    ),
+    verifiedDeploymentArguments: generateVerifyInstancePayload(verifyArgs),
     deployerMetadata,
   });
   await callExplorerApi({

@@ -1,11 +1,11 @@
-import { type ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { routes } from "~/routes/__root";
-import { DataTableColumnHeader } from "~/components/data-table";
-import { type ContractInstance } from "./schema";
+import { type ColumnDef } from "@tanstack/react-table";
 import { CopyableText } from "~/components/copy-text";
+import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { routes } from "~/routes/__root";
 import { getClassVersionLink } from "../utils";
+import { type ContractInstance } from "./schema";
 
 const text = {
   address: "ADDRESS",
@@ -28,7 +28,9 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
     ),
     cell: ({ row }) => {
       const address = row.getValue("address");
-      if (typeof address !== "string") return null;
+      if (typeof address !== "string") {
+        return null;
+      }
       const r = `${routes.contracts.route}/${routes.contracts.children.instances.route}/${address}`;
       const truncatedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
       return (
@@ -52,7 +54,7 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
     cell: ({ row }) =>
       getClassVersionLink(
         row.getValue("contractClassId"),
-        row.getValue("version")
+        row.getValue("version"),
       ),
     enableSorting: true,
     enableHiding: false,
@@ -104,10 +106,12 @@ export const contractsTableColumns: ColumnDef<ContractInstance>[] = [
     ),
     cell: ({ row }) => {
       const blockHash = row.getValue("blockHash");
-      if (typeof blockHash !== "string") return null;
+      if (typeof blockHash !== "string") {
+        return null;
+      }
       const r = `${routes.blocks.route}/${blockHash}`;
       const truncatedBlockHash = `${blockHash.slice(0, 6)}...${blockHash.slice(
-        -4
+        -4,
       )}`;
       return (
         <div className="text-purple-light font-mono">

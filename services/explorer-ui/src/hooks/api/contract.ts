@@ -2,14 +2,17 @@ import {
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeluxe,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
-  type ChicmozL2UnconstrainedFunctionBroadcastedEvent,
+  type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { ContractL2API } from "~/api";
+import {
+  ChicmozL2ContractInstanceWithAztecScanNotes,
+  ContractL2API,
+} from "~/api";
 import { REFETCH_INTERVAL, queryKeyGenerator } from "./utils";
 
 export const useContractClasses = (
-  classId?: string
+  classId?: string,
 ): UseQueryResult<ChicmozL2ContractClassRegisteredEvent[], Error> => {
   return useQuery<ChicmozL2ContractClassRegisteredEvent[], Error>({
     queryKey: queryKeyGenerator.contractClass({ classId }),
@@ -18,7 +21,7 @@ export const useContractClasses = (
 };
 
 export const useLatestContractClasses = (
-  classId?: string
+  classId?: string,
 ): UseQueryResult<ChicmozL2ContractClassRegisteredEvent[], Error> => {
   return useQuery<ChicmozL2ContractClassRegisteredEvent[], Error>({
     queryKey: queryKeyGenerator.latestContractClasses(classId),
@@ -47,7 +50,7 @@ export const useContractClass = ({
 };
 
 export const useContractClassPrivateFunctions = (
-  classId: string
+  classId: string,
 ): UseQueryResult<ChicmozL2PrivateFunctionBroadcastedEvent[], Error> => {
   return useQuery<ChicmozL2PrivateFunctionBroadcastedEvent[], Error>({
     queryKey: queryKeyGenerator.contractClassPrivateFunctions(classId),
@@ -55,18 +58,17 @@ export const useContractClassPrivateFunctions = (
   });
 };
 
-export const useContractClassUnconstrainedFunctions = (
-  classId: string
-): UseQueryResult<ChicmozL2UnconstrainedFunctionBroadcastedEvent[], Error> => {
-  return useQuery<ChicmozL2UnconstrainedFunctionBroadcastedEvent[], Error>({
-    queryKey: queryKeyGenerator.contractClassUnconstrainedFunctions(classId),
-    queryFn: () =>
-      ContractL2API.getL2ContractClassUnconstrainedFunctions(classId),
+export const useContractClassUtilityFunctions = (
+  classId: string,
+): UseQueryResult<ChicmozL2UtilityFunctionBroadcastedEvent[], Error> => {
+  return useQuery<ChicmozL2UtilityFunctionBroadcastedEvent[], Error>({
+    queryKey: queryKeyGenerator.contractClassUtilityFunctions(classId),
+    queryFn: () => ContractL2API.getL2ContractClassUtilityFunctions(classId),
   });
 };
 
 export const useContractInstance = (
-  address: string
+  address: string,
 ): UseQueryResult<ChicmozL2ContractInstanceDeluxe, Error> => {
   return useQuery<ChicmozL2ContractInstanceDeluxe, Error>({
     queryKey: queryKeyGenerator.contractInstance(address),
@@ -84,8 +86,18 @@ export const useLatestContractInstances = (): UseQueryResult<
   });
 };
 
+export const useContractInstancesWithAztecScanNotes = (): UseQueryResult<
+  ChicmozL2ContractInstanceWithAztecScanNotes[],
+  Error
+> => {
+  return useQuery<ChicmozL2ContractInstanceWithAztecScanNotes[], Error>({
+    queryKey: queryKeyGenerator.contractInstancesWithAztecScanNotes,
+    queryFn: () => ContractL2API.getContractInstancesWithAztecScanNotes(),
+  });
+};
+
 export const useDeployedContractInstances = (
-  classId: string
+  classId: string,
 ): UseQueryResult<ChicmozL2ContractInstanceDeluxe[], Error> => {
   return useQuery<ChicmozL2ContractInstanceDeluxe[], Error>({
     queryKey: queryKeyGenerator.deployedContractInstances(classId),

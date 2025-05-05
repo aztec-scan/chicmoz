@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: chicmoz-prod
+  name: only-grafana-prod
 deploy:
   kubectl:
     flags:

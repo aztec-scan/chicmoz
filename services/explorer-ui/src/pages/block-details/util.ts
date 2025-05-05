@@ -13,13 +13,13 @@ export const getBlockDetails = (
   const l2BlockTimestamp = latestBlock.header.globalVariables.timestamp;
   const l2BlockTimeSince = formatTimeSince(l2BlockTimestamp);
 
-  const proposedOnL1Date: Date | undefined =
+  const proposedOnL1Date: Date | undefined | null =
     latestBlock?.proposedOnL1?.l1BlockTimestamp;
   const proposedTimeSince: string | undefined = formatTimeSince(
     proposedOnL1Date?.getTime()
   );
 
-  const proofVerifiedOnL1Date: Date | undefined =
+  const proofVerifiedOnL1Date: Date | undefined | null =
     latestBlock?.proofVerifiedOnL1?.l1BlockTimestamp;
   const proofVerifiedTimeSince: string | undefined = formatTimeSince(
     proofVerifiedOnL1Date?.getTime()

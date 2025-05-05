@@ -7,7 +7,7 @@ export const BLOCK_POLL_INTERVAL_MS = z.coerce
   .parse(process.env.BLOCK_POLL_INTERVAL_MS);
 export const TX_POLL_INTERVAL_MS = z.coerce
   .number()
-  .default(500)
+  .default(4000) // NOTE: https://github.com/aztec-scan/chicmoz/issues/430#issuecomment-2841287541
   .parse(process.env.TX_POLL_INTERVAL_MS);
 export const CHAIN_INFO_POLL_INTERVAL_MS = z.coerce
   .number()
@@ -25,7 +25,7 @@ export const AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT =
     .gt(0)
     .optional()
     .parse(
-      process.env.AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT
+      process.env.AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT,
     );
 export const AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS =
   process.env.AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS === "true";
@@ -47,7 +47,7 @@ export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";
 
 export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
-  process.env.L2_NETWORK_ID
+  process.env.L2_NETWORK_ID,
 );
 
 export const getConfigStr = () => `POLLER

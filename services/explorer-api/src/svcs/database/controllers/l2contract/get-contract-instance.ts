@@ -1,8 +1,10 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, isNotNull } from "drizzle-orm";
+import { l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
+  l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployed,
   l2ContractInstanceDeployerMetadataTable,
   l2ContractInstanceVerifiedDeploymentArguments,
@@ -23,13 +25,16 @@ export const getL2DeployedContractInstanceByAddress = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      aztecScanNotes: getTableColumns(l2ContractInstanceAztecScanNotes),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
+    .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
     .innerJoin(
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -49,22 +54,33 @@ export const getL2DeployedContractInstanceByAddress = async (
     )
     .leftJoin(
       l2ContractInstanceDeployerMetadataTable,
-      and(
-        eq(
-          l2ContractInstanceDeployed.address,
-          l2ContractInstanceDeployerMetadataTable.address,
-        ),
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceDeployerMetadataTable.address,
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceAztecScanNotes,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceAztecScanNotes.address,
       ),
     )
     .where(eq(l2ContractInstanceDeployed.address, address))
     .orderBy(desc(l2ContractInstanceDeployed.version))
     .limit(1);
 
+  if (result.length === 0) {
+    return null;
+  }
+
   const {
     instance,
     class: contractClass,
     verifiedDeploymentArguments,
     deployerMetadata,
+    aztecScanNotes,
+    isOrphaned,
   } = result[0];
 
   return parseDeluxe({
@@ -72,5 +88,7 @@ export const getL2DeployedContractInstanceByAddress = async (
     instance,
     verifiedDeploymentArguments,
     deployerMetadata,
+    aztecScanNotes,
+    isOrphaned: Boolean(isOrphaned),
   });
 };

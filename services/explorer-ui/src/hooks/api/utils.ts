@@ -9,9 +9,12 @@ export const queryKeyGenerator = {
   txEffectByHash: (hash: string) => ["txEffectByHash", hash],
   latestTxEffects: ["latestTxEffects"],
   pendingTxs: ["pendingTxs"],
+  pendingTxsByHash: (hash: string) => ["pendingTxs", hash],
+  droppedTxByHash: (hash: string) => ["droppedTxByHash", hash],
   latestBlock: ["latestBlock"],
   latestBlocks: ["latestBlocks"],
   blockByHeight: (height: string) => ["blockByHeight", height],
+  blockByRange: (min: number, max: number) => ["blockRange", min, max],
   totalTxEffects: [statsKey, "totalTxEffects"],
   totalTxEffectsLast24h: [statsKey, "totalTxEffectsLast24h"],
   totalContracts: [statsKey, "totalContracts"],
@@ -29,8 +32,8 @@ export const queryKeyGenerator = {
     "contractClassPrivateFunctions",
     classId,
   ],
-  contractClassUnconstrainedFunctions: (classId: string) => [
-    "contractClassUnconstrainedFunctions",
+  contractClassUtilityFunctions: (classId: string) => [
+    "contractClassUtilityFunctions",
     classId,
   ],
   latestContractClasses: (classId?: string) => [
@@ -39,6 +42,7 @@ export const queryKeyGenerator = {
   ],
   contractInstance: (address: string) => ["contractInstance", address],
   latestContractInstances: ["latestContractInstances"],
+  contractInstancesWithAztecScanNotes: ["contractInstancesWithAztecScanNotes"],
   deployedContractInstances: (classId: string) => [
     "deployedContractInstances",
     classId,

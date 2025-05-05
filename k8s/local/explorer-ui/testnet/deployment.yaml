@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-ui-testnet-label
+  name: explorer-ui-testnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-ui-testnet-label
+  template:
+    metadata:
+      labels:
+        app: explorer-ui-testnet-label
+    spec:
+      containers:
+        - image: explorer-ui-testnet:latest
+          name: explorer-ui-testnet
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP

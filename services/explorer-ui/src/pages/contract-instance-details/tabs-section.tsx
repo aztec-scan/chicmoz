@@ -1,18 +1,20 @@
-import { FC, useState } from "react";
+import { useState, type FC } from "react";
 import {
-  DetailItem,
   KeyValueDisplay,
+  type DetailItem,
 } from "~/components/info-display/key-value-display";
 import { OptionButtons } from "~/components/option-buttons";
-import { TabId, verifiedDeploymentTabs } from "./types";
+import { verifiedDeploymentTabs, type TabId } from "./types";
 
 interface PillSectionProps {
   verifiedDeploymentData?: DetailItem[];
   deployerMetadata?: DetailItem[];
+  aztecScanNotes?: DetailItem[];
 }
 export const TabsSection: FC<PillSectionProps> = ({
   verifiedDeploymentData,
   deployerMetadata,
+  aztecScanNotes,
 }) => {
   const [selectedTab, setSelectedTab] = useState<TabId>("verifiedDeployment");
   const onOptionSelect = (value: string) => {
@@ -22,6 +24,7 @@ export const TabsSection: FC<PillSectionProps> = ({
   const isAvailable = {
     verifiedDeployment: !!verifiedDeploymentData,
     contactDetails: !!deployerMetadata,
+    aztecScanNotes: !!aztecScanNotes,
   };
 
   const renderTabContent = () => {
@@ -30,6 +33,8 @@ export const TabsSection: FC<PillSectionProps> = ({
         return <KeyValueDisplay data={deployerMetadata ?? []} />;
       case "verifiedDeployment":
         return <KeyValueDisplay data={verifiedDeploymentData ?? []} />;
+      case "aztecScanNotes":
+        return <KeyValueDisplay data={aztecScanNotes ?? []} />;
       default:
         return null;
     }

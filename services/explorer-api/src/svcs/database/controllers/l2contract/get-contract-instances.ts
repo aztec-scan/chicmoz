@@ -1,16 +1,87 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, isNotNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
+  l2ContractInstanceAztecScanNotes,
   l2ContractInstanceDeployed,
   l2ContractInstanceDeployerMetadataTable,
   l2ContractInstanceVerifiedDeploymentArguments,
 } from "../../schema/l2contract/index.js";
 import { getBlocksWhereRange } from "../utils.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
+
+const DEFAULT_SORT =
+  (desc(l2ContractInstanceDeployed.version), desc(l2Block.height));
+
+export const getL2DeployedContractInstancesWithAztecScanNotes = async (
+  includeArtifactJson?: boolean,
+): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
+  const result = await db()
+    .select({
+      instance: getTableColumns(l2ContractInstanceDeployed),
+      class: getContractClassRegisteredColumns(includeArtifactJson),
+      verifiedDeploymentArguments: getTableColumns(
+        l2ContractInstanceVerifiedDeploymentArguments,
+      ),
+      deployerMetadata: getTableColumns(
+        l2ContractInstanceDeployerMetadataTable,
+      ),
+      aztecScanNotes: getTableColumns(l2ContractInstanceAztecScanNotes),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
+    })
+    .from(l2ContractInstanceAztecScanNotes)
+    .innerJoin(
+      l2ContractInstanceDeployed,
+      eq(l2ContractInstanceAztecScanNotes.address, l2ContractInstanceDeployed.address)
+    )
+    .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
+    .innerJoin(
+      l2ContractClassRegistered,
+      and(
+        eq(
+          l2ContractInstanceDeployed.currentContractClassId,
+          l2ContractClassRegistered.contractClassId,
+        ),
+        eq(
+          l2ContractInstanceDeployed.version,
+          l2ContractClassRegistered.version,
+        ),
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceVerifiedDeploymentArguments,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceVerifiedDeploymentArguments.address,
+      ),
+    )
+    .leftJoin(
+      l2ContractInstanceDeployerMetadataTable,
+      eq(
+        l2ContractInstanceDeployed.address,
+        l2ContractInstanceDeployerMetadataTable.address,
+      ),
+    );
+
+  return result.map(({
+    instance,
+    class: contractClass,
+    verifiedDeploymentArguments,
+    deployerMetadata,
+    aztecScanNotes,
+    isOrphaned,
+  }) => parseDeluxe({
+    contractClass,
+    instance,
+    verifiedDeploymentArguments,
+    deployerMetadata,
+    aztecScanNotes,
+    isOrphaned: Boolean(isOrphaned),
+  }));
+};
 
 export const getL2DeployedContractInstances = async ({
   fromHeight,
@@ -32,13 +103,14 @@ export const getL2DeployedContractInstances = async ({
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .leftJoin(
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -67,7 +139,7 @@ export const getL2DeployedContractInstances = async ({
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .where(whereRange)
-    .orderBy(desc(l2ContractInstanceDeployed.version), desc(l2Block.height))
+    .orderBy(DEFAULT_SORT)
     .limit(DB_MAX_CONTRACTS);
 
   const parsed = result.map((r) => {
@@ -76,6 +148,8 @@ export const getL2DeployedContractInstances = async ({
       instance: r.instance,
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
+      aztecScanNotes: null,
+      isOrphaned: Boolean(r.isOrphaned),
     });
   });
 
@@ -96,13 +170,14 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -111,6 +186,7 @@ export const getL2DeployedContractInstancesByBlockHash = async (
         ),
       ),
     )
+    .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
       and(
@@ -138,12 +214,14 @@ export const getL2DeployedContractInstancesByBlockHash = async (
       instance: r.instance,
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
+      aztecScanNotes: null,
+      isOrphaned: Boolean(r.isOrphaned),
     });
   });
 };
 
-export const getL2DeployedContractInstancesByContractClassId = async (
-  contractClassId: string,
+export const getL2DeployedContractInstancesByCurrentContractClassId = async (
+  currentContractClassId: string,
   includeArtifactJson?: boolean,
 ): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
   const result = await db()
@@ -156,13 +234,15 @@ export const getL2DeployedContractInstancesByContractClassId = async (
       deployerMetadata: getTableColumns(
         l2ContractInstanceDeployerMetadataTable,
       ),
+      blockHeight: l2Block.height,
+      isOrphaned: isNotNull(l2Block.orphan_timestamp),
     })
     .from(l2ContractInstanceDeployed)
     .innerJoin(
       l2ContractClassRegistered,
       and(
         eq(
-          l2ContractInstanceDeployed.contractClassId,
+          l2ContractInstanceDeployed.currentContractClassId,
           l2ContractClassRegistered.contractClassId,
         ),
         eq(
@@ -171,6 +251,7 @@ export const getL2DeployedContractInstancesByContractClassId = async (
         ),
       ),
     )
+    .leftJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
       and(
@@ -189,7 +270,12 @@ export const getL2DeployedContractInstancesByContractClassId = async (
         ),
       ),
     )
-    .where(eq(l2ContractInstanceDeployed.contractClassId, contractClassId))
+    .where(
+      eq(
+        l2ContractInstanceDeployed.currentContractClassId,
+        currentContractClassId,
+      ),
+    )
     .orderBy(desc(l2ContractInstanceDeployed.version))
     .limit(DB_MAX_CONTRACTS);
 
@@ -199,6 +285,8 @@ export const getL2DeployedContractInstancesByContractClassId = async (
       instance: r.instance,
       verifiedDeploymentArguments: r.verifiedDeploymentArguments,
       deployerMetadata: r.deployerMetadata,
+      aztecScanNotes: null,
+      isOrphaned: Boolean(r.isOrphaned || false),
     });
   });
 };

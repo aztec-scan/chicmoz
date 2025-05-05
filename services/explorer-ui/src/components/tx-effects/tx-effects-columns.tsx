@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { routes } from "~/routes/__root";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { type TxEffectTableSchema } from "./tx-effects-schema";
-import { formatTimeSince } from "~/lib/utils";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { TimeAgoCell } from "../formated-time-cell";
 
 const text = {
   txHash: "HASH",
@@ -25,7 +25,9 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
     ),
     cell: ({ row }) => {
       const hash = row.getValue("txHash");
-      if (typeof hash !== "string") return null;
+      if (typeof hash !== "string") {
+        return null;
+      }
       const r = `${routes.txEffects.route}/${hash}`;
       const truncatedTxHash = truncateHashString(hash);
       return (
@@ -45,11 +47,8 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const formattedTime = formatTimeSince(
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        row.getValue("timestamp") as unknown as number
-      );
-      return <div className="text-purple-dark">{formattedTime}</div>;
+      const timestamp = Number(row.getValue("timestamp"));
+      return <TimeAgoCell timestamp={timestamp} />;
     },
     enableSorting: true,
     enableHiding: false,
@@ -80,7 +79,9 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
     ),
     cell: ({ row }) => {
       const blockNumber = row.getValue("blockNumber");
-      if (typeof blockNumber !== "number") return null;
+      if (typeof blockNumber !== "number") {
+        return null;
+      }
       const r = `${routes.blocks.route}/${blockNumber}`;
       return (
         <div className="text-purple-light font-mono">

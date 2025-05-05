@@ -6,7 +6,7 @@ export const GET_STATS_TOTAL_TX_EFFECTS = asyncHandler(async (_req, res) => {
   const total = await dbWrapper.getLatest(["stats", "totalTxEffects"], () =>
     db.l2TxEffect.getTotalTxEffects()
   );
-  res.status(200).send(JSON.stringify(total));
+  res.status(200).json(JSON.parse(total));
 });
 
 export const GET_STATS_TOTAL_TX_EFFECTS_LAST_24H = asyncHandler(
@@ -15,7 +15,7 @@ export const GET_STATS_TOTAL_TX_EFFECTS_LAST_24H = asyncHandler(
       ["stats", "totalTxEffectsLast24h"],
       () => db.l2TxEffect.getTotalTxEffectsLast24h()
     );
-    res.status(200).send(JSON.stringify(nbrOfTxEffects));
+    res.status(200).json(JSON.parse(nbrOfTxEffects));
   }
 );
 
@@ -23,7 +23,7 @@ export const GET_STATS_TOTAL_CONTRACTS = asyncHandler(async (_req, res) => {
   const total = await dbWrapper.getLatest(["stats", "totalContracts"], () =>
     db.l2Contract.getTotalContracts()
   );
-  res.status(200).send(JSON.stringify(total));
+  res.status(200).json(JSON.parse(total));
 });
 
 export const GET_STATS_TOTAL_CONTRACTS_LAST_24H = asyncHandler(
@@ -32,7 +32,7 @@ export const GET_STATS_TOTAL_CONTRACTS_LAST_24H = asyncHandler(
       ["stats", "totalContractsLast24h"],
       () => db.l2Contract.getTotalContractsLast24h()
     );
-    res.status(200).send(JSON.stringify(total));
+    res.status(200).json(JSON.parse(total));
   }
 );
 
@@ -40,12 +40,12 @@ export const GET_STATS_AVERAGE_FEES = asyncHandler(async (_req, res) => {
   const average = await dbWrapper.getLatest(["stats", "averageFees"], () =>
     db.l2Block.getAverageFees()
   );
-  res.status(200).send(average);
+  res.status(200).json(JSON.parse(average));
 });
 
 export const GET_STATS_AVERAGE_BLOCK_TIME = asyncHandler(async (_req, res) => {
   const average = await dbWrapper.getLatest(["stats", "averageBlockTime"], () =>
     db.l2Block.getAverageBlockTime()
   );
-  res.status(200).send(average);
+  res.status(200).json(JSON.parse(average));
 });

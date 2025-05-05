@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: websocket-event-publisher-testnet-label
+  name: websocket-event-publisher-testnet-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-event-publisher-testnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: websocket-event-publisher-testnet-label
+    spec:
+      containers:
+        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher:latest
+          name: websocket-event-publisher
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: websocket-port
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: INSTANCE_NAME
+              value: "testnet_websocket-event-publisher"
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: "production"
+            - name: L2_NETWORK_ID
+              value: "TESTNET"
+status: {}

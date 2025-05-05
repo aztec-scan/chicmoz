@@ -16,6 +16,7 @@ import { controllers } from "../../../svcs/database/index.js";
 import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
 import { storeContracts } from "./contracts.js";
+import { detectReorg, handleReorg } from "./reorg-handler.js";
 
 const truncateString = (value: string) => {
   const startHash = value.substring(0, 100);
@@ -23,12 +24,15 @@ const truncateString = (value: string) => {
   return `${startHash}...${endHash}`;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hackyLogBlock = (b: L2Block) => {
   const blockString = JSON.stringify(b, null, 2);
   const logString = blockString
     .split(":")
     .map((v) => {
-      if (v.length > 200 && v.includes(",")) {return truncateString(v);}
+      if (v.length > 200 && v.includes(",")) {
+        return truncateString(v);
+      }
 
       return v;
     })
@@ -62,9 +66,9 @@ const onBlock = async ({
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `Failed to parse block ${blockNumber}: ${(e as Error)?.stack ?? e}`,
     );
-    hackyLogBlock(b);
     return;
   }
+
   await storeBlock(parsedBlock);
   await storeContracts(b, parsedBlock.hash);
   await pendingTxsHook(parsedBlock.body.txEffects);
@@ -74,6 +78,17 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
   logger.info(
     `🧢 Storing block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
   );
+
+  const reorgDetected = await detectReorg(parsedBlock);
+
+  if (reorgDetected) {
+    await handleReorg(parsedBlock);
+  }
+
+  // Set orphan fields to null/false for the new block
+  parsedBlock.orphan = undefined;
+
+  // Store the new block
   const storeRes = await controllers.l2Block
     .store(parsedBlock)
     .catch(async (e) => {
@@ -82,6 +97,8 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
           `Failed to store block ${parsedBlock.height} after retry: ${e}`,
         );
       }
+
+      // If we still get an error, we'll try the old approach as fallback
       const shouldRetry = await handleDuplicateBlockError(
         e as Error,
         `block ${parsedBlock.height}`,
@@ -92,21 +109,24 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
           await deleteL2BlockByHeight(parsedBlock.height);
         },
       );
+
       if (shouldRetry) {
         return storeBlock(parsedBlock, true);
       } else {
-        await ensureFinalizationStatusStored( // NOTE: this is currently assuming that the error is a duplicate error
+        await ensureFinalizationStatusStored(
+          // NOTE: this is currently assuming that the error is a duplicate error
           parsedBlock.hash,
           parsedBlock.height,
           parsedBlock.finalizationStatus,
         );
       }
     });
+
   await emit.l2BlockFinalizationUpdate(storeRes?.finalizationUpdate ?? null);
 };
 
 const pendingTxsHook = async (txEffects: ChicmozL2TxEffect[]) => {
-  await controllers.l2Tx.replaceTxsWithTxEffects(txEffects);
+  await controllers.l2Tx.removePendingAndDroppedTx(txEffects);
 };
 
 export const blockHandler: EventHandler = {

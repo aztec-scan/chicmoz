@@ -4,4 +4,4 @@ metadata:
   name: multi_network
 requires:
   - path: ./skaffold.default.yaml
-  - path: ./skaffold.sp_testnet.yaml
+  - path: ./skaffold.testnet.yaml

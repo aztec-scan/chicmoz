@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
+import { Loader } from "~/components/loader";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   useGetLatestTxEffects,
@@ -34,8 +35,12 @@ export const TxEffects: FC = () => {
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap m-5">
-        <h2 className="mt-2 text-primary dark:text-white md:hidden">All transaction effects</h2>
-        <h2 className="hidden md:text-primary md:dark:text-white md:block md:mt-8">All Tx transaction effects</h2>
+        <h2 className="mt-2 text-primary dark:text-white md:hidden">
+          All transaction effects
+        </h2>
+        <h2 className="hidden md:text-primary md:dark:text-white md:block md:mt-8">
+          All Tx transaction effects
+        </h2>
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5 ">
         <InfoBadge
@@ -57,9 +62,14 @@ export const TxEffects: FC = () => {
             txEffects={mapLatestTxEffects(latestTxEffectsData, latestBlocks)}
             isLoading={isLoading || isLoadingTxEffects}
             error={error ?? txEffectsError}
+            showPending={false}
           />
         ) : (
-          <div>No data</div>
+          <div className="flex flex-col gap-4 mt-4">
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <Loader amount={3} />
+            </div>
+          </div>
         )}
       </div>
     </div>

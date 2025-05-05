@@ -39,12 +39,12 @@ const backOffOptions: Partial<IBackOffOptions> = {
       errorCode === "ECONNREFUSED" || errorCode === "ENOTFOUND";
     if (isRetriableProductionError) {
       logger.warn(
-        `🤡 Aztec connection reset, retrying attempt ${attemptNumber}...`
+        `🤡 Aztec connection reset, retrying attempt ${attemptNumber}...`,
       );
       return true;
     } else if (NODE_ENV === NodeEnv.DEV && isRetriableDevelopmentError) {
       logger.warn(
-        `🤡🤡 Aztec connection refused or not found, retrying attempt ${attemptNumber}...`
+        `🤡🤡 Aztec connection refused or not found, retrying attempt ${attemptNumber}...`,
       );
       return true;
     }
@@ -54,20 +54,22 @@ const backOffOptions: Partial<IBackOffOptions> = {
 };
 
 const node = () => {
-  if (!aztecNode) throw new Error("Node not initialized");
+  if (!aztecNode) {
+    throw new Error("Node not initialized");
+  }
   return aztecNode;
 };
 
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
-  args?: Parameters<AztecNode[K]>
+  args?: Parameters<AztecNode[K]>,
 ): Promise<ReturnType<AztecNode[K]>> => {
   try {
     const res = await backOff(async () => {
       // eslint-disable-next-line @typescript-eslint/ban-types
       return (await (node()[fnName] as Function).apply(
         node(),
-        args
+        args,
       )) as Promise<ReturnType<AztecNode[K]>>;
     }, backOffOptions);
     onL2RpcNodeAlive(AZTEC_RPC_URL);
@@ -83,16 +85,31 @@ const callNodeFunction = async <K extends keyof AztecNode>(
     });
     if ((e as Error).cause) {
       logger.warn(
-        `Aztec failed to fetch: ${JSON.stringify((e as Error).cause)}`
+        `Aztec failed to fetch: ${JSON.stringify((e as Error).cause)}`,
       );
     }
     throw e;
   }
 };
 
+const checkValidatorStats = async () => {
+  try {
+    const stats = await aztecNode.getValidatorsStats();
+    logger.info(`Validator stats: ${JSON.stringify(stats, null, 2)}`);
+  } catch (e) {
+    logger.warn(`Failed to fetch validator stats: ${(e as Error).message}`);
+  }
+};
+
+const sleep = async (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 export const init = async () => {
   logger.info(`Initializing Aztec node client with ${AZTEC_RPC_URL}`);
   aztecNode = createAztecNodeClient(AZTEC_RPC_URL);
+  await checkValidatorStats();
+  await sleep(1000);
   return getFreshInfo();
 };
 
@@ -100,45 +117,26 @@ export const getFreshInfo = async (): Promise<{
   chainInfo: ChicmozChainInfo;
   sequencer: ChicmozL2Sequencer;
 }> => {
-  const nodeVersion = await callNodeFunction("getNodeVersion");
-  logger.info(`🧋 Aztec node version: ${nodeVersion}`);
-  const protocolVersion = await callNodeFunction("getVersion");
-  logger.info(`🧋 Aztec protocol version: ${protocolVersion}`);
-  const chainId = await callNodeFunction("getChainId");
-  logger.info(`🧋 Aztec chain id: ${chainId}`);
-  const enr = await callNodeFunction("getEncodedEnr");
-  logger.info(`🧋 Aztec enr: ${enr}`);
-  const contractAddresses = await callNodeFunction("getL1ContractAddresses");
-  logger.info(
-    `🧋 Aztec contract addresses: ${JSON.stringify(contractAddresses)}`
-  );
-  const protocolContractAddresses = await callNodeFunction(
-    "getProtocolContractAddresses"
-  );
-  logger.info(
-    `🧋 Aztec protocol contract addresses: ${JSON.stringify(
-      protocolContractAddresses
-    )}`
-  );
+  const {
+    nodeVersion,
+    l1ChainId,
+    rollupVersion,
+    enr,
+    l1ContractAddresses,
+    protocolContractAddresses,
+  } = await callNodeFunction("getNodeInfo");
   const nodeInfo: NodeInfo = {
     nodeVersion,
-    l1ChainId: chainId,
-    protocolVersion,
+    l1ChainId,
+    rollupVersion,
     enr:
-      enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX
+      enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX // NOTE: this is to anonymize the node
         ? L2_NETWORK_ID
         : undefined,
-    l1ContractAddresses: contractAddresses,
+    l1ContractAddresses: l1ContractAddresses,
     protocolContractAddresses: protocolContractAddresses,
   };
-  try {
-    await callNodeFunction("getNodeInfo");
-    logger.info(
-      `!!!! Aztec node info fetched successfully, perhaps switch back to this?`
-    );
-  } catch (e) {
-    logger.debug(`nodeInfo not available: ${(e as Error).message}`);
-  }
+  logger.info(`🧋 ${JSON.stringify(nodeInfo, null, 2)}`);
 
   const chainInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
   onChainInfo(chainInfo).catch((e) => {
@@ -147,11 +145,11 @@ export const getFreshInfo = async (): Promise<{
   const sequencer = getSequencerFromNodeInfo(
     L2_NETWORK_ID,
     AZTEC_RPC_URL,
-    nodeInfo
+    nodeInfo,
   );
   onL2SequencerInfo(sequencer).catch((e) => {
     logger.error(
-      `Aztec failed to publish sequencer info: ${(e as Error).message}`
+      `Aztec failed to publish sequencer info: ${(e as Error).message}`,
     );
   });
 
@@ -165,12 +163,16 @@ export const getBlock = async (height: number) =>
   callNodeFunction("getBlock", [height]);
 
 export const getBlocks = async (fromHeight: number, toHeight: number) => {
-  if (toHeight - fromHeight > MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS)
+  if (toHeight - fromHeight > MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS) {
     throw new Error("Too many blocks to fetch");
+  }
   const blocks = [];
   for (let i = fromHeight; i < toHeight; i++) {
-    if (NODE_ENV === NodeEnv.DEV) await new Promise((r) => setTimeout(r, 500));
-    else await new Promise((r) => setTimeout(r, 200));
+    if (NODE_ENV === NodeEnv.DEV) {
+      await new Promise((r) => setTimeout(r, 500));
+    } else {
+      await new Promise((r) => setTimeout(r, 200));
+    }
     const block = await getBlock(i);
     blocks.push(block);
   }

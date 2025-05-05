@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ethereum-listener-testnet-label
+  name: ethereum-listener-testnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ethereum-listener-testnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: ethereum-listener-testnet-label
+    spec:
+      initContainers:
+        - name: run-migrations
+          image: ethereum-listener:latest
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-testnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: ethereum-listener:latest
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          name: ethereum-listener
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-testnet
+          env:
+            - name: INSTANCE_NAME
+              value: "testnet_ethereum-listener"
+            - name: L2_NETWORK_ID
+              value: "TESTNET"
+            - name: LISTENER_DISABLED
+              value: "false"
+            - name: GENESIS_CATCHUP
+              value: "true"
+            - name: LISTEN_FOR_BLOCKS
+              value: "true"
+            - name: ETHEREUM_HTTP_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: TESTNET_AZTEC_L1_HTTP
+            - name: ETHEREUM_WS_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: TESTNET_AZTEC_L1_WS
+status: {}

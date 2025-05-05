@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
+  AztecScanNote,
+  ChicmozL2ContractClassRegisteredEvent,
   ChicmozL2ContractInstanceDeluxe,
+  ChicmozL2ContractInstanceDeployedEvent,
   chicmozL2ContractInstanceDeluxeSchema,
 } from "@chicmoz-pkg/types";
 import { getTableColumns } from "drizzle-orm";
@@ -15,16 +14,52 @@ export const parseDeluxe = ({
   instance,
   deployerMetadata,
   verifiedDeploymentArguments,
+  aztecScanNotes,
+  isOrphaned,
 }: {
-  contractClass: any;
-  instance: any;
-  deployerMetadata?: any;
-  verifiedDeploymentArguments?: any;
+  contractClass: ChicmozL2ContractClassRegisteredEvent;
+  instance: Omit<ChicmozL2ContractInstanceDeployedEvent, "publicKeys"> & {
+    masterNullifierPublicKey: string;
+    masterIncomingViewingPublicKey: string;
+    masterOutgoingViewingPublicKey: string;
+    masterTaggingPublicKey: string;
+  };
+  deployerMetadata:
+    | (Omit<
+        ChicmozL2ContractInstanceDeluxe["deployerMetadata"],
+        "reviewedAt"
+      > & {
+        reviewedAt: Date | null;
+      })
+    | null;
+  verifiedDeploymentArguments:
+    | (Omit<
+        ChicmozL2ContractInstanceDeluxe["verifiedDeploymentArguments"],
+        "constructorArgs"
+      > & {
+        constructorArgs: unknown;
+      })
+    | null;
+  aztecScanNotes:
+    | (Omit<AztecScanNote, "relatedL1ContractAddresses"> & {
+        relatedL1ContractAddresses: unknown;
+      })
+    | null;
+  isOrphaned: boolean;
 }): ChicmozL2ContractInstanceDeluxe => {
-  return chicmozL2ContractInstanceDeluxeSchema.parse({
+  const objToParse: ChicmozL2ContractInstanceDeluxe = {
     ...contractClass,
-    deployerMetadata: deployerMetadata ?? undefined,
-    verifiedDeploymentArguments: verifiedDeploymentArguments ?? undefined,
+    currentContractClassId: instance.currentContractClassId,
+    originalContractClassId: instance.originalContractClassId,
+    deployerMetadata:
+      (deployerMetadata as ChicmozL2ContractInstanceDeluxe["deployerMetadata"]) ??
+      undefined,
+    verifiedDeploymentArguments:
+      (verifiedDeploymentArguments as ChicmozL2ContractInstanceDeluxe["verifiedDeploymentArguments"]) ??
+      undefined,
+    aztecScanNotes:
+      (aztecScanNotes as ChicmozL2ContractInstanceDeluxe["aztecScanNotes"]) ??
+      undefined,
     blockHash: instance.blockHash,
     packedBytecode: Buffer.from(contractClass.packedBytecode),
     address: instance.address,
@@ -38,7 +73,9 @@ export const parseDeluxe = ({
       masterOutgoingViewingPublicKey: instance.masterOutgoingViewingPublicKey,
       masterTaggingPublicKey: instance.masterTaggingPublicKey,
     },
-  });
+    isOrphaned,
+  };
+  return chicmozL2ContractInstanceDeluxeSchema.parse(objToParse);
 };
 
 export const getContractClassRegisteredColumns = (

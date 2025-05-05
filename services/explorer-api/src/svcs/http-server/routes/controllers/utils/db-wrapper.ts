@@ -14,7 +14,9 @@ export const getLatestHeight = async () => {
   const cacheRes = await getEntry([LATEST_HEIGHT]);
   const cachedVal = cacheRes.value;
   const isCached = cachedVal !== null && cachedVal !== undefined;
-  if (isCached) return cachedVal;
+  if (isCached) {
+    return cachedVal;
+  }
 
   const dbVal = await db.l2Block.getLatestHeight().catch(dbParseErrorCallback);
   if (dbVal) {
@@ -26,10 +28,12 @@ export const getLatestHeight = async () => {
 
 export const getLatest = async (
   keys: CacheKeys,
-  dbFn: () => Promise<unknown>
-): Promise<string | undefined> => {
+  dbFn: () => Promise<unknown>,
+): Promise<string> => {
   const latestHeight = await getLatestHeight();
-  if (!latestHeight) throw new Error("CACHE_ERROR: latest height not found");
+  if (!latestHeight) {
+    throw new Error("CACHE_ERROR: latest height not found");
+  }
   // NOTE: we add one second to the TTL to ensure that stale cache is not stored
   return get([...keys, latestHeight], dbFn, CACHE_LATEST_TTL_SECONDS + 1);
 };
@@ -37,13 +41,15 @@ export const getLatest = async (
 export const get = async (
   keys: CacheKeys,
   dbFn: () => Promise<unknown>,
-  ttl = CACHE_TTL_SECONDS
-): Promise<string | undefined> => {
+  ttl = CACHE_TTL_SECONDS,
+): Promise<string> => {
   const res = await getEntry(keys);
   const cachedVal = res.value;
   const isCached = cachedVal !== null && cachedVal !== undefined;
   if (isCached) {
-    if (NODE_ENV === NodeEnv.DEV) logger.info(`CACHE_HIT: ${res.keysStr}`);
+    if (NODE_ENV === NodeEnv.DEV) {
+      logger.info(`CACHE_HIT: ${res.keysStr}`);
+    }
     return cachedVal;
   }
 
@@ -53,4 +59,5 @@ export const get = async (
     await setEntry(keys, dbResString, ttl);
     return dbResString;
   }
+  throw new Error(`CACHE_ERROR: ${keys.toString()} not found`);
 };

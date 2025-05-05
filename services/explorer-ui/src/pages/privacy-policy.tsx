@@ -75,6 +75,24 @@ export const PrivacyPolicy: FC = () => {
             system, and system configuration information.
           </li>
         </ul>
+        
+        <h4>Analytics</h4>
+        <p>
+          We use a self-hosted instance of Plausible Analytics to collect anonymous usage statistics about our website. As we self-host this solution, your data is not shared with any third-party analytics providers and remains under our control on our servers located in the EU.
+        </p>
+        <p>
+          Plausible Analytics is privacy-focused and:
+        </p>
+        <ul className="list-disc list-inside">
+          <li>Does not use cookies</li>
+          <li>Does not collect personal information</li>
+          <li>Does not track users across websites</li>
+          <li>Collects only minimal, aggregated usage data (page views, referrer sources, and anonymous device information)</li>
+        </ul>
+        <p>
+          This data helps us understand how visitors interact with our website to improve the user experience. All analytics data is subject to our standard 6-month retention period as specified in this privacy policy.
+        </p>
+
         <h3>2. HOW DO WE PROCESS YOUR INFORMATION?</h3>
         <p>
           In Short: We process your information to provide, improve, and

@@ -6,6 +6,10 @@ export const aztecExplorer = {
   getL2BlockByHash: "l2/blocks/",
   getL2BlockByHeight: "l2/blocks/",
   getL2BlocksByHeightRange: "l2/blocks",
+  getL2BlocksByStatus: "l2/blocks/by-status",
+  getL2OrphanedBlocks: "l2/blocks/orphaned",
+  getL2OrphanedBlocksLimited: "l2/blocks/orphans",
+  getL2Reorgs: "l2/reorgs",
   getL2TxEffects: "l2/tx-effects",
   getL2TxEffectByHash: "l2/tx-effects/",
   getL2TxEffectsByHeight: (height: bigint) => `l2/blocks/${height}/tx-effects`,
@@ -13,27 +17,31 @@ export const aztecExplorer = {
     `l2/blocks/${height}/txEffects/${index}`,
   getL2TxEffectsByHeightRange: "",
   getL2PendingTxs: "l2/txs",
+  getL2PendingTxsByHash: (hash: string) => `l2/txs/${hash}`,
+  getL2DroppedTxByHash: (hash: string) => `l2/dropped-txs/${hash}`,
   getL2ContractClassByIdAndVersion: (classId: string, version: string) =>
     `l2/contract-classes/${classId}/versions/${version}`,
   getL2ContractClasses: (classId?: string) =>
     classId ? `l2/contract-classes/${classId}` : "l2/contract-classes",
   getL2ContractClassPrivateFunctions: (
     classId: string,
-    functionSelector?: string
+    functionSelector?: string,
   ) =>
     functionSelector
       ? `l2/contract-classes/${classId}/private-functions/${functionSelector}`
       : `l2/contract-classes/${classId}/private-functions`,
-  getL2ContractClassUnconstrainedFunctions: (
+  getL2ContractClassUtilityFunctions: (
     classId: string,
-    functionSelector?: string
+    functionSelector?: string,
   ) =>
     functionSelector
-      ? `l2/contract-classes/${classId}/unconstrained-functions/${functionSelector}`
-      : `l2/contract-classes/${classId}/unconstrained-functions`,
+      ? `l2/contract-classes/${classId}/utility-functions/${functionSelector}`
+      : `l2/contract-classes/${classId}/utility-functions`,
   getL2ContractInstance: (address: string) =>
     `l2/contract-instances/${address}`,
   getL2ContractInstances: "l2/contract-instances",
+  getL2ContractInstancesWithAztecScanNotes:
+    "l2/contract-instances/with-aztec-scan-notes",
   getL2ContractInstancesByBlockHash: (hash: string) =>
     `l2/blocks/${hash}/contract-instances`,
   getL2ContractInstancesByClassId: (classId: string) =>
@@ -64,7 +72,7 @@ export const aztecExplorer = {
 export const APP_NAME = "Aztec-Scan";
 
 export const L2_NETWORK_ID = l2NetworkIdSchema.parse(
-  import.meta.env.VITE_L2_NETWORK_ID
+  import.meta.env.VITE_L2_NETWORK_ID,
 );
 
 export const CHICMOZ_ALL_UI_URLS =
@@ -92,10 +100,6 @@ export const DISCORD_URL =
 export const GITHUB_URL =
   typeof import.meta.env.VITE_GITHUB_URL === "string"
     ? import.meta.env.VITE_GITHUB_URL
-    : "";
-export const X_URL =
-  typeof import.meta.env.VITE_X_URL === "string"
-    ? import.meta.env.VITE_X_URL
     : "";
 
 export const VERSION_STRING =

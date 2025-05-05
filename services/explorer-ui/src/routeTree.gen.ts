@@ -14,15 +14,15 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as TermsAndConditionsImport } from './routes/terms-and-conditions'
+import { Route as NetworkHealthImport } from './routes/network-health'
 
 // Create Virtual Routes
 
-const VerifiedContractInstancesLazyImport = createFileRoute(
-  '/verified-contract-instances',
-)()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
+const EcosystemLazyImport = createFileRoute('/ecosystem')()
 const DevLazyImport = createFileRoute('/dev')()
+const AztecscanHealthLazyImport = createFileRoute('/aztecscan-health')()
 const AboutUsLazyImport = createFileRoute('/about-us')()
 const IndexLazyImport = createFileRoute('/')()
 const ValidatorsIndexLazyImport = createFileRoute('/validators/')()
@@ -44,14 +44,6 @@ const ContractsClassesIdVersionsVersionLazyImport = createFileRoute(
 
 // Create/Update Routes
 
-const VerifiedContractInstancesLazyRoute =
-  VerifiedContractInstancesLazyImport.update({
-    path: '/verified-contract-instances',
-    getParentRoute: () => rootRoute,
-  } as any).lazy(() =>
-    import('./routes/verified-contract-instances.lazy').then((d) => d.Route),
-  )
-
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
   getParentRoute: () => rootRoute,
@@ -66,10 +58,22 @@ const FeeRecipientsLazyRoute = FeeRecipientsLazyImport.update({
   import('./routes/fee-recipients.lazy').then((d) => d.Route),
 )
 
+const EcosystemLazyRoute = EcosystemLazyImport.update({
+  path: '/ecosystem',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/ecosystem.lazy').then((d) => d.Route))
+
 const DevLazyRoute = DevLazyImport.update({
   path: '/dev',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/dev.lazy').then((d) => d.Route))
+
+const AztecscanHealthLazyRoute = AztecscanHealthLazyImport.update({
+  path: '/aztecscan-health',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/aztecscan-health.lazy').then((d) => d.Route),
+)
 
 const AboutUsLazyRoute = AboutUsLazyImport.update({
   path: '/about-us',
@@ -78,6 +82,11 @@ const AboutUsLazyRoute = AboutUsLazyImport.update({
 
 const TermsAndConditionsRoute = TermsAndConditionsImport.update({
   path: '/terms-and-conditions',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const NetworkHealthRoute = NetworkHealthImport.update({
+  path: '/network-health',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -170,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/network-health': {
+      id: '/network-health'
+      path: '/network-health'
+      fullPath: '/network-health'
+      preLoaderRoute: typeof NetworkHealthImport
+      parentRoute: typeof rootRoute
+    }
     '/terms-and-conditions': {
       id: '/terms-and-conditions'
       path: '/terms-and-conditions'
@@ -184,11 +200,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutUsLazyImport
       parentRoute: typeof rootRoute
     }
+    '/aztecscan-health': {
+      id: '/aztecscan-health'
+      path: '/aztecscan-health'
+      fullPath: '/aztecscan-health'
+      preLoaderRoute: typeof AztecscanHealthLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/dev': {
       id: '/dev'
       path: '/dev'
       fullPath: '/dev'
       preLoaderRoute: typeof DevLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/ecosystem': {
+      id: '/ecosystem'
+      path: '/ecosystem'
+      fullPath: '/ecosystem'
+      preLoaderRoute: typeof EcosystemLazyImport
       parentRoute: typeof rootRoute
     }
     '/fee-recipients': {
@@ -203,13 +233,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/verified-contract-instances': {
-      id: '/verified-contract-instances'
-      path: '/verified-contract-instances'
-      fullPath: '/verified-contract-instances'
-      preLoaderRoute: typeof VerifiedContractInstancesLazyImport
       parentRoute: typeof rootRoute
     }
     '/blocks/$blockNumber': {
@@ -289,12 +312,14 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
+  NetworkHealthRoute,
   TermsAndConditionsRoute,
   AboutUsLazyRoute,
+  AztecscanHealthLazyRoute,
   DevLazyRoute,
+  EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
-  VerifiedContractInstancesLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
   TxEffectsHashLazyRoute,
@@ -316,12 +341,14 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/network-health",
         "/terms-and-conditions",
         "/about-us",
+        "/aztecscan-health",
         "/dev",
+        "/ecosystem",
         "/fee-recipients",
         "/privacy-policy",
-        "/verified-contract-instances",
         "/blocks/$blockNumber",
         "/l1/contract-events",
         "/tx-effects/$hash",
@@ -337,23 +364,29 @@ export const routeTree = rootRoute.addChildren({
     "/": {
       "filePath": "index.lazy.tsx"
     },
+    "/network-health": {
+      "filePath": "network-health.tsx"
+    },
     "/terms-and-conditions": {
       "filePath": "terms-and-conditions.tsx"
     },
     "/about-us": {
       "filePath": "about-us.lazy.tsx"
     },
+    "/aztecscan-health": {
+      "filePath": "aztecscan-health.lazy.tsx"
+    },
     "/dev": {
       "filePath": "dev.lazy.tsx"
+    },
+    "/ecosystem": {
+      "filePath": "ecosystem.lazy.tsx"
     },
     "/fee-recipients": {
       "filePath": "fee-recipients.lazy.tsx"
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
-    },
-    "/verified-contract-instances": {
-      "filePath": "verified-contract-instances.lazy.tsx"
     },
     "/blocks/$blockNumber": {
       "filePath": "blocks/$blockNumber.lazy.tsx"

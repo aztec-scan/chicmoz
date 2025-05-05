@@ -37,6 +37,8 @@ export const store = async (
     await dbTx.insert(l2Block).values({
       hash: block.hash,
       height: BigInt(block.header.globalVariables.blockNumber),
+      orphan_timestamp: block.orphan?.timestamp ?? null,
+      orphan_hasOrphanedParent: block.orphan?.hasOrphanedParent ?? false,
     });
 
     const headerId = uuidv4();
@@ -159,7 +161,9 @@ export const store = async (
 
     // Insert txEffects and create junction entries
     for (const [i, txEff] of Object.entries(block.body.txEffects)) {
-      if (isNaN(Number(i))) {throw new Error("Invalid txEffect index");}
+      if (isNaN(Number(i))) {
+        throw new Error("Invalid txEffect index");
+      }
       await dbTx.insert(txEffect).values({
         txHash: txEff.txHash,
         bodyId,
