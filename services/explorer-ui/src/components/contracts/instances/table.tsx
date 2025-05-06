@@ -5,7 +5,6 @@ import { contractsTableColumns } from "./columns";
 
 interface Props {
   title?: string;
-  description?: string;
   contracts?: ContractInstance[];
   isLoading: boolean;
   error?: Error | null;
@@ -15,7 +14,6 @@ interface Props {
 export const ContractInstancesTable: FC<Props> = ({
   title,
   contracts,
-  description,
   isLoading,
   error,
   showContractVersions,
@@ -36,7 +34,6 @@ export const ContractInstancesTable: FC<Props> = ({
     <section className="relative mx-auto w-full transition-all">
       <div className="space-y-4 bg-white rounded-lg p-5">
         {title && <h3 className="ml-0.5">{title}</h3>}
-        {description && <p className="text-sm text-primary">{description}</p>}
         <DataTable isLoading={isLoading} data={contracts} columns={cols} />
       </div>
     </section>

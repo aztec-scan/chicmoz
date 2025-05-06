@@ -3,7 +3,12 @@ import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OrphanedBanner } from "~/components/orphaned-banner";
-import { useContractClass, useContractClasses, useSubTitle } from "~/hooks";
+import {
+  useContractClass,
+  useContractClasses,
+  useDeployedContractInstances,
+  useSubTitle,
+} from "~/hooks";
 import { TabSection } from "./tabs-section";
 import { getContractClassKeyValueData } from "./util";
 
@@ -14,7 +19,7 @@ export const ContractClassDetails: FC = () => {
   useSubTitle(`Address ${id}`);
 
   const contractClassesRes = useContractClasses(id);
-
+  const contractInstances = useDeployedContractInstances(id);
   const selectedVersionWithArtifactRes = useContractClass({
     classId: id,
     version: version,
@@ -27,7 +32,6 @@ export const ContractClassDetails: FC = () => {
   if (!version) {
     return <div>No version provided</div>;
   }
-
   const selectedVersion = selectedVersionWithArtifactRes?.data
     ? selectedVersionWithArtifactRes.data
     : contractClassesRes.data?.find(
@@ -58,7 +62,10 @@ export const ContractClassDetails: FC = () => {
           {contractClassesRes.error && <div>error</div>}
           {selectedVersion && (
             <KeyValueDisplay
-              data={getContractClassKeyValueData(selectedVersion)}
+              data={getContractClassKeyValueData(
+                selectedVersion,
+                contractInstances.data,
+              )}
             />
           )}
         </div>
@@ -66,7 +73,7 @@ export const ContractClassDetails: FC = () => {
       <div className="mt-5">
         <TabSection
           contractClasses={contractClassesRes}
-          contractClassId={id}
+          contractInstances={contractInstances}
           selectedVersion={selectedVersion}
           isContractArtifactLoading={selectedVersionWithArtifactRes.isLoading}
           contractArtifactError={selectedVersionWithArtifactRes.error}
