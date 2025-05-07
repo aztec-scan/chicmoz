@@ -40,6 +40,8 @@ export const aztecExplorer = {
   getL2ContractInstance: (address: string) =>
     `l2/contract-instances/${address}`,
   getL2ContractInstances: "l2/contract-instances",
+  getAmoundContractClassInstances: (classId: string) =>
+    `l2/stats/total-contract-instances/${classId}`,
   getL2ContractInstancesWithAztecScanNotes:
     "l2/contract-instances/with-aztec-scan-notes",
   getL2ContractInstancesByBlockHash: (hash: string) =>

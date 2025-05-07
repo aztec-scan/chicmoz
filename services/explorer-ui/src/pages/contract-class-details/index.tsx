@@ -4,9 +4,9 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import {
+  useAmountContractClassInstaces,
   useContractClass,
   useContractClasses,
-  useDeployedContractInstances,
   useSubTitle,
 } from "~/hooks";
 import { TabSection } from "./tabs-section";
@@ -19,12 +19,13 @@ export const ContractClassDetails: FC = () => {
   useSubTitle(`Address ${id}`);
 
   const contractClassesRes = useContractClasses(id);
-  const contractInstances = useDeployedContractInstances(id);
+
   const selectedVersionWithArtifactRes = useContractClass({
     classId: id,
     version: version,
     includeArtifactJson: true,
   });
+  const { data: instanceAmount } = useAmountContractClassInstaces(id);
 
   if (!id) {
     return <div>No classId</div>;
@@ -64,7 +65,7 @@ export const ContractClassDetails: FC = () => {
             <KeyValueDisplay
               data={getContractClassKeyValueData(
                 selectedVersion,
-                contractInstances.data,
+                instanceAmount,
               )}
             />
           )}
@@ -73,7 +74,7 @@ export const ContractClassDetails: FC = () => {
       <div className="mt-5">
         <TabSection
           contractClasses={contractClassesRes}
-          contractInstances={contractInstances}
+          contractClassId={id}
           selectedVersion={selectedVersion}
           isContractArtifactLoading={selectedVersionWithArtifactRes.isLoading}
           contractArtifactError={selectedVersionWithArtifactRes.error}
