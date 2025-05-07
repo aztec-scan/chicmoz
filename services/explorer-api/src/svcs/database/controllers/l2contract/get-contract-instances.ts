@@ -1,6 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
-import { and, desc, eq, getTableColumns, isNotNull } from "drizzle-orm";
+import { and, desc, eq, count, getTableColumns, isNotNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import {
@@ -35,7 +35,10 @@ export const getL2DeployedContractInstancesWithAztecScanNotes = async (
     .from(l2ContractInstanceAztecScanNotes)
     .innerJoin(
       l2ContractInstanceDeployed,
-      eq(l2ContractInstanceAztecScanNotes.address, l2ContractInstanceDeployed.address)
+      eq(
+        l2ContractInstanceAztecScanNotes.address,
+        l2ContractInstanceDeployed.address,
+      ),
     )
     .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
     .innerJoin(
@@ -66,21 +69,24 @@ export const getL2DeployedContractInstancesWithAztecScanNotes = async (
       ),
     );
 
-  return result.map(({
-    instance,
-    class: contractClass,
-    verifiedDeploymentArguments,
-    deployerMetadata,
-    aztecScanNotes,
-    isOrphaned,
-  }) => parseDeluxe({
-    contractClass,
-    instance,
-    verifiedDeploymentArguments,
-    deployerMetadata,
-    aztecScanNotes,
-    isOrphaned: Boolean(isOrphaned),
-  }));
+  return result.map(
+    ({
+      instance,
+      class: contractClass,
+      verifiedDeploymentArguments,
+      deployerMetadata,
+      aztecScanNotes,
+      isOrphaned,
+    }) =>
+      parseDeluxe({
+        contractClass,
+        instance,
+        verifiedDeploymentArguments,
+        deployerMetadata,
+        aztecScanNotes,
+        isOrphaned: Boolean(isOrphaned),
+      }),
+  );
 };
 
 export const getL2DeployedContractInstances = async ({
@@ -290,3 +296,17 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
     });
   });
 };
+
+export const getL2TotalAmountDeployedContractInstancesByCurrentContractClassId =
+  async (contractClassId: string): Promise<number> => {
+    const result = await db()
+      .select({
+        count: count(),
+      })
+      .from(l2ContractInstanceDeployed)
+      .where(
+        eq(l2ContractInstanceDeployed.currentContractClassId, contractClassId),
+      );
+
+    return Number(result[0].count);
+  };
