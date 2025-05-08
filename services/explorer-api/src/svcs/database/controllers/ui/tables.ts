@@ -8,11 +8,13 @@ import {
   txEffect,
 } from "../../../database/schema/index.js";
 import { getBlocksWhereRange } from "../utils.js";
-import { DB_MAX_BLOCKS } from "../../../../environment.js";
+import { DB_MAX_BLOCKS, DB_MAX_TX_EFFECTS } from "../../../../environment.js";
 import {
   FIRST_FINALIZATION_STATUS,
   UiBlockTable,
   uiBlockTableSchema,
+  UiTxEffectTable,
+  uiTxEffectTableSchema,
 } from "@chicmoz-pkg/types";
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
@@ -80,4 +82,42 @@ export const getBlocksForUiTable = async ({
     blocks.push(await uiBlockTableSchema.parseAsync(blockData));
   }
   return blocks;
+};
+
+export const getTxEffectForUiTable = async ({
+  from,
+  to,
+}: GetBlocksByRange): Promise<UiTxEffectTable[]> => {
+  const whereRange = getBlocksWhereRange({ from, to });
+
+  const dbRes = await db()
+    .select({
+      height: getTableColumns(l2Block).height,
+      txHash: getTableColumns(txEffect).txHash,
+      transactionFee: getTableColumns(txEffect).transactionFee,
+      bodyId: body.id,
+      timestamp: getTableColumns(globalVariables).timestamp,
+    })
+    .from(l2Block)
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+    .innerJoin(body, eq(body.blockHash, l2Block.hash))
+    .innerJoin(txEffect, eq(txEffect.bodyId, body.id))
+    .where(whereRange)
+    .orderBy(desc(l2Block.height), desc(txEffect.index))
+    .limit(DB_MAX_TX_EFFECTS)
+    .execute();
+
+  const txEffects: UiTxEffectTable[] = [];
+
+  for (const result of dbRes) {
+    const txEffectData = {
+      height: result.height,
+      txHash: result.txHash,
+      transactionFee: result.transactionFee,
+      timestamp: result.timestamp,
+    };
+    txEffects.push(await uiTxEffectTableSchema.parseAsync(txEffectData));
+  }
+  return txEffects;
 };

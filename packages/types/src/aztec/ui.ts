@@ -14,3 +14,12 @@ export const uiBlockTableSchema = z.object({
 });
 
 export type UiBlockTable = z.infer<typeof uiBlockTableSchema>;
+
+export const uiTxEffectTableSchema = z.object({
+  blockNumber: hexStringSchema,
+  txHash: z.number(),
+  transactionFee: z.number(),
+  timestamp: frTimestampSchema,
+});
+
+export type UiTxEffectTable = z.infer<typeof uiTxEffectTableSchema>;

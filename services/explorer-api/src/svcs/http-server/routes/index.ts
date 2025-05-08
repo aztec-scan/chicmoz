@@ -219,6 +219,10 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
 
   router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
+  router.get(
+    paths.uiTxEffectTable,
+    controller.GET_L2_TX_EFFECTS_BY_BLOCK_HEIGHT,
+  );
 
   otherPaths.forEach(({ path, controller }) => {
     router.get(path, controller);

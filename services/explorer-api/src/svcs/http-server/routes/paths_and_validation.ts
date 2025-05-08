@@ -79,6 +79,7 @@ export const paths = {
   sequencer: "/l2/sequencers/:enr",
 
   uiBlockTable: "/l2/ui/blocks-for-table",
+  uiTxEffectTable: "/l2/ui/tx-effects-for-table",
 };
 
 export const getBlockByHeightOrHashSchema = z.object({

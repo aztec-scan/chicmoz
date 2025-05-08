@@ -11,3 +11,12 @@ export const GET_BLOCK_UI_TABLE_DATA = asyncHandler(async (req, res) => {
   );
   res.status(200).json(JSON.parse(blocksData));
 });
+
+export const GET_TX_EFFECTS_UI_TABLE_DATA = asyncHandler(async (req, res) => {
+  const { from, to } = getBlocksSchema.parse(req).query;
+  const blocksData = await dbWrapper.getLatest(
+    ["l2", "txEffects", "ui", from, to],
+    () => db.ui.getTxEffectForUiTable({ from, to }),
+  );
+  res.status(200).json(JSON.parse(blocksData));
+});
