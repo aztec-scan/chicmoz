@@ -4,7 +4,7 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import {
-  useAmountContractClassInstaces,
+  useAmountContractClassInstances,
   useContractClass,
   useContractClasses,
   useSubTitle,
@@ -25,7 +25,7 @@ export const ContractClassDetails: FC = () => {
     version: version,
     includeArtifactJson: true,
   });
-  const { data: instanceAmount } = useAmountContractClassInstaces(id);
+  const { data: instanceAmount } = useAmountContractClassInstances(id);
 
   if (!id) {
     return <div>No classId</div>;
