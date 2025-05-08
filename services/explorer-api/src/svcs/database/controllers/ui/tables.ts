@@ -112,7 +112,7 @@ export const getTxEffectForUiTable = async ({
 
   for (const result of dbRes) {
     const txEffectData = {
-      height: result.height,
+      blockNumber: result.height,
       txHash: result.txHash,
       transactionFee: result.transactionFee,
       timestamp: result.timestamp,

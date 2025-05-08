@@ -3,7 +3,7 @@ import {
   chicmozL2BlockFinalizationStatusSchema,
   hexStringSchema,
 } from "../index.js";
-import { frTimestampSchema } from "./utils.js";
+import { frNumberSchema, frTimestampSchema } from "./utils.js";
 
 export const uiBlockTableSchema = z.object({
   blockHash: hexStringSchema,
@@ -16,9 +16,9 @@ export const uiBlockTableSchema = z.object({
 export type UiBlockTable = z.infer<typeof uiBlockTableSchema>;
 
 export const uiTxEffectTableSchema = z.object({
-  blockNumber: hexStringSchema,
-  txHash: z.number(),
-  transactionFee: z.number(),
+  blockNumber: z.coerce.bigint().nonnegative(),
+  txHash: hexStringSchema,
+  transactionFee: frNumberSchema,
   timestamp: frTimestampSchema,
 });
 
