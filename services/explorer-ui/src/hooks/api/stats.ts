@@ -44,11 +44,11 @@ export const useAvarageBlockTime = (): UseQueryResult<string, Error> => {
   });
 };
 
-export const useAmountContractClassInstaces = (
+export const useAmountContractClassInstances = (
   classId: string,
 ): UseQueryResult<string, Error> => {
   return useQuery<string, Error>({
-    queryKey: queryKeyGenerator.amountContractClassInstaces(classId),
-    queryFn: () => statsL2Api.getAmountContractClassInstaces(classId),
+    queryKey: queryKeyGenerator.amountContractClassInstances(classId),
+    queryFn: () => statsL2Api.getAmountContractClassInstances(classId),
   });
 };

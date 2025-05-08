@@ -61,7 +61,7 @@ export const queryKeyGenerator = {
   l1L2Validator: (address: string) => ["l1L2Validator", address],
   l1L2ValidatorHistory: (address: string) => ["l1L2ValidatorHistory", address],
   l1ContractEvents: ["l1ContractEvents"],
-  amountContractClassInstaces: (classId: string) => [
+  amountContractClassInstances: (classId: string) => [
     "amountOfInstances",
     classId,
   ],

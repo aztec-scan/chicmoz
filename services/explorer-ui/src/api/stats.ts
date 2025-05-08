@@ -27,9 +27,9 @@ export const statsL2Api = {
     const response = await client.get(aztecExplorer.getL2AverageBlockTime);
     return validateResponse(z.coerce.string(), response.data);
   },
-  getAmountContractClassInstaces: async (classId: string): Promise<string> => {
+  getAmountContractClassInstances: async (classId: string): Promise<string> => {
     const response = await client.get(
-      aztecExplorer.getAmoundContractClassInstances(classId),
+      aztecExplorer.getAmountContractClassInstances(classId),
     );
     return validateResponse(z.coerce.string(), response.data);
   },
