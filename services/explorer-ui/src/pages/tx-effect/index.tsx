@@ -4,7 +4,7 @@ import { Loader } from "~/components/loader";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   useGetLatestTxEffects,
-  useLatestBlocks,
+  useLatestTableBlocks,
   useSubTitle,
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
@@ -14,7 +14,7 @@ import { routes } from "~/routes/__root";
 
 export const TxEffects: FC = () => {
   useSubTitle(routes.txEffects.children.index.title);
-  const { data: latestBlocks, isLoading, error } = useLatestBlocks();
+  const { data: latestBlocks, isLoading, error } = useLatestTableBlocks();
   const {
     data: totalTxEffects,
     isLoading: loadingTotalEffects,

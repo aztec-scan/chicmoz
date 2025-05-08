@@ -1,4 +1,7 @@
-import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import {
+  type UiBlockTable,
+  type ChicmozL2BlockLight,
+} from "@chicmoz-pkg/types";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { BlockAPI } from "~/api";
 import { queryKeyGenerator } from "./utils";
@@ -35,6 +38,25 @@ export const useLatestBlocks = (): UseQueryResult<
   });
 };
 
+export const useLatestTableBlocks = (): UseQueryResult<
+  UiBlockTable[],
+  Error
+> => {
+  return useQuery<UiBlockTable[], Error>({
+    queryKey: queryKeyGenerator.latestBlocks,
+    queryFn: () => BlockAPI.getLatestTableBlocks(),
+  });
+};
+
+export const useLatestTableBlocksByHeightRange = (
+  from: number,
+  to: number,
+): UseQueryResult<UiBlockTable[], Error> => {
+  return useQuery<UiBlockTable[], Error>({
+    queryKey: queryKeyGenerator.latestBlocks,
+    queryFn: () => BlockAPI.getLatestTableBlocksByHeightRange(from, to),
+  });
+};
 export const useBlocksByRange = (
   start: number,
   end: number,

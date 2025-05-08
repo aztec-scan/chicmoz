@@ -7,7 +7,7 @@ import {
   HealthStatus,
   useAvarageBlockTime,
   useAvarageFees,
-  useLatestBlocks,
+  useLatestTableBlocks,
   useSubTitle,
   useSystemHealth,
   useTotalContracts,
@@ -15,14 +15,14 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
-import { mapLatestBlocks } from "~/lib/map-for-table";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import { TxEffectTableLanding } from "./tx-effect-table-landing";
+import { mapLatestBlocks } from "~/lib/map-for-table";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();
-  const { data: latestBlocks, isLoading, error } = useLatestBlocks();
+  const { data: latestBlocks, isLoading, error } = useLatestTableBlocks();
   const {
     data: totalTxEffects,
     isLoading: loadingTotalEffects,

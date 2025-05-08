@@ -7,6 +7,8 @@ import {
   useLatestBlocks,
   useBlocksByRange,
   useSubTitle,
+  useLatestTableBlocks,
+  useLatestTableBlocksByHeightRange,
 } from "~/hooks";
 import { mapLatestBlocks } from "~/lib/map-for-table";
 import { formatDuration } from "~/lib/utils";
@@ -15,8 +17,7 @@ import { routes } from "~/routes/__root";
 export const Blocks: FC = () => {
   useSubTitle(routes.blocks.children.index.title);
 
-  // Get the latest blocks initially to set the default range
-  const { data: latestBlocksData } = useLatestBlocks();
+  const { data: latestBlocksData } = useLatestTableBlocks();
 
   // State for block range
   const [startBlock, setStartBlock] = useState<number | undefined>(undefined);
@@ -43,7 +44,7 @@ export const Blocks: FC = () => {
     isLoading,
     error,
     refetch,
-  } = useBlocksByRange(
+  } = useLatestTableBlocksByHeightRange(
     startBlock ?? 1,
     endBlock !== undefined ? endBlock + 1 : startBlock ? startBlock + 10 : 11,
   );

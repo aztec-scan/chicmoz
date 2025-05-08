@@ -1,4 +1,7 @@
-import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import {
+  type UiBlockTable,
+  type ChicmozL2BlockLight,
+} from "@chicmoz-pkg/types";
 import { useEffect, useMemo, useState, type FC } from "react";
 import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
@@ -6,7 +9,7 @@ import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
 import { mapLatestTxEffects } from "~/lib/map-for-table";
 
 interface TxEffectTableLandingProps {
-  latestBlocks?: ChicmozL2BlockLight[];
+  latestBlocks?: UiBlockTable[];
 }
 
 export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
