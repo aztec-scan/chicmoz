@@ -77,6 +77,8 @@ export const paths = {
   chainErrors: "/l2/errors",
   sequencers: "/l2/sequencers",
   sequencer: "/l2/sequencers/:enr",
+
+  uiBlockTable: "/l2/ui/blocks-for-table",
 };
 
 export const getBlockByHeightOrHashSchema = z.object({

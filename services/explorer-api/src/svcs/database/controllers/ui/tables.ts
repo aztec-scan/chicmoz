@@ -1,0 +1,83 @@
+import { getDb as db } from "@chicmoz-pkg/postgres-helper";
+import { count, desc, eq, getTableColumns } from "drizzle-orm";
+import {
+  body,
+  globalVariables,
+  header,
+  l2Block,
+  txEffect,
+} from "../../../database/schema/index.js";
+import { getBlocksWhereRange } from "../utils.js";
+import { DB_MAX_BLOCKS } from "../../../../environment.js";
+import {
+  FIRST_FINALIZATION_STATUS,
+  UiBlockTable,
+  uiBlockTableSchema,
+} from "@chicmoz-pkg/types";
+import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
+import { logger } from "../../../../logger.js";
+
+type GetBlocksByRange = {
+  from: bigint | undefined;
+  to: bigint | undefined;
+};
+
+export const getBlocksForUiTable = async ({
+  from,
+  to,
+}: GetBlocksByRange): Promise<UiBlockTable[]> => {
+  const whereRange = getBlocksWhereRange({ from, to });
+
+  const dbRes = await db()
+    .select({
+      height: getTableColumns(l2Block).height,
+      hash: getTableColumns(l2Block).hash,
+      timestamp: getTableColumns(globalVariables).timestamp,
+      bodyId: body.id,
+    })
+    .from(l2Block)
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+    .innerJoin(body, eq(body.blockHash, l2Block.hash))
+    .where(whereRange)
+    .orderBy(desc(l2Block.height))
+    .limit(DB_MAX_BLOCKS)
+    .execute();
+
+  const blocks: UiBlockTable[] = [];
+
+  for (const result of dbRes) {
+    const txCount = await db()
+      .select({ count: count() })
+      .from(txEffect)
+      .where(eq(txEffect.bodyId, result.bodyId))
+      .execute();
+    const finalizationStatus = await db()
+      .select({
+        status: getTableColumns(l2BlockFinalizationStatusTable).status,
+      })
+      .from(l2BlockFinalizationStatusTable)
+      .where(eq(l2BlockFinalizationStatusTable.l2BlockHash, result.hash))
+      .orderBy(
+        desc(l2BlockFinalizationStatusTable.status),
+        desc(l2BlockFinalizationStatusTable.l2BlockNumber),
+      )
+      .limit(1);
+
+    let finalizationStatusValue = finalizationStatus[0]?.status;
+    if (finalizationStatusValue === undefined) {
+      finalizationStatusValue = FIRST_FINALIZATION_STATUS;
+      logger.warn(`Finalization status not found for block ${result.hash}`);
+    }
+
+    const blockData = {
+      blockHash: result.hash,
+      height: result.height,
+      blockStatus: finalizationStatusValue,
+      timestamp: result.timestamp,
+      txEffectsLength: txCount[0].count,
+    };
+    blocks.push(await uiBlockTableSchema.parseAsync(blockData));
+  }
+  return blocks;
+};

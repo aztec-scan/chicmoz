@@ -111,9 +111,15 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.latestHeight, controller.GET_LATEST_HEIGHT);
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);
-  router.get(paths.blocksByStatus, controller.GET_BLOCKS_BY_FINALIZATION_STATUS);
+  router.get(
+    paths.blocksByStatus,
+    controller.GET_BLOCKS_BY_FINALIZATION_STATUS,
+  );
   router.get(paths.orphanedBlocks, controller.GET_ORPHANED_BLOCKS);
-  router.get(paths.orphanedBlocksLimited, controller.GET_ORPHANED_BLOCKS_LIMITED);
+  router.get(
+    paths.orphanedBlocksLimited,
+    controller.GET_ORPHANED_BLOCKS_LIMITED,
+  );
   router.get(paths.reorgs, controller.GET_REORGS);
   router.get(paths.block, controller.GET_BLOCK);
   router.get(paths.blocks, controller.GET_BLOCKS);
@@ -188,7 +194,10 @@ export const init = ({ router }: { router: Router }) => {
     paths.contractInstancesByContractClassId,
     controller.GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
   );
-  router.get(paths.contractInstancesWithAztecScanNotes, controller.GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES);
+  router.get(
+    paths.contractInstancesWithAztecScanNotes,
+    controller.GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
+  );
   router.get(paths.contractInstance, controller.GET_L2_CONTRACT_INSTANCE);
   router.get(paths.contractInstances, controller.GET_L2_CONTRACT_INSTANCES);
 
@@ -208,6 +217,8 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.sequencer, controller.GET_L2_SEQUENCER);
   router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
+
+  router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
 
   otherPaths.forEach(({ path, controller }) => {
     router.get(path, controller);
