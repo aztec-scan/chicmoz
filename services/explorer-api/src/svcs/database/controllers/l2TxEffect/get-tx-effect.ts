@@ -9,13 +9,13 @@ import assert from "assert";
 import {
   SQL,
   and,
-  asc,
   desc,
   eq,
   getTableColumns,
   gte,
   isNotNull,
   lt,
+  sql,
 } from "drizzle-orm";
 import { z } from "zod";
 import { DB_MAX_TX_EFFECTS } from "../../../../environment.js";
@@ -45,21 +45,24 @@ type GetTxEffectsByBlockHeightRange = {
   getType: GetTypes.BlockHeightRange;
 };
 
-const getTxEffectNestedByHash = async (
-  txEffectHash: string,
-): Promise<Pick<ChicmozL2TxEffect, "publicDataWrites">> => {
-  const publicDataWrites = await db()
+// Helper function to create a publicDataWrites subquery
+const createPublicDataWritesSubquery = () => {
+  return db()
     .select({
-      ...getTableColumns(publicDataWrite),
+      txEffectHash: publicDataWrite.txEffectHash,
+      publicDataWrites: sql`COALESCE(json_agg(
+        json_build_object(
+          'id', ${publicDataWrite.id},
+          'txEffectHash', ${publicDataWrite.txEffectHash},
+          'index', ${publicDataWrite.index},
+          'leafSlot', ${publicDataWrite.leafSlot},
+          'value', ${publicDataWrite.value}
+        ) ORDER BY ${publicDataWrite.index} ASC
+      ), '[]'::json)`.as("public_data_writes"),
     })
     .from(publicDataWrite)
-    .innerJoin(txEffect, eq(txEffect.txHash, publicDataWrite.txEffectHash))
-    .where(eq(publicDataWrite.txEffectHash, txEffectHash))
-    .orderBy(asc(publicDataWrite.index))
-    .execute();
-  return {
-    publicDataWrites,
-  };
+    .groupBy(publicDataWrite.txEffectHash)
+    .as("pdw_agg");
 };
 
 export const getTxEffectByBlockHeightAndIndex = async (
@@ -113,6 +116,9 @@ const generateWhereQuery = (from?: bigint, to?: bigint) => {
 const _getTxEffects = async (
   args: GetTxEffectByBlockHeightAndIndex | GetTxEffectsByBlockHeightRange,
 ): Promise<ChicmozL2TxEffectDeluxe[]> => {
+  // Create the publicDataWrites subquery
+  const publicDataWritesSubquery = createPublicDataWritesSubquery();
+
   const joinQuery = db()
     .select({
       ...getTableColumns(txEffect),
@@ -120,12 +126,17 @@ const _getTxEffects = async (
       blockHash: l2Block.hash,
       timestamp: globalVariables.timestamp,
       isOrphaned: isNotNull(l2Block.orphan_timestamp),
+      publicDataWrites: publicDataWritesSubquery.publicDataWrites,
     })
     .from(l2Block)
     .innerJoin(body, eq(l2Block.hash, body.blockHash))
     .innerJoin(txEffect, eq(body.id, txEffect.bodyId))
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId));
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+    .leftJoin(
+      publicDataWritesSubquery,
+      eq(txEffect.txHash, publicDataWritesSubquery.txEffectHash),
+    );
 
   let whereQuery;
 
@@ -156,36 +167,39 @@ const _getTxEffects = async (
 
   const dbRes = await whereQuery.execute();
 
-  const txEffects: ChicmozL2TxEffectDeluxe[] = await Promise.all(
-    dbRes.map(async (txEffect) => {
-      const nestedData = await getTxEffectNestedByHash(txEffect.txHash);
-      return {
-        ...txEffect,
-        txBirthTimestamp: txEffect.txBirthTimestamp.valueOf(),
-        ...nestedData,
-        revertCode: { code: txEffect.revertCode },
-        noteHashes: Array.isArray(txEffect.noteHashes)
-          ? txEffect.noteHashes
-          : ([] as string[]),
-        nullifiers: Array.isArray(txEffect.nullifiers)
-          ? txEffect.nullifiers
-          : ([] as string[]),
-        l2ToL1Msgs: Array.isArray(txEffect.l2ToL1Msgs)
-          ? txEffect.l2ToL1Msgs
-          : ([] as string[]),
-        privateLogs: Array.isArray(txEffect.privateLogs)
-          ? txEffect.privateLogs
-          : ([] as string[][]),
-        publicLogs: Array.isArray(txEffect.publicLogs)
-          ? txEffect.publicLogs
-          : ([] as string[][]),
-        contractClassLogs: Array.isArray(txEffect.contractClassLogs)
-          ? txEffect.contractClassLogs
-          : ([] as string[][]),
-        isOrphaned: Boolean(txEffect.isOrphaned),
-      };
-    }),
-  );
+  // Process the results directly without additional queries
+  const txEffects: ChicmozL2TxEffectDeluxe[] = dbRes.map((txEffect) => {
+    // Ensure publicDataWrites is properly cast to the expected type
+    const publicDataWrites = Array.isArray(txEffect.publicDataWrites)
+      ? txEffect.publicDataWrites
+      : [];
+
+    return {
+      ...txEffect,
+      txBirthTimestamp: txEffect.txBirthTimestamp.valueOf(),
+      publicDataWrites,
+      revertCode: { code: txEffect.revertCode },
+      noteHashes: Array.isArray(txEffect.noteHashes)
+        ? txEffect.noteHashes
+        : ([] as string[]),
+      nullifiers: Array.isArray(txEffect.nullifiers)
+        ? txEffect.nullifiers
+        : ([] as string[]),
+      l2ToL1Msgs: Array.isArray(txEffect.l2ToL1Msgs)
+        ? txEffect.l2ToL1Msgs
+        : ([] as string[]),
+      privateLogs: Array.isArray(txEffect.privateLogs)
+        ? txEffect.privateLogs
+        : ([] as string[][]),
+      publicLogs: Array.isArray(txEffect.publicLogs)
+        ? txEffect.publicLogs
+        : ([] as string[][]),
+      contractClassLogs: Array.isArray(txEffect.contractClassLogs)
+        ? txEffect.contractClassLogs
+        : ([] as string[][]),
+      isOrphaned: Boolean(txEffect.isOrphaned),
+    };
+  });
 
   return z.array(chicmozL2TxEffectDeluxeSchema).parse(txEffects);
 };
@@ -199,6 +213,9 @@ export const getTxEffectByHash = async (
 export const getTxEffectDynamicWhere = async (
   whereMatcher: SQL<unknown>,
 ): Promise<ChicmozL2TxEffectDeluxe | null> => {
+  // Create the publicDataWrites subquery
+  const publicDataWritesSubquery = createPublicDataWritesSubquery();
+
   const dbRes = await db()
     .select({
       ...getTableColumns(txEffect),
@@ -206,12 +223,17 @@ export const getTxEffectDynamicWhere = async (
       blockHash: l2Block.hash,
       timestamp: globalVariables.timestamp,
       isOrphaned: isNotNull(l2Block.orphan_timestamp),
+      publicDataWrites: publicDataWritesSubquery.publicDataWrites,
     })
     .from(txEffect)
     .innerJoin(body, eq(txEffect.bodyId, body.id))
     .innerJoin(l2Block, eq(body.blockHash, l2Block.hash))
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+    .leftJoin(
+      publicDataWritesSubquery,
+      eq(txEffect.txHash, publicDataWritesSubquery.txEffectHash),
+    )
     .where(whereMatcher)
     .limit(1)
     .execute();
@@ -220,12 +242,15 @@ export const getTxEffectDynamicWhere = async (
     return null;
   }
 
-  const nestedData = await getTxEffectNestedByHash(dbRes[0].txHash);
+  // Ensure publicDataWrites is properly cast to the expected type
+  const publicDataWrites = Array.isArray(dbRes[0].publicDataWrites)
+    ? dbRes[0].publicDataWrites
+    : [];
 
   const toParse: ChicmozL2TxEffectDeluxe = {
     ...dbRes[0],
     txBirthTimestamp: dbRes[0].txBirthTimestamp.valueOf(),
-    ...nestedData,
+    publicDataWrites,
     revertCode: { code: dbRes[0].revertCode },
     noteHashes: (Array.isArray(dbRes[0].noteHashes)
       ? dbRes[0].noteHashes
