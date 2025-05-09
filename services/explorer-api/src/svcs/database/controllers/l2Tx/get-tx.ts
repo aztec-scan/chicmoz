@@ -1,11 +1,11 @@
+import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  chicmozL2PendingTxSchema,
   HexString,
+  chicmozL2PendingTxSchema,
   type ChicmozL2PendingTx,
 } from "@chicmoz-pkg/types";
-import { asc, eq, getTableColumns } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
-import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { l2Tx } from "../../../database/schema/l2tx/index.js";
 
 export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
@@ -14,7 +14,7 @@ export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
       ...getTableColumns(l2Tx),
     })
     .from(l2Tx)
-    .orderBy(asc(l2Tx.birthTimestamp));
+    .orderBy(desc(l2Tx.birthTimestamp));
 
   if (!res) {
     return [];

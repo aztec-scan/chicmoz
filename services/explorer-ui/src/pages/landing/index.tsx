@@ -3,10 +3,13 @@ import { type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
+import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
+import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   HealthStatus,
   useAvarageBlockTime,
   useAvarageFees,
+  useGetLatestTxEffects,
   useLatestBlocks,
   useSubTitle,
   useSystemHealth,
@@ -15,10 +18,9 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
-import { mapLatestBlocks } from "~/lib/map-for-table";
+import { mapLatestBlocks, mapLatestTxEffects } from "~/lib/map-for-table";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { TxEffectTableLanding } from "./tx-effect-table-landing";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();
@@ -53,6 +55,13 @@ export const Landing: FC = () => {
     isLoading: loadingAvarageBlockTime,
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
+
+  // For latest transactions
+  const {
+    data: latestTxEffectsData,
+    isLoading: isLoadingTxEffects,
+    error: txEffectsError,
+  } = useGetLatestTxEffects();
 
   const formattedFees = formatFees(avarageFees);
 
@@ -173,10 +182,26 @@ export const Landing: FC = () => {
                 isLoading={isLoading}
                 error={error}
                 disableSizeSelector={true}
+                maxEntries={20}
               />
             </div>
-            <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
-              <TxEffectTableLanding latestBlocks={latestBlocks} />
+            <div className="flex flex-col gap-4 w-full md:w-1/2">
+              <div className="bg-white rounded-lg shadow-lg">
+                <PendingTxsTable disableSizeSelector={true} maxEntries={6} />
+              </div>
+              <div className="bg-white rounded-lg shadow-lg">
+                <TxEffectsTable
+                  txEffects={mapLatestTxEffects(
+                    latestTxEffectsData ?? [],
+                    latestBlocks ?? [],
+                  )}
+                  isLoading={isLoadingTxEffects}
+                  title="Latest Transactions"
+                  error={txEffectsError}
+                  disableSizeSelector={true}
+                  maxEntries={8}
+                />
+              </div>
             </div>
           </div>
         </>
