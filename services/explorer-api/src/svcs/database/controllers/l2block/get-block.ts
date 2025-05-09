@@ -7,13 +7,13 @@ import {
 } from "@chicmoz-pkg/types";
 import {
   and,
-  asc,
   count,
   desc,
   eq,
   getTableColumns,
   isNotNull,
   isNull,
+  sql,
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
@@ -173,6 +173,29 @@ const _getBlocks = async (
     }
   }
 
+  const finalizationStatusSubquery = db()
+    .select({
+      l2BlockHash: l2BlockFinalizationStatusTable.l2BlockHash,
+      status: l2BlockFinalizationStatusTable.status,
+      rowNumber:
+        sql`ROW_NUMBER() OVER (PARTITION BY ${l2BlockFinalizationStatusTable.l2BlockHash} 
+      ORDER BY ${l2BlockFinalizationStatusTable.status} DESC, 
+      ${l2BlockFinalizationStatusTable.l2BlockNumber} DESC)`.as("row_number"),
+    })
+    .from(l2BlockFinalizationStatusTable)
+    .as("latest_status");
+
+  const txEffectsSubquery = db()
+    .select({
+      bodyId: txEffect.bodyId,
+      txHashes:
+        sql`json_agg(${txEffect.txHash} ORDER BY ${txEffect.index} ASC)`.as(
+          "tx_hashes",
+        ),
+    })
+    .from(txEffect)
+    .groupBy(txEffect.bodyId)
+    .as("txEffectsAgg");
   const joinQuery = db()
     .select({
       ...getTableColumns(l2Block),
@@ -193,6 +216,8 @@ const _getBlocks = async (
       header_GlobalVariables: getTableColumnsWithoutId(globalVariables),
       header_GlobalVariables_GasFees: getTableColumnsWithoutId(gasFees),
       bodyId: body.id,
+      finalizationStatus: finalizationStatusSubquery.status,
+      txEffects: txEffectsSubquery.txHashes,
     })
     .from(l2Block)
     .innerJoin(archive, eq(l2Block.hash, archive.fk))
@@ -218,7 +243,15 @@ const _getBlocks = async (
     .leftJoin(
       l1L2ProofVerifiedTable,
       eq(l2Block.height, l1L2ProofVerifiedTable.l2BlockNumber),
-    );
+    )
+    .leftJoin(
+      finalizationStatusSubquery,
+      and(
+        eq(finalizationStatusSubquery.l2BlockHash, l2Block.hash),
+        eq(finalizationStatusSubquery.rowNumber, 1),
+      ),
+    )
+    .leftJoin(txEffectsSubquery, eq(txEffectsSubquery.bodyId, body.id));
 
   let whereQuery;
 
@@ -261,30 +294,16 @@ const _getBlocks = async (
         .limit(DB_MAX_BLOCKS);
       break;
   }
-
   const results = await whereQuery.execute();
-
   const blocks: ChicmozL2BlockLight[] = [];
-
   for (const result of results) {
-    const txEffectsHashes = await db()
-      .select({
-        txHash: txEffect.txHash,
-      })
-      .from(txEffect)
-      .where(eq(txEffect.bodyId, result.bodyId))
-      .orderBy(asc(txEffect.index));
-    const finalizationStatus = await db()
-      .select(getTableColumns(l2BlockFinalizationStatusTable))
-      .from(l2BlockFinalizationStatusTable)
-      .where(eq(l2BlockFinalizationStatusTable.l2BlockHash, result.hash))
-      .orderBy(
-        desc(l2BlockFinalizationStatusTable.status),
-        desc(l2BlockFinalizationStatusTable.l2BlockNumber),
-      )
-      .limit(1);
+    // Use the data from the joined subqueries
+    const txEffectsHashes = result.txEffects
+      ? (result.txEffects as HexString[]).map((hash) => ({ txHash: hash }))
+      : [];
 
-    let finalizationStatusValue = finalizationStatus[0]?.status;
+    // Use the finalization status from the subquery
+    let finalizationStatusValue = result.finalizationStatus;
     if (finalizationStatusValue === undefined) {
       finalizationStatusValue = FIRST_FINALIZATION_STATUS;
       logger.warn(`Finalization status not found for block ${result.hash}`);
@@ -399,7 +418,9 @@ export const getReorgs = async (): Promise<
 
   // For each root orphaned block, count how many children it has
   for (const rootBlock of rootOrphanedBlocks) {
-    if (!rootBlock.timestamp) {continue;}
+    if (!rootBlock.timestamp) {
+      continue;
+    }
 
     // Count orphaned blocks with the same timestamp (these are all part of the same re-org)
     const childCount = await db()

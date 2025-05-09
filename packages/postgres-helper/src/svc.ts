@@ -20,18 +20,22 @@ const init = async (drizzleConfig: DrizzleConfig<Record<string, unknown>>) => {
 };
 
 export const getDb = () => {
-  const state = getSvcState(serviceId);
-  if (state === MicroserviceBaseSvcState.SHUTTING_DOWN)
-    throw new Error("Database is shutting down");
-  if (state === MicroserviceBaseSvcState.DOWN)
-    throw new Error("Database is down");
-  if (state === MicroserviceBaseSvcState.INITIALIZING)
-    throw new Error("Database is initializing");
+  try {
+    const state = getSvcState(serviceId);
+    if (state === MicroserviceBaseSvcState.SHUTTING_DOWN)
+      {throw new Error("Database is shutting down");}
+    if (state === MicroserviceBaseSvcState.DOWN)
+      {throw new Error("Database is down");}
+    if (state === MicroserviceBaseSvcState.INITIALIZING)
+      {throw new Error("Database is initializing");}
+  } catch (error) {
+    throw new Error("Database is not initialized");
+  }
   return db;
 };
 
 export const generateSvc: (
-  drizzleConf: DrizzleConfig<Record<string, unknown>>
+  drizzleConf: DrizzleConfig<Record<string, unknown>>,
 ) => MicroserviceBaseSvc = (drizzleConf) => ({
   svcId: "DB",
   init: () => init(drizzleConf),
