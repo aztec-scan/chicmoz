@@ -47,11 +47,11 @@ export const BlockStatusBadge: React.FC<BlockStatusBadgeProps> = ({
         badgeStyle = red;
         break;
       case ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN:
-        badgeText = "Proven";
+        badgeText = "Preconfirmed";
         badgeStyle = orange;
         break;
       case ChicmozL2BlockFinalizationStatus.L1_SEEN_PROVEN:
-        badgeText = "Proven";
+        badgeText = "Preconfirmed";
         badgeStyle = orange;
         break;
       default:
