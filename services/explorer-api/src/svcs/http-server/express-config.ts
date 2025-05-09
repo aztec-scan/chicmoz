@@ -72,7 +72,7 @@ export function setup(
       parameterLimit: options.PARAMETER_LIMIT,
     })(req, res, next);
   });
-  app.use(morgan("common"));
+  app.use(morgan("dev"));
 
   const router = express.Router();
   router.get(
