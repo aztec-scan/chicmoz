@@ -6,14 +6,15 @@ import { OrphanedBanner } from "~/components/orphaned-banner";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   useGetBlockByIdentifier,
-  useGetTxEffectsByBlockHeight,
+  useGetTableTxEffectsByBlockHeight,
   useSubTitle,
 } from "~/hooks";
 import { blockDetailsTabs, type TabId } from "./constants";
-import { getBlockDetails, getTxEffects } from "./util";
+import { getBlockDetails } from "./util";
 import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyBlockData } from "~/components/loading/util";
 import { AdjecentBlockButtons } from "./adjacent-block-buttons";
+import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
@@ -36,7 +37,7 @@ export const BlockDetails: FC = () => {
     data: blockTxEffects,
     isLoading: txEffectsLoading,
     error: txEffectsError,
-  } = useGetTxEffectsByBlockHeight(height);
+  } = useGetTableTxEffectsByBlockHeight(height);
 
   if (isLoading) {
     return (
@@ -53,7 +54,7 @@ export const BlockDetails: FC = () => {
       case "txEffects":
         return (
           <TxEffectsTable
-            txEffects={getTxEffects(blockTxEffects, block)}
+            txEffects={getTableTxEffectObj(blockTxEffects)}
             isLoading={isTxLoading}
             error={error ?? txEffectsError}
             showPending={false}

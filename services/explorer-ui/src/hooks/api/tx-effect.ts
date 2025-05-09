@@ -84,6 +84,20 @@ export const useGetLatestTxEffects = (): UseQueryResult<
   });
 };
 
+export const useGetTableTxEffectsByBlockHeight = (
+  height: bigint | string | number | undefined,
+): UseQueryResult<UiTxEffectTable[], Error> => {
+  if (typeof height === "string" && height?.startsWith("0x")) {
+    throw new Error("Invalid block height");
+  }
+  return useQuery<UiTxEffectTable[], Error>({
+    queryKey: queryKeyGenerator.txEffectsByBlockHeight(height),
+    queryFn: () =>
+      !height
+        ? Promise.resolve([])
+        : TxEffectsAPI.getTableTxEffectsByBlockHeight(BigInt(height)),
+  });
+};
 export const useLatestTableTxEffects = (): UseQueryResult<
   UiTxEffectTable[],
   Error

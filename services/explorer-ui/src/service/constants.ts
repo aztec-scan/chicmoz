@@ -71,6 +71,8 @@ export const aztecExplorer = {
     `l1/l2-validators/${address}/history`,
   getTableBlocks: "/l2/ui/blocks-for-table",
   getTableTxEffects: "/l2/ui/tx-effects-for-table",
+  getTableTxEffectsByHeight: (height: bigint) =>
+    `l2/ui/tx-effect-for-table/${height}`,
 };
 
 export const APP_NAME = "Aztec-Scan";

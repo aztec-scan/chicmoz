@@ -3,6 +3,7 @@ import { DataTable } from "~/components/data-table";
 import { Checkbox } from "../ui/checkbox";
 import { TxEffectsTableColumns } from "./tx-effects-columns";
 import { type TxEffectTableSchema } from "./tx-effects-schema";
+import { Loader } from "../loader";
 
 interface Props {
   title?: string;
@@ -26,7 +27,7 @@ export const TxEffectsTable: FC<Props> = ({
   showPending,
 }) => {
   if (!txEffects) {
-    return <div>No data</div>;
+    return <Loader amount={3} />;
   }
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
