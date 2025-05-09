@@ -6,7 +6,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import {
-  ChicmozL2ContractInstanceWithAztecScanNotes,
+  type ChicmozL2ContractInstanceWithAztecScanNotes,
   ContractL2API,
 } from "~/api";
 import { REFETCH_INTERVAL, queryKeyGenerator } from "./utils";

@@ -64,6 +64,7 @@ export const paths = {
   statsTotalTxEffects: "/l2/stats/total-tx-effects",
   statsTotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
   statsTotalContracts: "/l2/stats/total-contracts",
+  statsTotalContractInstancesByContractClassId: `/l2/stats/total-contract-instances/:${contractClassId}`,
   statsTotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
   statsAverageFees: "/l2/stats/average-fees",
   statsAverageBlockTime: "/l2/stats/average-block-time",
@@ -144,6 +145,11 @@ export const getContractClassSchema = z.object({
   query: contractIncludeArtifactJson,
 });
 
+export const getContractClassIdSchema = z.object({
+  params: z.object({
+    [contractClassId]: hexStringSchema,
+  }),
+});
 export const getContractClassesByCurrentClassIdSchema = z.object({
   params: z.object({
     [contractClassId]: hexStringSchema,

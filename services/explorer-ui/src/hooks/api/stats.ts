@@ -43,3 +43,12 @@ export const useAvarageBlockTime = (): UseQueryResult<string, Error> => {
     queryFn: statsL2Api.getL2AverageBlockTime,
   });
 };
+
+export const useAmountContractClassInstances = (
+  classId: string,
+): UseQueryResult<string, Error> => {
+  return useQuery<string, Error>({
+    queryKey: queryKeyGenerator.amountContractClassInstances(classId),
+    queryFn: () => statsL2Api.getAmountContractClassInstances(classId),
+  });
+};
