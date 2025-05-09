@@ -1,9 +1,13 @@
-import { ContractType, type ChicmozL2ContractClassRegisteredEvent } from "@chicmoz-pkg/types";
+import {
+  ContractType,
+  type ChicmozL2ContractClassRegisteredEvent,
+} from "@chicmoz-pkg/types";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
 export const getContractClassKeyValueData = (
   data: ChicmozL2ContractClassRegisteredEvent,
+  instanceAmount?: string,
 ) => {
   return [
     {
@@ -38,6 +42,10 @@ export const getContractClassKeyValueData = (
     {
       label: "CONTRACT TYPE",
       value: data.contractType ?? ContractType.Unknown,
+    },
+    {
+      label: "INSTANCES DEPLOYED",
+      value: instanceAmount,
     },
   ];
 };

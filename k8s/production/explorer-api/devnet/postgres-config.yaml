@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config-explorer-api-devnet
-  namespace: chicmoz-prod
-data:
-  POSTGRES_DB_NAME: "explorer_api_devnet"

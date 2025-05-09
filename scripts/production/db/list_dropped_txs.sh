@@ -1,7 +1,7 @@
 #!/bin/bash
 # List the latest dropped transactions
 # Usage: ./list_dropped_txs.sh [environment] [limit]
-# Where environment is one of: testnet, devnet (default: testnet)
+# Where environment is one of: testnet (...mainnet)
 # And limit is the number of transactions to show (default: 100)
 
 # Set environment or default to testnet

@@ -85,6 +85,11 @@ const otherPaths = [
     path: paths.statsAverageBlockTime,
     controller: controller.GET_STATS_AVERAGE_BLOCK_TIME,
   },
+  {
+    path: paths.statsTotalContractInstancesByContractClassId,
+    controller:
+      controller.GET_STATS_TOTAL_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
+  },
 ];
 
 const checkDocsStatus = () => {
