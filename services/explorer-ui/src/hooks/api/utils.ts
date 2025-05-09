@@ -19,7 +19,7 @@ export const queryKeyGenerator = {
     from,
     to,
   ],
-  latestTableTxEffects: ["latestTabbleTxEffects"],
+  latestTableTxEffects: ["latestTableTxEffects"],
   latestTableTxEffectsRange: (from: number, to: number) => [
     "latestTableTxEffect",
     from,
