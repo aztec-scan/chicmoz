@@ -223,9 +223,6 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.sequencer, controller.GET_L2_SEQUENCER);
   router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
 
-  router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
-  router.get(paths.uiTxEffectTable, controller.GET_TX_EFFECTS_UI_TABLE_DATA);
-
   otherPaths.forEach(({ path, controller }) => {
     router.get(path, controller);
   });

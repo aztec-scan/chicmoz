@@ -1,10 +1,17 @@
-import { type UiTxEffectTable } from "@chicmoz-pkg/types";
+import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
 import { useEffect, useMemo, useState, type FC } from "react";
-import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
+import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
-import { useLatestTableTxEffects, usePendingTxs } from "~/hooks";
+import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
+import { mapLatestTxEffects } from "~/lib/map-for-table";
 
-export const TxEffectTableLanding: FC = () => {
+interface TxEffectTableLandingProps {
+  latestBlocks?: ChicmozL2BlockLight[];
+}
+
+export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
+  latestBlocks,
+}) => {
   const [showPendingTxs, setShowPendingTxs] = useState(true);
   const [pendingTxCount, setPendingTxCount] = useState<number | undefined>(
     undefined,
@@ -14,7 +21,7 @@ export const TxEffectTableLanding: FC = () => {
     data: latestTxEffectsData,
     isLoading: isLoadingTxEffects,
     error: txEffectsError,
-  } = useLatestTableTxEffects();
+  } = useGetLatestTxEffects();
 
   useEffect(() => {
     if (pendingTxs?.length !== pendingTxCount) {
@@ -27,8 +34,13 @@ export const TxEffectTableLanding: FC = () => {
   };
 
   const txEffectData = useMemo(() => {
+    const mappedLatestTxEffects =
+      !latestTxEffectsData || !latestBlocks
+        ? []
+        : mapLatestTxEffects(latestTxEffectsData, latestBlocks);
+
     if (!showPendingTxs || !pendingTxs || !latestTxEffectsData) {
-      return latestTxEffectsData;
+      return mappedLatestTxEffects;
     }
 
     const pendingTxEffects = pendingTxs.reduce((acc, tx) => {
@@ -36,19 +48,19 @@ export const TxEffectTableLanding: FC = () => {
         acc.push({
           txHash: tx.hash,
           transactionFee: -1,
-          blockNumber: -1n,
+          blockNumber: -1,
           timestamp: tx.birthTimestamp ?? 0,
         });
       }
       return acc;
-    }, [] as UiTxEffectTable[]);
+    }, [] as TxEffectTableSchema[]);
 
-    return [...pendingTxEffects, ...latestTxEffectsData];
-  }, [latestTxEffectsData, pendingTxs, showPendingTxs]);
+    return [...pendingTxEffects, ...mappedLatestTxEffects];
+  }, [latestTxEffectsData, latestBlocks, pendingTxs, showPendingTxs]);
 
   return (
     <TxEffectsTable
-      txEffects={getTableTxEffectObj(txEffectData)}
+      txEffects={txEffectData}
       isLoading={isLoadingTxEffects}
       title="Latest Tx Effects"
       error={txEffectsError}

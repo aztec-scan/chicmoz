@@ -26,7 +26,7 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const height = Number(row.getValue("height"));
+      const height = row.getValue("height");
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       const r = routes.blocks.route + "/" + height;
       return (

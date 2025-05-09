@@ -1,18 +1,20 @@
 import { type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { Loader } from "~/components/loader";
-import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
-  useLatestTableTxEffects,
+  useGetLatestTxEffects,
+  useLatestBlocks,
   useSubTitle,
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
+import { mapLatestTxEffects } from "~/lib/map-for-table";
 import { routes } from "~/routes/__root";
 
 export const TxEffects: FC = () => {
   useSubTitle(routes.txEffects.children.index.title);
+  const { data: latestBlocks, isLoading, error } = useLatestBlocks();
   const {
     data: totalTxEffects,
     isLoading: loadingTotalEffects,
@@ -28,7 +30,7 @@ export const TxEffects: FC = () => {
     data: latestTxEffectsData,
     isLoading: isLoadingTxEffects,
     error: txEffectsError,
-  } = useLatestTableTxEffects();
+  } = useGetLatestTxEffects();
 
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
@@ -55,11 +57,11 @@ export const TxEffects: FC = () => {
         />
       </div>
       <div className="rounded-lg shadow-lg">
-        {latestTxEffectsData ? (
+        {latestTxEffectsData && latestBlocks ? (
           <TxEffectsTable
-            txEffects={getTableTxEffectObj(latestTxEffectsData)}
-            isLoading={isLoadingTxEffects}
-            error={txEffectsError}
+            txEffects={mapLatestTxEffects(latestTxEffectsData, latestBlocks)}
+            isLoading={isLoading || isLoadingTxEffects}
+            error={error ?? txEffectsError}
             showPending={false}
           />
         ) : (

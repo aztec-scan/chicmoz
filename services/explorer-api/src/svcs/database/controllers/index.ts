@@ -1,5 +1,4 @@
 export * as droppedTx from "./dropped-tx/index.js";
-export * as ui from "./ui/index.js";
 export * as l1 from "./l1/index.js";
 export * as l2 from "./l2/index.js";
 export * as l2Tx from "./l2Tx/index.js";

@@ -13,18 +13,6 @@ export const queryKeyGenerator = {
   droppedTxByHash: (hash: string) => ["droppedTxByHash", hash],
   latestBlock: ["latestBlock"],
   latestBlocks: ["latestBlocks"],
-  latestTableBlocks: ["latestBlocks"],
-  latestTableBlocksRange: (from: number, to: number) => [
-    "latestTableBlocks",
-    from,
-    to,
-  ],
-  latestTableTxEffects: ["latestTableTxEffects"],
-  latestTableTxEffectsRange: (from: number, to: number) => [
-    "latestTableTxEffect",
-    from,
-    to,
-  ],
   blockByHeight: (height: string) => ["blockByHeight", height],
   blockByRange: (min: number, max: number) => ["blockRange", min, max],
   totalTxEffects: [statsKey, "totalTxEffects"],

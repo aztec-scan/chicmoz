@@ -69,8 +69,6 @@ export const aztecExplorer = {
   getL1L2Validator: (address: string) => `l1/l2-validators/${address}`,
   getL1L2ValidatorHistory: (address: string) =>
     `l1/l2-validators/${address}/history`,
-  getTableBlocks: "/l2/ui/blocks-for-table",
-  getTableTxEffects: "/l2/ui/tx-effects-for-table",
 };
 
 export const APP_NAME = "Aztec-Scan";

@@ -1,10 +1,8 @@
 import {
   type ChicmozL2BlockLight,
   type ChicmozReorg,
-  type UiBlockTable,
   chicmozL2BlockLightSchema,
   chicmozReorgSchema,
-  uiBlockTableSchema,
 } from "@chicmoz-pkg/types";
 import client, { validateResponse } from "./client";
 import { aztecExplorer } from "~/service/constants";
@@ -15,28 +13,6 @@ export const BlockAPI = {
     const response = await client.get(aztecExplorer.getL2LatestBlock);
 
     return validateResponse(chicmozL2BlockLightSchema, response.data);
-  },
-  getLatestTableBlocks: async (): Promise<UiBlockTable[]> => {
-    const response = await client.get(aztecExplorer.getTableBlocks);
-
-    return validateResponse(z.array(uiBlockTableSchema), response.data);
-  },
-  getLatestTableBlocksByHeightRange: async (
-    start?: number,
-    end?: number,
-  ): Promise<UiBlockTable[]> => {
-    const params: { from?: number; to?: number } = {};
-    if (start) {
-      params.from = start;
-    }
-    if (end) {
-      params.to = end;
-    }
-    const response = await client.get(aztecExplorer.getTableBlocks, {
-      params,
-    });
-
-    return validateResponse(z.array(uiBlockTableSchema), response.data);
   },
   getBlocksByStatus: async (): Promise<ChicmozL2BlockLight[]> => {
     const response = await client.get(aztecExplorer.getL2BlocksByStatus);

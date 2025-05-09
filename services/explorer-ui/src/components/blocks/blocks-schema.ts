@@ -7,7 +7,7 @@ export const blockSchema = z.object({
   height: z.coerce.number(),
   blockHash: z.string(),
   txEffectsLength: z.number(),
-  totalManaUsed: z.coerce.string().optional(),
+  totalManaUsed: z.coerce.string(),
   blockStatus: chicmozL2BlockFinalizationStatusSchema,
   timestamp: z.number(),
 });
