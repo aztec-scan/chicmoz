@@ -28,11 +28,11 @@ export const startPolling = async ({
   forceStartFromProposedHeight?: number;
   forceStartFromProvenHeight?: number;
 } = {}) => {
-  if (timoutId) throw new Error("Poller already started");
+  if (timoutId) {throw new Error("Poller already started");}
   if (forceStartFromProposedHeight)
-    await storeProcessedProposedBlockHeight(forceStartFromProposedHeight - 1);
+    {await storeProcessedProposedBlockHeight(forceStartFromProposedHeight - 1);}
   if (forceStartFromProvenHeight)
-    await storeProcessedProvenBlockHeight(forceStartFromProvenHeight - 1);
+    {await storeProcessedProvenBlockHeight(forceStartFromProvenHeight - 1);}
   syncRecursivePolling(true);
 };
 
@@ -126,6 +126,8 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
       block,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
     );
+    logger.info(`🐱 catchup proposed block ${height}`);
+    await (new Promise((r) => setTimeout(r, 200)));
   } else {
     await onBlock(
       block,
@@ -142,6 +144,8 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
       block,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN
     );
+    logger.info(`🐱 catchup proven block ${height}`);
+    await (new Promise((r) => setTimeout(r, 200)));
   } else {
     await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
   }
@@ -150,7 +154,7 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
 
 const internalGetBlock = async (height: number) => {
   const blockRes = await getBlock(height);
-  if (!blockRes) throw new Error(`Block ${height} not found`);
+  if (!blockRes) {throw new Error(`Block ${height} not found`);}
   return blockRes;
 };
 
