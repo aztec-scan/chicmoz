@@ -1,17 +1,10 @@
-import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { useEffect, useMemo, useState, type FC } from "react";
-import { type TxEffectTableSchema } from "~/components/tx-effects/tx-effects-schema";
+import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
-import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
-import { mapLatestTxEffects } from "~/lib/map-for-table";
+import { useLatestTableTxEffects, usePendingTxs } from "~/hooks";
 
-interface TxEffectTableLandingProps {
-  latestBlocks?: ChicmozL2BlockLight[];
-}
-
-export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
-  latestBlocks,
-}) => {
+export const TxEffectTableLanding: FC = () => {
   const [showPendingTxs, setShowPendingTxs] = useState(true);
   const [pendingTxCount, setPendingTxCount] = useState<number | undefined>(
     undefined,
@@ -21,7 +14,7 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
     data: latestTxEffectsData,
     isLoading: isLoadingTxEffects,
     error: txEffectsError,
-  } = useGetLatestTxEffects();
+  } = useLatestTableTxEffects();
 
   useEffect(() => {
     if (pendingTxs?.length !== pendingTxCount) {
@@ -34,13 +27,8 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
   };
 
   const txEffectData = useMemo(() => {
-    const mappedLatestTxEffects =
-      !latestTxEffectsData || !latestBlocks
-        ? []
-        : mapLatestTxEffects(latestTxEffectsData, latestBlocks);
-
     if (!showPendingTxs || !pendingTxs || !latestTxEffectsData) {
-      return mappedLatestTxEffects;
+      return latestTxEffectsData;
     }
 
     const pendingTxEffects = pendingTxs.reduce((acc, tx) => {
@@ -48,19 +36,19 @@ export const TxEffectTableLanding: FC<TxEffectTableLandingProps> = ({
         acc.push({
           txHash: tx.hash,
           transactionFee: -1,
-          blockNumber: -1,
+          blockNumber: -1n,
           timestamp: tx.birthTimestamp ?? 0,
         });
       }
       return acc;
-    }, [] as TxEffectTableSchema[]);
+    }, [] as UiTxEffectTable[]);
 
-    return [...pendingTxEffects, ...mappedLatestTxEffects];
-  }, [latestTxEffectsData, latestBlocks, pendingTxs, showPendingTxs]);
+    return [...pendingTxEffects, ...latestTxEffectsData];
+  }, [latestTxEffectsData, pendingTxs, showPendingTxs]);
 
   return (
     <TxEffectsTable
-      txEffects={txEffectData}
+      txEffects={getTableTxEffectObj(txEffectData)}
       isLoading={isLoadingTxEffects}
       title="Latest Tx Effects"
       error={txEffectsError}

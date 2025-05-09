@@ -4,6 +4,7 @@ export * from "./contract-class-functions.js";
 export * from "./contract-classes.js";
 export * from "./contract-instances.js";
 export * from "./dropped-tx.js";
+export * from "./ui.js";
 export * from "./fee-recipients.js";
 export * from "./inofficial.js";
 export * from "./l1/contract-events.js";

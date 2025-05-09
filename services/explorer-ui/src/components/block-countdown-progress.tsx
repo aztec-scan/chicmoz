@@ -1,11 +1,11 @@
-import { type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import { type UiBlockTable } from "@chicmoz-pkg/types";
 import { useEffect, useState, type FC } from "react";
 import { useTabVisibility } from "~/hooks/useTabVisibility";
 import { useWebSocketConnection } from "~/hooks/websocket";
 import { formatDuration } from "~/lib/utils";
 
 interface BlockCountdownProgressProps {
-  latestBlocks: ChicmozL2BlockLight[] | undefined;
+  latestBlocks: UiBlockTable[] | undefined;
   averageBlockTime: string | number | undefined | null;
 }
 
@@ -21,17 +21,12 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   const [isOverdue, setIsOverdue] = useState<boolean>(false);
 
   useEffect(() => {
-    if (
-      !latestBlocks?.length ||
-      !latestBlocks[0]?.header?.globalVariables?.timestamp
-    ) {
+    if (!latestBlocks?.length || !latestBlocks[0]?.timestamp) {
       return;
     }
 
     const latestBlock = latestBlocks[0];
-    const blockTimestamp = new Date(
-      latestBlock.header.globalVariables.timestamp,
-    ).getTime();
+    const blockTimestamp = new Date(latestBlock.timestamp).getTime();
     const now = Date.now();
 
     const calculatedDelay = now - blockTimestamp;
@@ -46,14 +41,12 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     const latestBlock = latestBlocks[0];
-    if (!latestBlock.header?.globalVariables?.timestamp) {
+    if (!latestBlock.timestamp) {
       return;
     }
 
     const avgBlockTimeMs = Number(averageBlockTime);
-    const latestBlockTimestamp = new Date(
-      latestBlock.header.globalVariables.timestamp,
-    ).getTime();
+    const latestBlockTimestamp = new Date(latestBlock.timestamp).getTime();
     const nextBlockTime = latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
 
     const intervalId = setInterval(() => {
