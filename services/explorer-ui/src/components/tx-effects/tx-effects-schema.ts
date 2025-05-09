@@ -1,18 +1,29 @@
-import { type UiBlockTable, type ChicmozL2TxEffect } from "@chicmoz-pkg/types";
+import {
+  type ChicmozL2TxEffect,
+  type UiTxEffectTable,
+  type ChicmozL2BlockLight,
+} from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export type TxEffectTableSchema = z.infer<typeof txEffectSchema>;
 
 export const getTxEffectTableObj = (
   txEffect: ChicmozL2TxEffect,
-  block: UiBlockTable,
+  block: ChicmozL2BlockLight,
 ): TxEffectTableSchema => {
   return txEffectSchema.parse({
     txHash: txEffect.txHash,
     transactionFee: txEffect.transactionFee,
     blockNumber: block.height,
-    timestamp: block.timestamp,
+    timestamp: block.header.globalVariables.timestamp,
   });
+};
+
+export const getTableTxEffectObj = (txEffects?: UiTxEffectTable[]) => {
+  if (!txEffects) {
+    return undefined;
+  }
+  return txEffects.map((txEffect) => txEffectSchema.parse(txEffect));
 };
 
 const txEffectSchema = z.object({

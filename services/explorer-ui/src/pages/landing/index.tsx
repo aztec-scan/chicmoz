@@ -176,7 +176,7 @@ export const Landing: FC = () => {
               />
             </div>
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
-              <TxEffectTableLanding latestBlocks={latestBlocks} />
+              <TxEffectTableLanding />
             </div>
           </div>
         </>

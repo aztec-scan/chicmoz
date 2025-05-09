@@ -4,8 +4,6 @@ import { InfoBadge } from "~/components/info-badge";
 import {
   useAvarageBlockTime,
   useAvarageFees,
-  useLatestBlocks,
-  useBlocksByRange,
   useSubTitle,
   useLatestTableBlocks,
   useLatestTableBlocksByHeightRange,

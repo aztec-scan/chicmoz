@@ -43,7 +43,7 @@ export const useLatestTableBlocks = (): UseQueryResult<
   Error
 > => {
   return useQuery<UiBlockTable[], Error>({
-    queryKey: queryKeyGenerator.latestBlocks,
+    queryKey: queryKeyGenerator.latestTableBlocks,
     queryFn: () => BlockAPI.getLatestTableBlocks(),
   });
 };
@@ -53,7 +53,7 @@ export const useLatestTableBlocksByHeightRange = (
   to: number,
 ): UseQueryResult<UiBlockTable[], Error> => {
   return useQuery<UiBlockTable[], Error>({
-    queryKey: queryKeyGenerator.latestBlocks,
+    queryKey: queryKeyGenerator.latestTableBlocksRange(from, to),
     queryFn: () => BlockAPI.getLatestTableBlocksByHeightRange(from, to),
   });
 };

@@ -2,6 +2,8 @@ import {
   chicmozL2TxEffectDeluxeSchema,
   type ChicmozL2TxEffectDeluxe,
   chicmozL2BlockSchema,
+  type UiTxEffectTable,
+  uiTxEffectTableSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { aztecExplorer } from "~/service/constants";
@@ -20,7 +22,10 @@ export const TxEffectsAPI = {
     const response = await client.get(
       aztecExplorer.getL2TxEffectsByHeight(height),
     );
-    return validateResponse(z.array(chicmozL2TxEffectDeluxeSchema), response.data);
+    return validateResponse(
+      z.array(chicmozL2TxEffectDeluxeSchema),
+      response.data,
+    );
   },
   getTxEffectByBlockHeightAndIndex: async (
     height: bigint,
@@ -46,8 +51,33 @@ export const TxEffectsAPI = {
     );
     return validateResponse(chicmozL2BlockSchema.shape.height, response.data);
   },
+  getLatestTableTxEffect: async (): Promise<UiTxEffectTable[]> => {
+    const response = await client.get(aztecExplorer.getTableTxEffects);
+
+    return validateResponse(z.array(uiTxEffectTableSchema), response.data);
+  },
+  getLatestTableTxEffectByHeightRange: async (
+    start?: number,
+    end?: number,
+  ): Promise<UiTxEffectTable[]> => {
+    const params: { from?: number; to?: number } = {};
+    if (start) {
+      params.from = start;
+    }
+    if (end) {
+      params.to = end;
+    }
+    const response = await client.get(aztecExplorer.getTableTxEffects, {
+      params,
+    });
+
+    return validateResponse(z.array(uiTxEffectTableSchema), response.data);
+  },
   getLatestTxEffects: async (): Promise<ChicmozL2TxEffectDeluxe[]> => {
     const response = await client.get(aztecExplorer.getL2TxEffects);
-    return validateResponse(z.array(chicmozL2TxEffectDeluxeSchema), response.data);
-  }
+    return validateResponse(
+      z.array(chicmozL2TxEffectDeluxeSchema),
+      response.data,
+    );
+  },
 };
