@@ -1,7 +1,7 @@
 #!/bin/bash
 # List manual data in the database including contract classes, verified deployments, and more
 # Usage: ./list_manual_data.sh [environment]
-# Where environment is one of: testnet, devnet (default: testnet)
+# Where environment is one of: testnet, (...mainnet)
 
 # Set environment or default to testnet
 ENVIRONMENT=${1:-"testnet"}

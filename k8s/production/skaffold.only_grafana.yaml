@@ -10,7 +10,6 @@ manifests:
   rawYaml:
     - ./grafana/ingress.yaml
     - ./grafana/datasources_secret.yaml
-    - ./grafana/dashboards/devnet_overview.yaml
   helm:
     releases:
       - name: grafana
@@ -29,5 +28,3 @@ manifests:
           persistence.enabled: false # should we use this perhaps?
           dashboardsProvider.enabled: true # remove?
           datasources.secretName: grafana-datasources
-          dashboardsConfigMaps[0].configMapName: devnet-overview
-          dashboardsConfigMaps[0].fileName: devnet-overview.json

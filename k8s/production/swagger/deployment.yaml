@@ -24,7 +24,7 @@ spec:
               protocol: TCP
           env:
             - name: SWAGGER_JSON_URL
-              value: "https://api.devnet.aztecscan.xyz/v1/temporary-api-key/open-api-specification"
+              value: "https://api.testnet.aztecscan.xyz/v1/temporary-api-key/open-api-specification"
           resources:
             limits:
               memory: 256Mi
