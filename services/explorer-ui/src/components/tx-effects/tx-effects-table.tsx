@@ -1,6 +1,5 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { Checkbox } from "../ui/checkbox";
 import { TxEffectsTableColumns } from "./tx-effects-columns";
 import { type TxEffectTableSchema } from "./tx-effects-schema";
 
@@ -10,9 +9,7 @@ interface Props {
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
-  handleTogglePendingTx?: (checked: boolean) => void;
-  showPending: boolean;
-  nbrOfPendingTxs?: number;
+  maxEntries?: number;
 }
 
 export const TxEffectsTable: FC<Props> = ({
@@ -21,9 +18,7 @@ export const TxEffectsTable: FC<Props> = ({
   isLoading,
   error,
   disableSizeSelector,
-  handleTogglePendingTx,
-  nbrOfPendingTxs,
-  showPending,
+  maxEntries = 10,
 }) => {
   if (!txEffects) {
     return <div>No data</div>;
@@ -37,22 +32,6 @@ export const TxEffectsTable: FC<Props> = ({
         {title && (
           <div className="flex flex-row justify-between md:min-h-20">
             <h3 className="ml-0.5">{title}</h3>
-            {handleTogglePendingTx && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="terms2"
-                  onCheckedChange={() => handleTogglePendingTx(!showPending)}
-                  checked={showPending}
-                />
-                <label
-                  htmlFor="terms2"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Show pending
-                  {Number.isInteger(nbrOfPendingTxs) && ` (${nbrOfPendingTxs})`}
-                </label>
-              </div>
-            )}
           </div>
         )}
         <DataTable
@@ -60,6 +39,7 @@ export const TxEffectsTable: FC<Props> = ({
           data={txEffects}
           columns={TxEffectsTableColumns}
           disableSizeSelector={disableSizeSelector}
+          maxEntries={maxEntries}
         />
       </div>
     </section>
