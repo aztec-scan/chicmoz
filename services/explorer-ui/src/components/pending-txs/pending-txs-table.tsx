@@ -1,5 +1,6 @@
+import { ChicmozL2PendingTx } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
-import { ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import { useMemo, type FC } from "react";
 import { DataTable, DataTableColumnHeader } from "~/components/data-table";
 import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
@@ -15,6 +16,9 @@ interface PendingTxSchema {
 
 interface PendingTxsTableProps {
   title?: string;
+  pendingTxs?: ChicmozL2PendingTx[];
+  isLoading?: boolean;
+  error?: unknown;
   disableSizeSelector?: boolean;
   maxEntries?: number;
 }
@@ -62,12 +66,24 @@ const pendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
 
 export const PendingTxsTable: FC<PendingTxsTableProps> = ({
   title = "Latest Pending Transactions",
+  pendingTxs: propsPendingTxs,
+  isLoading: propsIsLoading,
+  error: propsError,
   disableSizeSelector = false,
   maxEntries = 10,
 }) => {
-  const { data: pendingTxs, isLoading: isPendingLoading } = usePendingTxs();
+  // Fetch data internally if not provided as props (for backward compatibility)
+  const {
+    data: fetchedPendingTxs,
+    isLoading: isPendingLoading,
+    error: fetchedError,
+  } = usePendingTxs();
   const { data: latestTxEffectsData, isLoading: isLatestLoading } =
     useGetLatestTxEffects();
+
+  // Use props if provided, otherwise use fetched data
+  const pendingTxs = propsPendingTxs ?? fetchedPendingTxs;
+  const error = propsError ?? fetchedError;
 
   // Prepare pending transactions data - only hash and timestamp
   const pendingTxsData = useMemo(() => {
@@ -83,7 +99,27 @@ export const PendingTxsTable: FC<PendingTxsTableProps> = ({
         timestamp: tx.birthTimestamp ?? 0,
       }));
   }, [pendingTxs, latestTxEffectsData]);
-  const isLoading = isPendingLoading || isLatestLoading;
+
+  // Use props isLoading if provided, otherwise use internal loading state
+  const isLoading = propsIsLoading ?? (isPendingLoading || isLatestLoading);
+
+  // Handle error state
+  if (error) {
+    return (
+      <section className="relative mx-0 w-full transition-all">
+        <div className="space-y-4 bg-white rounded-lg p-5">
+          {title && (
+            <div className="flex flex-row justify-between md:min-h-20">
+              <h3 className="ml-0.5">{title}</h3>
+            </div>
+          )}
+          <div className="p-4 text-red-500">
+            Error loading pending transactions
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative mx-0 w-full transition-all">

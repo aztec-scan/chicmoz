@@ -11,6 +11,7 @@ import {
   useAvarageFees,
   useGetLatestTxEffects,
   useLatestBlocks,
+  usePendingTxs,
   useSubTitle,
   useSystemHealth,
   useTotalContracts,
@@ -62,6 +63,13 @@ export const Landing: FC = () => {
     isLoading: isLoadingTxEffects,
     error: txEffectsError,
   } = useGetLatestTxEffects();
+
+  // For pending transactions
+  const {
+    data: pendingTxsData,
+    isLoading: isLoadingPendingTxs,
+    error: pendingTxsError,
+  } = usePendingTxs();
 
   const formattedFees = formatFees(avarageFees);
 
@@ -187,9 +195,6 @@ export const Landing: FC = () => {
             </div>
             <div className="flex flex-col gap-4 w-full md:w-1/2">
               <div className="bg-white rounded-lg shadow-lg">
-                <PendingTxsTable disableSizeSelector={true} maxEntries={6} />
-              </div>
-              <div className="bg-white rounded-lg shadow-lg">
                 <TxEffectsTable
                   txEffects={mapLatestTxEffects(
                     latestTxEffectsData ?? [],
@@ -200,6 +205,15 @@ export const Landing: FC = () => {
                   error={txEffectsError}
                   disableSizeSelector={true}
                   maxEntries={8}
+                />
+              </div>
+              <div className="bg-white rounded-lg shadow-lg">
+                <PendingTxsTable
+                  pendingTxs={pendingTxsData}
+                  isLoading={isLoadingPendingTxs}
+                  error={pendingTxsError}
+                  disableSizeSelector={true}
+                  maxEntries={6}
                 />
               </div>
             </div>
