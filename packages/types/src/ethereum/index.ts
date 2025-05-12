@@ -20,6 +20,7 @@ const keyChangedSchema = z.coerce.string();
 const newValueSchema = z.coerce.string();
 
 export const chicmozL1L2ValidatorSchema = z.object({
+  rollupAddress: ethAddressSchema,
   attester: ethAddressSchema,
   stake: z.coerce.bigint().nonnegative(), // TODO: this is not Fr but it might as well be. It is a uint256
   withdrawer: ethAddressSchema,
