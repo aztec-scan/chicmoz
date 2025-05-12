@@ -5,7 +5,7 @@ import cors from "cors";
 import express from "express";
 import asyncHandler from "express-async-handler";
 import helmet from "helmet";
-import morgan from "morgan";
+import morgan, { FormatFn } from "morgan";
 import { logger } from "../../logger.js";
 import { genereateOpenApiSpec } from "./open-api-spec.js";
 import { init as initApiRoutes } from "./routes/index.js";
@@ -32,7 +32,7 @@ const isContractClassArtifactUpdate = (path: string, method: string) => {
 };
 const isContractInstanceVerifiedDeploymentUpdate = (
   path: string,
-  method: string
+  method: string,
 ) => {
   const splitPath = path.split("/");
   return (
@@ -51,35 +51,42 @@ const isArtifactUpdate = (path: string, method: string) => {
 
 export function setup(
   app: express.Application,
-  options: ExpressOptions
+  options: ExpressOptions,
 ): express.Application {
-  if (options.NODE_ENV === "production") {app.use(helmet());}
+  if (options.NODE_ENV === "production") {
+    app.use(helmet());
+  }
   app.use(cors({ credentials: true }));
 
   // NOTE: body parser should be configured AFTER proxy configuration https://www.npmjs.com/package/express-http-proxy#middleware-mixing
   app.use((req, res, next) => {
-    if (isArtifactUpdate(req.path, req.method)) {return next();}
+    if (isArtifactUpdate(req.path, req.method)) {
+      return next();
+    }
     bodyParser.json({
       limit: options.BODY_LIMIT,
     })(req, res, next);
   });
 
   app.use((req, res, next) => {
-    if (isArtifactUpdate(req.path, req.method)) {return next();}
+    if (isArtifactUpdate(req.path, req.method)) {
+      return next();
+    }
     bodyParser.urlencoded({
       extended: true,
       limit: options.BODY_LIMIT,
       parameterLimit: options.PARAMETER_LIMIT,
     })(req, res, next);
   });
-  app.use(morgan("common"));
+  app.use(morgan("dev"));
+  app.use(morgan(morganUnacceptableResponseTimeMiddleware));
 
   const router = express.Router();
   router.get(
     "/health",
     asyncHandler((_req, res) => {
       res.status(isHealthy() ? 200 : 500).send({});
-    })
+    }),
   );
   const openApiSpec = genereateOpenApiSpec();
   router.get("/open-api-specification", (_req, res) => {
@@ -92,3 +99,23 @@ export function setup(
   app.use(errorMiddleware);
   return app;
 }
+
+const morganUnacceptableResponseTimeMiddleware: FormatFn = (
+  tokens,
+  req,
+  res,
+) => {
+  const responseTime = parseFloat(tokens["response-time"](req, res) ?? "0");
+  let responseTimeColor;
+  if (responseTime < 2500) {
+    responseTimeColor = "\x1b[33m";
+  } else {
+    responseTimeColor = "\x1b[31m";
+  }
+  const resetColor = "\x1b[0m";
+  return responseTime > 1500
+    ? `UNACCEPTABLE RESPONSE TIME ${responseTimeColor}${Math.round(
+        responseTime,
+      )}ms${resetColor}`
+    : undefined;
+};
