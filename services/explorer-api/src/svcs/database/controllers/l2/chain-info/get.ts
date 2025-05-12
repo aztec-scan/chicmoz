@@ -4,7 +4,7 @@ import {
   L2NetworkId,
   chicmozChainInfoSchema,
 } from "@chicmoz-pkg/types";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
 
 export async function getL2ChainInfo(
@@ -14,6 +14,7 @@ export async function getL2ChainInfo(
     .select()
     .from(l2ChainInfoTable)
     .where(eq(l2ChainInfoTable.l2NetworkId, l2NetworkId))
+    .orderBy(desc(l2ChainInfoTable.updatedAt))
     .limit(1);
 
   if (result.length === 0) {
