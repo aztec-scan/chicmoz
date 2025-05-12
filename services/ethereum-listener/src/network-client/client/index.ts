@@ -269,6 +269,7 @@ export const queryStakingStateAndEmitUpdates = async ({
       await emit.l1Validator(
         chicmozL1L2ValidatorSchema.parse({
           ...attesterInfo,
+          rollupAddress: contracts.rollup.address,
           attester,
         }),
       );
@@ -298,6 +299,7 @@ export const queryStakingStateAndEmitUpdates = async ({
         await emit.l1Validator(
           chicmozL1L2ValidatorSchema.parse({
             ...attesterInfo,
+            rollupAddress: contracts.rollup.address,
             attester: attesterInfo.attester,
           }),
         );
@@ -305,7 +307,10 @@ export const queryStakingStateAndEmitUpdates = async ({
       for (const attesterInfo of mockedAttesters) {
         await emitRandomizedChangeWithinRandomizedTime(
           100,
-          chicmozL1L2ValidatorSchema.parse(attesterInfo),
+          chicmozL1L2ValidatorSchema.parse({
+            ...attesterInfo,
+            rollupAddress: contracts.rollup.address,
+          }),
         ).catch((e) => {
           logger.error(
             `Randomized change emission failed: ${(e as Error).stack}`,

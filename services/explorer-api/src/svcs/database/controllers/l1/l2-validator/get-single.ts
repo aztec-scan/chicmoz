@@ -48,6 +48,7 @@ export async function getL1L2Validator(
       .limit(1);
     return {
       attester: validator[0]?.attester,
+      rollupAddress: validator[0]?.rollupAddress,
       firstSeenAt: validator[0]?.firstSeenAt,
       stake: stake[0]?.stake ? BigInt(stake[0].stake) : BigInt(0),
       status: status[0]?.status,
