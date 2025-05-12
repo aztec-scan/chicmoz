@@ -14,6 +14,7 @@ interface Props {
   startBlock?: number;
   endBlock?: number;
   onRangeChange?: (start: number, end: number) => void;
+  maxEntries?: number;
 }
 
 export const BlocksTable: FC<Props> = ({
@@ -26,6 +27,7 @@ export const BlocksTable: FC<Props> = ({
   startBlock,
   endBlock,
   onRangeChange,
+  maxEntries = 10,
 }) => {
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
@@ -51,6 +53,7 @@ export const BlocksTable: FC<Props> = ({
           data={blocks ?? []}
           columns={BlockTableColumns}
           disableSizeSelector={disableSizeSelector}
+          maxEntries={maxEntries}
         />
       </div>
     </section>

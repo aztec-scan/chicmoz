@@ -15,7 +15,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { DataTablePagination } from "~/components/data-table/data-table-pagination.tsx";
 import {
   Table,
@@ -34,14 +34,13 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   disableSizeSelector?: boolean;
-  maxEntries?: number;
 }
+
 export function DataTable<TData, TValue>({
   isLoading,
   columns,
   data,
   disableSizeSelector,
-  maxEntries = 10, // Default to 10 entries if not specified
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -50,9 +49,26 @@ export function DataTable<TData, TValue>({
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
   const tableData = useMemo(() => data, [data]);
+  
+  // Better detection of blocks table by looking at its specific columns
+  const isBlocksTable = columns.some(col => 
+    "accessorKey" in col && 
+    (col.accessorKey === "height" || col.accessorKey === "blockHash")
+  );
+  
+  // Set initial page size - larger for blocks table
+  const initialPageSize = isBlocksTable ? 20 : 10;
+  
+  const initialState = useMemo(() => ({
+    pagination: {
+      pageSize: initialPageSize,
+    },
+  }), [initialPageSize]);
+  
   const table = useReactTable({
     data: tableData,
     columns: columns,
+    initialState,
     state: {
       expanded,
       sorting,
@@ -79,12 +95,14 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getExpandedRowModel: getExpandedRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: maxEntries,
-      },
-    },
   });
+  
+  // Force update the page size for blocks table on mount and when data changes
+  useEffect(() => {
+    if (isBlocksTable) {
+      table.setPageSize(20);
+    }
+  }, [isBlocksTable, table, data]);
 
   return (
     <>
@@ -101,7 +119,6 @@ export function DataTable<TData, TValue>({
       <DataTablePagination
         table={table}
         disableSizeSelector={disableSizeSelector}
-        maxEntries={maxEntries}
       />
     </>
   );
