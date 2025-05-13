@@ -23,21 +23,18 @@ export const Header = () => {
       key: "blocks",
       name: routes.blocks.title,
       to: routes.blocks.route,
-      tooltip: "Browse all blocks",
       group: "main",
     },
     {
       key: "txEffects",
       name: routes.txEffects.title,
       to: routes.txEffects.route,
-      tooltip: "Browse all pending and finalized transactions",
       group: "main",
     },
     {
       key: "contracts",
       name: routes.contracts.title,
       to: routes.contracts.route,
-      tooltip: "Browse all classes and instances",
       group: "main",
     },
     {
