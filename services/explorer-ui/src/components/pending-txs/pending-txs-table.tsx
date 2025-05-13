@@ -5,8 +5,8 @@ import { useMemo, type FC } from "react";
 import { DataTable, DataTableColumnHeader } from "~/components/data-table";
 import { useGetLatestTxEffects, usePendingTxs } from "~/hooks";
 import { truncateHashString } from "~/lib/create-hash-string";
-import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
+import { TimeAgoCell } from "../formated-time-cell";
 
 // Simplified schema for pending transactions
 interface PendingTxSchema {
@@ -59,7 +59,7 @@ const pendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
     ),
     cell: ({ row }) => {
       const timestamp = row.getValue("timestamp") as number;
-      return <div>{formatTimeSince(timestamp)}</div>;
+      return <TimeAgoCell timestamp={timestamp} />;
     },
   },
 ];
