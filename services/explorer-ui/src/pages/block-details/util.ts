@@ -61,10 +61,12 @@ export const getBlockDetails = (
     {
       label: "feePerDaGas",
       value: "" + latestBlock.header.globalVariables.gasFees.feePerDaGas,
+      tooltip: "FJ paid for the data usage by the transaction, e.g. creating/spending notes, emitting logs, etc.",
     },
     {
       label: "feePerL2Gas",
       value: "" + latestBlock.header.globalVariables.gasFees.feePerL2Gas,
+      tooltip: "FJ paid for the computation usage of the public VM.",
     },
     {
       label: " Block status",

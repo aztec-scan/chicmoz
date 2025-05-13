@@ -1,8 +1,10 @@
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
-import { CopyableText } from "../copy-text";
 import { BlockStatusBadge } from "../block-status-badge";
+import { CopyableText } from "../copy-text";
+import { CustomTooltip } from "../custom-tooltip";
 import { Loader } from "../loader";
 
 interface KeyValueRowProps {
@@ -11,6 +13,7 @@ interface KeyValueRowProps {
   link?: string;
   isLast?: boolean;
   extLink?: string;
+  tooltip?: string;
 }
 
 enum DisplayType {
@@ -21,6 +24,7 @@ enum DisplayType {
   EXTERNAL_LINK = "external-link",
   BADGE = "badge",
   LOADING = "loading",
+  tooltip = "tooltip",
 }
 
 export const KeyValueRow: FC<KeyValueRowProps> = ({
@@ -29,6 +33,7 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   isLast,
   link,
   extLink,
+  tooltip,
 }) => {
   let displayType = DisplayType.TEXT;
   if (link) {
@@ -67,7 +72,14 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
         !isLast ? "border-b border-gray-200 dark:border-gray-700" : ""
       }`}
     >
-      <span className="text-gray-600 dark:text-gray-300 w-1/3">{label}</span>
+      <span className="text-gray-600 dark:text-gray-300 w-1/3 flex items-center gap-1">
+        {label}
+        {tooltip && (
+          <CustomTooltip content={tooltip}>
+            <QuestionMarkCircledIcon className="text-gray-400 cursor-pointer" />
+          </CustomTooltip>
+        )}
+      </span>
       {displayType === DisplayType.TEXT && (
         <span className={commonTextClasses}>{value}</span>
       )}
