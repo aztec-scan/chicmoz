@@ -101,19 +101,19 @@ export const NetworkHealth: FC = () => {
       return "A lot";
     }
 
-    let heighestBlockHeight = 0n;
+    let highestBlockHeight = 0n;
     let lowestBlockHeight = 0n;
 
     for (const block of blocksByFinalizationStatus) {
-      if (block.height > heighestBlockHeight) {
-        heighestBlockHeight = block.height;
+      if (block.height > highestBlockHeight) {
+        highestBlockHeight = block.height;
       }
       if (block.height < lowestBlockHeight || lowestBlockHeight === 0n) {
         lowestBlockHeight = block.height;
       }
     }
 
-    return (heighestBlockHeight - lowestBlockHeight).toString();
+    return (highestBlockHeight - lowestBlockHeight).toString();
   }, [blocksByFinalizationStatus]);
 
   return (
