@@ -23,25 +23,22 @@ export const Header = () => {
       key: "blocks",
       name: routes.blocks.title,
       to: routes.blocks.route,
+      tooltip: "Browse all blocks",
       group: "main",
     },
     {
       key: "txEffects",
       name: routes.txEffects.title,
       to: routes.txEffects.route,
+      tooltip: "Browse all pending and finalized transactions",
       group: "main",
     },
     {
       key: "contracts",
       name: routes.contracts.title,
       to: routes.contracts.route,
+      tooltip: "Browse all classes and instances",
       group: "main",
-    },
-    {
-      key: "aztecscanHealth",
-      name: routes.aztecscanHealth.title,
-      to: routes.aztecscanHealth.route,
-      group: "aztec",
     },
     {
       key: "aztecEcosystem",
@@ -53,9 +50,14 @@ export const Header = () => {
       key: "networkHealth",
       name: routes.networkHealth.title,
       to: routes.networkHealth.route,
-      group: "dev",
+      group: "aztec",
     },
-    { key: "dev", name: "Dev Page", to: routes.dev.route, group: "dev" },
+    {
+      key: "aztecscanHealth",
+      name: routes.aztecscanHealth.title,
+      to: routes.aztecscanHealth.route,
+      group: "dev",
+    }
   ];
 
   const { data, isLoading, error, refetch, isSuccess, fetchStatus } =

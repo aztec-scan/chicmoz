@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { SearchInput } from "~/components/ui/input";
-import { DesktopBurgerMenu } from "./desktop-burger-menu";
+import { CustomTooltip } from "../custom-tooltip";
 import { MagicDevLink } from "../magic-dev-link";
 import { ChicmozHomeLink } from "../ui/chicmoz-home-link";
+import { DesktopBurgerMenu } from "./desktop-burger-menu";
 import { type HeaderLink } from "./types";
 
 interface DesktopHeaderProps {
@@ -59,13 +60,15 @@ export const DesktopHeader = ({
 
       <div className="flex space-x-6 justify-center items-center pr-11">
         {groupedLinks?.main.map((link) => (
-          <Link
-            key={link.key}
-            to={link.to}
-            className="text-white hover:text-secondary-foreground transition-colors"
-          >
-            {link.name}
-          </Link>
+          <CustomTooltip content={link.tooltip}>
+            <Link
+              key={link.key}
+              to={link.to}
+              className="text-white hover:text-secondary-foreground transition-colors"
+            >
+              {link.name}
+            </Link>
+          </CustomTooltip>
         ))}
 
         <DesktopBurgerMenu

@@ -3,5 +3,6 @@ export interface HeaderLink {
   name: string;
   to: string;
   group?: string;
+  tooltip?: string;
 }
 
