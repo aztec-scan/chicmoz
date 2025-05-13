@@ -32,7 +32,7 @@ export const getContractClassKeyValueData = (
       value: data.privateFunctionsRoot,
     },
     {
-      label: "API ENDPOINT",
+      label: "RAW DATA",
       value: "View raw data",
       extLink: `${API_URL}/${aztecExplorer.getL2ContractClassByIdAndVersion(
         data.contractClassId,
