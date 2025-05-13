@@ -2,6 +2,7 @@ import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { formatTimeSince } from "~/lib/utils";
 import { BlockStatusBadge } from "../block-status-badge";
 import { CopyableText } from "../copy-text";
 import { CustomTooltip } from "../custom-tooltip";
@@ -9,6 +10,7 @@ import { Loader } from "../loader";
 
 interface KeyValueRowProps {
   label: string;
+  timestamp?: number;
   value?: string;
   link?: string;
   isLast?: boolean;
@@ -24,7 +26,7 @@ enum DisplayType {
   EXTERNAL_LINK = "external-link",
   BADGE = "badge",
   LOADING = "loading",
-  tooltip = "tooltip",
+  DATE = "date",
 }
 
 export const KeyValueRow: FC<KeyValueRowProps> = ({
@@ -34,7 +36,9 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   link,
   extLink,
   tooltip,
+  timestamp,
 }) => {
+  console.log(timestamp);
   let displayType = DisplayType.TEXT;
   if (link) {
     displayType = DisplayType.LINK;
@@ -48,6 +52,8 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
     displayType = DisplayType.EXTERNAL_LINK;
   } else if (label.includes("status")) {
     displayType = DisplayType.BADGE;
+  } else if (timestamp) {
+    displayType = DisplayType.DATE;
   }
   const commonTextClasses = "text-sm flex-grow text-end justify-end ";
 
@@ -123,6 +129,14 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
         <div className={commonTextClasses}>
           <BlockStatusBadge status={Number(value)} />
         </div>
+      )}
+      {displayType === DisplayType.DATE && timestamp && (
+        <span className={commonTextClasses}>
+          {(() => {
+            const timeSince = formatTimeSince(timestamp);
+            return `${new Date(timestamp).toLocaleString()} (${timeSince} ago)`;
+          })()}
+        </span>
       )}
     </div>
   );
