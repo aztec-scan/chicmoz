@@ -29,6 +29,10 @@ export const mapLatestTxEffects = (
     return latestTxEffects.map((txEffect) => getTxEffectTableObj(txEffect));
   }
 
+  const blockByHeight = new Map(
+    latestBlocks.map((block) => [block.height, block]),
+  );
+
   const blockTxHashes = new Set<string>();
   latestBlocks.forEach((block) => {
     block.body.txEffects.forEach((tx) => {
@@ -39,9 +43,7 @@ export const mapLatestTxEffects = (
   const blockTxEffects = latestTxEffects
     .filter((txEffect) => blockTxHashes.has(txEffect.txHash))
     .map((txEffect) => {
-      const matchingBlock = latestBlocks.find(
-        (block) => block.height === txEffect.blockHeight,
-      );
+      const matchingBlock = blockByHeight.get(txEffect.blockHeight);
       return getTxEffectTableObj(txEffect, matchingBlock);
     });
 
@@ -50,9 +52,7 @@ export const mapLatestTxEffects = (
   }
 
   return latestTxEffects.map((txEffect) => {
-    const matchingBlock = latestBlocks.find(
-      (block) => block.height === txEffect.blockHeight,
-    );
+    const matchingBlock = blockByHeight.get(txEffect.blockHeight);
     return getTxEffectTableObj(txEffect, matchingBlock);
   });
 };
