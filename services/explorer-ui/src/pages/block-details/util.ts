@@ -32,7 +32,7 @@ export const getBlockDetails = (
       label: "Timestamp",
       value: `${new Date(
         l2BlockTimestamp,
-      ).toLocaleString()} (${l2BlockTimeSince})`,
+      ).toLocaleString()} (${l2BlockTimeSince} ago)`,
     },
     {
       label: "slotNumber",
@@ -41,6 +41,7 @@ export const getBlockDetails = (
     {
       label: "coinbase",
       value: "" + latestBlock.header.globalVariables.coinbase,
+      tooltip: "L1 address that receives the block reward for this block.",
     },
     {
       label: "Number of Transactions",
@@ -49,8 +50,7 @@ export const getBlockDetails = (
     {
       label: "feeRecipient",
       value: "" + latestBlock.header.globalVariables.feeRecipient,
-      tooltip:
-        "L1 address that receives the fees paid by the transactions in this block.",
+      tooltip: "L2 address that receives the transaction fees for this block.",
     },
     {
       label: "totalFees (FJ)",
