@@ -87,7 +87,7 @@ export const Blocks: FC = () => {
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5">
         <InfoBadge
-          title="Average fees (FPA)"
+          title="Average fees (FJ)"
           isLoading={loadingAvarageFees}
           error={errorAvarageFees}
           data={avarageFees}

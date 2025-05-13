@@ -8,7 +8,7 @@ import { TimeAgoCell } from "../formated-time-cell";
 
 const text = {
   txHash: "HASH",
-  transactionFee: "FEE (FPA)",
+  transactionFee: "FEE (FJ)",
   blockHeight: "HEIGHT",
   timeSince: "AGE",
 };

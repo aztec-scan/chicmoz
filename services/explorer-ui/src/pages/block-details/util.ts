@@ -51,7 +51,7 @@ export const getBlockDetails = (
       value: "" + latestBlock.header.globalVariables.feeRecipient,
     },
     {
-      label: "totalFees (FPA)",
+      label: "totalFees (FJ)",
       value: "" + latestBlock.header.totalFees,
     },
     {
