@@ -16,26 +16,20 @@ export const OrphanedBlocksSection: FC = () => {
     console.error("Error fetching orphaned blocks:", orphanedBlocksError);
   }
 
-  // Get the last 10 orphaned blocks
   const recentOrphanedBlocks = useMemo(() => {
     if (!orphanedBlocks) return [];
-    return orphanedBlocks.slice(0, 10);
+    return orphanedBlocks.slice(0, 15);
   }, [orphanedBlocks]);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
       <h2 className="mb-4">Recent Orphaned Blocks</h2>
       {orphanedBlocksLoading ? (
-        <Loader amount={10} />
+        <Loader amount={15} />
       ) : orphanedBlocksError ? (
         <div>
           <p className="text-yellow-600 dark:text-yellow-400 mb-2">
-            Development Mode: Orphaned Blocks API not available
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            The orphaned blocks endpoint is configured but not yet available in
-            your development environment. This section will automatically work
-            when the API endpoint is deployed.
+            Error fetching orphaned blocks: {orphanedBlocksError.message}
           </p>
         </div>
       ) : recentOrphanedBlocks.length === 0 ? (

@@ -16,38 +16,25 @@ export const ReorgSection: FC = () => {
     console.error("Error fetching reorgs:", reorgsError);
   }
 
-  // Filter reorgs in the past 24 hours
   const recentReorgs = useMemo(() => {
     if (!reorgs) return [];
-
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    return reorgs.filter((reorg: ChicmozReorg) => {
-      const reorgTimestamp = new Date(reorg.timestamp);
-      return reorgTimestamp >= oneDayAgo;
-    });
+    return reorgs.slice(0, 15);
   }, [reorgs]);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
       <h2 className="mb-4">Recent Chain Reorgs</h2>
       {reorgsLoading ? (
-        <Loader amount={10} />
+        <Loader amount={15} />
       ) : reorgsError ? (
         <div>
           <p className="text-yellow-600 dark:text-yellow-400 mb-2">
-            Development Mode: Reorg API not available
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            The reorg endpoint is configured but not yet available in your
-            development environment. This section will automatically work when
-            the API endpoint is deployed.
+            Error fetching reorgs {reorgsError.message}
           </p>
         </div>
-      ) : recentReorgs.length === 0 ? (
+      ) : reorgs?.length === 0 ? (
         <p className="text-green-600 dark:text-green-400 font-semibold">
-          No chain reorganizations in the past 24 hours - Network is stable! 🎉
+          No reorgs found
         </p>
       ) : (
         <div className="overflow-x-auto">
