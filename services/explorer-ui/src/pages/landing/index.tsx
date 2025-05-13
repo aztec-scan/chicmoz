@@ -198,7 +198,7 @@ export const Landing: FC = () => {
                 <TxEffectsTable
                   txEffects={mapLatestTxEffects(
                     latestTxEffectsData ?? [],
-                    latestBlocks ?? [],
+                    latestBlocks,
                   )}
                   isLoading={isLoadingTxEffects}
                   title="Latest Transactions"
