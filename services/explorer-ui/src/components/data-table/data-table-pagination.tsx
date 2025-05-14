@@ -1,14 +1,7 @@
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { type Table } from "@tanstack/react-table";
 import { useEffect } from "react";
-import {
-  Button,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui";
+import { Button } from "~/components/ui";
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
@@ -62,125 +55,32 @@ export function DataTablePagination<TData>({
 const PaginationControls = <TData,>({
   table,
   disableSizeSelector,
-  maxEntries,
 }: DataTablePaginationProps<TData>) => {
-  const totalRowCount = table.getCoreRowModel().rows.length;
   const pageCount = table.getPageCount();
 
   // Hide navigation controls if there's only one page
   const showNavigation = pageCount > 1;
 
+  // When size selector is disabled and we have navigation, use a centered layout for both mobile and desktop
+  if (disableSizeSelector && showNavigation) {
+    return (
+      <div className="flex justify-center items-center w-full">
+        <PageNavigation table={table} />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      {/* Mobile layout as a column */}
-      <div className="flex flex-col justify-center md:hidden w-full gap-4">
-        {/* Navigation centered at top */}
+      {/* Desktop layout - stacked vertically to avoid overlap */}
+      <div className="flex flex-row justify-center items-center w-full gap-4">
+        {/* Navigation centered */}
         {showNavigation && (
-          <div className="flex justify-center w-full">
+          <div className="flex justify-center">
             <PageNavigation table={table} />
           </div>
         )}
-
-        {/* Size selector left-aligned at bottom */}
-        {!disableSizeSelector && (
-          <div className="self-start">
-            <PageSizeSelector table={table} maxEntries={maxEntries} />
-          </div>
-        )}
       </div>
-
-      {/* Desktop layout side by side */}
-      <div className="hidden md:flex items-center justify-between w-full">
-        {/* Size selector on left for desktop */}
-        {!disableSizeSelector && (
-          <div>
-            <PageSizeSelector table={table} maxEntries={maxEntries} />
-          </div>
-        )}
-
-        {/* Navigation on right for desktop, or centered if no selector */}
-        {showNavigation && (
-          <div
-            className={`${
-              !disableSizeSelector
-                ? "flex items-center justify-center"
-                : "mx-auto"
-            }`}
-          >
-            <PageNavigation table={table} />
-          </div>
-        )}
-
-        {/* When navigation is hidden but selector is shown, add empty div for spacing */}
-        {!showNavigation && !disableSizeSelector && (
-          <div className="w-[120px]"></div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const PageSizeSelector = <TData,>({
-  table,
-  maxEntries = 10,
-}: DataTablePaginationProps<TData>) => {
-  // Get total row count to calculate dynamic options
-  const totalRowCount = table.getCoreRowModel().rows.length;
-  const currentSize = table.getState().pagination.pageSize;
-
-  // Generate page size options with fixed standard options and dynamic ones
-  const generatePageSizeOptions = () => {
-    // Standard options that won't exceed total rows
-    const standardOptions = [10, 25, 50, 100].filter(
-      (size) =>
-        // Only include options that don't exceed the total row count
-        // Always include at least the 10 option even for small datasets
-        size <= totalRowCount || size === 10,
-    );
-
-    // Start with filtered standard options
-    const options = [...standardOptions];
-
-    // Add current size if not already in options
-    if (!options.includes(currentSize)) {
-      options.push(currentSize);
-    }
-
-    // Add option that shows all rows if not too many and not already included
-    if (
-      totalRowCount <= 100 &&
-      totalRowCount > 0 &&
-      !options.includes(totalRowCount)
-    ) {
-      options.push(totalRowCount);
-    }
-
-    // Sort and return unique values
-    return [...new Set(options)].sort((a, b) => a - b);
-  };
-
-  const pageSizeOptions = generatePageSizeOptions();
-
-  return (
-    <div className="flex items-center space-x-2 shrink-0 min-w-[200px]">
-      <p className="h-full text-sm text-muted-foreground whitespace-nowrap">
-        {text.rowsPerPage}
-      </p>
-      <Select
-        value={`${table.getState().pagination.pageSize}`}
-        onValueChange={(value) => table.setPageSize(Number(value))}
-      >
-        <SelectTrigger className="h-8 w-[70px]">
-          <SelectValue placeholder={table.getState().pagination.pageSize} />
-        </SelectTrigger>
-        <SelectContent side="top">
-          {pageSizeOptions.map((pageSize) => (
-            <SelectItem key={pageSize} value={`${pageSize}`}>
-              {pageSize}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
     </div>
   );
 };
@@ -189,14 +89,28 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
   const currentPageIndex = table.getState().pagination.pageIndex;
   const totalPages = table.getPageCount();
 
-  // Calculate page numbers with validation
-  const prevPageNum = Math.max(0, currentPageIndex - 1);
-  const currentPageNum = currentPageIndex;
-  const nextPageNum = Math.min(totalPages - 1, currentPageIndex + 1);
+  // Calculate which 3 page numbers to show
+  const getPageNumbers = (): number[] => {
+    // If less than 3 pages total, just return all page indices
+    if (totalPages <= 3) {
+      return Array.from({ length: totalPages }, (_, i) => i);
+    }
 
-  // Check if pages should be displayed
-  const showPrevPage = currentPageIndex > 0;
-  const showNextPage = currentPageIndex < totalPages - 1;
+    // If at the start, show first 3 pages
+    if (currentPageIndex === 0) {
+      return [0, 1, 2];
+    }
+
+    // If at the end, show last 3 pages
+    if (currentPageIndex === totalPages - 1) {
+      return [totalPages - 3, totalPages - 2, totalPages - 1];
+    }
+
+    // Otherwise show current page and one on each side
+    return [currentPageIndex - 1, currentPageIndex, currentPageIndex + 1];
+  };
+
+  const pageNumbers = getPageNumbers();
 
   // Show page count for tables with multiple pages
   const showPageCount = totalPages > 3;
@@ -232,7 +146,7 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
         </div>
 
         {/* Fixed width placeholder for page numbers */}
-        <div className="flex items-center justify-center  min-w-[120px]">
+        <div className="flex items-center justify-center space-x-2 min-w-[120px]">
           {/* Page count indicator */}
           {showPageCount && (
             <span className="text-xs text-muted-foreground absolute top-[-18px] w-full text-center">
@@ -240,60 +154,42 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
             </span>
           )}
 
-          {/* Previous Page Number */}
-          <div className="w-8 text-center">
-            {showPrevPage ? (
+          {/* Always show 3 page numbers */}
+          {pageNumbers.map((pageIndex) => (
+            <div key={pageIndex} className="w-8 text-center">
               <Button
                 variant="link"
-                className="h-8 w-8 p-0 flex items-center justify-center"
-                onClick={() => table.setPageIndex(prevPageNum)}
-                disabled={false}
-                aria-label={`Go to page ${prevPageNum + 1}`}
+                className={`h-8 w-8 p-0 flex items-center justify-center ${
+                  pageIndex === currentPageIndex
+                    ? "bg-purple-500 hover:bg-purple-600 rounded-full"
+                    : ""
+                }`}
+                onClick={() => table.setPageIndex(pageIndex)}
+                disabled={false} // Don't disable the current page button
+                aria-current={
+                  pageIndex === currentPageIndex ? "page" : undefined
+                }
+                aria-label={
+                  pageIndex === currentPageIndex
+                    ? `Current page, page ${pageIndex + 1}`
+                    : `Go to page ${pageIndex + 1}`
+                }
               >
-                <span className="text-purple-light">{prevPageNum + 1}</span>
+                <span
+                  className={
+                    pageIndex === currentPageIndex
+                      ? "text-white font-bold"
+                      : "text-purple-light hover:text-purple-dark"
+                  }
+                >
+                  {pageIndex + 1}
+                </span>
               </Button>
-            ) : (
-              <div className="h-8 w-8"></div>
-            )}
-          </div>
-
-          {/* Current Page Number */}
-          <div className="w-8 text-center">
-            <Button
-              variant="link"
-              className="h-8 w-8 p-0 bg-purple-light rounded-full flex items-center justify-center"
-              onClick={() => {
-                /* Current page - no action needed */
-              }}
-              disabled={false}
-              aria-current="page"
-              aria-label={`Current page, page ${currentPageNum + 1}`}
-            >
-              <span className="text-white font-medium">
-                {currentPageNum + 1}
-              </span>
-            </Button>
-          </div>
-
-          {/* Next Page Number */}
-          <div className="w-8 text-center">
-            {showNextPage ? (
-              <Button
-                variant="link"
-                className="h-8 w-8 p-0 flex items-center justify-center"
-                onClick={() => table.setPageIndex(nextPageNum)}
-                disabled={false}
-                aria-label={`Go to page ${nextPageNum + 1}`}
-              >
-                <span className="text-purple-light">{nextPageNum + 1}</span>
-              </Button>
-            ) : (
-              <div className="h-8 w-8"></div>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
 
-        <div className="w-8 text-center">
+        <div className="w-16 text-center">
           <Button
             variant="link"
             className="h-8 px-1"
