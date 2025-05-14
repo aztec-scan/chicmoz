@@ -1,7 +1,9 @@
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { type FC } from "react";
+import { CustomTooltip } from "~/components/custom-tooltip";
 import { DataTable } from "~/components/data-table";
-import { type ContractInstance } from "./schema";
 import { contractsTableColumns } from "./columns";
+import { type ContractInstance } from "./schema";
 
 interface Props {
   title?: string;
@@ -9,6 +11,7 @@ interface Props {
   isLoading: boolean;
   error?: Error | null;
   showContractVersions?: boolean;
+  tooltip?: string;
 }
 
 export const ContractInstancesTable: FC<Props> = ({
@@ -17,6 +20,7 @@ export const ContractInstancesTable: FC<Props> = ({
   isLoading,
   error,
   showContractVersions,
+  tooltip,
 }) => {
   if (!contracts) {
     return <div>No data</div>;
@@ -33,7 +37,16 @@ export const ContractInstancesTable: FC<Props> = ({
   return (
     <section className="relative mx-auto w-full transition-all">
       <div className="space-y-4 bg-white rounded-lg p-5">
-        {title && <h3 className="ml-0.5">{title}</h3>}
+        {title && (
+          <h3 className="ml-0.5 flex items-center gap-2">
+            {title}
+            {tooltip && (
+              <CustomTooltip content={tooltip}>
+                <QuestionMarkCircledIcon className="text-gray-400 cursor-pointer" />
+              </CustomTooltip>
+            )}
+          </h3>
+        )}
         <DataTable isLoading={isLoading} data={contracts} columns={cols} />
       </div>
     </section>

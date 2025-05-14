@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { SearchInput } from "~/components/ui/input";
-import { DesktopBurgerMenu } from "./desktop-burger-menu";
 import { MagicDevLink } from "../magic-dev-link";
 import { ChicmozHomeLink } from "../ui/chicmoz-home-link";
+import { DesktopBurgerMenu } from "./desktop-burger-menu";
 import { type HeaderLink } from "./types";
 
 interface DesktopHeaderProps {

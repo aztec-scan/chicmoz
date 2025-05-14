@@ -17,7 +17,7 @@ export const MagicDevLink = ({ className = "", textClasses = "" }) => {
       break;
   }
   const tooltipContent = (
-    <pre className="bg-white p-4 rounded-lg shadow-md text-black">
+    <pre className="rounded-lg">
       {`Health: ${systemHealth.health}
 Reason: ${systemHealth.reason}`}
     </pre>

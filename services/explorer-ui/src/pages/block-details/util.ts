@@ -4,35 +4,26 @@ import {
 } from "@chicmoz-pkg/types";
 import { type DetailItem } from "~/components/info-display/key-value-display";
 import { getTxEffectTableObj } from "~/components/tx-effects/tx-effects-schema";
-import { formatTimeSince } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
 export const getBlockDetails = (
-  latestBlock: ChicmozL2BlockLight
+  latestBlock: ChicmozL2BlockLight,
 ): DetailItem[] => {
   const l2BlockTimestamp = latestBlock.header.globalVariables.timestamp;
-  const l2BlockTimeSince = formatTimeSince(l2BlockTimestamp);
 
   const proposedOnL1Date: Date | undefined | null =
     latestBlock?.proposedOnL1?.l1BlockTimestamp;
-  const proposedTimeSince: string | undefined = formatTimeSince(
-    proposedOnL1Date?.getTime()
-  );
 
   const proofVerifiedOnL1Date: Date | undefined | null =
     latestBlock?.proofVerifiedOnL1?.l1BlockTimestamp;
-  const proofVerifiedTimeSince: string | undefined = formatTimeSince(
-    proofVerifiedOnL1Date?.getTime()
-  );
 
   return [
     { label: "Block Number", value: "" + latestBlock.height },
     { label: "Block Hash", value: latestBlock.hash },
     {
       label: "Timestamp",
-      value: `${new Date(
-        l2BlockTimestamp
-      ).toLocaleString()} (${l2BlockTimeSince})`,
+      value: l2BlockTimestamp.toString(),
+      timestamp: l2BlockTimestamp,
     },
     {
       label: "slotNumber",
@@ -41,6 +32,7 @@ export const getBlockDetails = (
     {
       label: "coinbase",
       value: "" + latestBlock.header.globalVariables.coinbase,
+      tooltip: "L1 address that receives the block reward for this block.",
     },
     {
       label: "Number of Transactions",
@@ -49,6 +41,7 @@ export const getBlockDetails = (
     {
       label: "feeRecipient",
       value: "" + latestBlock.header.globalVariables.feeRecipient,
+      tooltip: "L2 address that receives the transaction fees for this block.",
     },
     {
       label: "totalFees (FJ)",
@@ -61,10 +54,13 @@ export const getBlockDetails = (
     {
       label: "feePerDaGas",
       value: "" + latestBlock.header.globalVariables.gasFees.feePerDaGas,
+      tooltip:
+        "FJ paid for the data usage by the transaction, e.g. creating/spending notes, emitting logs, etc.",
     },
     {
       label: "feePerL2Gas",
       value: "" + latestBlock.header.globalVariables.gasFees.feePerL2Gas,
+      tooltip: "FJ paid for the computation usage of the public VM.",
     },
     {
       label: " Block status",
@@ -72,15 +68,13 @@ export const getBlockDetails = (
     },
     {
       label: "Proposed on L1",
-      value: proposedOnL1Date
-        ? `${proposedOnL1Date.toLocaleString()} (${proposedTimeSince})`
-        : "Not yet proposed",
+      value: "Not yet proposed",
+      timestamp: proposedOnL1Date?.getTime() ?? undefined,
     },
     {
       label: "Proof Verified on L1",
-      value: proofVerifiedOnL1Date
-        ? `${proofVerifiedOnL1Date.toLocaleString()} (${proofVerifiedTimeSince})`
-        : "Not yet verified",
+      value: "Not yet verified",
+      timestamp: proofVerifiedOnL1Date?.getTime() ?? undefined,
     },
     {
       label: "Raw Data",
@@ -92,9 +86,13 @@ export const getBlockDetails = (
 
 export const getTxEffects = (
   txEffects?: ChicmozL2Block["body"]["txEffects"],
-  latestBlock?: ChicmozL2BlockLight
+  latestBlock?: ChicmozL2BlockLight,
 ) => {
-  if (!txEffects) { return undefined; }
-  if (!latestBlock) { return undefined; }
+  if (!txEffects) {
+    return undefined;
+  }
+  if (!latestBlock) {
+    return undefined;
+  }
   return txEffects.map((tx) => getTxEffectTableObj(tx, latestBlock));
 };

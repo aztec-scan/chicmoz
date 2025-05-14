@@ -1,5 +1,7 @@
-import { type ChicmozL2DroppedTx, type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
-import { formatTimeSince } from "~/lib/utils";
+import {
+  type ChicmozL2DroppedTx,
+  type ChicmozL2TxEffectDeluxe,
+} from "@chicmoz-pkg/types";
 import { API_URL, aztecExplorer } from "~/service/constants";
 import { type TabId } from "./types";
 
@@ -34,10 +36,15 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
     value: data.blockHash,
     link: `/blocks/${data.blockHash}`,
   },
-  { label: "MINED ON CHAIN", value: formatTimeSince(data.timestamp) },
+  {
+    label: "MINED ON CHAIN",
+    value: data.timestamp.toString(),
+    timestamp: data.timestamp,
+  },
   {
     label: "CREATED AS TRANSACTION",
-    value: formatTimeSince(data.txBirthTimestamp),
+    value: data.txBirthTimestamp.toString(),
+    timestamp: data.txBirthTimestamp,
   },
   {
     label: "RAW DATA",

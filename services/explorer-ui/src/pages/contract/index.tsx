@@ -38,8 +38,12 @@ export const Contracts: FC = () => {
   return (
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap m-5">
-        <h2 className="mt-2 text-primary dark:text-white md:hidden">All Contracts</h2>
-        <h2 className="hidden md:block md:text-primary md:dark:text-white md:mt-8">All Contracts</h2>
+        <h2 className="mt-2 text-primary dark:text-white md:hidden">
+          All Contracts
+        </h2>
+        <h2 className="hidden md:block md:text-primary md:dark:text-white md:mt-8">
+          All Contracts
+        </h2>
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5 ">
         <InfoBadge
@@ -63,6 +67,7 @@ export const Contracts: FC = () => {
             contracts={mapContractClasses(classesData)}
             isLoading={isLoadingClasses}
             error={errorClasses}
+            tooltip="A contract class is a collection of state variables and functions. It is just a reference to the code and can not be called."
           />
         </div>
         <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
@@ -71,6 +76,7 @@ export const Contracts: FC = () => {
             contracts={mapContractInstances(instancesData)}
             isLoading={isLoadingInstances}
             error={errorInstances}
+            tooltip="A contract instance is a specific deployment of a contract class. It has a state and can be called."
           />
         </div>
       </div>
