@@ -16,7 +16,7 @@ export const getTxEffectTableObj = (
     return txEffectSchema.parse({
       txHash: txEffect.txHash,
       transactionFee: txEffect.transactionFee,
-      blockNumber: txEffect.privateLogs,
+      blockNumber: txEffect.blockHeight,
       timestamp: txEffect.timestamp,
     });
   }
