@@ -112,9 +112,6 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
 
   const pageNumbers = getPageNumbers();
 
-  // Show page count for tables with multiple pages
-  const showPageCount = totalPages > 3;
-
   return (
     <nav
       aria-label="Table pagination"
