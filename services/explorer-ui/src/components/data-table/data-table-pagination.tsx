@@ -147,13 +147,6 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
 
         {/* Fixed width placeholder for page numbers */}
         <div className="flex items-center justify-center space-x-2 min-w-[120px]">
-          {/* Page count indicator */}
-          {showPageCount && (
-            <span className="text-xs text-muted-foreground absolute top-[-18px] w-full text-center">
-              Page {currentPageIndex + 1} of {totalPages}
-            </span>
-          )}
-
           {/* Always show 3 page numbers */}
           {pageNumbers.map((pageIndex) => (
             <div key={pageIndex} className="w-8 text-center">
