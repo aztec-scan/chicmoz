@@ -73,14 +73,14 @@ const PaginationControls = <TData,>({
   return (
     <div className="w-full">
       {/* Mobile layout as a column */}
-      <div className="flex flex-col md:hidden w-full gap-4">
+      <div className="flex flex-col justify-center md:hidden w-full gap-4">
         {/* Navigation centered at top */}
         {showNavigation && (
           <div className="flex justify-center w-full">
             <PageNavigation table={table} />
           </div>
         )}
-        
+
         {/* Size selector left-aligned at bottom */}
         {!disableSizeSelector && (
           <div className="self-start">
@@ -88,7 +88,7 @@ const PaginationControls = <TData,>({
           </div>
         )}
       </div>
-      
+
       {/* Desktop layout side by side */}
       <div className="hidden md:flex items-center justify-between w-full">
         {/* Size selector on left for desktop */}
@@ -97,16 +97,24 @@ const PaginationControls = <TData,>({
             <PageSizeSelector table={table} maxEntries={maxEntries} />
           </div>
         )}
-        
+
         {/* Navigation on right for desktop, or centered if no selector */}
         {showNavigation && (
-          <div className={`${!disableSizeSelector ? "" : "mx-auto"}`}>
+          <div
+            className={`${
+              !disableSizeSelector
+                ? "flex items-center justify-center"
+                : "mx-auto"
+            }`}
+          >
             <PageNavigation table={table} />
           </div>
         )}
-        
+
         {/* When navigation is hidden but selector is shown, add empty div for spacing */}
-        {!showNavigation && !disableSizeSelector && <div className="w-[120px]"></div>}
+        {!showNavigation && !disableSizeSelector && (
+          <div className="w-[120px]"></div>
+        )}
       </div>
     </div>
   );
