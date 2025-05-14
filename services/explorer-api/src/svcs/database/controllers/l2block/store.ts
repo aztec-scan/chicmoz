@@ -190,12 +190,12 @@ export const store = async (
           value: pdw.value,
         });
       }
-      await ensureFinalizationStatusStored(
-        block.hash,
-        block.height,
-        block.finalizationStatus,
-      );
     }
+    await ensureFinalizationStatusStored(
+      block.hash,
+      block.height,
+      block.finalizationStatus,
+    );
     const finalizationUpdate = await ensureL1FinalizationIsStored(
       block.hash,
       block.height,
@@ -210,14 +210,12 @@ export const ensureFinalizationStatusStored = async (
   l2BlockNumber: bigint,
   status: ChicmozL2BlockFinalizationStatus,
 ): Promise<void> => {
-  if (status.valueOf() >= 0) {
-    await db()
-      .insert(l2BlockFinalizationStatusTable)
-      .values({
-        l2BlockHash,
-        l2BlockNumber,
-        status,
-      })
-      .onConflictDoNothing();
-  }
+  await db()
+    .insert(l2BlockFinalizationStatusTable)
+    .values({
+      l2BlockHash,
+      l2BlockNumber,
+      status,
+    })
+    .onConflictDoNothing();
 };

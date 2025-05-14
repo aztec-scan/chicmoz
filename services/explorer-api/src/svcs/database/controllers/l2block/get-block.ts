@@ -114,7 +114,8 @@ export const getBlocksByFinalizationStatus = async (
     .selectDistinct({
       status: l2BlockFinalizationStatusTable.status,
     })
-    .from(l2BlockFinalizationStatusTable);
+    .from(l2BlockFinalizationStatusTable)
+    .orderBy(desc(l2BlockFinalizationStatusTable.status));
 
   // For each status, get the block with the highest block number
   const blocks: ChicmozL2BlockLight[] = [];
@@ -149,7 +150,10 @@ export const getBlocksByFinalizationStatus = async (
       const blockHash = latestBlockForStatus[0].blockHash;
       const block = await getBlock(blockHash, options);
       if (block) {
-        blocks.push(block);
+        blocks.push({
+          ...block,
+          finalizationStatus: status,
+        });
       }
     }
   }

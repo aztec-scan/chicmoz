@@ -14,7 +14,7 @@ import {
   l1L2ProofVerifiedTable,
   l2Block,
 } from "../../schema/index.js";
-import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
+import { ensureFinalizationStatusStored } from "./store.js";
 
 export const addL1L2BlockProposed = async (
   proposedData: ChicmozL1L2BlockProposed,
@@ -58,14 +58,12 @@ export const addL1L2BlockProposed = async (
     ? ChicmozL2BlockFinalizationStatus.L1_MINED_PROPOSED
     : ChicmozL2BlockFinalizationStatus.L1_SEEN_PROPOSED;
 
-  await db()
-    .insert(l2BlockFinalizationStatusTable)
-    .values({
-      l2BlockHash,
-      l2BlockNumber: proposedData.l2BlockNumber,
-      status,
-    })
-    .onConflictDoNothing();
+  await ensureFinalizationStatusStored(
+    l2BlockHash,
+    proposedData.l2BlockNumber,
+    status,
+  );
+
   return {
     l2BlockHash,
     status,
@@ -98,14 +96,7 @@ export const ensureL1FinalizationIsStored = async (
   let status = proposedData[0].isFinalized
     ? ChicmozL2BlockFinalizationStatus.L1_MINED_PROPOSED
     : ChicmozL2BlockFinalizationStatus.L1_SEEN_PROPOSED;
-  await db()
-    .insert(l2BlockFinalizationStatusTable)
-    .values({
-      l2BlockHash,
-      l2BlockNumber,
-      status,
-    })
-    .onConflictDoNothing();
+  await ensureFinalizationStatusStored(l2BlockHash, l2BlockNumber, status);
 
   const verifiedData = await db()
     .select({
@@ -134,14 +125,7 @@ export const ensureL1FinalizationIsStored = async (
     ? ChicmozL2BlockFinalizationStatus.L1_MINED_PROVEN
     : ChicmozL2BlockFinalizationStatus.L1_SEEN_PROVEN;
 
-  await db()
-    .insert(l2BlockFinalizationStatusTable)
-    .values({
-      l2BlockHash,
-      l2BlockNumber,
-      status,
-    })
-    .onConflictDoNothing();
+  await ensureFinalizationStatusStored(l2BlockHash, l2BlockNumber, status);
 
   return {
     l2BlockHash,
@@ -214,14 +198,12 @@ export const addL1L2ProofVerified = async (
   const status = proofVerifiedData.isFinalized
     ? ChicmozL2BlockFinalizationStatus.L1_MINED_PROVEN
     : ChicmozL2BlockFinalizationStatus.L1_SEEN_PROVEN;
-  await db()
-    .insert(l2BlockFinalizationStatusTable)
-    .values({
-      l2BlockHash,
-      l2BlockNumber: proofVerifiedData.l2BlockNumber,
-      status,
-    })
-    .onConflictDoNothing();
+  await ensureFinalizationStatusStored(
+    l2BlockHash,
+    proofVerifiedData.l2BlockNumber,
+    status,
+  );
+
   return {
     l2BlockHash,
     status,
