@@ -18,7 +18,7 @@ import {
   getLatestProvenHeight,
 } from "../network-client/index.js";
 
-let timoutId: number | undefined;
+let timeoutId: number | undefined;
 let cancelPolling = false;
 
 export const startPolling = async ({
@@ -28,7 +28,7 @@ export const startPolling = async ({
   forceStartFromProposedHeight?: number;
   forceStartFromProvenHeight?: number;
 } = {}) => {
-  if (timoutId) {
+  if (timeoutId) {
     throw new Error("Poller already started");
   }
   if (forceStartFromProposedHeight) {
@@ -42,9 +42,9 @@ export const startPolling = async ({
 
 export const stopPolling = () => {
   cancelPolling = true;
-  if (timoutId) {
-    clearTimeout(timoutId);
-    timoutId = undefined;
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+    timeoutId = undefined;
   }
 };
 
@@ -123,7 +123,7 @@ Proven height   PROCESSED ${heights.processedProvenBlockHeight} | CHAIN ${
     logger.info(
       `🐱 waiting ${BLOCK_POLL_INTERVAL_MS / 1000}s for next poll...`,
     );
-    timoutId = setTimeout(syncRecursivePolling, BLOCK_POLL_INTERVAL_MS);
+    timeoutId = setTimeout(syncRecursivePolling, BLOCK_POLL_INTERVAL_MS);
   }
 };
 
