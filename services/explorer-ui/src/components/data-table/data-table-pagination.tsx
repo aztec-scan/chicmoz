@@ -6,12 +6,14 @@ import { Button } from "~/components/ui";
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
   disableSizeSelector?: boolean;
+  disablePagination?: boolean;
   maxEntries?: number;
 }
 
 export function DataTablePagination<TData>({
   table,
   disableSizeSelector,
+  disablePagination = false,
   maxEntries = 10,
 }: DataTablePaginationProps<TData>) {
   const totalRowCount = table.getCoreRowModel().rows.length;
@@ -42,13 +44,15 @@ export function DataTablePagination<TData>({
   }
 
   return (
-    <div className="flex items-center justify-center px-2 py-4 border-t">
-      <PaginationControls
-        table={table}
-        disableSizeSelector={disableSizeSelector}
-        maxEntries={maxEntries}
-      />
-    </div>
+    !disablePagination && (
+      <div className="flex items-center justify-center px-2 py-4">
+        <PaginationControls
+          table={table}
+          disableSizeSelector={disableSizeSelector}
+          maxEntries={maxEntries}
+        />
+      </div>
+    )
   );
 }
 

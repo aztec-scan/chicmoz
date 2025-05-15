@@ -20,6 +20,7 @@ interface PendingTxsTableProps {
   isLoading?: boolean;
   error?: unknown;
   disableSizeSelector?: boolean;
+  disablePagination?: boolean;
   maxEntries?: number;
 }
 
@@ -70,6 +71,7 @@ export const PendingTxsTable: FC<PendingTxsTableProps> = ({
   isLoading: propsIsLoading,
   error: propsError,
   disableSizeSelector = false,
+  disablePagination = false,
   maxEntries = 10,
 }) => {
   // Fetch data internally if not provided as props (for backward compatibility)
@@ -125,7 +127,7 @@ export const PendingTxsTable: FC<PendingTxsTableProps> = ({
     <section className="relative mx-0 w-full transition-all">
       <div className="space-y-4 bg-white rounded-lg p-5">
         {title && (
-          <div className="flex flex-row justify-between md:min-h-20">
+          <div className="flex flex-col md:flex-row gap-3 justify-between md:min-h-16 items-start md:items-center">
             <h3 className="ml-0.5">{title}</h3>
           </div>
         )}
@@ -134,6 +136,7 @@ export const PendingTxsTable: FC<PendingTxsTableProps> = ({
           data={pendingTxsData}
           columns={pendingTxsColumns}
           disableSizeSelector={disableSizeSelector}
+          disablePagination={disablePagination}
           maxEntries={maxEntries}
         />
       </div>
