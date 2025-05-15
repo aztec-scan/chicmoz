@@ -27,7 +27,6 @@ const init = async () => {
         logger.error(`🐻 error running catchup: ${(e as Error).stack}`);
       });
   }, 5000);
-  //await queryStakingStateAndEmitUpdates();
 };
 
 let isCatchupStarted = false;
