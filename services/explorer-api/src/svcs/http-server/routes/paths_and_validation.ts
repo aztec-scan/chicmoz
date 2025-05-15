@@ -218,7 +218,7 @@ export const getSearchSchema = z.object({
 export const getSearchPublicLogsSchema = z.object({
   query: z.object({
     frLogEntry: frSchema,
-    index: z.coerce.number().nonnegative(),
+    index: z.coerce.number().int().nonnegative(),
   }),
 });
 
