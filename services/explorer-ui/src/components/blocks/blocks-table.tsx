@@ -1,8 +1,8 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
+import { RangeSelector } from "./block-range-selector";
 import { BlockTableColumns } from "./block-table-columns";
 import { type BlockTableSchema } from "./blocks-schema";
-import { RangeSelector } from "./block-range-selector";
 
 interface Props {
   title?: string;
@@ -11,6 +11,7 @@ interface Props {
   error?: Error | null;
   disableSizeSelector?: boolean;
   showRangeSelector?: boolean;
+  disablePagination?: boolean;
   startBlock?: number;
   endBlock?: number;
   onRangeChange?: (start: number, end: number) => void;
@@ -23,6 +24,7 @@ export const BlocksTable: FC<Props> = ({
   isLoading,
   error,
   disableSizeSelector,
+  disablePagination = false,
   showRangeSelector = false,
   startBlock,
   endBlock,
@@ -53,6 +55,7 @@ export const BlocksTable: FC<Props> = ({
           data={blocks ?? []}
           columns={BlockTableColumns}
           disableSizeSelector={disableSizeSelector}
+          disablePagination={disablePagination}
           maxEntries={maxEntries}
         />
       </div>

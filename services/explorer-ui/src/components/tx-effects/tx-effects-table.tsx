@@ -9,6 +9,7 @@ interface Props {
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
+  disablePagination?: boolean;
   maxEntries?: number;
 }
 
@@ -18,6 +19,7 @@ export const TxEffectsTable: FC<Props> = ({
   isLoading,
   error,
   disableSizeSelector,
+  disablePagination = false,
   maxEntries = 10,
 }) => {
   if (!txEffects) {
@@ -30,7 +32,7 @@ export const TxEffectsTable: FC<Props> = ({
     <section className="relative mx-0 w-full transition-all">
       <div className="space-y-4 bg-white rounded-lg p-5">
         {title && (
-          <div className="flex flex-row justify-between md:min-h-20">
+          <div className="flex flex-col md:flex-row gap-3 justify-between md:min-h-16 items-start md:items-center">
             <h3 className="ml-0.5">{title}</h3>
           </div>
         )}
@@ -39,6 +41,7 @@ export const TxEffectsTable: FC<Props> = ({
           data={txEffects}
           columns={TxEffectsTableColumns}
           disableSizeSelector={disableSizeSelector}
+          disablePagination={disablePagination}
           maxEntries={maxEntries}
         />
       </div>
