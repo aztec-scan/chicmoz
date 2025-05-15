@@ -1,6 +1,7 @@
 import { L1L2ValidatorEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL1L2Validator, L1L2ValidatorStatus } from "@chicmoz-pkg/types";
+import { logger } from "../../../../../logger.js";
 import {
   l1L2ValidatorProposerTable,
   l1L2ValidatorStakeTable,
@@ -22,11 +23,22 @@ export async function updateValidatorsState(
   if (!currentDbValues) {
     return;
   }
+  logger.info(
+    `🤖 validators in db: ${currentDbValues.length}, validators in event: ${validators.length}`,
+  );
   for (const validator of currentDbValues) {
     const found = validators.find((v) => v.attester === validator.attester);
     if (!found) {
+      logger.info(
+        `🤖 L1L2 validator ${validator.attester} not found in event, setting to EXITING`,
+      );
       await _store(
-        { ...validator, status: L1L2ValidatorStatus.EXITING, stake: 0n },
+        {
+          ...validator,
+          latestSeenChangeAt: new Date(),
+          status: L1L2ValidatorStatus.EXITING,
+          stake: 0n,
+        },
         validator,
       );
     }

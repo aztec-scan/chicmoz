@@ -11,11 +11,17 @@ const tdClasses = "p-2 border border-gray-300";
 export const ValidatorsPage: FC = () => {
   useSubTitle(routes.validators.title);
   const { data, isLoading, error } = useL1L2Validators();
+
+  const countValidating = data?.filter(
+    (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
+  ).length;
+  const additionalTitle = countValidating
+    ? ` (${countValidating} validating out of ${data?.length})`
+    : "";
+
   return (
     <div className="flex flex-col items-center">
-      <h1>
-        {`${routes.validators.title}${data?.length ? ` (${data?.length})` : ""}`}
-      </h1>
+      <h1>{`${routes.validators.title}${additionalTitle}`}</h1>
 
       <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
         {isLoading && <p>Loading...</p>}
