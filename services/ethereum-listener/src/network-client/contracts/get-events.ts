@@ -332,6 +332,7 @@ export const getAllContractsEvents = async ({
       toBlock,
       latestHeight,
     }),
+    // NOTE: These events are not used in the current implementation, but are left here for future use. The reason for not using them is that they require our L1-RPC to be a full node (being able to query state at any given block).
     //getDepositLogs({
     //  client,
     //  contracts,
