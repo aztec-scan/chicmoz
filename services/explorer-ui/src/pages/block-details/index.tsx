@@ -55,7 +55,7 @@ export const BlockDetails: FC = () => {
           <TxEffectsTable
             txEffects={getTxEffects(blockTxEffects, block)}
             isLoading={isTxLoading}
-            error={error ?? txEffectsError}
+            error={txEffectsError}
           />
         );
       case "contracts":

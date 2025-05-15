@@ -1,12 +1,12 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
 import { BlockTableColumns } from "./block-table-columns";
-import { type BlockTableSchema } from "./blocks-schema";
 import { RangeSelector } from "./block-range-selector";
+import { type UiBlockTable } from "@chicmoz-pkg/types";
 
 interface Props {
   title?: string;
-  blocks?: BlockTableSchema[];
+  blocks?: UiBlockTable[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;

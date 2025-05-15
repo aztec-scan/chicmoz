@@ -1,4 +1,7 @@
-import { type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
+import {
+  type UiTxEffectTable,
+  type ChicmozL2TxEffectDeluxe,
+} from "@chicmoz-pkg/types";
 import {
   useQueries,
   useQuery,
@@ -78,5 +81,25 @@ export const useGetLatestTxEffects = (): UseQueryResult<
       });
       return latestTxEffects;
     },
+  });
+};
+
+export const useLatestTableTxEffects = (): UseQueryResult<
+  UiTxEffectTable[],
+  Error
+> => {
+  return useQuery<UiTxEffectTable[], Error>({
+    queryKey: queryKeyGenerator.latestTableTxEffects,
+    queryFn: () => TxEffectsAPI.getLatestTableTxEffect(),
+  });
+};
+
+export const useLatestTableTxEffectsByHeightRange = (
+  from: number,
+  to: number,
+): UseQueryResult<UiTxEffectTable[], Error> => {
+  return useQuery<UiTxEffectTable[], Error>({
+    queryKey: queryKeyGenerator.latestTableTxEffectsRange(from, to),
+    queryFn: () => TxEffectsAPI.getLatestTableTxEffectByHeightRange(from, to),
   });
 };

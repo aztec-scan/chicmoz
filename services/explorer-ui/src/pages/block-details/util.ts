@@ -1,14 +1,15 @@
 import {
+  uiTxEffectTableSchema,
   type ChicmozL2Block,
   type ChicmozL2BlockLight,
+  type UiTxEffectTable,
 } from "@chicmoz-pkg/types";
 import { type DetailItem } from "~/components/info-display/key-value-display";
-import { getTxEffectTableObj } from "~/components/tx-effects/tx-effects-schema";
 import { formatTimeSince } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
 export const getBlockDetails = (
-  latestBlock: ChicmozL2BlockLight
+  latestBlock: ChicmozL2BlockLight,
 ): DetailItem[] => {
   const l2BlockTimestamp = latestBlock.header.globalVariables.timestamp;
   const l2BlockTimeSince = formatTimeSince(l2BlockTimestamp);
@@ -16,13 +17,13 @@ export const getBlockDetails = (
   const proposedOnL1Date: Date | undefined | null =
     latestBlock?.proposedOnL1?.l1BlockTimestamp;
   const proposedTimeSince: string | undefined = formatTimeSince(
-    proposedOnL1Date?.getTime()
+    proposedOnL1Date?.getTime(),
   );
 
   const proofVerifiedOnL1Date: Date | undefined | null =
     latestBlock?.proofVerifiedOnL1?.l1BlockTimestamp;
   const proofVerifiedTimeSince: string | undefined = formatTimeSince(
-    proofVerifiedOnL1Date?.getTime()
+    proofVerifiedOnL1Date?.getTime(),
   );
 
   return [
@@ -31,7 +32,7 @@ export const getBlockDetails = (
     {
       label: "Timestamp",
       value: `${new Date(
-        l2BlockTimestamp
+        l2BlockTimestamp,
       ).toLocaleString()} (${l2BlockTimeSince})`,
     },
     {
@@ -92,9 +93,20 @@ export const getBlockDetails = (
 
 export const getTxEffects = (
   txEffects?: ChicmozL2Block["body"]["txEffects"],
-  latestBlock?: ChicmozL2BlockLight
-) => {
-  if (!txEffects) { return undefined; }
-  if (!latestBlock) { return undefined; }
-  return txEffects.map((tx) => getTxEffectTableObj(tx, latestBlock));
+  block?: ChicmozL2BlockLight,
+): UiTxEffectTable[] | undefined => {
+  if (!txEffects) {
+    return undefined;
+  }
+  if (!block) {
+    return undefined;
+  }
+  return txEffects.map((tx) =>
+    uiTxEffectTableSchema.parse({
+      txHash: tx.txHash,
+      transactionFee: tx.transactionFee,
+      blockNumber: block.height,
+      timestamp: tx.txBirthTimestamp,
+    }),
+  );
 };

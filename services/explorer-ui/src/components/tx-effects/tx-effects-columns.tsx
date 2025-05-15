@@ -2,9 +2,9 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
 import { routes } from "~/routes/__root";
 import { DataTableColumnHeader } from "~/components/data-table";
-import { type TxEffectTableSchema } from "./tx-effects-schema";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { TimeAgoCell } from "../formated-time-cell";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
 const text = {
   txHash: "HASH",
@@ -13,7 +13,7 @@ const text = {
   timeSince: "AGE",
 };
 
-export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
+export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
   {
     accessorKey: "txHash",
     header: ({ column }) => (
@@ -78,14 +78,14 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const blockNumber = row.getValue("blockNumber");
+      const blockNumber = Number(row.getValue("blockNumber"));
       if (typeof blockNumber !== "number") {
         return null;
       }
       const r = `${routes.blocks.route}/${blockNumber}`;
       return (
         <div className="text-purple-light font-mono">
-          <Link to={r}>{blockNumber}</Link>
+          <Link to={r}>{Number(blockNumber)}</Link>
         </div>
       );
     },

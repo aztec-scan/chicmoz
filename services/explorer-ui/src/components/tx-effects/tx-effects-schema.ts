@@ -1,43 +1,37 @@
-import {
-  type ChicmozL2TxEffectDeluxe,
-  type ChicmozL2BlockLight,
-  type ChicmozL2TxEffect,
-} from "@chicmoz-pkg/types";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export type TxEffectTableSchema = z.infer<typeof txEffectSchema>;
 
 export const getTxEffectTableObj = (
-  txEffect: ChicmozL2TxEffectDeluxe | ChicmozL2TxEffect,
-  block?: ChicmozL2BlockLight,
+  txEffect?: UiTxEffectTable,
 ): TxEffectTableSchema => {
-  // If we have a ChicmozL2TxEffectDeluxe (with timestamp) and no block
-  if (!block && "timestamp" in txEffect) {
-    return txEffectSchema.parse({
-      txHash: txEffect.txHash,
-      transactionFee: txEffect.transactionFee,
-      blockNumber: txEffect.blockHeight,
-      timestamp: txEffect.timestamp,
-    });
+  if (!txEffect) {
+    return {
+      txHash: "",
+      transactionFee: 0,
+      blockNumber: 0n,
+      timestamp: 0,
+    };
   }
+  return txEffectSchema.parse({
+    txHash: txEffect.txHash,
+    transactionFee: txEffect.transactionFee,
+    blockNumber: txEffect.blockNumber,
+    timestamp: txEffect.timestamp,
+  });
+};
 
-  // If we have a block, use the block data (original approach)
-  if (block) {
-    return txEffectSchema.parse({
-      txHash: txEffect.txHash,
-      transactionFee: txEffect.transactionFee,
-      blockNumber: block.height,
-      timestamp: block.header.globalVariables.timestamp,
-    });
+export const getTableTxEffectObj = (txEffects?: UiTxEffectTable[]) => {
+  if (!txEffects) {
+    return undefined;
   }
-
-  // Fallback for basic ChicmozL2TxEffect without block
-  throw new Error("Block data required for basic ChicmozL2TxEffect objects");
+  return txEffects.map((txEffect) => txEffectSchema.parse(txEffect));
 };
 
 const txEffectSchema = z.object({
   txHash: z.string(),
   transactionFee: z.number(),
-  blockNumber: z.coerce.number(),
+  blockNumber: z.coerce.bigint(),
   timestamp: z.number(),
 });
