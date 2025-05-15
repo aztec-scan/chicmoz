@@ -8,7 +8,6 @@ import {
   useLatestTableBlocks,
   useLatestTableBlocksByHeightRange,
 } from "~/hooks";
-import { mapLatestBlocks } from "~/lib/map-for-table";
 import { formatDuration } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 

@@ -21,7 +21,6 @@ import {
 } from "~/hooks";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { mapLatestBlocks } from "~/lib/map-for-table";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();

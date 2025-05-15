@@ -1,4 +1,4 @@
-import { uiTxEffectTableSchema, type UiBlockTable } from "@chicmoz-pkg/types";
+import { type UiBlockTable } from "@chicmoz-pkg/types";
 import { blockSchema } from "~/components/blocks/blocks-schema";
 
 export const mapLatestBlocks = (latestBlocks?: UiBlockTable[]) => {
@@ -7,6 +7,6 @@ export const mapLatestBlocks = (latestBlocks?: UiBlockTable[]) => {
   }
   //This is here to parse Bigint to Number
   return latestBlocks.map((block) => {
-    return uiTxEffectTableSchema.parse(block);
+    return blockSchema.parse(block);
   });
 };

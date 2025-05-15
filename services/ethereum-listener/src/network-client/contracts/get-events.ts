@@ -3,8 +3,12 @@ import { logger } from "../../logger.js";
 import { controllers as dbControllers } from "../../svcs/database/index.js";
 import { getPublicHttpClient } from "../client/index.js";
 import {
+  depositEventCallbacks,
   l2BlockProposedEventCallbacks,
   l2ProofVerifiedEventCallbacks,
+  slashedEventCallbacks,
+  withdrawFinalisedEventCallbacks,
+  withdrawInitiatedEventCallbacks,
 } from "./callbacks/rollup.js";
 import { AztecContracts } from "./utils.js";
 
@@ -113,6 +117,198 @@ const getRollupL2ProofVerifiedLogs = async ({
   return latestHeight - getMemoryHeight();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getDepositLogs = async ({
+  client,
+  contracts,
+  toBlock,
+  latestHeight,
+}: {
+  client: PublicClient;
+  contracts: AztecContracts;
+  toBlock: "finalized";
+  latestHeight: bigint;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName: "rollup",
+    contractAddress: contracts.rollup.address,
+    eventName: "Deposit",
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock >= latestHeight) {
+    logger.info("Rollup Deposit logs up to date");
+    return 0n;
+  }
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
+  if (actualToBlock !== toBlock) {
+    setOverrideStoreHeight(actualToBlock);
+  }
+  const depositLogs = await client.getContractEvents({
+    fromBlock,
+    toBlock: actualToBlock,
+    eventName: "Deposit",
+    address: contracts.rollup.address,
+    abi: contracts.rollup.abi,
+  });
+  depositEventCallbacks({
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  }).onLogs(depositLogs);
+  return latestHeight - getMemoryHeight();
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getWithdrawInitiatedLogs = async ({
+  client,
+  contracts,
+  toBlock,
+  latestHeight,
+}: {
+  client: PublicClient;
+  contracts: AztecContracts;
+  toBlock: "finalized";
+  latestHeight: bigint;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName: "rollup",
+    contractAddress: contracts.rollup.address,
+    eventName: "WithdrawInitiated",
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock >= latestHeight) {
+    logger.info("Rollup WithdrawInitiated logs up to date");
+    return 0n;
+  }
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
+  if (actualToBlock !== toBlock) {
+    setOverrideStoreHeight(actualToBlock);
+  }
+  const withdrawInitiatedLogs = await client.getContractEvents({
+    fromBlock,
+    toBlock: actualToBlock,
+    eventName: "WithdrawInitiated",
+    address: contracts.rollup.address,
+    abi: contracts.rollup.abi,
+  });
+  withdrawInitiatedEventCallbacks({
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  }).onLogs(withdrawInitiatedLogs);
+  return latestHeight - getMemoryHeight();
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getWithdrawFinalisedLogs = async ({
+  client,
+  contracts,
+  toBlock,
+  latestHeight,
+}: {
+  client: PublicClient;
+  contracts: AztecContracts;
+  toBlock: "finalized";
+  latestHeight: bigint;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName: "rollup",
+    contractAddress: contracts.rollup.address,
+    eventName: "WithdrawFinalised",
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock >= latestHeight) {
+    logger.info("Rollup WithdrawFinalised logs up to date");
+    return 0n;
+  }
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
+  if (actualToBlock !== toBlock) {
+    setOverrideStoreHeight(actualToBlock);
+  }
+  const withdrawFinalisedLogs = await client.getContractEvents({
+    fromBlock,
+    toBlock: actualToBlock,
+    eventName: "WithdrawFinalised",
+    address: contracts.rollup.address,
+    abi: contracts.rollup.abi,
+  });
+  withdrawFinalisedEventCallbacks({
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  }).onLogs(withdrawFinalisedLogs);
+  return latestHeight - getMemoryHeight();
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getSlashedLogs = async ({
+  client,
+  contracts,
+  toBlock,
+  latestHeight,
+}: {
+  client: PublicClient;
+  contracts: AztecContracts;
+  toBlock: "finalized";
+  latestHeight: bigint;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName: "rollup",
+    contractAddress: contracts.rollup.address,
+    eventName: "Slashed",
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock >= latestHeight) {
+    logger.info("Rollup Slashed logs up to date");
+    return 0n;
+  }
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
+  if (actualToBlock !== toBlock) {
+    setOverrideStoreHeight(actualToBlock);
+  }
+  const slashedLogs = await client.getContractEvents({
+    fromBlock,
+    toBlock: actualToBlock,
+    eventName: "Slashed",
+    address: contracts.rollup.address,
+    abi: contracts.rollup.abi,
+  });
+  slashedEventCallbacks({
+    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  }).onLogs(slashedLogs);
+  return latestHeight - getMemoryHeight();
+};
+
 export const getAllContractsEvents = async ({
   contracts,
   toBlock,
@@ -136,6 +332,31 @@ export const getAllContractsEvents = async ({
       toBlock,
       latestHeight,
     }),
+    // NOTE: These events are not used in the current implementation, but are left here for future use. The reason for not using them is that they require our L1-RPC to be a full node (being able to query state at any given block).
+    //getDepositLogs({
+    //  client,
+    //  contracts,
+    //  toBlock,
+    //  latestHeight,
+    //}),
+    //getWithdrawInitiatedLogs({
+    //  client,
+    //  contracts,
+    //  toBlock,
+    //  latestHeight,
+    //}),
+    //getWithdrawFinalisedLogs({
+    //  client,
+    //  contracts,
+    //  toBlock,
+    //  latestHeight,
+    //}),
+    //getSlashedLogs({
+    //  client,
+    //  contracts,
+    //  toBlock,
+    //  latestHeight,
+    //}),
   ]);
   return pollResults;
 };

@@ -1,16 +1,21 @@
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
-import { CopyableText } from "../copy-text";
+import { formatTimeSince } from "~/lib/utils";
 import { BlockStatusBadge } from "../block-status-badge";
+import { CopyableText } from "../copy-text";
+import { CustomTooltip } from "../custom-tooltip";
 import { Loader } from "../loader";
 
 interface KeyValueRowProps {
   label: string;
+  timestamp?: number;
   value?: string;
   link?: string;
   isLast?: boolean;
   extLink?: string;
+  tooltip?: string;
 }
 
 enum DisplayType {
@@ -21,6 +26,7 @@ enum DisplayType {
   EXTERNAL_LINK = "external-link",
   BADGE = "badge",
   LOADING = "loading",
+  DATE = "date",
 }
 
 export const KeyValueRow: FC<KeyValueRowProps> = ({
@@ -29,7 +35,10 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   isLast,
   link,
   extLink,
+  tooltip,
+  timestamp,
 }) => {
+  console.log(timestamp);
   let displayType = DisplayType.TEXT;
   if (link) {
     displayType = DisplayType.LINK;
@@ -43,6 +52,8 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
     displayType = DisplayType.EXTERNAL_LINK;
   } else if (label.includes("status")) {
     displayType = DisplayType.BADGE;
+  } else if (timestamp) {
+    displayType = DisplayType.DATE;
   }
   const commonTextClasses = "text-sm flex-grow text-end justify-end ";
 
@@ -67,7 +78,14 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
         !isLast ? "border-b border-gray-200 dark:border-gray-700" : ""
       }`}
     >
-      <span className="text-gray-600 dark:text-gray-300 w-1/3">{label}</span>
+      <span className="text-gray-600 dark:text-gray-300 w-1/3 flex items-center gap-1">
+        {label}
+        {tooltip && (
+          <CustomTooltip content={tooltip}>
+            <QuestionMarkCircledIcon className="text-gray-400 cursor-pointer" />
+          </CustomTooltip>
+        )}
+      </span>
       {displayType === DisplayType.TEXT && (
         <span className={commonTextClasses}>{value}</span>
       )}
@@ -111,6 +129,14 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
         <div className={commonTextClasses}>
           <BlockStatusBadge status={Number(value)} />
         </div>
+      )}
+      {displayType === DisplayType.DATE && timestamp && (
+        <span className={commonTextClasses}>
+          {(() => {
+            const timeSince = formatTimeSince(timestamp);
+            return `${new Date(timestamp).toLocaleString()} (${timeSince} ago)`;
+          })()}
+        </span>
       )}
     </div>
   );

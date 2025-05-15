@@ -2,8 +2,6 @@ import { RollupAbi } from "@aztec/l1-artifacts";
 import {
   ChicmozL1L2Validator,
   L2NetworkId,
-  NODE_ENV,
-  NodeEnv,
   chicmozL1L2ValidatorSchema,
   getL1NetworkId,
 } from "@chicmoz-pkg/types";
@@ -163,72 +161,6 @@ const hardcodedRollupGenesisBlocks = (
   return 0n;
 };
 
-const json = (param: unknown): string => {
-  return JSON.stringify(
-    param,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    (_key, value) => (typeof value === "bigint" ? value.toString() : value),
-    2,
-  );
-};
-
-export const emitRandomizedChangeWithinRandomizedTime = async (
-  depth: number,
-  oldValues: ChicmozL1L2Validator,
-) => {
-  if (depth === 0) {
-    return;
-  }
-  const rand = Math.random();
-  const sleepTime = 30000;
-  logger.info(
-    `ATTESTER ${oldValues.attester} - DEPTH ${depth} - SLEEP ${
-      sleepTime / 1000
-    }s`,
-  );
-  await new Promise((resolve) => setTimeout(resolve, sleepTime));
-  let newValues = oldValues;
-  if (rand < 0.25) {
-    const stake = BigInt(Math.floor(Math.random() * 100000000));
-    logger.info(`STAKE CHANGED: ${oldValues.stake} -> ${stake}`);
-    newValues = {
-      ...oldValues,
-      stake,
-      latestSeenChangeAt: new Date(),
-    };
-  } else if (rand < 0.5) {
-    const status = [0, 1, 2, 3][Math.floor(Math.random() * 4)];
-    logger.info(`STATUS CHANGED: ${oldValues.status} -> ${status}`);
-    newValues = {
-      ...oldValues,
-      status,
-      latestSeenChangeAt: new Date(),
-    };
-  } else if (rand < 0.75) {
-    const withdrawer = oldValues.withdrawer
-      .slice(0, -Math.floor(rand * 5))
-      .padEnd(42, ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)]);
-    logger.info(`WITHDRAWER CHANGED: ${oldValues.withdrawer} -> ${withdrawer}`);
-    newValues = {
-      ...oldValues,
-      withdrawer,
-      latestSeenChangeAt: new Date(),
-    };
-  } else {
-    const proposer = oldValues.proposer
-      .slice(0, -Math.floor(rand * 5))
-      .padEnd(42, ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)]);
-    logger.info(`PROPOSER CHANGED: ${oldValues.proposer} -> ${proposer}`);
-    newValues = {
-      ...oldValues,
-      proposer,
-      latestSeenChangeAt: new Date(),
-    };
-  }
-  await emit.l1Validator(newValues);
-  await emitRandomizedChangeWithinRandomizedTime(depth - 1, newValues);
-};
-
 let latestPublishedHeight = 0n;
 
 export const queryStakingStateAndEmitUpdates = async ({
@@ -250,73 +182,35 @@ export const queryStakingStateAndEmitUpdates = async ({
     blockNumber: latestHeight,
     functionName: "getActiveAttesterCount",
   });
-  logger.info(`Active attester count: ${attesterCount.toString()}`);
-  if (attesterCount > 0) {
-    for (let i = 0; i < attesterCount; i++) {
-      const attester = await getPublicHttpClient().readContract({
-        address: contracts.rollup.address,
-        abi: RollupAbi,
-        functionName: "getAttesterAtIndex",
-        args: [BigInt(i)],
-      });
-      const attesterInfo = await getPublicHttpClient().readContract({
-        address: contracts.rollup.address,
-        abi: RollupAbi,
-        functionName: "getInfo",
-        args: [attester],
-      });
-      logger.info(`Attester ${i}: ${json(attesterInfo)}`);
-      await emit.l1Validator(
-        chicmozL1L2ValidatorSchema.parse({
-          ...attesterInfo,
-          rollupAddress: contracts.rollup.address,
-          attester,
-        }),
-      );
+  const attesters = await getPublicHttpClient().readContract({
+    address: contracts.rollup.address,
+    abi: RollupAbi,
+    functionName: "getAttesters",
+    args: [],
+  });
+  logger.info(
+    `Active attester count: ${attesterCount.toString()} (${attesters.length})`,
+  );
+  const attesterInfos: ChicmozL1L2Validator[] = [];
+  for (const attester of attesters) {
+    const attesterInfo = await getPublicHttpClient().readContract({
+      address: contracts.rollup.address,
+      abi: RollupAbi,
+      functionName: "getInfo",
+      args: [attester],
+    });
+    if (attesterInfo === undefined) {
+      logger.warn(`Attester ${attester} not found`);
+      continue;
     }
-    latestPublishedHeight = latestHeight;
-  } else {
-    if (NODE_ENV === NodeEnv.DEV) {
-      logger.info("Mocking dev attesters");
-      const mockedAttesters = [
-        {
-          attester: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          stake: BigInt(100000000),
-          status: 0,
-          withdrawer: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          proposer: "0xcccccccccccccccccccccccccccccccccccccccc",
-          latestSeenChangeAt: new Date(),
-        },
-        {
-          attester: "0x1111111111111111111111111111111111111111",
-          stake: BigInt(200000000),
-          status: 1,
-          withdrawer: "0x2222222222222222222222222222222222222222",
-          proposer: "0x3333333333333333333333333333333333333333",
-        },
-      ];
-      for (const attesterInfo of mockedAttesters) {
-        await emit.l1Validator(
-          chicmozL1L2ValidatorSchema.parse({
-            ...attesterInfo,
-            rollupAddress: contracts.rollup.address,
-            attester: attesterInfo.attester,
-          }),
-        );
-      }
-      for (const attesterInfo of mockedAttesters) {
-        await emitRandomizedChangeWithinRandomizedTime(
-          100,
-          chicmozL1L2ValidatorSchema.parse({
-            ...attesterInfo,
-            rollupAddress: contracts.rollup.address,
-          }),
-        ).catch((e) => {
-          logger.error(
-            `Randomized change emission failed: ${(e as Error).stack}`,
-          );
-        });
-      }
-    }
+    attesterInfos.push(
+      chicmozL1L2ValidatorSchema.parse({
+        ...attesterInfo,
+        rollupAddress: contracts.rollup.address,
+        attester,
+      }),
+    );
   }
+  await emit.l1Validator(attesterInfos);
+  latestPublishedHeight = latestHeight;
 };

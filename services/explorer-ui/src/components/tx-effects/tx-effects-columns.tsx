@@ -1,8 +1,9 @@
-import { type ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { routes } from "~/routes/__root";
+import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { routes } from "~/routes/__root";
+import { CustomTooltip } from "../custom-tooltip";
 import { TimeAgoCell } from "../formated-time-cell";
 import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
@@ -63,7 +64,9 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
       />
     ),
     cell: ({ row }) => (
-      <div className="font-mono">{row.getValue("transactionFee")}</div>
+      <CustomTooltip content="The amount of FJ paid for this transaction">
+        <div className="font-mono">{row.getValue("transactionFee")}</div>
+      </CustomTooltip>
     ),
     enableSorting: true,
     enableHiding: false,

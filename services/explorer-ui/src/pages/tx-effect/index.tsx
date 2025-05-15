@@ -3,7 +3,6 @@ import { InfoBadge } from "~/components/info-badge";
 import { Loader } from "~/components/loader";
 import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
-import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
 import {
   useLatestTableTxEffects,
   usePendingTxs,
@@ -65,7 +64,7 @@ export const TxEffects: FC = () => {
       <div className="rounded-lg shadow-lg">
         {latestTxEffectsData ? (
           <TxEffectsTable
-            txEffects={getTableTxEffectObj(latestTxEffectsData)}
+            txEffects={latestTxEffectsData}
             isLoading={isLoadingTxEffects}
             error={txEffectsError}
           />

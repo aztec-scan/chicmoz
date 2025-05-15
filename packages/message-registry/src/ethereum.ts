@@ -1,9 +1,9 @@
 import {
   ChicmozL1GenericContractEvent,
-  ChicmozL1L2Validator,
-  EthAddress,
   ChicmozL1L2BlockProposed,
   ChicmozL1L2ProofVerified,
+  ChicmozL1L2Validator,
+  EthAddress,
   L1NetworkId,
   L2NetworkId,
 } from "@chicmoz-pkg/types";
@@ -19,7 +19,7 @@ export type NewL1Event = {
 };
 
 export type L1L2ValidatorEvent = {
-  validator: Omit<ChicmozL1L2Validator, "stake"> & { stake: string };
+  validators: (Omit<ChicmozL1L2Validator, "stake"> & { stake: string })[];
 };
 
 export type L1Topic = `${L2NetworkId}_${L1NetworkId}__${keyof L1_MESSAGES}`;
@@ -27,7 +27,7 @@ export type L1Topic = `${L2NetworkId}_${L1NetworkId}__${keyof L1_MESSAGES}`;
 export function generateL1TopicName(
   l2NetworkId: L2NetworkId,
   l1NetworkId: L1NetworkId,
-  topic: keyof L1_MESSAGES
+  topic: keyof L1_MESSAGES,
 ): L1Topic {
   return `${l2NetworkId}_${l1NetworkId}__${topic}`;
 }

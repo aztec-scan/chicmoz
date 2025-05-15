@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
 import { TxEffectsTableColumns } from "./tx-effects-columns";
-import { type TxEffectTableSchema } from "./tx-effects-schema";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
 interface Props {
   title?: string;
-  txEffects?: TxEffectTableSchema[];
+  txEffects?: UiTxEffectTable[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
