@@ -18,40 +18,44 @@ export type TxEffectDataType =
   | Array<{ logs: Array<{ data: Buffer }> }>
   | Array<{ leafSlot: string; value: string }>;
 
-export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => [
-  {
-    label: "HASH",
-    value: data.txHash,
-  },
-  {
-    label: "TRANSACTION FEE (FJ)",
-    value: data.transactionFee.toString(),
-  },
-  {
-    label: "BLOCK NUMBER",
-    value: data.blockHeight.toString(),
-  },
-  {
-    label: "BLOCK HASH",
-    value: data.blockHash,
-    link: `/blocks/${data.blockHash}`,
-  },
-  {
-    label: "MINED ON CHAIN",
-    value: data.timestamp.toString(),
-    timestamp: data.timestamp,
-  },
-  {
-    label: "CREATED AS TRANSACTION",
-    value: data.txBirthTimestamp.toString(),
-    timestamp: data.txBirthTimestamp,
-  },
-  {
-    label: "RAW DATA",
-    value: "View raw data",
-    extLink: `${API_URL}/${aztecExplorer.getL2TxEffectByHash}${data.txHash}`,
-  },
-];
+export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => {
+  return [
+    {
+      label: "HASH",
+      value: data.txHash,
+    },
+    {
+      label: "TRANSACTION FEE (FJ)",
+      value: data.transactionFee.toString(),
+    },
+    {
+      label: "BLOCK NUMBER",
+      value: data.blockHeight.toString(),
+    },
+    {
+      label: "BLOCK HASH",
+      value: data.blockHash,
+      link: `/blocks/${data.blockHash}`,
+    },
+    {
+      label: "MINED ON CHAIN",
+      value: data.timestamp.toString(),
+      timestamp: data.timestamp,
+    },
+    {
+      label: "CREATED AS TRANSACTION",
+      value: data.txBirthTimestamp
+        ? data.txBirthTimestamp.toString()
+        : "unknown",
+      timestamp: data.txBirthTimestamp,
+    },
+    {
+      label: "RAW DATA",
+      value: "View raw data",
+      extLink: `${API_URL}/${aztecExplorer.getL2TxEffectByHash}${data.txHash}`,
+    },
+  ];
+};
 
 export const getDroppedTxEffectData = (data: ChicmozL2DroppedTx) => [
   {
