@@ -28,11 +28,15 @@ export const startPolling = async ({
   forceStartFromProposedHeight?: number;
   forceStartFromProvenHeight?: number;
 } = {}) => {
-  if (timoutId) {throw new Error("Poller already started");}
-  if (forceStartFromProposedHeight)
-    {await storeProcessedProposedBlockHeight(forceStartFromProposedHeight - 1);}
-  if (forceStartFromProvenHeight)
-    {await storeProcessedProvenBlockHeight(forceStartFromProvenHeight - 1);}
+  if (timoutId) {
+    throw new Error("Poller already started");
+  }
+  if (forceStartFromProposedHeight) {
+    await storeProcessedProposedBlockHeight(forceStartFromProposedHeight - 1);
+  }
+  if (forceStartFromProvenHeight) {
+    await storeProcessedProvenBlockHeight(forceStartFromProvenHeight - 1);
+  }
   syncRecursivePolling(true);
 };
 
@@ -63,6 +67,10 @@ const recursivePolling = async (isFirstRun = false) => {
     heights = await ensureSaneValues(heights);
     const proposedProvenDiff =
       heights.chainProposedBlockHeight - heights.chainProvenBlockHeight;
+    const proposedHeightDiff =
+      heights.chainProposedBlockHeight - heights.processedProposedBlockHeight;
+    const provenHeightDiff =
+      heights.chainProvenBlockHeight - heights.processedProvenBlockHeight;
     logger.info(`🐱 ==== poller state ==== 🐱 ${
       proposedProvenDiff > 0
         ? `| ${proposedProvenDiff} proposed blocks ahead of proven`
@@ -70,14 +78,10 @@ const recursivePolling = async (isFirstRun = false) => {
     }
 Proposed height PROCESSED ${heights.processedProposedBlockHeight} | CHAIN ${
       heights.chainProposedBlockHeight
-    } | DIFF ${
-      heights.chainProposedBlockHeight - heights.processedProposedBlockHeight
-    }
+    } | DIFF ${proposedHeightDiff}
 Proven height   PROCESSED ${heights.processedProvenBlockHeight} | CHAIN ${
       heights.chainProvenBlockHeight
-    } | DIFF ${
-      heights.chainProvenBlockHeight - heights.processedProvenBlockHeight
-    }`);
+    } | DIFF ${provenHeightDiff}`);
     try {
       while (
         !cancelPolling &&
@@ -87,12 +91,12 @@ Proven height   PROCESSED ${heights.processedProvenBlockHeight} | CHAIN ${
         heights.processedProposedBlockHeight++;
         await pollProposedBlock(
           heights.processedProposedBlockHeight,
-          isFirstRun
+          isFirstRun,
         );
       }
     } catch (e) {
       logger.error(
-        `🐼 error while processing proposed blocks: ${(e as Error).stack}`
+        `🐼 error while processing proposed blocks: ${(e as Error).stack}`,
       );
     }
     try {
@@ -106,14 +110,18 @@ Proven height   PROCESSED ${heights.processedProvenBlockHeight} | CHAIN ${
       }
     } catch (e) {
       logger.error(
-        `🐹 error while processing proven blocks: ${(e as Error).stack}`
+        `🐹 error while processing proven blocks: ${(e as Error).stack}`,
       );
+    }
+    const nothingToProcess = proposedHeightDiff === 0 && provenHeightDiff === 0;
+    if (nothingToProcess) {
+      await oneEternalCatchupFetch(chainProposedBlockHeight);
     }
   } catch (e) {
     logger.error(`🐱 error while processing blocks: ${(e as Error).stack}`);
   } finally {
     logger.info(
-      `🐱 waiting ${BLOCK_POLL_INTERVAL_MS / 1000}s for next poll...`
+      `🐱 waiting ${BLOCK_POLL_INTERVAL_MS / 1000}s for next poll...`,
     );
     timoutId = setTimeout(syncRecursivePolling, BLOCK_POLL_INTERVAL_MS);
   }
@@ -124,14 +132,14 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
   if (isCatchup) {
     await onCatchupBlock(
       block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
     logger.info(`🐱 catchup proposed block ${height}`);
-    await (new Promise((r) => setTimeout(r, 200)));
+    await new Promise((r) => setTimeout(r, 200));
   } else {
     await onBlock(
       block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
   }
   await storeProcessedProposedBlockHeight(height);
@@ -142,10 +150,10 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   if (isCatchup) {
     await onCatchupBlock(
       block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN
+      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
     );
     logger.info(`🐱 catchup proven block ${height}`);
-    await (new Promise((r) => setTimeout(r, 200)));
+    await new Promise((r) => setTimeout(r, 200));
   } else {
     await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
   }
@@ -154,31 +162,50 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
 
 const internalGetBlock = async (height: number) => {
   const blockRes = await getBlock(height);
-  if (!blockRes) {throw new Error(`Block ${height} not found`);}
+  if (!blockRes) {
+    throw new Error(`Block ${height} not found`);
+  }
   return blockRes;
 };
 
 const ensureSaneValues = async (
-  heights: Awaited<ReturnType<typeof getBlockHeights>>
+  heights: Awaited<ReturnType<typeof getBlockHeights>>,
 ) => {
   if (heights.processedProvenBlockHeight > heights.chainProvenBlockHeight) {
     logger.warn(
-      `🐷 processed proven block height is higher than chain proven height: ${heights.processedProvenBlockHeight} > ${heights.chainProvenBlockHeight}. This might be L1 reorg. Backing up DB-value to match chain proven height.`
+      `🐷 processed proven block height is higher than chain proven height: ${heights.processedProvenBlockHeight} > ${heights.chainProvenBlockHeight}. This might be L1 reorg. Backing up DB-value to match chain proven height.`,
     );
     heights.processedProvenBlockHeight = heights.chainProvenBlockHeight;
   }
   if (heights.processedProposedBlockHeight > heights.chainProposedBlockHeight) {
     logger.warn(
-      `🐷 processed proposed block height is higher than chain proposed height: ${heights.processedProvenBlockHeight} > ${heights.chainProvenBlockHeight}. This might be L2 (or even L1?) reorg. Backing up DB-value to match chain proposed height.`
+      `🐷 processed proposed block height is higher than chain proposed height: ${heights.processedProvenBlockHeight} > ${heights.chainProvenBlockHeight}. This might be L2 (or even L1?) reorg. Backing up DB-value to match chain proposed height.`,
     );
     heights.processedProposedBlockHeight = heights.chainProposedBlockHeight;
   }
   if (heights.processedProposedBlockHeight < heights.chainProvenBlockHeight) {
     logger.debug(
-      `🐷 processed proposed block height is lower than chain proven height: ${heights.processedProvenBlockHeight} < ${heights.chainProvenBlockHeight}. Adjusting DB-value so that block is not fetched twice.`
+      `🐷 processed proposed block height is lower than chain proven height: ${heights.processedProvenBlockHeight} < ${heights.chainProvenBlockHeight}. Adjusting DB-value so that block is not fetched twice.`,
     );
     heights.processedProposedBlockHeight = heights.chainProvenBlockHeight;
   }
   await storeBlockHeights(heights);
   return heights;
+};
+
+let currentEternalCatchupHeight = 1;
+const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
+  // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
+  const block = await internalGetBlock(currentEternalCatchupHeight);
+  if (block) {
+    await onCatchupBlock(
+      block,
+      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+    );
+    currentEternalCatchupHeight++;
+    currentEternalCatchupHeight = Math.min(
+      currentEternalCatchupHeight,
+      currentProposedHeight,
+    );
+  }
 };
