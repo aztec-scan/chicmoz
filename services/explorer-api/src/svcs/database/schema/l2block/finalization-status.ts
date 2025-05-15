@@ -1,6 +1,7 @@
 import { HexString } from "@chicmoz-pkg/types";
 import {
   bigint,
+  index,
   pgTable,
   primaryKey,
   timestamp,
@@ -21,5 +22,7 @@ export const l2BlockFinalizationStatusTable = pgTable(
       name: "l2_block_finalization_status_pk",
       columns: [t.l2BlockHash, t.status, t.l2BlockNumber],
     }),
+    blockHashIdx: index("l2_block_finalization_l2blockhash_idx").on(t.l2BlockHash),
+    statusIdx: index("l2_block_finalization_status_idx").on(t.status),
   })
 );
