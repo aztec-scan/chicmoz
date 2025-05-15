@@ -292,11 +292,11 @@ const getValidatorStateAndEmitUpdates = async ({
   logger.info(`=🤖=🤖= attester info: ${JSON.stringify(attesterInfo, null, 2)}
   `);
   await emit.l1Validator( // NOTE: once we can query state at a certain block, we should refactor to send single validator updates
-    z.array(chicmozL1L2ValidatorSchema).parse({
+    z.array(chicmozL1L2ValidatorSchema).parse([{
       ...attesterInfo,
       rollupAddress: rollup.address,
       attester,
-    }),
+    }]),
   );
 };
 
