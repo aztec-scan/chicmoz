@@ -54,25 +54,14 @@ export function DataTablePagination<TData>({
 
 const PaginationControls = <TData,>({
   table,
-  disableSizeSelector,
 }: DataTablePaginationProps<TData>) => {
   const pageCount = table.getPageCount();
 
   // Hide navigation controls if there's only one page
   const showNavigation = pageCount > 1;
 
-  // When size selector is disabled and we have navigation, use a centered layout for both mobile and desktop
-  if (disableSizeSelector && showNavigation) {
-    return (
-      <div className="flex justify-center items-center w-full">
-        <PageNavigation table={table} />
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
-      {/* Desktop layout - stacked vertically to avoid overlap */}
       <div className="flex flex-row justify-center items-center w-full gap-4">
         {/* Navigation centered */}
         {showNavigation && (
