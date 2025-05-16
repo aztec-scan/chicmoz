@@ -20,6 +20,7 @@
     "@aztec/noir-contracts.js": "0.86.0",
     "@aztec/stdlib": "0.86.0",
     "@chicmoz-pkg/types": "workspace:^",
+    "@defi-wonderland/aztec-standards": "0.0.0-38eaaf24",
     "zod": "^3.23.8"
   },
   "devDependencies": {
