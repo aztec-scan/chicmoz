@@ -88,7 +88,7 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
       const r = `${routes.blocks.route}/${blockNumber}`;
       return (
         <div className="text-purple-light font-mono">
-          <Link to={r}>{Number(blockNumber)}</Link>
+          <Link to={r}>{blockNumber}</Link>
         </div>
       );
     },
