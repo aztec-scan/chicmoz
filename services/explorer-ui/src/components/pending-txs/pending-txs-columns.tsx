@@ -41,7 +41,7 @@ export const PendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const timestamp = row.getValue("birthTimestamp");
+      const timestamp = Number(row.getValue("birthTimestamp"));
       return <TimeAgoCell timestamp={timestamp} />;
     },
   },
