@@ -1,11 +1,14 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  ChicmozL2TxEffect,
   ChicmozSearchQuery,
   HexString,
+  chicmozL2TxEffectSchema,
   chicmozSearchResultsSchema,
   type ChicmozSearchResults,
 } from "@chicmoz-pkg/types";
-import { eq, or } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
+import { z } from "zod";
 import {
   l2Block,
   l2ContractClassRegistered,
@@ -14,7 +17,7 @@ import {
 } from "../../schema/index.js";
 
 const getBlockHashByHeight = async (
-  height: bigint
+  height: bigint,
 ): Promise<ChicmozSearchResults["results"]["blocks"]> => {
   const res = await db()
     .select({
@@ -23,12 +26,14 @@ const getBlockHashByHeight = async (
     .from(l2Block)
     .where(eq(l2Block.height, height))
     .execute();
-  if (res.length === 0) { return []; }
+  if (res.length === 0) {
+    return [];
+  }
   return [{ hash: res[0].hash }];
 };
 
 const matchBlock = async (
-  hash: HexString
+  hash: HexString,
 ): Promise<ChicmozSearchResults["results"]["blocks"]> => {
   const res = await db()
     .select({
@@ -37,12 +42,14 @@ const matchBlock = async (
     .from(l2Block)
     .where(eq(l2Block.hash, hash))
     .execute();
-  if (res.length === 0) { return []; }
+  if (res.length === 0) {
+    return [];
+  }
   return [{ hash: res[0].hash }];
 };
 
 const matchTxEffect = async (
-  hash: HexString
+  hash: HexString,
 ): Promise<ChicmozSearchResults["results"]["txEffects"]> => {
   const res = await db()
     .select({
@@ -51,12 +58,14 @@ const matchTxEffect = async (
     .from(txEffect)
     .where(or(eq(txEffect.txHash, hash), eq(txEffect.txHash, hash)))
     .execute();
-  if (res.length === 0) { return []; }
+  if (res.length === 0) {
+    return [];
+  }
   return [{ txHash: res[0].hash }];
 };
 
 const matchContractClass = async (
-  contractClassId: HexString
+  contractClassId: HexString,
 ): Promise<ChicmozSearchResults["results"]["registeredContractClasses"]> => {
   const res = await db()
     .select({
@@ -66,12 +75,14 @@ const matchContractClass = async (
     .from(l2ContractClassRegistered)
     .where(eq(l2ContractClassRegistered.contractClassId, contractClassId))
     .execute();
-  if (res.length === 0) { return []; }
+  if (res.length === 0) {
+    return [];
+  }
   return [{ contractClassId: res[0].contractClassID, version: res[0].version }];
 };
 
 const matchContractInstance = async (
-  contractInstanceId: HexString
+  contractInstanceId: HexString,
 ): Promise<ChicmozSearchResults["results"]["contractInstances"]> => {
   const res = await db()
     .select({
@@ -80,12 +91,52 @@ const matchContractInstance = async (
     .from(l2ContractInstanceDeployed)
     .where(eq(l2ContractInstanceDeployed.address, contractInstanceId))
     .execute();
-  if (res.length === 0) { return []; }
+  if (res.length === 0) {
+    return [];
+  }
   return [{ address: res[0].address }];
 };
 
+export const searchPublicLogs = async ({
+  frLogEntry,
+  index,
+}: {
+  frLogEntry: string;
+  index: number;
+}): Promise<ChicmozL2TxEffect["txHash"][]> => {
+  const condition = sql`${txEffect.publicLogs}::text LIKE ${
+    "%" + frLogEntry + "%"
+  }`;
+  const res = await db()
+    .select({
+      hash: txEffect.txHash,
+      logs: txEffect.publicLogs,
+    })
+    .from(txEffect)
+    .where(condition)
+    .execute();
+  if (res.length === 0) {
+    return [];
+  }
+  const parsed = z
+    .array(
+      z.object({
+        hash: chicmozL2TxEffectSchema.shape.txHash,
+        logs: chicmozL2TxEffectSchema.shape.publicLogs,
+      }),
+    )
+    .parse(res);
+  return parsed
+    .filter((txEffect) => {
+      return txEffect.logs.some((log) => {
+        return log[index] === frLogEntry;
+      });
+    })
+    .map((txEffect) => txEffect.hash);
+};
+
 export const search = async (
-  query: ChicmozSearchQuery["q"]
+  query: ChicmozSearchQuery["q"],
 ): Promise<ChicmozSearchResults> => {
   if (typeof query === "bigint") {
     return {
