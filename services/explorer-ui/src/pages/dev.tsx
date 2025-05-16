@@ -71,6 +71,53 @@ export const DevPage: FC = () => {
         </pre>,
       )}
       {generateCard(
+        "links",
+        <>
+          <h3>Internal</h3>
+          <p>
+            <Link
+              to={routes.feeRecipients.route}
+              className="text-purple-light hover:font-bold"
+            >
+              {routes.feeRecipients.title}
+            </Link>
+          </p>
+          <p>
+            <Link
+              to={routes.validators.route}
+              className="text-purple-light hover:font-bold"
+            >
+              {routes.validators.title}
+            </Link>
+          </p>
+          <h3>External</h3>
+          <ul>
+            {CHICMOZ_ALL_UI_URLS.map((ui) => (
+              <li key={ui.name}>
+                <a
+                  href={ui.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-purple-light hover:font-bold"
+                >
+                  {ui.name} ({ui.url})
+                </a>
+              </li>
+            ))}
+            <li key="docs">
+              <a
+                href="https://docs.aztecscan.xyz/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-purple-light hover:font-bold"
+              >
+                Docs
+              </a>
+            </li>
+          </ul>
+        </>,
+      )}
+      {generateCard(
         "Chain Info",
         <>
           {isChainInfoLoading && <p>Loading...</p>}
@@ -134,61 +181,6 @@ stack:          ${error.stack}
               )}
             </pre>
           )}
-        </>,
-      )}
-      {generateCard(
-        "links",
-        <>
-          <h3>Internal</h3>
-          <p>
-            <Link
-              to={routes.feeRecipients.route}
-              className="text-purple-light hover:font-bold"
-            >
-              {routes.feeRecipients.title}
-            </Link>
-          </p>
-          <p>
-            <Link
-              to={routes.validators.route}
-              className="text-purple-light hover:font-bold"
-            >
-              {routes.validators.title}
-            </Link>
-          </p>
-          <p>
-            <Link
-              to={`${routes.l1.route}${routes.l1.children.contractEvents.route}`}
-              className="text-purple-light hover:font-bold"
-            >
-              {routes.l1.children.contractEvents.title}
-            </Link>
-          </p>
-          <h3>External</h3>
-          <ul>
-            {CHICMOZ_ALL_UI_URLS.map((ui) => (
-              <li key={ui.name}>
-                <a
-                  href={ui.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-purple-light hover:font-bold"
-                >
-                  {ui.name} ({ui.url})
-                </a>
-              </li>
-            ))}
-            <li key="docs">
-              <a
-                href="https://docs.aztecscan.xyz/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-purple-light hover:font-bold"
-              >
-                Docs
-              </a>
-            </li>
-          </ul>
         </>,
       )}
     </div>
