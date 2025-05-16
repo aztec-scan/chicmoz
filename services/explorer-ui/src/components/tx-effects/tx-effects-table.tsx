@@ -20,9 +20,6 @@ export const TxEffectsTable: FC<Props> = ({
   disableSizeSelector,
   maxEntries = 10,
 }) => {
-  if (!txEffects) {
-    return <div>No data</div>;
-  }
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -36,7 +33,7 @@ export const TxEffectsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={txEffects}
+          data={txEffects ?? []}
           columns={TxEffectsTableColumns}
           disableSizeSelector={disableSizeSelector}
           maxEntries={maxEntries}

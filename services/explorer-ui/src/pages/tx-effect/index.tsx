@@ -61,25 +61,20 @@ export const TxEffects: FC = () => {
           data={totalTxEffects24h}
         />
       </div>
-      <div className="rounded-lg shadow-lg">
-        {latestTxEffectsData ? (
+      <div className="flex flex-col gap-4 md:flex-row">
+        <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
           <TxEffectsTable
+            title="Transactions"
             txEffects={latestTxEffectsData}
             isLoading={isLoadingTxEffects}
             error={txEffectsError}
           />
-        ) : (
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <Loader amount={3} />
-            </div>
-          </div>
-        )}
+        </div>
         <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
           {pendingTxsData ? (
             <PendingTxsTable
               title="Pending Transactions"
-              pendingTxs={pendingTxsData}
+              pendingTxEffects={pendingTxsData}
               isLoading={isLoadingPendingTxs}
               error={pendingTxsError}
               disableSizeSelector={true}

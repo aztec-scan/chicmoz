@@ -205,7 +205,8 @@ export const Landing: FC = () => {
               </div>
               <div className="bg-white rounded-lg shadow-lg">
                 <PendingTxsTable
-                  pendingTxs={pendingTxsData}
+                  title="Pending Transactions"
+                  pendingTxEffects={pendingTxsData}
                   isLoading={isLoadingPendingTxs}
                   error={pendingTxsError}
                   disableSizeSelector={true}
