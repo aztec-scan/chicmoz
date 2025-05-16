@@ -6,7 +6,7 @@ import {
   type ChicmozL2BlockLight,
   type ChicmozL2PendingTx,
   type WebsocketUpdateMessageReceiver,
-  uiTxEffectTableSchema,
+  chicmozL2TxEffectSchema,
 } from "@chicmoz-pkg/types";
 import { type useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -45,7 +45,7 @@ export const updateTxEffects = (
   block: ChicmozL2Block,
 ) => {
   const txEffects = block.body.txEffects.map((txEffect) => {
-    const effect = uiTxEffectTableSchema.parse(txEffect);
+    const effect = chicmozL2TxEffectSchema.parse(txEffect);
     queryClient.setQueryData(queryKeyGenerator.txEffectByHash(effect.txHash), {
       ...effect,
       blockHeight: block.height,
