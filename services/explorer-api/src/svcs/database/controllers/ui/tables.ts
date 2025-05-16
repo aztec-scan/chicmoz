@@ -48,25 +48,42 @@ export const getBlocksForUiTable = async ({
 
   const blocks: UiBlockTable[] = [];
 
-  for (const result of dbRes) {
-    const txCount = await db()
-      .select({ count: count() })
-      .from(txEffect)
-      .where(eq(txEffect.bodyId, result.bodyId))
-      .execute();
-    const finalizationStatus = await db()
-      .select({
-        status: getTableColumns(l2BlockFinalizationStatusTable).status,
-      })
-      .from(l2BlockFinalizationStatusTable)
-      .where(eq(l2BlockFinalizationStatusTable.l2BlockHash, result.hash))
-      .orderBy(
-        desc(l2BlockFinalizationStatusTable.status),
-        desc(l2BlockFinalizationStatusTable.l2BlockNumber),
-      )
-      .limit(1);
+  // Fetch transaction counts in bulk
+  const txCounts = await db()
+    .select({
+      bodyId: txEffect.bodyId,
+      count: count(),
+    })
+    .from(txEffect)
+    .where(
+      txEffect.bodyId.in(dbRes.map((result) => result.bodyId))
+    )
+    .groupBy(txEffect.bodyId)
+    .execute();
+  const txCountMap = new Map(txCounts.map((row) => [row.bodyId, row.count]));
 
-    let finalizationStatusValue = finalizationStatus[0]?.status;
+  // Fetch finalization statuses in bulk
+  const finalizationStatuses = await db()
+    .select({
+      hash: l2BlockFinalizationStatusTable.l2BlockHash,
+      status: getTableColumns(l2BlockFinalizationStatusTable).status,
+    })
+    .from(l2BlockFinalizationStatusTable)
+    .where(
+      l2BlockFinalizationStatusTable.l2BlockHash.in(dbRes.map((result) => result.hash))
+    )
+    .orderBy(
+      desc(l2BlockFinalizationStatusTable.status),
+      desc(l2BlockFinalizationStatusTable.l2BlockNumber),
+    )
+    .execute();
+  const finalizationStatusMap = new Map(
+    finalizationStatuses.map((row) => [row.hash, row.status])
+  );
+
+  for (const result of dbRes) {
+    const txCount = txCountMap.get(result.bodyId) || 0;
+    let finalizationStatusValue = finalizationStatusMap.get(result.hash);
     if (finalizationStatusValue === undefined) {
       finalizationStatusValue = FIRST_FINALIZATION_STATUS;
       logger.warn(`Finalization status not found for block ${result.hash}`);
