@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
+import { RangeSelector } from "./block-range-selector";
 import { BlockTableColumns } from "./block-table-columns";
 import { RangeSelector } from "./block-range-selector";
 import { type UiBlockTable } from "@chicmoz-pkg/types";
@@ -11,6 +12,7 @@ interface Props {
   error?: Error | null;
   disableSizeSelector?: boolean;
   showRangeSelector?: boolean;
+  disablePagination?: boolean;
   startBlock?: number;
   endBlock?: number;
   onRangeChange?: (start: number, end: number) => void;
@@ -23,6 +25,7 @@ export const BlocksTable: FC<Props> = ({
   isLoading,
   error,
   disableSizeSelector,
+  disablePagination = false,
   showRangeSelector = false,
   startBlock,
   endBlock,
@@ -53,6 +56,7 @@ export const BlocksTable: FC<Props> = ({
           data={blocks ?? []}
           columns={BlockTableColumns}
           disableSizeSelector={disableSizeSelector}
+          disablePagination={disablePagination}
           maxEntries={maxEntries}
         />
       </div>

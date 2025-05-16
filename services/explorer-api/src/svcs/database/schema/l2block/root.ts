@@ -7,6 +7,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import { generateTreeTable } from "../utils.js";
 
@@ -20,6 +21,10 @@ export const l2Block = pgTable(
   },
   (t) => ({
     heightIdx: index("height_idx").on(t.height),
+    orphanTimestampIdx: index("orphan_timestamp_idx")
+      .on(t.orphan_timestamp)
+      .where(sql`${t.orphan_timestamp} IS NOT NULL`),
+    heightOrphanIdx: index("height_orphan_idx").on(t.height, t.orphan_timestamp),
   }),
 );
 
