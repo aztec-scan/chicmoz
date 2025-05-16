@@ -50,11 +50,17 @@ export const Header = () => {
       group: "aztec",
     },
     {
+      key: "l1L2Validators",
+      name: routes.l1.children.contractEvents.title,
+      to: routes.l1.route + routes.l1.children.contractEvents.route,
+      group: "l1",
+    },
+    {
       key: "aztecscanHealth",
       name: routes.aztecscanHealth.title,
       to: routes.aztecscanHealth.route,
       group: "dev",
-    }
+    },
   ];
 
   const { data, isLoading, error, refetch, isSuccess, fetchStatus } =
