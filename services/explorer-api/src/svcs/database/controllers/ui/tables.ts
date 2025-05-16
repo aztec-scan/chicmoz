@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { count, desc, eq, getTableColumns } from "drizzle-orm";
+import { count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
 import {
   body,
   globalVariables,
@@ -30,6 +30,7 @@ export const getBlocksForUiTable = async ({
 }: GetBlocksByRange): Promise<UiBlockTable[]> => {
   const whereRange = getBlocksWhereRange({ from, to });
 
+  // Initial query to get basic block information
   const dbRes = await db()
     .select({
       height: getTableColumns(l2Block).height,
@@ -46,44 +47,69 @@ export const getBlocksForUiTable = async ({
     .limit(DB_MAX_BLOCKS)
     .execute();
 
-  const blocks: UiBlockTable[] = [];
+  if (dbRes.length === 0) {
+    return [];
+  }
 
-  // Fetch transaction counts in bulk
+  // Collect bodyIds and blockHashes for bulk queries
+  const bodyIds = dbRes.map((result) => result.bodyId);
+  const blockHashes = dbRes.map((result) => result.hash);
+
+  // Bulk query to get transaction counts for all blocks at once
   const txCounts = await db()
     .select({
       bodyId: txEffect.bodyId,
       count: count(),
     })
     .from(txEffect)
-    .where(
-      txEffect.bodyId.in(dbRes.map((result) => result.bodyId))
-    )
+    .where(inArray(txEffect.bodyId, bodyIds))
     .groupBy(txEffect.bodyId)
     .execute();
-  const txCountMap = new Map(txCounts.map((row) => [row.bodyId, row.count]));
 
-  // Fetch finalization statuses in bulk
-  const finalizationStatuses = await db()
+  // Create a map for quick lookup of tx counts by bodyId
+  const txCountMap = new Map(txCounts.map((item) => [item.bodyId, item.count]));
+
+  // Bulk query to get finalization statuses for all blocks
+  const allStatuses = await db()
     .select({
-      hash: l2BlockFinalizationStatusTable.l2BlockHash,
-      status: getTableColumns(l2BlockFinalizationStatusTable).status,
+      l2BlockHash: l2BlockFinalizationStatusTable.l2BlockHash,
+      status: l2BlockFinalizationStatusTable.status,
+      l2BlockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
     })
     .from(l2BlockFinalizationStatusTable)
-    .where(
-      l2BlockFinalizationStatusTable.l2BlockHash.in(dbRes.map((result) => result.hash))
-    )
-    .orderBy(
-      desc(l2BlockFinalizationStatusTable.status),
-      desc(l2BlockFinalizationStatusTable.l2BlockNumber),
-    )
+    .where(inArray(l2BlockFinalizationStatusTable.l2BlockHash, blockHashes))
     .execute();
-  const finalizationStatusMap = new Map(
-    finalizationStatuses.map((row) => [row.hash, row.status])
-  );
 
+  // Group statuses by block hash
+  const statusesByBlockHash = new Map<string, typeof allStatuses>();
+  for (const status of allStatuses) {
+    if (!statusesByBlockHash.has(status.l2BlockHash)) {
+      statusesByBlockHash.set(status.l2BlockHash, []);
+    }
+    statusesByBlockHash.get(status.l2BlockHash)!.push(status);
+  }
+
+  // For each block hash, find the status with the highest value
+  const statusMap = new Map<string, number>();
+  for (const blockHash of blockHashes) {
+    const blockStatuses = statusesByBlockHash.get(blockHash) ?? [];
+    // Sort by status (desc) and then by l2BlockNumber (desc)
+    blockStatuses.sort((a, b) => {
+      if (a.status !== b.status) {
+        return b.status - a.status; // Descending by status
+      }
+      return Number(b.l2BlockNumber) - Number(a.l2BlockNumber); // Descending by l2BlockNumber
+    });
+    // Take the first one (highest status, highest block number) if available
+    if (blockStatuses.length > 0) {
+      statusMap.set(blockHash, blockStatuses[0].status);
+    }
+  }
+
+  // Build the final blocks array using the maps for lookup
+  const blocks: UiBlockTable[] = [];
   for (const result of dbRes) {
-    const txCount = txCountMap.get(result.bodyId) || 0;
-    let finalizationStatusValue = finalizationStatusMap.get(result.hash);
+    let finalizationStatusValue = statusMap.get(result.hash);
     if (finalizationStatusValue === undefined) {
       finalizationStatusValue = FIRST_FINALIZATION_STATUS;
       logger.warn(`Finalization status not found for block ${result.hash}`);
@@ -94,13 +120,12 @@ export const getBlocksForUiTable = async ({
       height: result.height,
       blockStatus: finalizationStatusValue,
       timestamp: result.timestamp,
-      txEffectsLength: txCount[0].count,
+      txEffectsLength: txCountMap.get(result.bodyId) ?? 0,
     };
     blocks.push(await uiBlockTableSchema.parseAsync(blockData));
   }
   return blocks;
 };
-
 export const getTxEffectForUiTable = async ({
   from,
   to,
