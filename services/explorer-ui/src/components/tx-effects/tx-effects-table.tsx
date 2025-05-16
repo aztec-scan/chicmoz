@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
 import { TxEffectsTableColumns } from "./tx-effects-columns";
-import { type TxEffectTableSchema } from "./tx-effects-schema";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
 interface Props {
   title?: string;
-  txEffects?: TxEffectTableSchema[];
+  txEffects?: UiTxEffectTable[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -22,9 +22,6 @@ export const TxEffectsTable: FC<Props> = ({
   disablePagination = false,
   maxEntries = 10,
 }) => {
-  if (!txEffects) {
-    return <div>No data</div>;
-  }
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -38,7 +35,7 @@ export const TxEffectsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={txEffects}
+          data={txEffects ?? []}
           columns={TxEffectsTableColumns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}

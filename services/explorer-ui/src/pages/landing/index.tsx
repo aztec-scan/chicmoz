@@ -9,8 +9,8 @@ import {
   HealthStatus,
   useAvarageBlockTime,
   useAvarageFees,
-  useGetLatestTxEffects,
-  useLatestBlocks,
+  useLatestTableBlocks,
+  useLatestTableTxEffects,
   usePendingTxs,
   useSubTitle,
   useSystemHealth,
@@ -19,13 +19,12 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
-import { mapLatestBlocks, mapLatestTxEffects } from "~/lib/map-for-table";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();
-  const { data: latestBlocks, isLoading, error } = useLatestBlocks();
+  const { data: latestBlocks, isLoading, error } = useLatestTableBlocks();
   const {
     data: totalTxEffects,
     isLoading: loadingTotalEffects,
@@ -62,7 +61,7 @@ export const Landing: FC = () => {
     data: latestTxEffectsData,
     isLoading: isLoadingTxEffects,
     error: txEffectsError,
-  } = useGetLatestTxEffects();
+  } = useLatestTableTxEffects();
 
   // For pending transactions
   const {
@@ -186,7 +185,7 @@ export const Landing: FC = () => {
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
               <BlocksTable
                 title="Latest Blocks"
-                blocks={mapLatestBlocks(latestBlocks)}
+                blocks={latestBlocks}
                 isLoading={isLoading}
                 error={error}
                 disableSizeSelector={true}
@@ -203,10 +202,7 @@ export const Landing: FC = () => {
             <div className="flex flex-col gap-4 w-full md:w-1/2">
               <div className="bg-white rounded-lg shadow-lg">
                 <TxEffectsTable
-                  txEffects={mapLatestTxEffects(
-                    latestTxEffectsData ?? [],
-                    latestBlocks,
-                  )}
+                  txEffects={latestTxEffectsData}
                   isLoading={isLoadingTxEffects}
                   title="Latest Transactions"
                   error={txEffectsError}
@@ -223,7 +219,8 @@ export const Landing: FC = () => {
               </div>
               <div className="bg-white rounded-lg shadow-lg">
                 <PendingTxsTable
-                  pendingTxs={pendingTxsData}
+                  title="Pending Transactions"
+                  pendingTxEffects={pendingTxsData}
                   isLoading={isLoadingPendingTxs}
                   error={pendingTxsError}
                   disableSizeSelector={true}

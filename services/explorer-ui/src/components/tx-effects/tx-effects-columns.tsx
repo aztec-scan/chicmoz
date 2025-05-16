@@ -5,7 +5,7 @@ import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 import { CustomTooltip } from "../custom-tooltip";
 import { TimeAgoCell } from "../formated-time-cell";
-import { type TxEffectTableSchema } from "./tx-effects-schema";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
 const text = {
   txHash: "HASH",
@@ -14,7 +14,7 @@ const text = {
   timeSince: "AGE",
 };
 
-export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
+export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
   {
     accessorKey: "txHash",
     header: ({ column }) => (
@@ -81,7 +81,7 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const blockNumber = row.getValue("blockNumber");
+      const blockNumber = Number(row.getValue("blockNumber"));
       if (typeof blockNumber !== "number") {
         return null;
       }
