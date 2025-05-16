@@ -45,12 +45,7 @@ export const updateTxEffects = (
   block: ChicmozL2Block,
 ) => {
   const txEffects = block.body.txEffects.map((txEffect) => {
-    const effect = uiTxEffectTableSchema.parse({
-      blockNumber: block.height,
-      txHash: txEffect.txHash,
-      transactionFee: txEffect.transactionFee,
-      timestamp: block.header.globalVariables.timestamp,
-    });
+    const effect = uiTxEffectTableSchema.parse(txEffect);
     queryClient.setQueryData(queryKeyGenerator.txEffectByHash(effect.txHash), {
       ...effect,
       blockHeight: block.height,
