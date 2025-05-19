@@ -1,86 +1,68 @@
 import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
-import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
+import { InfoBadge } from "~/components/info-badge";
+import { ValidatorsTable } from "~/components/validators/validators-table";
 import { useSubTitle } from "~/hooks";
 import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
-import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-
-const tdClasses = "p-2 border border-gray-300";
 
 export const ValidatorsPage: FC = () => {
   useSubTitle(routes.validators.title);
   const { data, isLoading, error } = useL1L2Validators();
 
-  const countValidating = data?.filter(
-    (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
-  ).length;
-  const additionalTitle = countValidating
-    ? ` (${countValidating} validating out of ${data?.length})`
-    : "";
+  const validatingCount =
+    data?.filter(
+      (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
+    ).length ?? 0;
+
+  const exitingCount =
+    data?.filter(
+      (validator) => validator.status !== L1L2ValidatorStatus.VALIDATING,
+    ).length ?? 0;
+
+  const validatorsData = data;
+
+  const sortedValidatorsData = validatorsData?.sort((a, b) => {
+    const stakeDiff = Number(b.stake - a.stake);
+    if (stakeDiff !== 0) {
+      return stakeDiff;
+    }
+    return b.latestSeenChangeAt.getTime() - a.latestSeenChangeAt.getTime();
+  });
 
   return (
-    <div className="flex flex-col items-center">
-      <h1>{`${routes.validators.title}${additionalTitle}`}</h1>
+    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+      <div className="flex flex-wrap m-5">
+        <h2 className="mt-2 text-primary dark:text-white md:hidden">
+          Validators
+        </h2>
+        <h2 className="hidden md:text-primary md:dark:text-white md:block md:mt-8">
+          Validators
+        </h2>
+      </div>
 
-      <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
-        {isLoading && <p>Loading...</p>}
-        {error && <p>Error: {error.message}</p>}
-        {!!data && (
-          <table>
-            <thead>
-              <tr>
-                <th>Attester</th>
-                <th>Stake</th>
-                <th>Withdrawer</th>
-                <th>Proposer</th>
-                <th>Status</th>
-                <th>First Seen At</th>
-                <th>Latest Seen Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data
-                .sort((a, b) => {
-                  const stakeDiff =
-                    (Number(b.stake) ?? 0) - (Number(a.stake) ?? 0);
-                  if (stakeDiff !== 0) return stakeDiff;
-                  return (
-                    b.latestSeenChangeAt.getTime() -
-                    a.latestSeenChangeAt.getTime()
-                  );
-                })
-                .map((validator) => (
-                  <tr key={validator.attester}>
-                    <td className={`${tdClasses} font-mono`}>
-                      <Link
-                        to={`${routes.validators.route}/${validator.attester}`}
-                        className="text-purple-light hover:font-bold"
-                      >
-                        {validator.attester}
-                      </Link>
-                    </td>
-                    <td className={tdClasses}>{Number(validator.stake)}</td>
-                    <td className={`${tdClasses} font-mono`}>
-                      {validator.withdrawer}
-                    </td>
-                    <td className={`${tdClasses} font-mono`}>
-                      {validator.proposer}
-                    </td>
-                    <td className={tdClasses}>
-                      {L1L2ValidatorStatus[validator.status].toString()}
-                    </td>
-                    <td className={tdClasses}>
-                      {validator.firstSeenAt.toLocaleString()}
-                    </td>
-                    <td className={tdClasses}>
-                      {formatTimeSince(validator.latestSeenChangeAt.getTime())}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        )}
+      <div className="grid grid-cols-2 gap-3 my-10 md:gap-5">
+        <InfoBadge
+          title="Validating Validators"
+          isLoading={isLoading}
+          error={error}
+          data={validatingCount.toString()}
+        />
+        <InfoBadge
+          title="Non-Validating Validators"
+          isLoading={isLoading}
+          error={error}
+          data={exitingCount.toString()}
+        />
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg w-full">
+        <ValidatorsTable
+          title="All Validators"
+          validators={sortedValidatorsData}
+          isLoading={isLoading}
+          error={error}
+        />
       </div>
     </div>
   );
