@@ -22,9 +22,6 @@ export const ContractInstancesTable: FC<Props> = ({
   showContractVersions,
   tooltip,
 }) => {
-  if (!contracts) {
-    return <div>No data</div>;
-  }
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -47,7 +44,11 @@ export const ContractInstancesTable: FC<Props> = ({
             )}
           </h3>
         )}
-        <DataTable isLoading={isLoading} data={contracts} columns={cols} />
+        <DataTable
+          isLoading={isLoading}
+          data={contracts ?? []}
+          columns={cols}
+        />
       </div>
     </section>
   );

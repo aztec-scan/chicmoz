@@ -58,6 +58,8 @@ export const openApiPaths: OpenAPIObject["paths"] = {
 
   ...controller.openapi_GET_L2_SEQUENCER,
   ...controller.openapi_GET_L2_SEQUENCERS,
+
+  ...controller.openapi_L2_SEARCH_PUBLIC_LOGS,
 };
 
 const otherPaths = [
@@ -207,6 +209,7 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.contractInstances, controller.GET_L2_CONTRACT_INSTANCES);
 
   router.get(paths.search, controller.L2_SEARCH);
+  router.get(paths.searchPublicLogs, controller.L2_SEARCH_PUBLIC_LOGS);
 
   router.get(paths.l1l2Validators, controller.GET_L1_L2_VALIDATORS);
   router.get(paths.l1l2Validator, controller.GET_L1_L2_VALIDATOR);
@@ -222,6 +225,9 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.sequencer, controller.GET_L2_SEQUENCER);
   router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
+
+  router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
+  router.get(paths.uiTxEffectTable, controller.GET_TX_EFFECTS_UI_TABLE_DATA);
 
   otherPaths.forEach(({ path, controller }) => {
     router.get(path, controller);

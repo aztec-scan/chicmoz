@@ -38,6 +38,14 @@ export const BlockDetails: FC = () => {
     error: txEffectsError,
   } = useGetTxEffectsByBlockHeight(height);
 
+  if (error) {
+    return (
+      <LoadingDetails
+        title="Error loading block details"
+        description="Please refresh the page"
+      />
+    );
+  }
   if (isLoading) {
     return (
       <LoadingDetails
@@ -55,7 +63,7 @@ export const BlockDetails: FC = () => {
           <TxEffectsTable
             txEffects={getTxEffects(blockTxEffects, block)}
             isLoading={isTxLoading}
-            error={error ?? txEffectsError}
+            error={txEffectsError}
           />
         );
       case "contracts":

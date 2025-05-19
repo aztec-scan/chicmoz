@@ -86,7 +86,7 @@ export const formatDuration = (durationSeconds: number, short?: boolean) => {
 
 export const formatTimeSince = (
   unixTimestamp: number | null | undefined,
-  short = true
+  short = true,
 ) => {
   if (!unixTimestamp) {
     return "no timestamp";

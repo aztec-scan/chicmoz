@@ -9,6 +9,7 @@ import {
   ethAddressSchema,
   hexStringSchema,
 } from "@chicmoz-pkg/types";
+import {frSchema} from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
 
 export const heightOrHash = "heightOrHash";
@@ -58,6 +59,7 @@ export const paths = {
   contractInstances: "/l2/contract-instances",
 
   search: "/l2/search",
+  searchPublicLogs: "/l2/search/public-logs",
 
   feeRecipients: "/l2/fee-recipients",
 
@@ -78,6 +80,9 @@ export const paths = {
   chainErrors: "/l2/errors",
   sequencers: "/l2/sequencers",
   sequencer: "/l2/sequencers/:enr",
+
+  uiBlockTable: "/l2/ui/blocks-for-table",
+  uiTxEffectTable: "/l2/ui/tx-effects-for-table",
 };
 
 export const getBlockByHeightOrHashSchema = z.object({
@@ -211,6 +216,13 @@ export const postVerifiedContractInstanceSchema = z.lazy(() => {
 
 export const getSearchSchema = z.object({
   query: chicmozSearchQuerySchema,
+});
+
+export const getSearchPublicLogsSchema = z.object({
+  query: z.object({
+    frLogEntry: frSchema,
+    index: z.coerce.number().int().nonnegative(),
+  }),
 });
 
 export const getL1L2ValidatorSchema = z.object({
