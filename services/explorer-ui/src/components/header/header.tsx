@@ -58,7 +58,7 @@ export const Header = () => {
     {
       key: "l1L2Validator",
       name: routes.validators.title,
-      to: routes.validators.route,
+      to: routes.l1.route + routes.validators.route,
       group: "l1",
     },
     {

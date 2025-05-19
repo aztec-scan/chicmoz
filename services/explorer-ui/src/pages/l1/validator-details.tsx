@@ -72,7 +72,7 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
 export const ValidatorDetailsPage: FC = () => {
   useSubTitle(routes.validators.children.attesterAddress.title);
   const { attesterAddress } = useParams({
-    from: "/validators/$attesterAddress",
+    from: "/l1/validators/$attesterAddress",
   });
   const { data, isLoading, error } = useL1L2Validator(attesterAddress);
   const {

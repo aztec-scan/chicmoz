@@ -19,25 +19,6 @@ const text = {
 export const ValidatorHistoryTableColumns: ColumnDef<ProcessedHistoryEntry>[] =
   [
     {
-      accessorKey: "timestamp",
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          className="text-purple-dark text-sm"
-          column={column}
-          title={text.time}
-        />
-      ),
-      cell: ({ row }) => {
-        const timestamp = row.getValue("timestamp");
-        if (!(timestamp instanceof Date)) {
-          return null;
-        }
-        return <TimeAgoCell timestamp={timestamp.getTime()} />;
-      },
-      enableSorting: true,
-      enableHiding: false,
-    },
-    {
       accessorKey: "keyChanged",
       header: ({ column }) => (
         <DataTableColumnHeader
@@ -71,6 +52,25 @@ export const ValidatorHistoryTableColumns: ColumnDef<ProcessedHistoryEntry>[] =
           return null;
         }
         return <div className="font-mono">{newValue}</div>;
+      },
+      enableSorting: true,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "timestamp",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          className="text-purple-dark text-sm"
+          column={column}
+          title={text.time}
+        />
+      ),
+      cell: ({ row }) => {
+        const timestamp = row.getValue("timestamp");
+        if (!(timestamp instanceof Date)) {
+          return null;
+        }
+        return <TimeAgoCell timestamp={timestamp.getTime()} />;
       },
       enableSorting: true,
       enableHiding: false,

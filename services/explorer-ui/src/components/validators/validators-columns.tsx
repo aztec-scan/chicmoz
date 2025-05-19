@@ -42,7 +42,7 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
         return null;
       }
       return (
-        <Link to={`${routes.validators.route}/${attester}`}>
+        <Link to={`${routes.l1.route}/${routes.validators.route}/${attester}`}>
           <div className="text-purple-light font-mono">
             {truncateHashString(attester)}
           </div>
