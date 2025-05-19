@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
 import {
   body,
   globalVariables,
@@ -126,13 +126,27 @@ export const getBlocksForUiTable = async ({
   }
   return blocks;
 };
-export const getTxEffectForUiTable = async ({
-  from,
-  to,
-}: GetBlocksByRange): Promise<UiTxEffectTable[]> => {
-  const whereRange = getBlocksWhereRange({ from, to });
 
-  const dbRes = await db()
+enum GetTypes {
+  BlockHeightRange,
+  BlockHeight,
+}
+
+type GetTableTxEffectByBlockHeight = {
+  blockHeight: bigint;
+  getType: GetTypes.BlockHeight;
+};
+
+type GetTableTxEffectsByBlockHeightRange = {
+  from?: bigint;
+  to?: bigint;
+  getType: GetTypes.BlockHeightRange;
+};
+
+export const getTxEffectForUiTable = async (
+  args: GetTableTxEffectByBlockHeight | GetTableTxEffectsByBlockHeightRange,
+): Promise<UiTxEffectTable[]> => {
+  const joinQuery = db()
     .select({
       height: getTableColumns(l2Block).height,
       txHash: getTableColumns(txEffect).txHash,
@@ -143,12 +157,29 @@ export const getTxEffectForUiTable = async ({
     .from(l2Block)
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
-    .innerJoin(txEffect, eq(txEffect.bodyId, body.id))
-    .where(whereRange)
-    .orderBy(desc(l2Block.height), desc(txEffect.index))
-    .limit(DB_MAX_TX_EFFECTS)
-    .execute();
+    .innerJoin(txEffect, eq(txEffect.bodyId, body.id));
 
+  let whereQuery;
+
+  switch (args.getType) {
+    case GetTypes.BlockHeightRange:
+      if (args.from ?? args.to) {
+        whereQuery = joinQuery
+          .where(getBlocksWhereRange({ from: args.from, to: args.to }))
+          .orderBy(desc(l2Block.height), desc(txEffect.index))
+          .limit(DB_MAX_TX_EFFECTS);
+      } else {
+        whereQuery = joinQuery
+          .orderBy(desc(l2Block.height), desc(txEffect.index))
+          .limit(DB_MAX_TX_EFFECTS);
+      }
+      break;
+    case GetTypes.BlockHeight:
+      whereQuery = joinQuery.where(and(eq(l2Block.height, args.blockHeight)));
+      break;
+  }
+
+  const dbRes = await whereQuery.execute();
   const txEffects: UiTxEffectTable[] = [];
 
   for (const result of dbRes) {

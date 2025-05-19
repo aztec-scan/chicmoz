@@ -56,6 +56,14 @@ export const TxEffectsAPI = {
 
     return validateResponse(z.array(uiTxEffectTableSchema), response.data);
   },
+  getTableTxEffectsByBlockHeight: async (
+    height: bigint,
+  ): Promise<UiTxEffectTable[]> => {
+    const response = await client.get(
+      aztecExplorer.getTableTxEffectsByHeight(height),
+    );
+    return validateResponse(z.array(uiTxEffectTableSchema), response.data);
+  },
   getLatestTableTxEffectByHeightRange: async (
     start?: number,
     end?: number,

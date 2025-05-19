@@ -8,12 +8,12 @@ import { OrphanedBanner } from "~/components/orphaned-banner";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   useGetBlockByIdentifier,
-  useGetTxEffectsByBlockHeight,
+  useGetTableTxEffectsByBlockHeight,
   useSubTitle,
 } from "~/hooks";
 import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 import { blockDetailsTabs, type TabId } from "./constants";
-import { getBlockDetails, getTxEffects } from "./util";
+import { getBlockDetails } from "./util";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
@@ -36,7 +36,7 @@ export const BlockDetails: FC = () => {
     data: blockTxEffects,
     isLoading: txEffectsLoading,
     error: txEffectsError,
-  } = useGetTxEffectsByBlockHeight(height);
+  } = useGetTableTxEffectsByBlockHeight(height);
 
   if (error) {
     return (
@@ -55,14 +55,13 @@ export const BlockDetails: FC = () => {
     );
   }
 
-  const isTxLoading = isLoading || txEffectsLoading;
   const renderTabContent = () => {
     switch (selectedTab) {
       case "txEffects":
         return (
           <TxEffectsTable
-            txEffects={getTxEffects(blockTxEffects, block)}
-            isLoading={isTxLoading}
+            txEffects={blockTxEffects}
+            isLoading={txEffectsLoading}
             error={txEffectsError}
           />
         );
