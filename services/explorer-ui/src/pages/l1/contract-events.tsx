@@ -1,5 +1,4 @@
 import { type FC } from "react";
-import { Loader } from "~/components/loader";
 import { ContractEventsTable } from "~/components/contract-events/contract-events-table";
 import { useSubTitle } from "~/hooks";
 import { useContractEvents } from "~/hooks/api/l1/contract-events";
@@ -9,9 +8,8 @@ export const ContractEventsPage: FC = () => {
   useSubTitle(routes.l1.children.contractEvents.title);
   const { data, isLoading, error } = useContractEvents();
 
-  // Sort data by block number (descending)
   const sortedData = data?.sort(
-    (a, b) => Number(b.l1BlockNumber) - Number(a.l1BlockNumber)
+    (a, b) => Number(b.l1BlockNumber) - Number(a.l1BlockNumber),
   );
 
   return (
@@ -24,22 +22,14 @@ export const ContractEventsPage: FC = () => {
           L1 Contract Events
         </h2>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-lg w-full">
-        {sortedData ? (
-          <ContractEventsTable
-            title="Contract Events"
-            contractEvents={sortedData}
-            isLoading={isLoading}
-            error={error}
-          />
-        ) : (
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <Loader amount={3} />
-            </div>
-          </div>
-        )}
+        <ContractEventsTable
+          title="Contract Events"
+          contractEvents={sortedData}
+          isLoading={isLoading}
+          error={error}
+        />
       </div>
     </div>
   );

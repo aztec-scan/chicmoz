@@ -17,15 +17,15 @@ const text = {
 };
 
 const ETHERSCAN_URL =
+  getL1NetworkId(L2_NETWORK_ID) === "ETH_SEPOLIA" ||
   getL1NetworkId(L2_NETWORK_ID) === "ETH_MAINNET"
-    ? "https://etherscan.io"
-    : "https://sepolia.etherscan.io";
+    ? getL1NetworkId(L2_NETWORK_ID) === "ETH_MAINNET"
+      ? "https://etherscan.io"
+      : "https://sepolia.etherscan.io"
+    : undefined;
 
 const getLinkCell = (content: string, endpoint: string) => {
-  if (
-    getL1NetworkId(L2_NETWORK_ID) === "ETH_SEPOLIA" ||
-    getL1NetworkId(L2_NETWORK_ID) === "ETH_MAINNET"
-  ) {
+  if (ETHERSCAN_URL) {
     return (
       <CustomTooltip content={`View on Etherscan`}>
         <a
@@ -117,8 +117,8 @@ export const ContractEventsTableColumns: ColumnDef<ContractEventTableSchema>[] =
           return null;
         }
         return (
-          <DeterministicStatusBadge 
-            text={eventName} 
+          <DeterministicStatusBadge
+            text={eventName}
             tooltipContent={`Event: ${eventName}`}
           />
         );

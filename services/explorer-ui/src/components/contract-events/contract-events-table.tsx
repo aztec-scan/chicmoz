@@ -38,7 +38,7 @@ export const ContractEventsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={contractEvents}
+          data={contractEvents ?? []}
           columns={ContractEventsTableColumns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
