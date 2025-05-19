@@ -6,16 +6,16 @@ import {
 } from "@chicmoz-pkg/types";
 import { publishMessage } from "../../svcs/message-bus/index.js";
 
-export const l1Validator = async (validator: ChicmozL1L2Validator) => {
-  const objToSend = {
+export const l1Validator = async (validators: ChicmozL1L2Validator[]) => {
+  const objsToSend = validators.map((validator) => ({
     ...validator,
     stake: validator.stake.toString(),
-  };
-  await publishMessage("L1_L2_VALIDATOR_EVENT", { validator: objToSend });
+  }));
+  await publishMessage("L1_L2_VALIDATOR_EVENT", { validators: objsToSend });
 };
 
 export const l2BlockProposed = async (
-  blockProposed: ChicmozL1L2BlockProposed
+  blockProposed: ChicmozL1L2BlockProposed,
 ) => {
   await publishMessage("L1_L2_BLOCK_PROPOSED_EVENT", {
     ...blockProposed,
@@ -25,7 +25,7 @@ export const l2BlockProposed = async (
 };
 
 export const l2ProofVerified = async (
-  proofVerified: ChicmozL1L2ProofVerified
+  proofVerified: ChicmozL1L2ProofVerified,
 ) => {
   await publishMessage("L1_L2_PROOF_VERIFIED_EVENT", {
     ...proofVerified,
@@ -35,7 +35,7 @@ export const l2ProofVerified = async (
 };
 
 export const genericContractEvent = async (
-  genericContractEvent: ChicmozL1GenericContractEvent
+  genericContractEvent: ChicmozL1GenericContractEvent,
 ) => {
   await publishMessage("L1_GENERIC_CONTRACT_EVENT", genericContractEvent);
 };

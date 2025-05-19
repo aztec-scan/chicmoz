@@ -3,11 +3,15 @@ import { type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
+import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
+import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   HealthStatus,
   useAvarageBlockTime,
   useAvarageFees,
   useLatestTableBlocks,
+  useLatestTableTxEffects,
+  usePendingTxs,
   useSubTitle,
   useSystemHealth,
   useTotalContracts,
@@ -17,8 +21,6 @@ import {
 } from "~/hooks";
 import { formatDuration, formatFees } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { TxEffectTableLanding } from "./tx-effect-table-landing";
-import { mapLatestBlocks } from "~/lib/map-for-table";
 
 export const Landing: FC = () => {
   const { systemHealth } = useSystemHealth();
@@ -53,6 +55,20 @@ export const Landing: FC = () => {
     isLoading: loadingAvarageBlockTime,
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
+
+  // For latest transactions
+  const {
+    data: latestTxEffectsData,
+    isLoading: isLoadingTxEffects,
+    error: txEffectsError,
+  } = useLatestTableTxEffects();
+
+  // For pending transactions
+  const {
+    data: pendingTxsData,
+    isLoading: isLoadingPendingTxs,
+    error: pendingTxsError,
+  } = usePendingTxs();
 
   const formattedFees = formatFees(avarageFees);
 
@@ -128,7 +144,7 @@ export const Landing: FC = () => {
               data={totalAmountOfContracts}
             />
             <InfoBadge
-              title={`Average fees (${formattedFees.denomination} FPA)`}
+              title={`Average fees (${formattedFees.denomination} FJ)`}
               isLoading={loadingAvarageFees}
               error={errorAvarageFees}
               data={formattedFees.value}
@@ -169,14 +185,55 @@ export const Landing: FC = () => {
             <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
               <BlocksTable
                 title="Latest Blocks"
-                blocks={mapLatestBlocks(latestBlocks)}
+                blocks={latestBlocks}
                 isLoading={isLoading}
                 error={error}
                 disableSizeSelector={true}
+                disablePagination={true}
+                maxEntries={20}
               />
+              <Link
+                to={routes.blocks.route}
+                className="text-primary dark:text-white underline text-center block p-4"
+              >
+                View all Blocks
+              </Link>
             </div>
-            <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
-              <TxEffectTableLanding />
+            <div className="flex flex-col gap-4 w-full md:w-1/2">
+              <div className="bg-white rounded-lg shadow-lg">
+                <TxEffectsTable
+                  txEffects={latestTxEffectsData}
+                  isLoading={isLoadingTxEffects}
+                  title="Latest Transactions"
+                  error={txEffectsError}
+                  disableSizeSelector={true}
+                  disablePagination={true}
+                  maxEntries={8}
+                />
+                <Link
+                  to={routes.txEffects.route}
+                  className="text-primary dark:text-white underline text-center block p-4"
+                >
+                  View all Transactions
+                </Link>
+              </div>
+              <div className="bg-white rounded-lg shadow-lg">
+                <PendingTxsTable
+                  title="Pending Transactions"
+                  pendingTxEffects={pendingTxsData}
+                  isLoading={isLoadingPendingTxs}
+                  error={pendingTxsError}
+                  disableSizeSelector={true}
+                  disablePagination={true}
+                  maxEntries={7}
+                />
+                <Link
+                  to={routes.txEffects.route}
+                  className="text-primary dark:text-white underline text-center block p-4"
+                >
+                  View all Pending Transactions
+                </Link>
+              </div>
             </div>
           </div>
         </>

@@ -1,10 +1,11 @@
 import { type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { Loader } from "~/components/loader";
-import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
+import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   useLatestTableTxEffects,
+  usePendingTxs,
   useSubTitle,
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
@@ -30,14 +31,20 @@ export const TxEffects: FC = () => {
     error: txEffectsError,
   } = useLatestTableTxEffects();
 
+  const {
+    data: pendingTxsData,
+    isLoading: isLoadingPendingTxs,
+    error: pendingTxsError,
+  } = usePendingTxs();
+
   return (
     <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap m-5">
         <h2 className="mt-2 text-primary dark:text-white md:hidden">
-          All transaction effects
+          All Transactions
         </h2>
         <h2 className="hidden md:text-primary md:dark:text-white md:block md:mt-8">
-          All Tx transaction effects
+          All Transactions
         </h2>
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5 ">
@@ -54,21 +61,32 @@ export const TxEffects: FC = () => {
           data={totalTxEffects24h}
         />
       </div>
-      <div className="rounded-lg shadow-lg">
-        {latestTxEffectsData ? (
+      <div className="flex flex-col gap-4 md:flex-row">
+        <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
           <TxEffectsTable
-            txEffects={getTableTxEffectObj(latestTxEffectsData)}
+            title="Transactions"
+            txEffects={latestTxEffectsData}
             isLoading={isLoadingTxEffects}
             error={txEffectsError}
-            showPending={false}
           />
-        ) : (
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <Loader amount={3} />
+        </div>
+        <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">
+          {pendingTxsData ? (
+            <PendingTxsTable
+              title="Pending Transactions"
+              pendingTxEffects={pendingTxsData}
+              isLoading={isLoadingPendingTxs}
+              error={pendingTxsError}
+              disableSizeSelector={true}
+            />
+          ) : (
+            <div className="flex flex-col gap-4 mt-4">
+              <div className="bg-white rounded-lg shadow-md p-4">
+                <Loader amount={3} />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

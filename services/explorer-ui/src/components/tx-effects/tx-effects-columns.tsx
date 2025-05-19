@@ -1,19 +1,20 @@
-import { type ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { routes } from "~/routes/__root";
+import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
-import { type TxEffectTableSchema } from "./tx-effects-schema";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { routes } from "~/routes/__root";
+import { CustomTooltip } from "../custom-tooltip";
 import { TimeAgoCell } from "../formated-time-cell";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
 const text = {
   txHash: "HASH",
-  transactionFee: "FEE (FPA)",
+  transactionFee: "FEE (FJ)",
   blockHeight: "HEIGHT",
   timeSince: "AGE",
 };
 
-export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
+export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
   {
     accessorKey: "txHash",
     header: ({ column }) => (
@@ -63,7 +64,9 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
       />
     ),
     cell: ({ row }) => (
-      <div className="font-mono">{row.getValue("transactionFee")}</div>
+      <CustomTooltip content="The amount of FJ paid for this transaction">
+        <div className="font-mono">{row.getValue("transactionFee")}</div>
+      </CustomTooltip>
     ),
     enableSorting: true,
     enableHiding: false,
@@ -78,7 +81,7 @@ export const TxEffectsTableColumns: ColumnDef<TxEffectTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const blockNumber = row.getValue("blockNumber");
+      const blockNumber = Number(row.getValue("blockNumber"));
       if (typeof blockNumber !== "number") {
         return null;
       }

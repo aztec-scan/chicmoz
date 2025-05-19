@@ -36,6 +36,20 @@
       "when": 1746019851032,
       "tag": "0004_amazing_cerebro",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747050194890,
+      "tag": "0005_talented_spirit",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1747312766569,
+      "tag": "0006_purple_gravity",
+      "breakpoints": true
     }
   ]
 }

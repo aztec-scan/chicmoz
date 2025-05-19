@@ -49,7 +49,7 @@ export const routes = {
   },
   txEffects: {
     route: "/tx-effects",
-    title: "Tx Effects",
+    title: "Transactions",
     children: {
       index: {
         route: "/",
@@ -57,7 +57,7 @@ export const routes = {
       },
       hash: {
         route: "/$hash",
-        title: "Tx Effect Details",
+        title: "Transaction Details",
       },
     },
   },

@@ -38,7 +38,7 @@ export const TxEffectDetails: FC = () => {
   if (isTxEffectsLoading && isPendingTxLoading && isDroppedTxLoading) {
     return (
       <LoadingDetails
-        title="Tx Effects Details"
+        title="Transaction Details"
         emptyData={getEmptyTxEffectData()}
       />
     );
@@ -100,9 +100,9 @@ export const TxEffectDetails: FC = () => {
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div>
         <div className="flex flex-wrap m-3">
-          <h3 className="text-primary md:hidden">Tx Effects Details</h3>
+          <h3 className="text-primary md:hidden">Transactions Details</h3>
           <h2 className="hidden md:block md:mt-8 md:text-primary">
-            Tx Effects Details
+            Transactions Details
           </h2>
         </div>
         <div className="flex flex-col gap-4 mt-4">

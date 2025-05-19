@@ -98,6 +98,19 @@ kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-p
 kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT address, current_contract_class_id, deployer FROM l2_contract_instance_deployed LIMIT 5;\""
 ```
 
+# Count deployers of contracts
+
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT address, current_contract_class_id, deployer FROM l2_contract_instance_deployed LIMIT 5;\""
+
+## Contract Class Logs Queries
+
+````bash
+# Count transactions with non-empty contract_class_logs
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT COUNT(*) FROM tx_effect WHERE contract_class_logs::text != '[]';\""
+
+# Extract distinct contract addresses from contract_class_logs
+kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-password' psql -U admin -h postgresql -p 5432 -d explorer_api_testnet -c \"SELECT DISTINCT jsonb_array_elements(contract_class_logs) ->> 'contractAddress' AS contract_address FROM tx_effect WHERE contract_class_logs::text != '[]';\""
+
 ## AztecScanNotes Queries
 
 ```bash
@@ -112,7 +125,7 @@ kubectl exec postgresql-0 -n chicmoz-prod -- bash -c "PGPASSWORD='secret-local-p
 INSERT INTO l2_contract_instance_aztec_scan_notes (address, origin, comment, name)
 VALUES
 ('0x09db977a84f23f5294fd98a94f282bcaeefac30f5d3d546fd2413d8e7784b1ea', 'Aztec Team', 'This is one of the first contracts deployed testing the default token contract in Aztec-packages. The token is called ''SHIPPED''', 'SHIPPED token');\""
-```
+````
 
 ## Table Information
 

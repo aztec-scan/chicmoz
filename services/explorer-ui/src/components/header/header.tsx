@@ -38,12 +38,6 @@ export const Header = () => {
       group: "main",
     },
     {
-      key: "aztecscanHealth",
-      name: routes.aztecscanHealth.title,
-      to: routes.aztecscanHealth.route,
-      group: "aztec",
-    },
-    {
       key: "aztecEcosystem",
       name: routes.ecosystem.title,
       to: routes.ecosystem.route,
@@ -53,9 +47,20 @@ export const Header = () => {
       key: "networkHealth",
       name: routes.networkHealth.title,
       to: routes.networkHealth.route,
+      group: "aztec",
+    },
+    {
+      key: "l1L2Validators",
+      name: routes.l1.children.contractEvents.title,
+      to: routes.l1.route + routes.l1.children.contractEvents.route,
+      group: "l1",
+    },
+    {
+      key: "aztecscanHealth",
+      name: routes.aztecscanHealth.title,
+      to: routes.aztecscanHealth.route,
       group: "dev",
     },
-    { key: "dev", name: "Dev Page", to: routes.dev.route, group: "dev" },
   ];
 
   const { data, isLoading, error, refetch, isSuccess, fetchStatus } =

@@ -1,6 +1,8 @@
 import { useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+import { LoadingDetails } from "~/components/loading/loading-details";
+import { getEmptyBlockData } from "~/components/loading/util";
 import { OptionButtons } from "~/components/option-buttons";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
@@ -9,12 +11,9 @@ import {
   useGetTableTxEffectsByBlockHeight,
   useSubTitle,
 } from "~/hooks";
+import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails } from "./util";
-import { LoadingDetails } from "~/components/loading/loading-details";
-import { getEmptyBlockData } from "~/components/loading/util";
-import { AdjecentBlockButtons } from "./adjacent-block-buttons";
-import { getTableTxEffectObj } from "~/components/tx-effects/tx-effects-schema";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
@@ -39,6 +38,14 @@ export const BlockDetails: FC = () => {
     error: txEffectsError,
   } = useGetTableTxEffectsByBlockHeight(height);
 
+  if (error) {
+    return (
+      <LoadingDetails
+        title="Error loading block details"
+        description="Please refresh the page"
+      />
+    );
+  }
   if (isLoading) {
     return (
       <LoadingDetails
@@ -48,16 +55,14 @@ export const BlockDetails: FC = () => {
     );
   }
 
-  const isTxLoading = isLoading || txEffectsLoading;
   const renderTabContent = () => {
     switch (selectedTab) {
       case "txEffects":
         return (
           <TxEffectsTable
-            txEffects={getTableTxEffectObj(blockTxEffects)}
-            isLoading={isTxLoading}
-            error={error ?? txEffectsError}
-            showPending={false}
+            txEffects={blockTxEffects}
+            isLoading={txEffectsLoading}
+            error={txEffectsError}
           />
         );
       case "contracts":
@@ -87,8 +92,8 @@ export const BlockDetails: FC = () => {
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
           {block.orphan ? <OrphanedBanner type="block" /> : null}
-          {!block.orphan && (
-            <AdjecentBlockButtons blockNumber={parseInt(blockNumber)} />
+          {!block.orphan && block.height > 0n && (
+            <AdjecentBlockButtons blockNumber={Number(block.height)} />
           )}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getBlockDetails(block)} />

@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { routes } from "~/routes/__root";
-import type { BlockTableSchema } from "./blocks-schema";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { BlockStatusBadge } from "../block-status-badge";
 import { TimeAgoCell } from "../formated-time-cell";
+import { type UiBlockTable } from "@chicmoz-pkg/types";
 
 const text = {
   height: "HEIGHT",
@@ -15,7 +15,7 @@ const text = {
   blockStatus: "BLOCK STATUS",
 };
 
-export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
+export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
   {
     accessorKey: "height",
     header: ({ column }) => (
@@ -31,7 +31,7 @@ export const BlockTableColumns: ColumnDef<BlockTableSchema>[] = [
       const r = routes.blocks.route + "/" + height;
       return (
         <div className="text-purple-light">
-          <Link to={r}>{row.getValue("height")}</Link>
+          <Link to={r}>{Number(row.getValue("height"))}</Link>
         </div>
       );
     },

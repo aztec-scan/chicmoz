@@ -1,5 +1,7 @@
-import { ChicmozL1L2Validator } from "@chicmoz-pkg/types";
+import { L1L2ValidatorEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
+import { ChicmozL1L2Validator, L1L2ValidatorStatus } from "@chicmoz-pkg/types";
+import { logger } from "../../../../../logger.js";
 import {
   l1L2ValidatorProposerTable,
   l1L2ValidatorStakeTable,
@@ -7,49 +9,119 @@ import {
   l1L2ValidatorTable,
   l1L2ValidatorWithdrawerTable,
 } from "../../../schema/l1/l2-validator.js";
+import { getAllL1L2Validators } from "./get-multiple.js";
 import { getL1L2Validator } from "./get-single.js";
 
-export async function storeL1L2Validator(
-  validator: ChicmozL1L2Validator
+export async function updateValidatorsState(
+  event: L1L2ValidatorEvent,
 ): Promise<void> {
-  const { attester, firstSeenAt, stake, status, withdrawer, proposer, latestSeenChangeAt } =
-    validator;
+  const validators = event.validators.map((validator) => ({
+    ...validator,
+    stake: BigInt(validator.stake),
+  }));
+  const currentDbValues = await getAllL1L2Validators();
+  if (!currentDbValues) {
+    return;
+  }
+  logger.info(
+    `🤖 validators in db: ${currentDbValues.length}, validators in event: ${validators.length}`,
+  );
+  for (const validator of currentDbValues) {
+    const found = validators.find((v) => v.attester === validator.attester);
+    if (!found) {
+      logger.info(
+        `🤖 L1L2 validator ${validator.attester} not found in event, setting to EXITING`,
+      );
+      await _store(
+        {
+          ...validator,
+          latestSeenChangeAt: new Date(),
+          status: L1L2ValidatorStatus.EXITING,
+          stake: 0n,
+        },
+        validator,
+      );
+    }
+  }
+  for (const validator of validators) {
+    const found = currentDbValues.find(
+      (v) => v.attester === validator.attester,
+    );
+    const currentValues = found
+      ? found
+      : await getL1L2Validator(validator.attester, validator.rollupAddress);
+    await _store(validator, currentValues);
+  }
+}
 
-  const currentValues = await getL1L2Validator(attester);
+async function _store(
+  toStore: ChicmozL1L2Validator,
+  currentDbValues: ChicmozL1L2Validator | null,
+): Promise<void> {
+  const {
+    attester,
+    rollupAddress,
+    firstSeenAt,
+    stake,
+    status,
+    withdrawer,
+    proposer,
+    latestSeenChangeAt,
+  } = toStore;
+
   await db().transaction(async (tx) => {
-    if (!currentValues) {
+    if (!currentDbValues) {
       await tx
         .insert(l1L2ValidatorTable)
-        .values({ attester, firstSeenAt });
+        .values({ attester, rollupAddress, firstSeenAt });
     }
 
-    if (!currentValues || (currentValues && currentValues.stake !== stake)) {
+    if (
+      !currentDbValues ||
+      (currentDbValues && currentDbValues.stake !== stake)
+    ) {
       await tx.insert(l1L2ValidatorStakeTable).values({
         attesterAddress: attester,
         stake: stake.toString(),
         timestamp: latestSeenChangeAt,
       });
     }
-    if (!currentValues || (currentValues && currentValues.status !== status)) {
+    if (
+      !currentDbValues ||
+      (currentDbValues && currentDbValues.status !== status)
+    ) {
       await tx.insert(l1L2ValidatorStatusTable).values({
         attesterAddress: attester,
         status,
         timestamp: latestSeenChangeAt,
       });
     }
-    if (!currentValues || (currentValues && currentValues.withdrawer !== withdrawer)) {
+    if (
+      !currentDbValues ||
+      (currentDbValues && currentDbValues.withdrawer !== withdrawer)
+    ) {
       await tx.insert(l1L2ValidatorWithdrawerTable).values({
         attesterAddress: attester,
         withdrawer,
         timestamp: latestSeenChangeAt,
       });
     }
-    if (!currentValues || (currentValues && currentValues.proposer !== proposer)) {
+    if (
+      !currentDbValues ||
+      (currentDbValues && currentDbValues.proposer !== proposer)
+    ) {
       await tx.insert(l1L2ValidatorProposerTable).values({
         attesterAddress: attester,
         proposer,
-        timestamp: latestSeenChangeAt
+        timestamp: latestSeenChangeAt,
       });
     }
   });
+}
+
+export async function storeL1L2Validator(
+  validator: ChicmozL1L2Validator,
+): Promise<void> {
+  const currentDbValues = await getL1L2Validator(validator.attester);
+  await _store(validator, currentDbValues);
 }

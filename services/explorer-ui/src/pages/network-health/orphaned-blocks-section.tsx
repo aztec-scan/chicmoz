@@ -16,26 +16,20 @@ export const OrphanedBlocksSection: FC = () => {
     console.error("Error fetching orphaned blocks:", orphanedBlocksError);
   }
 
-  // Get the last 10 orphaned blocks
   const recentOrphanedBlocks = useMemo(() => {
     if (!orphanedBlocks) return [];
-    return orphanedBlocks.slice(0, 10);
+    return orphanedBlocks.slice(0, 15);
   }, [orphanedBlocks]);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
       <h2 className="mb-4">Recent Orphaned Blocks</h2>
       {orphanedBlocksLoading ? (
-        <Loader amount={10} />
+        <Loader amount={15} />
       ) : orphanedBlocksError ? (
         <div>
           <p className="text-yellow-600 dark:text-yellow-400 mb-2">
-            Development Mode: Orphaned Blocks API not available
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            The orphaned blocks endpoint is configured but not yet available in your
-            development environment. This section will automatically work when
-            the API endpoint is deployed.
+            Error fetching orphaned blocks: {orphanedBlocksError.message}
           </p>
         </div>
       ) : recentOrphanedBlocks.length === 0 ? (
@@ -55,18 +49,8 @@ export const OrphanedBlocksSection: FC = () => {
             </thead>
             <tbody>
               {recentOrphanedBlocks.map((block: ChicmozL2BlockLight) => (
-                <tr
-                  key={block.hash}
-                  className="border-t dark:border-gray-700"
-                >
-                  <td className="px-4 py-2">
-                    <Link
-                      to={`${routes.blocks.route}/${block.height}`}
-                      className="text-purple-light hover:underline"
-                    >
-                      {String(block.height)}
-                    </Link>
-                  </td>
+                <tr key={block.hash} className="border-t dark:border-gray-700">
+                  <td className="px-4 py-2">{String(block.height)}</td>
                   <td className="px-4 py-2 font-mono text-xs truncate max-w-[200px]">
                     <Link
                       to={`${routes.blocks.route}/${block.hash}`}
@@ -76,16 +60,16 @@ export const OrphanedBlocksSection: FC = () => {
                     </Link>
                   </td>
                   <td className="px-4 py-2">
-                    {block.orphan?.timestamp ? 
-                      new Date(block.orphan.timestamp).toLocaleString() :
-                      "Unknown"
-                    }
+                    {block.orphan?.timestamp
+                      ? new Date(block.orphan.timestamp).toLocaleString()
+                      : "Unknown"}
                   </td>
                   <td className="px-4 py-2">
-                    {block.orphan?.hasOrphanedParent ? 
-                      <span className="text-red-500">Yes</span> : 
+                    {block.orphan?.hasOrphanedParent ? (
+                      <span className="text-red-500">Yes</span>
+                    ) : (
                       <span className="text-blue-500">No</span>
-                    }
+                    )}
                   </td>
                 </tr>
               ))}
@@ -98,9 +82,10 @@ export const OrphanedBlocksSection: FC = () => {
           <p>
             Displaying last 10 orphaned blocks
             <br />
-            <span className="font-semibold">Note:</span> Orphaned blocks are blocks that were initially accepted but later
-            replaced by blocks in a longer chain. "Has Orphaned Parent" indicates whether this block is part of a longer chain
-            of orphaned blocks.
+            <span className="font-semibold">Note:</span> Orphaned blocks are
+            blocks that were initially accepted but later replaced by blocks in
+            a longer chain. "Has Orphaned Parent" indicates whether this block
+            is part of a longer chain of orphaned blocks.
           </p>
         </div>
       )}

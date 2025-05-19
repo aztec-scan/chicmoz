@@ -82,7 +82,7 @@ export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
 });
 
 export const openapi_GET_L2_CONTRACT_INSTANCES: OpenAPIObject["paths"] = {
-  "/l2/contract-instances/{address}": {
+  "/l2/contract-instances": {
     get: {
       tags: ["L2", "contract-instances"],
       summary: "Get contract instances between from and to block heights",

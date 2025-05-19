@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { TxEffectsTableColumns } from "./tx-effects-columns";
-import { type UiTxEffectTable } from "@chicmoz-pkg/types";
+import { type PendingTxSchema } from "./pending-txs-schema";
+import { PendingTxsColumns } from "./pending-txs-columns";
 
 interface Props {
   title?: string;
-  txEffects?: UiTxEffectTable[];
+  pendingTxEffects?: PendingTxSchema[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -13,13 +13,12 @@ interface Props {
   maxEntries?: number;
 }
 
-export const TxEffectsTable: FC<Props> = ({
+export const PendingTxsTable: FC<Props> = ({
   title,
-  txEffects,
+  pendingTxEffects,
   isLoading,
   error,
   disableSizeSelector,
-  disablePagination = false,
   maxEntries = 10,
 }) => {
   if (error) {
@@ -35,10 +34,9 @@ export const TxEffectsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={txEffects ?? []}
-          columns={TxEffectsTableColumns}
+          data={pendingTxEffects ?? []}
+          columns={PendingTxsColumns}
           disableSizeSelector={disableSizeSelector}
-          disablePagination={disablePagination}
           maxEntries={maxEntries}
         />
       </div>

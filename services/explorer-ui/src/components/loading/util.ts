@@ -10,7 +10,7 @@ export const getEmptyTxEffectData = (hash?: string, timestamp?: number) => [
     value: timestamp ? `${formatTimeSince(timestamp)} ago` : undefined,
   },
   {
-    label: "TRANSACTION FEE (FPA)",
+    label: "TRANSACTION FEE (FJ)",
     value: undefined,
   },
   {
@@ -46,7 +46,7 @@ export const getEmptyBlockData = (hash?: string, timestamp?: number) => [
     value: undefined,
   },
   {
-    label: "totalFees (FPA)",
+    label: "totalFees (FJ)",
     value: undefined,
   },
   {

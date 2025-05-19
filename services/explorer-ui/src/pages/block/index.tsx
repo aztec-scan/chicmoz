@@ -8,7 +8,6 @@ import {
   useLatestTableBlocks,
   useLatestTableBlocksByHeightRange,
 } from "~/hooks";
-import { mapLatestBlocks } from "~/lib/map-for-table";
 import { formatDuration } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 
@@ -86,7 +85,7 @@ export const Blocks: FC = () => {
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5">
         <InfoBadge
-          title="Average fees (FPA)"
+          title="Average fees (FJ)"
           isLoading={loadingAvarageFees}
           error={errorAvarageFees}
           data={avarageFees}
@@ -100,7 +99,7 @@ export const Blocks: FC = () => {
       </div>
       <div className="rounded-lg shadow-lg">
         <BlocksTable
-          blocks={mapLatestBlocks(rangeBlocks)}
+          blocks={rangeBlocks}
           isLoading={isLoading}
           error={error}
           showRangeSelector={true}

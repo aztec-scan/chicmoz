@@ -1,4 +1,5 @@
 import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
+import { CustomTooltip } from "./custom-tooltip";
 
 interface BlockStatusBadgeProps {
   status: ChicmozL2BlockFinalizationStatus;
@@ -47,11 +48,11 @@ export const BlockStatusBadge: React.FC<BlockStatusBadgeProps> = ({
         badgeStyle = red;
         break;
       case ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN:
-        badgeText = "Proven";
+        badgeText = "Preconfirmed";
         badgeStyle = orange;
         break;
       case ChicmozL2BlockFinalizationStatus.L1_SEEN_PROVEN:
-        badgeText = "Proven";
+        badgeText = "Preconfirmed";
         badgeStyle = orange;
         break;
       default:
@@ -117,12 +118,25 @@ export const BlockStatusBadge: React.FC<BlockStatusBadgeProps> = ({
     }
   }
 
+  let tooltipText = "Aztecscan block status";
+  if (useSimplifiedStatuses) {
+    if (badgeText === "Proposed") {
+      tooltipText = "Block is proposed on L2, waiting to be proven";
+    } else if (badgeText === "Preconfirmed") {
+      tooltipText = "Block is proven, waiting to be finalized on L1";
+    } else {
+      tooltipText = "Block is finalized on L1";
+    }
+  }
+
   return (
-    <span
-      className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-medium border ${className}`}
-      style={badgeStyle}
-    >
-      {badgeText}
-    </span>
+    <CustomTooltip content={tooltipText}>
+      <span
+        className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-medium border ${className}`}
+        style={badgeStyle}
+      >
+        {badgeText}
+      </span>
+    </CustomTooltip>
   );
 };

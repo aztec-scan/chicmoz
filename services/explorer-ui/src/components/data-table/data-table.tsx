@@ -1,7 +1,4 @@
 import {
-  type ColumnDef,
-  type ColumnFiltersState,
-  type ExpandedState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
@@ -10,9 +7,12 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type ExpandedState,
   type SortingState,
   type Table as TableType,
-  useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
 import { Fragment, useMemo, useState } from "react";
@@ -34,12 +34,16 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   disableSizeSelector?: boolean;
+  disablePagination?: boolean;
+  maxEntries?: number;
 }
 export function DataTable<TData, TValue>({
   isLoading,
   columns,
   data,
   disableSizeSelector,
+  disablePagination = false,
+  maxEntries = 10, // Default to 10 entries if not specified
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -77,6 +81,11 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getExpandedRowModel: getExpandedRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: maxEntries,
+      },
+    },
   });
 
   return (
@@ -94,6 +103,8 @@ export function DataTable<TData, TValue>({
       <DataTablePagination
         table={table}
         disableSizeSelector={disableSizeSelector}
+        disablePagination={disablePagination}
+        maxEntries={maxEntries}
       />
     </>
   );

@@ -1,11 +1,12 @@
 import {
   chicmozL2BlockSchema,
   chicmozL2PendingTxSchema,
-  chicmozL2TxEffectSchema,
+  type UiBlockTable,
   type ChicmozL2Block,
   type ChicmozL2BlockLight,
   type ChicmozL2PendingTx,
   type WebsocketUpdateMessageReceiver,
+  chicmozL2TxEffectSchema,
 } from "@chicmoz-pkg/types";
 import { type useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -17,15 +18,24 @@ export const updateBlock = (
 ) => {
   queryClient.setQueryData(queryKeyGenerator.latestBlock, block);
   queryClient.setQueryData(
-    queryKeyGenerator.latestBlocks,
-    (oldData: ChicmozL2BlockLight[] | undefined) => {
+    queryKeyGenerator.latestTableBlocks,
+    (oldData: UiBlockTable[] | undefined) => {
       if (!oldData) {
         return [block];
       }
-      if (oldData.find((b) => b.hash === block.hash)) {
+      if (oldData.find((b) => b.blockHash === block.hash)) {
         return oldData;
       }
-      return [...oldData, block].sort((a, b) => Number(b.height - a.height));
+      const mapedWebsockketBlock: UiBlockTable = {
+        height: block.height,
+        blockHash: block.hash,
+        txEffectsLength: block.body.txEffects.length,
+        timestamp: block.header.globalVariables.timestamp,
+        blockStatus: block.finalizationStatus,
+      };
+      return [...oldData, mapedWebsockketBlock].sort((a, b) =>
+        Number(b.height - a.height),
+      );
     },
   );
 };
