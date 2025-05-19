@@ -228,6 +228,10 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
   router.get(paths.uiTxEffectTable, controller.GET_TX_EFFECTS_UI_TABLE_DATA);
+  router.get(
+    paths.uiTxEffectTableByBlockHeight,
+    controller.GET_TX_EFFECTS_BY_BLOCK_HEIGHT_UI_TABLE,
+  );
 
   otherPaths.forEach(({ path, controller }) => {
     router.get(path, controller);

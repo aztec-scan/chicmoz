@@ -9,7 +9,7 @@ import {
   ethAddressSchema,
   hexStringSchema,
 } from "@chicmoz-pkg/types";
-import {frSchema} from "@chicmoz-pkg/types/build/aztec/utils.js";
+import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
 
 export const heightOrHash = "heightOrHash";
@@ -83,6 +83,7 @@ export const paths = {
 
   uiBlockTable: "/l2/ui/blocks-for-table",
   uiTxEffectTable: "/l2/ui/tx-effects-for-table",
+  uiTxEffectTableByBlockHeight: "/l2/ui/tx-effects-for-table/:blockHeight",
 };
 
 export const getBlockByHeightOrHashSchema = z.object({

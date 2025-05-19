@@ -13,7 +13,7 @@ export const queryKeyGenerator = {
   droppedTxByHash: (hash: string) => ["droppedTxByHash", hash],
   latestBlock: ["latestBlock"],
   latestBlocks: ["latestBlocks"],
-  latestTableBlocks: ["latestBlocks"],
+  latestTableBlocks: ["latestTableBlocks"],
   latestTableBlocksRange: (from: number, to: number) => [
     "latestTableBlocks",
     from,
