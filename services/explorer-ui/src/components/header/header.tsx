@@ -50,9 +50,15 @@ export const Header = () => {
       group: "aztec",
     },
     {
-      key: "l1L2Validators",
+      key: "l1ContractEvents",
       name: routes.l1.children.contractEvents.title,
       to: routes.l1.route + routes.l1.children.contractEvents.route,
+      group: "l1",
+    },
+    {
+      key: "l1L2Validator",
+      name: routes.validators.title,
+      to: routes.l1.route + routes.validators.route,
       group: "l1",
     },
     {

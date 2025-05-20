@@ -35,7 +35,7 @@ export const getContractClassKeyValueData = (
     {
       label: "RAW DATA",
       value: "View raw data",
-      extLink: `${API_URL}/${aztecExplorer.getL2ContractClassByIdAndVersion(
+      extLink: `${API_URL}${aztecExplorer.getL2ContractClassByIdAndVersion(
         data.contractClassId,
         data.version.toString(),
       )}`,
