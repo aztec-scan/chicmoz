@@ -1,9 +1,10 @@
 import {
+  uiTxEffectTableSchema,
   type ChicmozL2Block,
   type ChicmozL2BlockLight,
+  type UiTxEffectTable,
 } from "@chicmoz-pkg/types";
 import { type DetailItem } from "~/components/info-display/key-value-display";
-import { getTxEffectTableObj } from "~/components/tx-effects/tx-effects-schema";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
 export const getBlockDetails = (
@@ -86,13 +87,20 @@ export const getBlockDetails = (
 
 export const getTxEffects = (
   txEffects?: ChicmozL2Block["body"]["txEffects"],
-  latestBlock?: ChicmozL2BlockLight,
-) => {
+  block?: ChicmozL2BlockLight,
+): UiTxEffectTable[] | undefined => {
   if (!txEffects) {
     return undefined;
   }
-  if (!latestBlock) {
+  if (!block) {
     return undefined;
   }
-  return txEffects.map((tx) => getTxEffectTableObj(tx, latestBlock));
+  return txEffects.map((tx) =>
+    uiTxEffectTableSchema.parse({
+      txHash: tx.txHash,
+      transactionFee: tx.transactionFee,
+      blockNumber: block.height,
+      timestamp: tx.txBirthTimestamp,
+    }),
+  );
 };

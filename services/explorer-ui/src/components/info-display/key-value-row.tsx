@@ -38,7 +38,6 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   tooltip,
   timestamp,
 }) => {
-  console.log(timestamp);
   let displayType = DisplayType.TEXT;
   if (link) {
     displayType = DisplayType.LINK;

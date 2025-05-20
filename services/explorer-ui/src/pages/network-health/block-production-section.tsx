@@ -1,9 +1,9 @@
 import { type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
-import { useAvarageBlockTime, useLatestBlocks } from "~/hooks";
+import { useAvarageBlockTime, useLatestTableBlocks } from "~/hooks";
 
 export const BlockProductionSection: FC = () => {
-  const { data: latestBlocks } = useLatestBlocks();
+  const { data: latestBlocks } = useLatestTableBlocks();
   const { data: avgBlockTime } = useAvarageBlockTime();
 
   return (

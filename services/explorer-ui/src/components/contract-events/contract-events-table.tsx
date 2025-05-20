@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { TxEffectsTableColumns } from "./tx-effects-columns";
-import { type UiTxEffectTable } from "@chicmoz-pkg/types";
+import { ContractEventsTableColumns } from "./contract-events-columns";
+import { type ContractEventTableSchema } from "./contract-events-schema";
 
 interface Props {
   title?: string;
-  txEffects?: UiTxEffectTable[];
+  contractEvents?: ContractEventTableSchema[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -13,15 +13,18 @@ interface Props {
   maxEntries?: number;
 }
 
-export const TxEffectsTable: FC<Props> = ({
+export const ContractEventsTable: FC<Props> = ({
   title,
-  txEffects,
+  contractEvents,
   isLoading,
   error,
   disableSizeSelector,
   disablePagination = false,
   maxEntries = 10,
 }) => {
+  if (!contractEvents) {
+    return <div>No data</div>;
+  }
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -35,8 +38,8 @@ export const TxEffectsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={txEffects ?? []}
-          columns={TxEffectsTableColumns}
+          data={contractEvents ?? []}
+          columns={ContractEventsTableColumns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

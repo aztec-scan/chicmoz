@@ -8,12 +8,12 @@ import { OrphanedBanner } from "~/components/orphaned-banner";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
   useGetBlockByIdentifier,
-  useGetTxEffectsByBlockHeight,
+  useGetTableTxEffectsByBlockHeight,
   useSubTitle,
 } from "~/hooks";
 import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 import { blockDetailsTabs, type TabId } from "./constants";
-import { getBlockDetails, getTxEffects } from "./util";
+import { getBlockDetails } from "./util";
 
 export const BlockDetails: FC = () => {
   const { blockNumber } = useParams({
@@ -36,8 +36,16 @@ export const BlockDetails: FC = () => {
     data: blockTxEffects,
     isLoading: txEffectsLoading,
     error: txEffectsError,
-  } = useGetTxEffectsByBlockHeight(height);
+  } = useGetTableTxEffectsByBlockHeight(height);
 
+  if (error) {
+    return (
+      <LoadingDetails
+        title="Error loading block details"
+        description="Please refresh the page"
+      />
+    );
+  }
   if (isLoading) {
     return (
       <LoadingDetails
@@ -47,15 +55,14 @@ export const BlockDetails: FC = () => {
     );
   }
 
-  const isTxLoading = isLoading || txEffectsLoading;
   const renderTabContent = () => {
     switch (selectedTab) {
       case "txEffects":
         return (
           <TxEffectsTable
-            txEffects={getTxEffects(blockTxEffects, block)}
-            isLoading={isTxLoading}
-            error={error ?? txEffectsError}
+            txEffects={blockTxEffects}
+            isLoading={txEffectsLoading}
+            error={txEffectsError}
           />
         );
       case "contracts":

@@ -1,52 +1,35 @@
 import { type FC } from "react";
+import { ContractEventsTable } from "~/components/contract-events/contract-events-table";
 import { useSubTitle } from "~/hooks";
 import { useContractEvents } from "~/hooks/api/l1/contract-events";
 import { routes } from "~/routes/__root";
 
-const tdClasses = "p-2 border border-gray-300";
-
 export const ContractEventsPage: FC = () => {
   useSubTitle(routes.l1.children.contractEvents.title);
   const { data, isLoading, error } = useContractEvents();
-  return (
-    <div className="flex flex-col items-center">
-      <h1>L1 Contract Events</h1>
 
-      <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
-        {isLoading && <p>Loading...</p>}
-        {error && <p>Error: {error.message}</p>}
-        {data && (
-          <table>
-            <thead>
-              <tr>
-                <th className="p-2">Event Name</th>
-                <th className="p-2">Contract Address</th>
-                <th className="p-2">Block Number</th>
-                <th className="p-2">Transaction Hash</th>
-                <th className="p-2">Args</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data
-                .sort(
-                  (a, b) => Number(b.l1BlockNumber) - Number(a.l1BlockNumber)
-                )
-                .map((event, index) => (
-                  <tr key={index}>
-                    <td className={tdClasses}>{event.eventName}</td>
-                    <td className={tdClasses}>{event.l1ContractAddress}</td>
-                    <td className={tdClasses}>{Number(event.l1BlockNumber)}</td>
-                    <td className={tdClasses}>
-                      {event.l1TransactionHash ?? "N/A"}
-                    </td>
-                    <td className={tdClasses}>
-                      {JSON.stringify(event.eventArgs)}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        )}
+  const sortedData = data?.sort(
+    (a, b) => Number(b.l1BlockNumber) - Number(a.l1BlockNumber),
+  );
+
+  return (
+    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+      <div className="flex flex-wrap m-5">
+        <h2 className="mt-2 text-primary dark:text-white md:hidden">
+          L1 Contract Events
+        </h2>
+        <h2 className="hidden md:text-primary md:dark:text-white md:block md:mt-8">
+          L1 Contract Events
+        </h2>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg w-full">
+        <ContractEventsTable
+          title="Contract Events"
+          contractEvents={sortedData}
+          isLoading={isLoading}
+          error={error}
+        />
       </div>
     </div>
   );
