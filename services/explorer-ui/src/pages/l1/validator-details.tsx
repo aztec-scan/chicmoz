@@ -14,11 +14,12 @@ import {
   useL1L2ValidatorHistory,
 } from "~/hooks/api/l1-l2-validator";
 import { routes } from "~/routes/__root";
+import {API_URL, aztecExplorer} from "~/service/constants";
 
 const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
   return [
     {
-      label: "Status",
+      label: "STATUS",
       value: "CUSTOM",
       customValue: <ValidatorStatusBadge status={validator.status} />,
     },
@@ -27,7 +28,7 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
       value: (Number(validator.stake) / 10 ** 18).toFixed(2),
     },
     {
-      label: "Attester Address",
+      label: "ATTESTER",
       value: "CUSTOM",
       customValue: (
         <EtherscanAddressLink
@@ -37,7 +38,7 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
       ),
     },
     {
-      label: "Withdrawer",
+      label: "WITHDRAWER",
       value: "CUSTOM",
       customValue: (
         <EtherscanAddressLink
@@ -47,7 +48,7 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
       ),
     },
     {
-      label: "Proposer",
+      label: "PROPOSER",
       value: "CUSTOM",
       customValue: (
         <EtherscanAddressLink
@@ -57,14 +58,21 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
       ),
     },
     {
-      label: "First Seen",
+      label: "FIRST SEEN",
       value: validator.firstSeenAt.toString(),
       timestamp: validator.firstSeenAt.getTime(),
     },
     {
-      label: "Latest Change",
+      label: "LATEST CHANGE",
       value: validator.latestSeenChangeAt.toString(),
       timestamp: validator.latestSeenChangeAt.getTime(),
+    },
+    {
+      label: "RAW DATA",
+      value: "View raw data",
+      extLink: `${API_URL}${aztecExplorer.getL1L2Validator(
+        validator.attester,
+      )}`,
     },
   ];
 };
