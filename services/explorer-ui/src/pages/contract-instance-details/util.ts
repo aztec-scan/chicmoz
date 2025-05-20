@@ -27,7 +27,7 @@ export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
     {
       label: "RAW DATA",
       value: "View raw data",
-      extLink: `${API_URL}/${aztecExplorer.getL2ContractInstance(
+      extLink: `${API_URL}${aztecExplorer.getL2ContractInstance(
         data.address,
       )}`,
     },
