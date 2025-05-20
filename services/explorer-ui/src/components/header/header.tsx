@@ -67,6 +67,13 @@ export const Header = () => {
       to: routes.aztecscanHealth.route,
       group: "dev",
     },
+    {
+      key: "docs",
+      name: "API Docs",
+      to: "https://docs.aztecscan.xyz/",
+      group: "dev",
+      external: true,
+    },
   ];
 
   const { data, isLoading, error, refetch, isSuccess, fetchStatus } =

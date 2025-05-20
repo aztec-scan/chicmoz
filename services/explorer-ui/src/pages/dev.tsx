@@ -96,16 +96,6 @@ export const DevPage: FC = () => {
                 </a>
               </li>
             ))}
-            <li key="docs">
-              <a
-                href="https://docs.aztecscan.xyz/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-purple-light hover:font-bold"
-              >
-                Docs
-              </a>
-            </li>
           </ul>
         </>,
       )}
