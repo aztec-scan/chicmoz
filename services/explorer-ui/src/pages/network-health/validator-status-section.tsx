@@ -62,8 +62,8 @@ export const ValidatorStatusSection: FC = () => {
                       key={status}
                       className="text-gray-600 dark:text-gray-400"
                     >
-                      {count} out of {totalValidators} validators (
-                      {percentage}%) are in {statusName} status
+                      {count} out of {totalValidators} validators ({percentage}
+                      %) are in {statusName} status
                     </p>
                   );
                 })}
@@ -75,7 +75,7 @@ export const ValidatorStatusSection: FC = () => {
             )}
           </div>
           <Link
-            to={routes.validators.route}
+            to={`${routes.l1.route}/${routes.validators.route}`}
             className="text-purple-light hover:underline self-end"
           >
             View all validators →
