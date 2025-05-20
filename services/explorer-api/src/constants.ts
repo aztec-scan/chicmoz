@@ -26,6 +26,12 @@ export const AZTEC_SCAN_NOTES: Record<
   },
   DEVNET: {},
   TESTNET: {
+    "0x0fb5144f2518c5501dfde73723cad1d1ac7f5a3ab15486ae4d444d228a205448": {
+      name: "DAI test token",
+      origin: "DeFi-wonderland",
+      comment:
+        "This is a test token deployed by DeFi-wonderland. It is a test token for the DAI token. It only has 9 decimals.",
+    },
     "0x09db977a84f23f5294fd98a94f282bcaeefac30f5d3d546fd2413d8e7784b1ea": {
       name: "SHIPPED token",
       origin: "Aztec Team",
@@ -99,4 +105,17 @@ export const AZTEC_SCAN_NOTES: Record<
         "Decentralized oracle protocol that securely brings real-world data onto blockchains using zero-knowledge proofs and game-theoretic consensus mechanism.",
     },
   },
+};
+
+export const AZTEC_SCAN_MANUAL_SOURCE_CODE_URLS: Record<
+  L2NetworkId,
+  Record<AztecAddress, string>
+> = {
+  MAINNET: {},
+  SANDBOX: {},
+  TESTNET: {
+    "0x27fdd1bf03d0717b0d1ba2b312b90bc9488997b2a00fec61514c77635cfc870c":
+      "https://github.com/defi-wonderland/aztec-standards/tree/68855cd7012f4305489520e6de1fdc9c93f01050/src/token_contract",
+  },
+  DEVNET: {},
 };
