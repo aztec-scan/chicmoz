@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { type Dispatch, type SetStateAction } from "react";
@@ -26,7 +27,7 @@ export const DesktopBurgerMenu = ({
       acc[group].push(link);
       return acc;
     },
-    {}
+    {},
   );
 
   // Get groups in order they appear in the original array
@@ -57,16 +58,30 @@ export const DesktopBurgerMenu = ({
                 {groupIndex > 0 && (
                   <hr className="my-1 mx-[8%] border-t border-gray-400/30" />
                 )}
-                {groupedLinks[group].map((link) => (
-                  <Link
-                    key={link.key}
-                    to={link.to}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-white hover:text-gray-400"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+                {groupedLinks[group].map((link) =>
+                  link.external ? (
+                    <a
+                      key={link.key}
+                      href={link.to}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+                    >
+                      {link.name}
+                      <ExternalLinkIcon className="inline-block ml-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      key={link.key}
+                      to={link.to}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-white hover:text-gray-400"
+                    >
+                      {link.name}
+                    </Link>
+                  ),
+                )}
               </div>
             ))}
             <div className="flex flex-row justify-end items-center px-4 pt-2">

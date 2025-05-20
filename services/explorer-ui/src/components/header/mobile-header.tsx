@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { SearchInput } from "~/components/ui/input";
@@ -97,16 +98,30 @@ export const MobileHeader = ({
                 {groupIndex > 0 && (
                   <hr className="border-t border-gray-400/30 mt-2 w-full" />
                 )}
-                {groupedLinks[group].map((link) => (
-                  <Link
-                    key={link.key}
-                    to={link.to}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-white text-lg pt-2 hover:bg-white/10 transition-colors truncate w-full"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+                {groupedLinks[group].map((link) =>
+                  link.external ? (
+                    <a
+                      key={link.key}
+                      href={link.to}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-white text-lg pt-2 hover:bg-white/10 transition-colors truncate w-full"
+                    >
+                      {link.name}
+                      <ExternalLinkIcon className="inline-block ml-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      key={link.key}
+                      to={link.to}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-white text-lg pt-2 hover:bg-white/10 transition-colors truncate w-full"
+                    >
+                      {link.name}
+                    </Link>
+                  ),
+                )}
               </div>
             ))}
             <div className="flex items-center justify-between">
