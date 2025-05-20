@@ -1,11 +1,8 @@
-import { getL1NetworkId } from "@chicmoz-pkg/types";
-import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { DeterministicStatusBadge } from "~/components/deterministic-status-badge";
 import { truncateHashString } from "~/lib/create-hash-string";
-import { L2_NETWORK_ID } from "~/service/constants";
-import { CustomTooltip } from "../custom-tooltip";
+import { EtherscanAddressLink } from "../etherscan-address-link";
 import { type ContractEventTableSchema } from "./contract-events-schema";
 
 const text = {
@@ -16,33 +13,12 @@ const text = {
   args: "ARGS",
 };
 
-const ETHERSCAN_URL =
-  getL1NetworkId(L2_NETWORK_ID) === "ETH_SEPOLIA" ||
-  getL1NetworkId(L2_NETWORK_ID) === "ETH_MAINNET"
-    ? getL1NetworkId(L2_NETWORK_ID) === "ETH_MAINNET"
-      ? "https://etherscan.io"
-      : "https://sepolia.etherscan.io"
-    : undefined;
-
-const getLinkCell = (content: string, endpoint: string) => {
-  if (ETHERSCAN_URL) {
-    return (
-      <CustomTooltip content={`View on Etherscan`}>
-        <a
-          className="text-purple-light font-mono"
-          href={`${ETHERSCAN_URL}${endpoint}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {content}
-          <ExternalLinkIcon className="inline-block ml-1" />
-        </a>
-      </CustomTooltip>
-    );
-  } else {
-    return <div className="font-mono">{content}</div>;
-  }
-};
+const getLinkCell = (content: string, endpoint: string) => (
+  <EtherscanAddressLink
+    content={truncateHashString(content)}
+    endpoint={endpoint}
+  />
+);
 
 export const ContractEventsTableColumns: ColumnDef<ContractEventTableSchema>[] =
   [

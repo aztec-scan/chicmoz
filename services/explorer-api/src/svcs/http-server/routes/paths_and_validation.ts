@@ -43,6 +43,7 @@ export const paths = {
   droppedTxByHash: `/l2/dropped-txs/:${txEffectHash}`,
 
   contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
+  contractClassStandardArtifact: `/l2/contract-classes/:${contractClassId}/versions/:${version}/standard-artifact`,
   contractClassesByClassId: `/l2/contract-classes/:${contractClassId}`,
   contractClasses: `/l2/contract-classes`,
 

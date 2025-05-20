@@ -5,6 +5,8 @@ import {
 } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import { chicmozL2ContractClassRegisteredEventSchema } from "@chicmoz-pkg/types";
+import standardTokenContract from "@defi-wonderland/aztec-standards/target/token_contract-Token.json" assert { type: "json" };
+import express from "express";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
@@ -183,66 +185,123 @@ export const openapi_POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT: OpenAPIObject["
     },
   };
 
+const _verifyArtifactPayload = async ({
+  res,
+  contractClassId,
+  version,
+  stringifiedArtifactJson,
+}: {
+  res: express.Response;
+  contractClassId: string;
+  version: number;
+  stringifiedArtifactJson: string;
+}) => {
+  const contractClassString = await dbWrapper.get(
+    ["l2", "contract-classes", contractClassId, version],
+    () => db.l2Contract.getL2RegisteredContractClass(contractClassId, version),
+  );
+  let dbContractClass;
+  if (contractClassString) {
+    dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
+      JSON.parse(contractClassString),
+    );
+    if (dbContractClass.artifactJson) {
+      res.status(200).json(dbContractClass);
+      return;
+    }
+  }
+  if (!dbContractClass) {
+    res.status(500).send("Contract class found in DB is not valid");
+    return;
+  }
+  if (stringifiedArtifactJson) {
+    // TODO: zod validation before endpoint?
+    res.status(400).send("Missing artifact json");
+    return;
+  }
+  const { isMatchingByteCode } = await verifyArtifactPayload(
+    { stringifiedArtifactJson },
+    dbContractClass,
+  );
+  if (!isMatchingByteCode) {
+    throw new Error("Incorrect artifact");
+  }
+  const parsed = JSON.parse(
+    stringifiedArtifactJson,
+  ) as unknown as NoirCompiledContract;
+  const contractTypeResult = getContractType(parsed);
+  const completeContractClass = {
+    ...dbContractClass,
+    artifactJson: stringifiedArtifactJson,
+    contractType: contractTypeResult.contractType,
+  };
+
+  setEntry(
+    ["l2", "contract-classes", contractClassId, version.toString()],
+    JSON.stringify(completeContractClass),
+    CACHE_TTL_SECONDS,
+  ).catch((err) => {
+    logger.warn(`Failed to cache contract class: ${err}`);
+  });
+  await db.l2Contract.addArtifactJson(
+    dbContractClass.contractClassId,
+    dbContractClass.version,
+    stringifiedArtifactJson,
+  );
+  res.status(201).send(completeContractClass);
+};
+
 export const POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT = asyncHandler(
   async (req, res) => {
     const {
       params: { contractClassId, version },
       body,
     } = postContrctClassArtifactSchema.parse(req);
-
-    const contractClassString = await dbWrapper.get(
-      ["l2", "contract-classes", contractClassId, version],
-      () =>
-        db.l2Contract.getL2RegisteredContractClass(contractClassId, version),
-    );
-    let dbContractClass;
-    if (contractClassString) {
-      dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
-        JSON.parse(contractClassString),
-      );
-      if (dbContractClass.artifactJson) {
-        res.status(200).json(dbContractClass);
-        return;
-      }
-    }
-    if (!dbContractClass) {
-      res.status(500).send("Contract class found in DB is not valid");
-      return;
-    }
-    if (!body.stringifiedArtifactJson) {
-      // TODO: zod validation before endpoint?
-      res.status(400).send("Missing artifact json");
-      return;
-    }
-    const { isMatchingByteCode } = await verifyArtifactPayload(
-      body,
-      dbContractClass,
-    );
-    if (!isMatchingByteCode) {
-      throw new Error("Incorrect artifact");
-    }
-    const parsed = JSON.parse(
-      body.stringifiedArtifactJson,
-    ) as unknown as NoirCompiledContract;
-    const contractTypeResult = getContractType(parsed);
-    const completeContractClass = {
-      ...dbContractClass,
-      artifactJson: body.stringifiedArtifactJson,
-      contractType: contractTypeResult.contractType,
-    };
-
-    setEntry(
-      ["l2", "contract-classes", contractClassId, version.toString()],
-      JSON.stringify(completeContractClass),
-      CACHE_TTL_SECONDS,
-    ).catch((err) => {
-      logger.warn(`Failed to cache contract class: ${err}`);
+    await _verifyArtifactPayload({
+      res,
+      contractClassId,
+      version: version,
+      stringifiedArtifactJson: body.stringifiedArtifactJson,
     });
-    await db.l2Contract.addArtifactJson(
-      dbContractClass.contractClassId,
-      dbContractClass.version,
-      body.stringifiedArtifactJson,
-    );
-    res.status(201).send(completeContractClass);
+  },
+);
+
+export const openapi_POST_L2_STANDARD_CONTRACT_EVALUATOR: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-classes/{classId}/versions/{version}/standard-artifact": {
+      post: {
+        tags: ["L2", "contract-classes"],
+        summary: "Evaluate if contract class is a standard contract",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  standardType: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: contractClassResponse,
+      },
+    },
+  };
+
+export const POST_L2_STANDARD_CONTRACT_EVALUATOR = asyncHandler(
+  async (req, res) => {
+    const {
+      params: { contractClassId, version },
+      //body,
+    } = postContrctClassArtifactSchema.parse(req);
+    await _verifyArtifactPayload({
+      res,
+      contractClassId,
+      version: version,
+      stringifiedArtifactJson: JSON.stringify(standardTokenContract),
+    });
   },
 );

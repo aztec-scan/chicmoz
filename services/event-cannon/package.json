@@ -17,6 +17,7 @@
     "@chicmoz-pkg/contract-verification": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/types": "workspace:^",
+    "@defi-wonderland/aztec-standards": "0.0.0-38eaaf24",
     "viem": "2.20.0"
   },
   "devDependencies": {

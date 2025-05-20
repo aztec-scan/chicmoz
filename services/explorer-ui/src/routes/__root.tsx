@@ -143,7 +143,7 @@ export const routes = {
   },
   validators: {
     route: "/validators",
-    title: "Validators",
+    title: "L1 Validators",
     children: {
       index: {
         route: "/",

@@ -20,7 +20,7 @@ export async function updateValidatorsState(
     stake: BigInt(validator.stake),
   }));
   const currentDbValues = await getAllL1L2Validators();
-  if (!currentDbValues) {
+  if (currentDbValues === null) {
     return;
   }
   logger.info(

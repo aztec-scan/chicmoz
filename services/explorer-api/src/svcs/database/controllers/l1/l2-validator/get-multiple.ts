@@ -27,9 +27,6 @@ export async function getAllL1L2Validators(
         ),
       )
       .execute();
-    if (!res.length) {
-      return null;
-    }
     const dbSingles = await Promise.all(
       res.map((validator) =>
         getL1L2Validator(

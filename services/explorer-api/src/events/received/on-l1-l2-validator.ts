@@ -7,9 +7,13 @@ import {
 import { getL1NetworkId } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../constants.js";
 import { L2_NETWORK_ID } from "../../environment.js";
+import { logger } from "../../logger.js";
 import { l1 } from "../../svcs/database/controllers/index.js";
 
 const onL1L2Validator = async (event: L1L2ValidatorEvent) => {
+  logger.info(
+    `🤖 L1L2 validator event (${event.validators.length} validators)`,
+  );
   await l1.updateValidatorsState(event);
 };
 

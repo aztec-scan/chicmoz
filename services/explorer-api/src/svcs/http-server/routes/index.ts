@@ -185,6 +185,11 @@ export const init = ({ router }: { router: Router }) => {
     controller.POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT,
   );
 
+  router.get( // TODO: change to POST
+    paths.contractClassStandardArtifact,
+    controller.POST_L2_STANDARD_CONTRACT_EVALUATOR,
+  );
+
   router.post(
     paths.contractInstance,
     bodyParser.json({
