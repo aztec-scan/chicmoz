@@ -8,6 +8,7 @@ export interface DetailItem {
   link?: string;
   extLink?: string;
   tooltip?: string;
+  customValue?: JSX.Element;
 }
 
 interface KeyValueDisplayProps {
@@ -26,6 +27,7 @@ export const KeyValueDisplay: FC<KeyValueDisplayProps> = ({ data }) => (
         link={item.link}
         extLink={item.extLink}
         tooltip={item.tooltip}
+        customValue={item.customValue ?? <></>}
       />
     ))}
   </>
