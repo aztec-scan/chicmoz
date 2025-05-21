@@ -17,7 +17,7 @@ interface KeyValueRowProps {
   isLast?: boolean;
   extLink?: string;
   tooltip?: string;
-  customValue: JSX.Element | ReactNode;
+  customValue?: JSX.Element | ReactNode;
 }
 
 enum DisplayType {

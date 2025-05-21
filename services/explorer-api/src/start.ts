@@ -31,7 +31,7 @@ ORIGIN: ${notes.origin}`);
       aztecScanManualSourceCodeUrls,
     )) {
       logger.info(`Updating with hardcoded aztec scan manual source code urls for contract: ${contractClassId}
-ORIGIN: ${sourceCodeUrl}`);
+URL: ${sourceCodeUrl}`);
       await updateContractClassManualSourceCodeUrl({
         contractClassId,
         sourceCodeUrl,

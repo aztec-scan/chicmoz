@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { type PendingTxSchema } from "./pending-txs-schema";
 import { PendingTxsColumns } from "./pending-txs-columns";
+import { type PendingTxSchema } from "./pending-txs-schema";
 
 interface Props {
   title?: string;
@@ -19,6 +19,7 @@ export const PendingTxsTable: FC<Props> = ({
   isLoading,
   error,
   disableSizeSelector,
+  disablePagination,
   maxEntries = 10,
 }) => {
   if (error) {
@@ -37,6 +38,7 @@ export const PendingTxsTable: FC<Props> = ({
           data={pendingTxEffects ?? []}
           columns={PendingTxsColumns}
           disableSizeSelector={disableSizeSelector}
+          disablePagination={disablePagination}
           maxEntries={maxEntries}
         />
       </div>
