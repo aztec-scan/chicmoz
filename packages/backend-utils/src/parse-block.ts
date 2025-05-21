@@ -11,11 +11,11 @@ const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
     return {
       ...txEffect,
       privateLogs: txEffect.privateLogs.map((log) => {
-        return log.fields.map((f) => f.toJSON());
+        return log.toFields().map((f) => f.toJSON());
       }),
       contractClassLogsLength: txEffect.contractClassLogs.length,
       publicLogs: txEffect.publicLogs.map((log) => {
-        return log.log.map((f) => f.toJSON());
+        return log.toFields().map((f) => f.toJSON());
       }),
       txHash: txEffect.txHash.toString(),
     };
@@ -28,7 +28,7 @@ export const blockFromString = (stringifiedBlock: string): L2Block => {
 
 export const parseBlock = async (
   b: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus
+  finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ): Promise<ChicmozL2Block> => {
   const blockHash = await b.hash();
 
