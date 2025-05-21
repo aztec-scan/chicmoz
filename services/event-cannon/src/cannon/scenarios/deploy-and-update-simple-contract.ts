@@ -5,8 +5,8 @@ import {
 } from "@aztec/aztec.js";
 import { SimpleLoggingContract } from "../../artifacts/SimpleLogging-v1.js";
 import { SimpleLoggingContract as SimpleLoggingV2 } from "../../artifacts/SimpleLogging-v2.js";
-import artifactJson from "../../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json" assert { type: "json" };
-import artifactJsonV2 from "../../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json" assert { type: "json" };
+import artifactJson from "../../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json" with { type: "json" };
+import artifactJsonV2 from "../../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json" with { type: "json" };
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
 import {

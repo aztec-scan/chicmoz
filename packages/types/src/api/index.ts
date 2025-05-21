@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  chicmozL1L2ValidatorSchema,
   chicmozL2BlockSchema,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
@@ -21,7 +22,7 @@ export const chicmozSearchQuerySchema = z.lazy(() =>
       }
       return val;
     }, hexStringSchema.or(chicmozL2BlockSchema.shape.height)),
-  })
+  }),
 );
 
 export const chicmozSearchResultsSchema = z.lazy(() =>
@@ -31,29 +32,35 @@ export const chicmozSearchResultsSchema = z.lazy(() =>
       blocks: z.array(
         z.object({
           hash: chicmozL2BlockSchema.shape.hash,
-        })
+        }),
       ),
       txEffects: z.array(
         z.object({
           txHash: chicmozL2TxEffectSchema.shape.txHash,
           partOfBlockWithHash: chicmozL2BlockSchema.shape.hash.optional(),
-        })
+        }),
       ),
       registeredContractClasses: z.array(
         z.object({
-          contractClassId: chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
+          contractClassId:
+            chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
           version: chicmozL2ContractClassRegisteredEventSchema.shape.version,
           partOfBlockWithHash: chicmozL2BlockSchema.shape.hash.optional(),
-        })
+        }),
       ),
       contractInstances: z.array(
         z.object({
           address: chicmozL2ContractInstanceDeployedEventSchema.shape.address,
           partOfBlockWithHash: chicmozL2BlockSchema.shape.hash.optional(),
-        })
+        }),
+      ),
+      validators: z.array(
+        z.object({
+          validatorAddress: chicmozL1L2ValidatorSchema.shape.attester,
+        }),
       ),
     }),
-  })
+  }),
 );
 
 export type ChicmozSearchResults = z.infer<typeof chicmozSearchResultsSchema>;

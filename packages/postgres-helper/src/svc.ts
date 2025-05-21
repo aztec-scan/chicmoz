@@ -59,7 +59,8 @@ export const getDb = () => {
     if (state === MicroserviceBaseSvcState.DOWN) {
       throw new Error("Database is down");
     }
-    if (state === MicroserviceBaseSvcState.INITIALIZING) {
+    // Use type assertion to avoid TypeScript's strict enum comparison
+    if (state as MicroserviceBaseSvcState === MicroserviceBaseSvcState.INITIALIZING) {
       throw new Error("Database is initializing");
     }
   } catch (error) {

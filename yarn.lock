@@ -608,7 +608,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -631,7 +631,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
   languageName: unknown
   linkType: soft
 
@@ -651,7 +651,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     vitest: "npm:0.34.6"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -674,7 +674,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -692,7 +692,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     winston: "npm:3.11.0"
   languageName: unknown
   linkType: soft
@@ -718,7 +718,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
   languageName: unknown
   linkType: soft
 
@@ -736,7 +736,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
   languageName: unknown
   linkType: soft
 
@@ -754,7 +754,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
   languageName: unknown
   linkType: soft
 
@@ -776,7 +776,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
   languageName: unknown
   linkType: soft
 
@@ -796,7 +796,7 @@ __metadata:
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
     redis: "npm:4.6.13"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -813,7 +813,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -854,7 +854,7 @@ __metadata:
     prettier-plugin-sort-json: "npm:3.1.0"
     redis: "npm:4.6.13"
     sequelize: "npm:6.33.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     vitest: "npm:0.34.6"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -889,7 +889,7 @@ __metadata:
     exponential-backoff: "npm:3.1.1"
     pg: "npm:8.11.3"
     tslib: "npm:2.6.3"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -920,7 +920,7 @@ __metadata:
     eslint-plugin-promise: "npm:6.0.0"
     exponential-backoff: "npm:3.1.1"
     pg: "npm:8.11.3"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     viem: "npm:2.20.0"
   languageName: unknown
   linkType: soft
@@ -946,7 +946,7 @@ __metadata:
     eslint-plugin-import: "npm:2.29.0"
     eslint-plugin-n: "npm:15.0.0 || 16.0.0 "
     eslint-plugin-promise: "npm:6.0.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     viem: "npm:2.20.0"
   languageName: unknown
   linkType: soft
@@ -1001,7 +1001,7 @@ __metadata:
     pg: "npm:8.11.3"
     redis: "npm:4.6.13"
     supertest: "npm:6.3.3"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     uuid: "npm:10.0.0"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -1067,7 +1067,7 @@ __metadata:
     tailwind-merge: "npm:2.4.0"
     tailwindcss: "npm:3.4.6"
     tailwindcss-animate: "npm:1.0.7"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     vaul: "npm:0.9.1"
     vite: "npm:5.3.4"
     vite-plugin-svgr: "npm:4.2.0"
@@ -1092,7 +1092,7 @@ __metadata:
     eslint-plugin-import: "npm:2.29.0"
     eslint-plugin-n: "npm:15.0.0 || 16.0.0 "
     eslint-plugin-promise: "npm:6.0.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
     ws: "npm:8.18.0"
   languageName: unknown
   linkType: soft
@@ -5646,7 +5646,7 @@ __metadata:
     prettier: "npm:3.1.0"
     prettier-plugin-organize-imports: "npm:3.2.4"
     prettier-plugin-sort-json: "npm:3.1.0"
-    typescript: "npm:5.2.2"
+    typescript: "npm:5.8.3"
   dependenciesMeta:
     prettier-plugin-organize-imports@3.2.4:
       unplugged: true
@@ -12120,23 +12120,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.2.2":
-  version: 5.2.2
-  resolution: "typescript@npm:5.2.2"
+"typescript@npm:5.8.3":
+  version: 5.8.3
+  resolution: "typescript@npm:5.8.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 91ae3e6193d0ddb8656d4c418a033f0f75dec5e077ebbc2bd6d76439b93f35683936ee1bdc0e9cf94ec76863aa49f27159b5788219b50e1cd0cd6d110aa34b07
+  checksum: 5f8bb01196e542e64d44db3d16ee0e4063ce4f3e3966df6005f2588e86d91c03e1fb131c2581baf0fb65ee79669eea6e161cd448178986587e9f6844446dbb48
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A5.2.2#optional!builtin<compat/typescript>":
-  version: 5.2.2
-  resolution: "typescript@patch:typescript@npm%3A5.2.2#optional!builtin<compat/typescript>::version=5.2.2&hash=f3b441"
+"typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>":
+  version: 5.8.3
+  resolution: "typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=29ae49"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 062c1cee1990e6b9419ce8a55162b8dc917eb87f807e4de0327dbc1c2fa4e5f61bc0dd4e034d38ff541d1ed0479b53bcee8e4de3a4075c51a1724eb6216cb6f5
+  checksum: 92ea03509e06598948559ddcdd8a4ae5a7ab475766d5589f1b796f5731b3d631a4c7ddfb86a3bd44d58d10102b132cd4b4994dda9b63e6273c66d77d6a271dbd
   languageName: node
   linkType: hard
 

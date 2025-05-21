@@ -15,6 +15,7 @@ import {
   l2ContractInstanceDeployed,
   txEffect,
 } from "../../schema/index.js";
+import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
 
 const getBlockHashByHeight = async (
   height: bigint,
@@ -62,6 +63,22 @@ const matchTxEffect = async (
     return [];
   }
   return [{ txHash: res[0].hash }];
+};
+
+const matchValidator = async (
+  hash: HexString,
+): Promise<ChicmozSearchResults["results"]["validators"]> => {
+  const res = await db()
+    .select({
+      attester: l1L2ValidatorTable.attester,
+    })
+    .from(l1L2ValidatorTable)
+    .where(eq(l1L2ValidatorTable.attester, hash))
+    .execute();
+  if (res.length === 0) {
+    return [];
+  }
+  return [{ validatorAddress: res[0].attester }];
 };
 
 const matchContractClass = async (
@@ -146,16 +163,23 @@ export const search = async (
         txEffects: [],
         registeredContractClasses: [],
         contractInstances: [],
+        validators: [],
       },
     };
   }
-  const [blocks, txEffects, registeredContractClasses, contractInstances] =
-    await Promise.all([
-      matchBlock(query),
-      matchTxEffect(query),
-      matchContractClass(query),
-      matchContractInstance(query),
-    ]);
+  const [
+    blocks,
+    txEffects,
+    registeredContractClasses,
+    contractInstances,
+    validators,
+  ] = await Promise.all([
+    matchBlock(query),
+    matchTxEffect(query),
+    matchContractClass(query),
+    matchContractInstance(query),
+    matchValidator(query),
+  ]);
 
   return chicmozSearchResultsSchema.parse({
     searchPhrase: query,
@@ -164,6 +188,7 @@ export const search = async (
       txEffects,
       registeredContractClasses,
       contractInstances,
+      validators,
     },
   });
 };

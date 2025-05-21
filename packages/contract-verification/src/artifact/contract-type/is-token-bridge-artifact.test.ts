@@ -1,6 +1,6 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
-import * as votingContractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" assert { type: "json" };
-import * as someBridgeContract from "@aztec/noir-contracts.js/artifacts/token_bridge_contract-TokenBridge" assert { type: "json" };
+import votingContractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" with { type: "json" };
+import someBridgeContract from "@aztec/noir-contracts.js/artifacts/token_bridge_contract-TokenBridge" with { type: "json" };
 import { describe, expect, test } from "vitest";
 import { isTokenBridgeArtifact } from "./is-token-bridge-artifact.js";
 

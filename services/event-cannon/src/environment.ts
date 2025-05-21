@@ -14,21 +14,21 @@ export const SCENARIO_DELAY = z.coerce
   .default(1000)
   .parse(process.env.SCENARIO_DELAY);
 
-export const INIFINITE_LOOP = process.env.INIFINITE_LOOP === "true" ?? false;
+export const INIFINITE_LOOP = process.env.INIFINITE_LOOP === "true";
 
 export const SCENARIO_SIMPLE_DEFAULT_ACCOUNT =
-  process.env.SCENARIO_SIMPLE_DEFAULT_ACCOUNT === "true" ?? false;
+  process.env.SCENARIO_SIMPLE_DEFAULT_ACCOUNT === "true";
 export const SCENARIO_TOKEN_CONTRACT =
-  process.env.SCENARIO_TOKEN_CONTRACT === "true" ?? false;
+  process.env.SCENARIO_TOKEN_CONTRACT === "true";
 export const SCENARIO_FUNCTIONS_VOTE =
-  process.env.SCENARIO_FUNCTIONS_VOTE === "true" ?? false;
+  process.env.SCENARIO_FUNCTIONS_VOTE === "true";
 export const SCENARIO_SIMPLE_CONTRACT =
-  process.env.SCENARIO_SIMPLE_CONTRACT === "true" ?? false;
+  process.env.SCENARIO_SIMPLE_CONTRACT === "true";
 export const SCENARIO_SIMPLE_LOG =
-  process.env.SCENARIO_SIMPLE_LOG === "true" ?? false;
+  process.env.SCENARIO_SIMPLE_LOG === "true";
 export const SCENARIO_L1L2_PUBLIC_MESSAGING =
-  process.env.SCENARIO_L1L2_PUBLIC_MESSAGING === "true" ?? false;
+  process.env.SCENARIO_L1L2_PUBLIC_MESSAGING === "true";
 export const SCENARIO_L1L2_PRIVATE_MESSAGING =
-  process.env.SCENARIO_L1L2_PRIVATE_MESSAGING === "true" ?? false;
+  process.env.SCENARIO_L1L2_PRIVATE_MESSAGING === "true";
 export const SCENARIO_DEPLOY_AND_UPDATE =
-  process.env.SCENARIO_DEPLOY_AND_UPDATE === "true" ?? false;
+  process.env.SCENARIO_DEPLOY_AND_UPDATE === "true";
