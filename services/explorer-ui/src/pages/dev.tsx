@@ -82,14 +82,6 @@ export const DevPage: FC = () => {
               {routes.feeRecipients.title}
             </Link>
           </p>
-          <p>
-            <Link
-              to={routes.validators.route}
-              className="text-purple-light hover:font-bold"
-            >
-              {routes.validators.title}
-            </Link>
-          </p>
           <h3>External</h3>
           <ul>
             {CHICMOZ_ALL_UI_URLS.map((ui) => (
@@ -104,16 +96,6 @@ export const DevPage: FC = () => {
                 </a>
               </li>
             ))}
-            <li key="docs">
-              <a
-                href="https://docs.aztecscan.xyz/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-purple-light hover:font-bold"
-              >
-                Docs
-              </a>
-            </li>
           </ul>
         </>,
       )}

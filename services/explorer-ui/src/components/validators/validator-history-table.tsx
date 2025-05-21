@@ -1,11 +1,11 @@
-import { type FC } from "react";
+import { type ChicmozL1L2ValidatorHistory } from "@chicmoz-pkg/types";
+import { useMemo, type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { PendingTxsColumns } from "./pending-txs-columns";
-import { type PendingTxSchema } from "./pending-txs-schema";
+import { ValidatorHistoryTableColumns } from "./validator-history-table-columns";
 
 interface Props {
   title?: string;
-  pendingTxEffects?: PendingTxSchema[];
+  history?: ChicmozL1L2ValidatorHistory;
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -13,18 +13,33 @@ interface Props {
   maxEntries?: number;
 }
 
-export const PendingTxsTable: FC<Props> = ({
+export const ValidatorHistoryTable: FC<Props> = ({
   title,
-  pendingTxEffects,
+  history,
   isLoading,
   error,
   disableSizeSelector,
-  disablePagination,
+  disablePagination = false,
   maxEntries = 10,
 }) => {
+  const processedHistory = useMemo(() => {
+    if (!history) {
+      return [];
+    }
+
+    return history.map((entry, index) => {
+      return {
+        id: `${entry[0].getTime()}-${index}`,
+        timestamp: entry[0],
+        keyChanged: entry[1],
+        newValue: entry[2],
+      };
+    });
+  }, [history]);
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
+
   return (
     <section className="relative mx-0 w-full transition-all">
       <div className="space-y-4 bg-white rounded-lg p-5">
@@ -33,10 +48,11 @@ export const PendingTxsTable: FC<Props> = ({
             <h3 className="ml-0.5">{title}</h3>
           </div>
         )}
+
         <DataTable
           isLoading={isLoading}
-          data={pendingTxEffects ?? []}
-          columns={PendingTxsColumns}
+          data={processedHistory}
+          columns={ValidatorHistoryTableColumns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

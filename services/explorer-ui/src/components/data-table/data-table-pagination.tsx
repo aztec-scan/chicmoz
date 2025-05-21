@@ -19,26 +19,14 @@ export function DataTablePagination<TData>({
   const totalRowCount = table.getCoreRowModel().rows.length;
   const pageCount = table.getPageCount();
 
-  // Set page size based on data length for tables with 20 or fewer rows
   useEffect(() => {
-    // Only auto-set page size if maxEntries is not explicitly provided
-    if (maxEntries === 10 && totalRowCount > 0 && totalRowCount <= 20) {
-      // For tables with up to 20 rows, show all rows without pagination
-      // But only if maxEntries wasn't explicitly set (using default value)
-      table.setPageSize(totalRowCount);
-    } else {
-      // Otherwise use the specified maxEntries
-      table.setPageSize(maxEntries);
-    }
+    table.setPageSize(maxEntries);
   }, [table, maxEntries, totalRowCount]);
 
-  // Don't show pagination if there's no data or only one page
   if (totalRowCount === 0) {
     return null;
   }
 
-  // Hide pagination if there's only one page and no size selector needed
-  // This simplifies the UI when pagination isn't necessary
   if (pageCount <= 1 && disableSizeSelector) {
     return null;
   }
@@ -61,13 +49,11 @@ const PaginationControls = <TData,>({
 }: DataTablePaginationProps<TData>) => {
   const pageCount = table.getPageCount();
 
-  // Hide navigation controls if there's only one page
   const showNavigation = pageCount > 1;
 
   return (
     <div className="w-full">
       <div className="flex flex-row justify-center items-center w-full gap-4">
-        {/* Navigation centered */}
         {showNavigation && (
           <div className="flex justify-center">
             <PageNavigation table={table} />
@@ -82,24 +68,19 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
   const currentPageIndex = table.getState().pagination.pageIndex;
   const totalPages = table.getPageCount();
 
-  // Calculate which 3 page numbers to show
   const getPageNumbers = (): number[] => {
-    // If less than 3 pages total, just return all page indices
     if (totalPages <= 3) {
       return Array.from({ length: totalPages }, (_, i) => i);
     }
 
-    // If at the start, show first 3 pages
     if (currentPageIndex === 0) {
       return [0, 1, 2];
     }
 
-    // If at the end, show last 3 pages
     if (currentPageIndex === totalPages - 1) {
       return [totalPages - 3, totalPages - 2, totalPages - 1];
     }
 
-    // Otherwise show current page and one on each side
     return [currentPageIndex - 1, currentPageIndex, currentPageIndex + 1];
   };
 
@@ -135,9 +116,7 @@ const PageNavigation = <TData,>({ table }: DataTablePaginationProps<TData>) => {
           </Button>
         </div>
 
-        {/* Fixed width placeholder for page numbers */}
         <div className="flex items-center justify-center space-x-2 min-w-[120px]">
-          {/* Always show 3 page numbers */}
           {pageNumbers.map((pageIndex) => (
             <div key={pageIndex} className="w-8 text-center">
               <Button

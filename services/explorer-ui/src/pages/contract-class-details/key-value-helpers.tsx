@@ -10,6 +10,17 @@ export const getContractClassKeyValueData = (
   data: ChicmozL2ContractClassRegisteredEvent,
   instanceAmount?: string,
 ) => {
+  const sourceCode = data.sourceCodeUrl
+    ? {
+        label: "SOURCE CODE URL",
+        value: "View source code",
+        extLink: data.sourceCodeUrl,
+      }
+    : {
+        label: "SOURCE CODE URL",
+        value: "CUSTOM",
+        customValue: <div className="text-gray-500">Not available</div>,
+      };
   const valueData: DetailItem[] = [
     {
       label: "BLOCK HASH",
@@ -33,19 +44,19 @@ export const getContractClassKeyValueData = (
       value: data.privateFunctionsRoot,
     },
     {
+      label: "INSTANCES DEPLOYED",
+      value: instanceAmount,
+    },
+    {
       label: "RAW DATA",
       value: "View raw data",
-      extLink: `${API_URL}/${aztecExplorer.getL2ContractClassByIdAndVersion(
+      extLink: `${API_URL}${aztecExplorer.getL2ContractClassByIdAndVersion(
         data.contractClassId,
         data.version.toString(),
       )}`,
     },
-    {
-      label: "INSTANCES DEPLOYED",
-      value: instanceAmount,
-    },
+    sourceCode,
   ];
-
   if (data.contractType && data.contractType !== ContractType.Unknown) {
     valueData.push({
       label: "CONTRACT TYPE",

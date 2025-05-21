@@ -94,6 +94,7 @@ export const l2ContractClassRegistered = pgTable(
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
     contractType: contractTypeDbEnum("contract_type"),
+    sourceCodeUrl: varchar("source_code_url"),
   },
   (t) => ({
     primaryKey: primaryKey({

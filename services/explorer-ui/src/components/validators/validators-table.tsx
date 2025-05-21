@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { PendingTxsColumns } from "./pending-txs-columns";
-import { type PendingTxSchema } from "./pending-txs-schema";
+import { ValidatorsTableColumns } from "./validators-columns";
+import { type ValidatorTableSchema } from "./validators-schema";
 
 interface Props {
   title?: string;
-  pendingTxEffects?: PendingTxSchema[];
+  validators?: ValidatorTableSchema[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -13,15 +13,18 @@ interface Props {
   maxEntries?: number;
 }
 
-export const PendingTxsTable: FC<Props> = ({
+export const ValidatorsTable: FC<Props> = ({
   title,
-  pendingTxEffects,
+  validators,
   isLoading,
   error,
   disableSizeSelector,
-  disablePagination,
+  disablePagination = false,
   maxEntries = 10,
 }) => {
+  if (!validators) {
+    return <div>No data</div>;
+  }
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -35,8 +38,8 @@ export const PendingTxsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={pendingTxEffects ?? []}
-          columns={PendingTxsColumns}
+          data={validators}
+          columns={ValidatorsTableColumns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

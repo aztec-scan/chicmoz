@@ -1,6 +1,7 @@
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
-import { type FC } from "react";
+import { ExternalLink } from "lucide-react";
+import { type FC, type ReactNode } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { formatTimeSince } from "~/lib/utils";
 import { BlockStatusBadge } from "../block-status-badge";
@@ -16,6 +17,7 @@ interface KeyValueRowProps {
   isLast?: boolean;
   extLink?: string;
   tooltip?: string;
+  customValue?: JSX.Element | ReactNode;
 }
 
 enum DisplayType {
@@ -24,9 +26,10 @@ enum DisplayType {
   LINK = "link",
   HEX = "hex",
   EXTERNAL_LINK = "external-link",
-  BADGE = "badge",
+  BLOCK_BADGE = "block-badge",
   LOADING = "loading",
   DATE = "date",
+  CUSTOM = "custom",
 }
 
 export const KeyValueRow: FC<KeyValueRowProps> = ({
@@ -37,6 +40,7 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
   extLink,
   tooltip,
   timestamp,
+  customValue,
 }) => {
   let displayType = DisplayType.TEXT;
   if (link) {
@@ -49,11 +53,14 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
     displayType = DisplayType.HEX;
   } else if (extLink) {
     displayType = DisplayType.EXTERNAL_LINK;
-  } else if (label.includes("status")) {
-    displayType = DisplayType.BADGE;
+  } else if (label.includes("Block status")) {
+    displayType = DisplayType.BLOCK_BADGE;
   } else if (timestamp) {
     displayType = DisplayType.DATE;
+  } else if (value === "CUSTOM") {
+    displayType = DisplayType.CUSTOM;
   }
+  // TODO: add custom type
   const commonTextClasses = "text-sm flex-grow text-end justify-end ";
 
   if (!value) {
@@ -115,16 +122,16 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
           href={extLink}
           target="_blank"
           rel="noreferrer"
-          className={`${commonTextClasses} text-primary-600 text-primary cursor-pointer hover:opacity-80`}
+          className={`${commonTextClasses} text-primary-600 text-primary cursor-pointer hover:opacity-80 flex items-center gap-1`}
         >
           {value}
-          <span className="ml-1">↗️</span>
+          <ExternalLink size={14} className="text-purple-light" />
         </a>
       )}
       {displayType === DisplayType.TEXTAREA && (
         <CopyableText text={value} toCopy={value} textArea />
       )}
-      {displayType === DisplayType.BADGE && (
+      {displayType === DisplayType.BLOCK_BADGE && (
         <div className={commonTextClasses}>
           <BlockStatusBadge status={Number(value)} />
         </div>
@@ -136,6 +143,9 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
             return `${new Date(timestamp).toLocaleString()} (${timeSince} ago)`;
           })()}
         </span>
+      )}
+      {displayType === DisplayType.CUSTOM && (
+        <span className={commonTextClasses}>{customValue}</span>
       )}
     </div>
   );

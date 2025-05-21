@@ -34,7 +34,6 @@ export const Contracts: FC = () => {
     isLoading: loadingAmountContracts24h,
     error: errorAmountContracts24h,
   } = useTotalContractsLast24h();
-
   return (
     <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-wrap m-5">

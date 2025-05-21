@@ -41,9 +41,9 @@ export function DataTable<TData, TValue>({
   isLoading,
   columns,
   data,
-  disableSizeSelector,
+  disableSizeSelector = false,
   disablePagination = false,
-  maxEntries = 10, // Default to 10 entries if not specified
+  maxEntries = 10,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
