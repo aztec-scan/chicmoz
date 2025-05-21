@@ -13,8 +13,8 @@ build:
           else
             ARCH_TAG="amd64"
           fi
-          docker pull aztecprotocol/aztec:0.87.1-${ARCH_TAG}
-          docker tag aztecprotocol/aztec:0.87.1-${ARCH_TAG} $IMAGE
+          docker pull aztecprotocol/aztec:0.87.2-${ARCH_TAG}
+          docker tag aztecprotocol/aztec:0.87.2-${ARCH_TAG} $IMAGE
         dependencies:
           paths:
             - "."

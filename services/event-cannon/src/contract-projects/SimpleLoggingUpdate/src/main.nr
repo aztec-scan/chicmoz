@@ -1,7 +1,7 @@
 use dep::aztec::macros::aztec;
 
 #[aztec]
-contract SimpleLogging {
+contract SimpleLoggingUpdate {
     use dep::aztec::prelude::{Map, PublicMutable};
     use dep::aztec::{
         macros::{storage::storage, functions::{public, initializer, utility, internal}},
@@ -33,13 +33,13 @@ contract SimpleLogging {
     #[public]
     fn decrese_counter_public(counter_id: Field){
       context.emit_public_log(/*message=*/ "pub log");
-      SimpleLogging::at(context.this_address()).remove_from_counter_public(counter_id);
+      SimpleLoggingUpdate::at(context.this_address()).remove_from_counter_public(counter_id);
     }
 
     #[public]
     fn increase_counter_public(counter_id: Field) {
       context.emit_public_log(/*message=*/ "pub log");
-      SimpleLogging::at(context.this_address()).add_to_counter_public(counter_id);
+      SimpleLoggingUpdate::at(context.this_address()).add_to_counter_public(counter_id);
     }
 
     #[utility]
