@@ -1,7 +1,7 @@
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
-import { type FC } from "react";
+import { type FC, type ReactNode } from "react";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { formatTimeSince } from "~/lib/utils";
 import { BlockStatusBadge } from "../block-status-badge";
@@ -17,7 +17,7 @@ interface KeyValueRowProps {
   isLast?: boolean;
   extLink?: string;
   tooltip?: string;
-  customValue: JSX.Element;
+  customValue?: JSX.Element | ReactNode;
 }
 
 enum DisplayType {

@@ -69,6 +69,7 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
   contractType: contractTypeSchema.nullable().optional(),
+  sourceCodeUrl: z.string().nullable().optional(),
 });
 
 export type ChicmozL2ContractClassRegisteredEvent = z.infer<

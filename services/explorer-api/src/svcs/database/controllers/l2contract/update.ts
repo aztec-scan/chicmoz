@@ -1,12 +1,16 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  AztecAddress,
   NODE_ENV,
   NodeEnv,
   type ChicmozL2ContractInstanceDeployerMetadata,
 } from "@chicmoz-pkg/types";
 import { and, eq, isNull } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
-import { l2ContractInstanceDeployerMetadataTable } from "../../../database/schema/l2contract/index.js";
+import {
+  l2ContractClassRegistered,
+  l2ContractInstanceDeployerMetadataTable,
+} from "../../../database/schema/l2contract/index.js";
 
 export const updateContractInstanceDeployerMetadata = async (
   contractDeployerMetadata: Omit<
@@ -64,4 +68,19 @@ export const updateContractInstanceDeployerMetadata = async (
       });
     }
   });
+};
+
+export const updateContractClassManualSourceCodeUrl = async ({
+  contractClassId,
+  sourceCodeUrl,
+}: {
+  contractClassId: AztecAddress;
+  sourceCodeUrl: string;
+}): Promise<void> => {
+  await db()
+    .update(l2ContractClassRegistered)
+    .set({
+      sourceCodeUrl,
+    })
+    .where(eq(l2ContractClassRegistered.contractClassId, contractClassId));
 };
