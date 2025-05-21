@@ -2,6 +2,7 @@ apiVersion: skaffold/v4beta6
 kind: Config
 requires:
   - path: ../anvil-ethereum-node/skaffold.yaml
+  - path: ../aztec-sandbox-node/skaffold.yaml
 deploy:
   kubectl:
     flags:
@@ -11,6 +12,7 @@ manifests:
     - ../aztec-sandbox-node/ingress.yaml
     - ../aztec-sandbox-node/deployment.yaml
     - ../aztec-sandbox-node/service.yaml
+    - ../aztec-sandbox-node/config.yaml
     - ../anvil-ethereum-node/config.yaml
     - ../anvil-ethereum-node/ingress.yaml
     - ../anvil-ethereum-node/deployment.yaml

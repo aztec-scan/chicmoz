@@ -17,7 +17,7 @@ spec:
         app: aztec-sandbox-node
     spec:
       containers:
-        - image: aztecprotocol/aztec:0.86.0
+        - image: aztecprotocol/aztec
           name: aztec-sandbox-node
           resources:
             limits:
@@ -33,6 +33,11 @@ spec:
               containerPort: 8081
               protocol: TCP
           env:
+            - name: ARCH_TAG
+              valueFrom:
+                configMapKeyRef:
+                  name: aztec-arch-config
+                  key: arch_tag
             # NOTE: So far this file in aztec-packages seems to be closest to the truth: yarn-project/aztec/src/cli/aztec_start_options.ts (also boxes/docker-compose.yml is a good place)
             #- name: DEBUG
             #  value: "aztec:*"

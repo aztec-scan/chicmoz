@@ -1,0 +1,20 @@
+apiVersion: skaffold/v4beta5
+kind: Config
+metadata:
+  name: aztec-sandbox-deployment
+build:
+  artifacts:
+    - image: aztecprotocol/aztec
+      custom:
+        buildCommand: |
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+            ARCH_TAG="arm64"
+          else
+            ARCH_TAG="amd64"
+          fi
+          docker pull aztecprotocol/aztec:0.86.0-${ARCH_TAG}
+          docker tag aztecprotocol/aztec:0.86.0-${ARCH_TAG} $IMAGE
+        dependencies:
+          paths:
+            - "."
