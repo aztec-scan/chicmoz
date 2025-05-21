@@ -85,6 +85,7 @@ export const Header = () => {
       const [txEffect] = data.results.txEffects;
       const [instance] = data.results.contractInstances;
       const [contractClass] = data.results.registeredContractClasses;
+      const [validators] = data.results.validators;
 
       if (block) {
         void navigate({ to: `/blocks/${block.hash}` });
@@ -99,6 +100,9 @@ export const Header = () => {
         void navigate({
           to: `/contracts/classes/${contractClass.contractClassId}/versions/${contractClass.version}`,
         });
+        setIsMenuOpen(false);
+      } else if (validators) {
+        void navigate({ to: `/l1/validators/${validators.validatorAddress}` });
         setIsMenuOpen(false);
       } else if (Object.values(data.results).every((arr) => !arr.length)) {
         setHasNoResults(true);
