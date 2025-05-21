@@ -9,8 +9,8 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/aztec.js": "0.87.0",
-    "@aztec/l1-artifacts": "0.87.0",
+    "@aztec/aztec.js": "0.87.1",
+    "@aztec/l1-artifacts": "0.87.1",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",
     "@chicmoz-pkg/message-registry": "workspace:^",
