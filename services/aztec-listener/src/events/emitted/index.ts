@@ -7,13 +7,13 @@ import {
   ChicmozL2Sequencer,
   chicmozL2RpcNodeErrorSchema,
 } from "@chicmoz-pkg/types";
-import { AZTEC_RPC_URL } from "../../environment.js";
 import { logger } from "../../logger.js";
 import {
   publishMessage,
   publishMessageSync,
 } from "../../svcs/message-bus/index.js";
 import { onL2RpcNodeAlive } from "./on-node-alive.js";
+import { AZTEC_RPC_URL_POOL } from "../../environment.js";
 
 export const onBlock = async (
   block: L2Block,
@@ -75,7 +75,7 @@ export const onL2SequencerInfo = async (sequencer: ChicmozL2Sequencer) => {
   await publishMessage("SEQUENCER_INFO_EVENT", event);
 };
 
-const IP_ADDRESS = AZTEC_RPC_URL.split("//")[1].split(":")[0];
+const IP_ADDRESS = AZTEC_RPC_URL_POOL[0].url.split("//")[1].split(":")[0];
 const replaceIpAddress = (str: string) =>
   str.replaceAll(IP_ADDRESS, "xxx.xxx.xxx.xxx");
 
@@ -90,7 +90,8 @@ export const onL2RpcNodeError = (
     event = {
       nodeError: chicmozL2RpcNodeErrorSchema.parse({
         ...rpcNodeError,
-        rpcUrl: AZTEC_RPC_URL,
+        //WARN: What to do here?
+        rpcUrl: AZTEC_RPC_URL_POOL[0].url,
         count: 1,
         createdAt: new Date(),
         lastSeenAt: new Date(),

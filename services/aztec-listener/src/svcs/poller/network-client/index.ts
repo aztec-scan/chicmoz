@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { AztecNode, NodeInfo, createAztecNodeClient } from "@aztec/aztec.js";
+import { AztecNode, NodeInfo } from "@aztec/aztec.js";
 import {
   ChicmozChainInfo,
   ChicmozL2Sequencer,
@@ -9,7 +9,6 @@ import {
 } from "@chicmoz-pkg/types";
 import { IBackOffOptions, backOff } from "exponential-backoff";
 import {
-  AZTEC_RPC_URL,
   L2_NETWORK_ID,
   MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS,
 } from "../../../environment.js";
@@ -24,12 +23,12 @@ import {
   getChicmozChainInfoFromNodeInfo,
   getSequencerFromNodeInfo,
 } from "./utils.js";
-
-let aztecNode: AztecNode;
+import { getCurrentRpcNodeUrl, getNextRpcNode, initPool } from "./pool.js";
 
 const backOffOptions: Partial<IBackOffOptions> = {
   numOfAttempts: 5,
   maxDelay: 10000,
+  //TODO: change to 200 when node pool is implimented
   startingDelay: 2000,
   retry: (e, attemptNumber: number) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -53,13 +52,6 @@ const backOffOptions: Partial<IBackOffOptions> = {
   },
 };
 
-const node = () => {
-  if (!aztecNode) {
-    throw new Error("Node not initialized");
-  }
-  return aztecNode;
-};
-
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
   args?: Parameters<AztecNode[K]>,
@@ -67,12 +59,12 @@ const callNodeFunction = async <K extends keyof AztecNode>(
   try {
     const res = await backOff(async () => {
       // eslint-disable-next-line @typescript-eslint/ban-types
-      return (await (node()[fnName] as Function).apply(
-        node(),
+      return (await (getNextRpcNode().node[fnName] as Function).apply(
+        getNextRpcNode().node,
         args,
       )) as Promise<ReturnType<AztecNode[K]>>;
     }, backOffOptions);
-    onL2RpcNodeAlive(AZTEC_RPC_URL);
+    onL2RpcNodeAlive(getCurrentRpcNodeUrl());
     return res;
   } catch (e) {
     logger.warn(`Aztec failed to call ${fnName}`);
@@ -92,23 +84,12 @@ const callNodeFunction = async <K extends keyof AztecNode>(
   }
 };
 
-const checkValidatorStats = async () => {
-  try {
-    const stats = await aztecNode.getValidatorsStats();
-    logger.info(`Validator stats: ${JSON.stringify(stats, null, 2)}`);
-  } catch (e) {
-    logger.warn(`Failed to fetch validator stats: ${(e as Error).message}`);
-  }
-};
-
 const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const init = async () => {
-  logger.info(`Initializing Aztec node client with ${AZTEC_RPC_URL}`);
-  aztecNode = createAztecNodeClient(AZTEC_RPC_URL);
-  await checkValidatorStats();
+  initPool();
   await sleep(1000);
   return getFreshInfo();
 };
@@ -144,7 +125,7 @@ export const getFreshInfo = async (): Promise<{
   });
   const sequencer = getSequencerFromNodeInfo(
     L2_NETWORK_ID,
-    AZTEC_RPC_URL,
+    getCurrentRpcNodeUrl(),
     nodeInfo,
   );
   onL2SequencerInfo(sequencer).catch((e) => {

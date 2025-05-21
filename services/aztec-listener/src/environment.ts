@@ -1,4 +1,9 @@
-import { l2NetworkIdSchema, type L2NetworkId } from "@chicmoz-pkg/types";
+import {
+  jsonStringify,
+  l2NetworkIdSchema,
+  rpcNodePoolSchema,
+  type L2NetworkId,
+} from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export const BLOCK_POLL_INTERVAL_MS = z.coerce
@@ -40,9 +45,6 @@ export const AZTEC_LISTEN_FOR_CHAIN_INFO =
   process.env.AZTEC_LISTEN_FOR_CHAIN_INFO === "true";
 export const AZTEC_DISABLED = process.env.AZTEC_DISABLED === "true";
 
-export const AZTEC_RPC_URL =
-  process.env.AZTEC_RPC_URL ?? "http://localhost:8080";
-
 export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";
 
@@ -50,12 +52,18 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID,
 );
 
+export const AZTEC_RPC_URL_POOL = rpcNodePoolSchema.parse(
+  process.env.AZTEC_RPC_URL_POOL,
+);
+
 export const getConfigStr = () => `POLLER
 AZTEC_DISABLED:                                            ${
   AZTEC_DISABLED ? "✅" : "❌"
 }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
-AZTEC_RPC_URL:                                             ${AZTEC_RPC_URL}
+AZTEC_RPC_URL_POOL:                                        ${jsonStringify(
+  AZTEC_RPC_URL_POOL,
+)}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
