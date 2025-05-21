@@ -102,7 +102,7 @@ export const Header = () => {
         });
         setIsMenuOpen(false);
       } else if (validators) {
-        void navigate({ to: `/validators/${validators.validatorAddress}` });
+        void navigate({ to: `/l1/validators/${validators.validatorAddress}` });
         setIsMenuOpen(false);
       } else if (Object.values(data.results).every((arr) => !arr.length)) {
         setHasNoResults(true);
