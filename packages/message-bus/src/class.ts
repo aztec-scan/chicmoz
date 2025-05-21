@@ -102,7 +102,10 @@ export class MessageBus {
 
     const kafkaMessages: Message[] = [];
     for (const m of messages) {
-      kafkaMessages.push({ value: Buffer.from(BSON.serialize({ data: m })) });
+      // Serialize the data and create a Buffer
+      const serialized = BSON.serialize({ data: m });
+      // Ensure we're using a Buffer as required by the Message interface
+      kafkaMessages.push({ value: Buffer.from(serialized) });
     } // double check
 
     await this.#producer!.send({ topic, messages: kafkaMessages });
@@ -180,7 +183,16 @@ export class MessageBus {
         //   `Kafka: received message from topic ${topic} in group ${groupId}`
         // );
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const data = BSON.deserialize(message.value!).data;
+        // Convert Buffer to Uint8Array before deserializing
+        const messageValue = message.value!;
+        const valueAsUint8Array = messageValue instanceof Buffer 
+          ? new Uint8Array(messageValue) 
+          : typeof messageValue === 'string' 
+            ? new TextEncoder().encode(messageValue)
+            : new Uint8Array(0);
+        // Add proper type assertion to satisfy the linter
+        const deserializedObj = BSON.deserialize(valueAsUint8Array) as { data: unknown };
+        const data = deserializedObj.data;
         const cb = this.#consumers[groupId]?.topicCallbacks[topic];
         if (cb) {
           try {

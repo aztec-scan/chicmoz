@@ -43,7 +43,8 @@ const checkReady = () => {
   if (state === MicroserviceBaseSvcState.DOWN) {
     throw new Error("MessageBus is down");
   }
-  if (state === MicroserviceBaseSvcState.INITIALIZING) {
+  // Use type assertion to avoid TypeScript's strict enum comparison
+  if (state as MicroserviceBaseSvcState === MicroserviceBaseSvcState.INITIALIZING) {
     throw new Error("MessageBus is initializing");
   }
   return state;

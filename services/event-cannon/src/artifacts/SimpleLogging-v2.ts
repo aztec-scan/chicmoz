@@ -34,7 +34,7 @@ import {
   type U128Like,
   type WrappedFieldLike,
 } from '@aztec/aztec.js';
-import SimpleLoggingContractArtifactJson from '../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json' assert { type: 'json' };
+import SimpleLoggingContractArtifactJson from '../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json' with { type: 'json' };
 export const SimpleLoggingContractArtifact = loadContractArtifact(SimpleLoggingContractArtifactJson as NoirCompiledContract);
 
 

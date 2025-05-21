@@ -25,7 +25,7 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-n": "15.0.0 || 16.0.0 ",
     "eslint-plugin-promise": "6.0.0",
-    "typescript": "5.2.2"
+    "typescript": "5.8.3"
   },
   "scripts": {
     "prebuild": "rm -rf build; mkdir build",
