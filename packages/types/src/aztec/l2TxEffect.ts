@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  aztecAddressSchema,
-  hexStringSchema,
-} from "../general.js";
+import { aztecAddressSchema, hexStringSchema } from "../general.js";
 import { frNumberSchema, frSchema } from "./utils.js";
 
 export const chicmozL2PendingTxSchema = z.object({
@@ -41,15 +38,26 @@ export const chicmozL2TxEffectSchema = z.object({
   nullifiers: z.array(frSchema),
   l2ToL1Msgs: z.array(frSchema),
   publicDataWrites: z.array(z.object({ leafSlot: frSchema, value: frSchema })),
-  privateLogs: z.array(z.array(frSchema)),
-  publicLogs: z.array(z.array(frSchema)),
+  privateLogs: z.array(
+    z.object({
+      fields: z.array(frSchema),
+      emittedLength: z.number(),
+    }),
+  ),
+  publicLogs: z.array(
+    z.object({
+      contractAddress: aztecAddressSchema,
+      fields: z.array(frSchema),
+      emittedLength: z.number(),
+    }),
+  ),
   contractClassLogs: z.array(
     z.object({
       contractAddress: aztecAddressSchema,
       fields: z.array(frSchema),
+      emittedLength: z.number(),
     }),
   ),
-  contractClassLogsLength: frNumberSchema,
 });
 
 export type ChicmozL2PendingTx = z.infer<typeof chicmozL2PendingTxSchema>;

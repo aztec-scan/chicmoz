@@ -79,6 +79,7 @@ export const mapTxEffectsData = (
   return {
     privateLogs: !!data?.privateLogs?.length,
     publicLogs: !!data?.publicLogs?.length,
+    contractClassLogs: !!data?.contractClassLogs?.length,
     nullifiers: !!data?.nullifiers?.length,
     noteHashes: !!data?.noteHashes?.length,
     l2ToL1Msgs: !!data?.l2ToL1Msgs?.length,

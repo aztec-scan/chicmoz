@@ -3,12 +3,16 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { routes } from "~/routes/__root";
 
 interface PublicLogsProps {
-  logs: string[][];
+  logs: {
+    contractAddress: string;
+    fields: string[];
+    emittedLength: number;
+  }[];
 }
 
 export const PublicLogs: FC<PublicLogsProps> = ({ logs }) => (
   <div>
-    {logs.map(([contractAddress, ...logData], index) => (
+    {logs.map(({ contractAddress, fields, emittedLength }, index) => (
       <div key={index}>
         <h4>Index {index}</h4>
         <KeyValueDisplay
@@ -20,7 +24,11 @@ export const PublicLogs: FC<PublicLogsProps> = ({ logs }) => (
             },
             {
               label: "data",
-              value: logData.toString(),
+              value: fields.toString(),
+            },
+            {
+              label: "emittedLength",
+              value: emittedLength.toString(),
             },
           ]}
         />

@@ -34,21 +34,21 @@ import {
   type U128Like,
   type WrappedFieldLike,
 } from '@aztec/aztec.js';
-import SimpleLoggingContractArtifactJson from '../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json' with { type: 'json' };
-export const SimpleLoggingContractArtifact = loadContractArtifact(SimpleLoggingContractArtifactJson as NoirCompiledContract);
+import SimpleLoggingUpdateContractArtifactJson from '../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLoggingUpdate.json' with { type: 'json' };
+export const SimpleLoggingUpdateContractArtifact = loadContractArtifact(SimpleLoggingUpdateContractArtifactJson as NoirCompiledContract);
 
 
 
 /**
- * Type-safe interface for contract SimpleLogging;
+ * Type-safe interface for contract SimpleLoggingUpdate;
  */
-export class SimpleLoggingContract extends ContractBase {
+export class SimpleLoggingUpdateContract extends ContractBase {
   
   private constructor(
     instance: ContractInstanceWithAddress,
     wallet: Wallet,
   ) {
-    super(instance, SimpleLoggingContractArtifact, wallet);
+    super(instance, SimpleLoggingUpdateContractArtifact, wallet);
   }
   
 
@@ -63,7 +63,7 @@ export class SimpleLoggingContract extends ContractBase {
     address: AztecAddress,
     wallet: Wallet,
   ) {
-    return Contract.at(address, SimpleLoggingContract.artifact, wallet) as Promise<SimpleLoggingContract>;
+    return Contract.at(address, SimpleLoggingUpdateContract.artifact, wallet) as Promise<SimpleLoggingUpdateContract>;
   }
 
   
@@ -71,28 +71,28 @@ export class SimpleLoggingContract extends ContractBase {
    * Creates a tx to deploy a new instance of this contract.
    */
   public static deploy(wallet: Wallet, ) {
-    return new DeployMethod<SimpleLoggingContract>(PublicKeys.default(), wallet, SimpleLoggingContractArtifact, SimpleLoggingContract.at, Array.from(arguments).slice(1));
+    return new DeployMethod<SimpleLoggingUpdateContract>(PublicKeys.default(), wallet, SimpleLoggingUpdateContractArtifact, SimpleLoggingUpdateContract.at, Array.from(arguments).slice(1));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified public keys hash to derive the address.
    */
   public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet, ) {
-    return new DeployMethod<SimpleLoggingContract>(publicKeys, wallet, SimpleLoggingContractArtifact, SimpleLoggingContract.at, Array.from(arguments).slice(2));
+    return new DeployMethod<SimpleLoggingUpdateContract>(publicKeys, wallet, SimpleLoggingUpdateContractArtifact, SimpleLoggingUpdateContract.at, Array.from(arguments).slice(2));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified constructor method.
    */
-  public static deployWithOpts<M extends keyof SimpleLoggingContract['methods']>(
+  public static deployWithOpts<M extends keyof SimpleLoggingUpdateContract['methods']>(
     opts: { publicKeys?: PublicKeys; method?: M; wallet: Wallet },
-    ...args: Parameters<SimpleLoggingContract['methods'][M]>
+    ...args: Parameters<SimpleLoggingUpdateContract['methods'][M]>
   ) {
-    return new DeployMethod<SimpleLoggingContract>(
+    return new DeployMethod<SimpleLoggingUpdateContract>(
       opts.publicKeys ?? PublicKeys.default(),
       opts.wallet,
-      SimpleLoggingContractArtifact,
-      SimpleLoggingContract.at,
+      SimpleLoggingUpdateContractArtifact,
+      SimpleLoggingUpdateContract.at,
       Array.from(arguments).slice(1),
       opts.method ?? 'constructor',
     );
@@ -104,14 +104,14 @@ export class SimpleLoggingContract extends ContractBase {
    * Returns this contract's artifact.
    */
   public static get artifact(): ContractArtifact {
-    return SimpleLoggingContractArtifact;
+    return SimpleLoggingUpdateContractArtifact;
   }
 
   /**
    * Returns this contract's artifact with public bytecode.
    */
   public static get artifactForPublic(): ContractArtifact {
-    return loadContractArtifactForPublic(SimpleLoggingContractArtifactJson as NoirCompiledContract);
+    return loadContractArtifactForPublic(SimpleLoggingUpdateContractArtifactJson as NoirCompiledContract);
   }
   
 
@@ -132,8 +132,8 @@ export class SimpleLoggingContract extends ContractBase {
     /** constructor() */
     constructor: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** decrese_counter_public(counter_id: field) */
-    decrese_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** decrease_counter_public(counter_id: field) */
+    decrease_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** get_counter_value(counter_id: field) */
     get_counter_value: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;

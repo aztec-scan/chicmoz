@@ -23,9 +23,6 @@ export async function updateValidatorsState(
   if (currentDbValues === null) {
     return;
   }
-  logger.info(
-    `🤖 validators in db: ${currentDbValues.length}, validators in event: ${validators.length}`,
-  );
   for (const validator of currentDbValues) {
     const found = validators.find((v) => v.attester === validator.attester);
     if (!found) {

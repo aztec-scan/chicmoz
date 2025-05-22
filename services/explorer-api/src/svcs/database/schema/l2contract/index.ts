@@ -68,8 +68,8 @@ export const l2ContractInstanceDeployed = pgTable(
 export const l2ContractInstanceUpdate = pgTable("l2_contract_instance_update", {
   id: uuid("id").primaryKey().defaultRandom(),
   address: generateAztecAddressColumn("address").notNull().unique(),
-  previousContractClassId: generateFrColumn(
-    "previous_contract_class_id",
+  prevContractClassId: generateFrColumn(
+    "prev_contract_class_id",
   ).notNull(),
   newContractClassId: generateFrColumn("new_contract_class_id").notNull(),
   blockOfChange: bigint("height", { mode: "bigint" }).notNull(),
@@ -192,8 +192,8 @@ export const l2PrivateFunction = pgTable(
   {
     contractClassId: generateFrColumn("contract_class_id").notNull(),
     artifactMetadataHash: generateFrColumn("artifact_metadata_hash").notNull(),
-    utilityFunctionsArtifactTreeRoot: generateFrColumn(
-      "utility_functions_artifact_tree_root",
+    utilityFunctionsTreeRoot: generateFrColumn(
+      "utility_functions_tree_root",
     ).notNull(),
     privateFunctionTreeSiblingPath: jsonb(
       "private_function_tree_sibling_path",

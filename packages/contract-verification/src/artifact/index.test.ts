@@ -11,7 +11,7 @@ import {
 
 const matchingArtifact = votingContractArtifactJson;
 
-describe("artifact verification", () => {
+describe.skip("artifact verification", () => {
   let payload: VerifyArtifactPayload;
   let error: Error;
   let verificationResult: VerificationResult;

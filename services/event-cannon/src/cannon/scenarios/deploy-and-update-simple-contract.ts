@@ -3,12 +3,12 @@ import {
   type NoirCompiledContract,
   waitForPXE,
 } from "@aztec/aztec.js";
-import { SimpleLoggingContract } from "../../artifacts/SimpleLogging-v1.js";
-import { SimpleLoggingContract as SimpleLoggingV2 } from "../../artifacts/SimpleLogging-v2.js";
-import artifactJson from "../../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json" with { type: "json" };
-import artifactJsonV2 from "../../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json" with { type: "json" };
-import { logger } from "../../logger.js";
-import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
+import {SimpleLoggingContract} from "../../artifacts/SimpleLogging-v1.js";
+import {SimpleLoggingUpdateContract as SimpleLoggingV2} from "../../artifacts/SimpleLoggingUpdate.js";
+import artifactJson from "../../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json" with {type: "json"};
+import artifactJsonV2 from "../../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLogging.json" with {type: "json"};
+import {logger} from "../../logger.js";
+import {getAztecNodeClient, getPxe, getWallets} from "../pxe.js";
 import {
   deployContract,
   logAndWaitForTx,
@@ -70,7 +70,7 @@ export async function run() {
   });
 
   await logAndWaitForTx(
-    contractV2.methods.decrese_counter_public(1).send(),
+    contractV2.methods.decrease_counter_public(1).send(),
     "Increase counter public"
   );
 }

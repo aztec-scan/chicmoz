@@ -146,7 +146,7 @@ export const searchPublicLogs = async ({
   return parsed
     .filter((txEffect) => {
       return txEffect.logs.some((log) => {
-        return log[index] === frLogEntry;
+        return log.fields[index] === frLogEntry;
       });
     })
     .map((txEffect) => txEffect.hash);

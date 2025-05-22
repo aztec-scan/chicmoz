@@ -263,10 +263,10 @@ export const getTxEffectDynamicWhere = async (
       : ([] as string[]),
     privateLogs: (Array.isArray(dbRes[0].privateLogs)
       ? dbRes[0].privateLogs
-      : []) as string[][],
+      : []) as ChicmozL2TxEffect["privateLogs"],
     publicLogs: (Array.isArray(dbRes[0].publicLogs)
       ? dbRes[0].publicLogs
-      : []) as string[][],
+      : []) as ChicmozL2TxEffect["publicLogs"],
     contractClassLogs: (Array.isArray(dbRes[0].contractClassLogs)
       ? dbRes[0].contractClassLogs
       : []) as ChicmozL2TxEffect["contractClassLogs"],

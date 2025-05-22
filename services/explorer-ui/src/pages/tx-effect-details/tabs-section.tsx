@@ -1,19 +1,17 @@
-import { FC, useState } from "react";
+import { type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
+import { type FC, useState } from "react";
+import { ValueListDisplay } from "~/components/info-display/value-list-display";
 import { OptionButtons } from "~/components/option-buttons";
 import { PrivateLogs } from "./tabs/private-logs";
-import { PublicLogs } from "./tabs/public-logs";
-import { ValueListDisplay } from "~/components/info-display/value-list-display";
 import { PublicDataWrites } from "./tabs/public-data-write";
-import { ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
+import { PublicLogs } from "./tabs/public-logs";
+import { type TabId, txEffectTabs } from "./types";
 import { mapTxEffectsData } from "./utils";
-import { txEffectTabs, TabId } from "./types";
 
 interface PillSectionProps {
-  txEffects: ChicmozL2TxEffectDeluxe
+  txEffects: ChicmozL2TxEffectDeluxe;
 }
-export const TabsSection: FC<PillSectionProps> = ({
-  txEffects,
-}) => {
+export const TabsSection: FC<PillSectionProps> = ({ txEffects }) => {
   const [selectedTab, setSelectedTab] = useState<TabId>("nullifiers");
   const onSelectChange = (value: string) => {
     setSelectedTab(value as TabId);
@@ -27,12 +25,23 @@ export const TabsSection: FC<PillSectionProps> = ({
         return <PrivateLogs logs={txEffects.privateLogs} />;
       case "publicLogs":
         return <PublicLogs logs={txEffects.publicLogs} />;
+      case "contractClassLogs":
+        return <PublicLogs logs={txEffects.contractClassLogs} />;
       case "nullifiers":
-        return <ValueListDisplay title="Nullifiers" values={txEffects.nullifiers} />;
+        return (
+          <ValueListDisplay title="Nullifiers" values={txEffects.nullifiers} />
+        );
       case "noteHashes":
-        return <ValueListDisplay title="Note hashes" values={txEffects.noteHashes} />;
+        return (
+          <ValueListDisplay title="Note hashes" values={txEffects.noteHashes} />
+        );
       case "l2ToL1Msgs":
-        return <ValueListDisplay title="L2 to L1 messages" values={txEffects.l2ToL1Msgs} />;
+        return (
+          <ValueListDisplay
+            title="L2 to L1 messages"
+            values={txEffects.l2ToL1Msgs}
+          />
+        );
       case "publicDataWrites":
         return <PublicDataWrites writes={txEffects.publicDataWrites} />;
       default:

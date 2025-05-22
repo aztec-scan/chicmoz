@@ -1,1 +1,0 @@
-ALTER TABLE "l2_contract_class_registered" ADD COLUMN "source_code_url" varchar;
