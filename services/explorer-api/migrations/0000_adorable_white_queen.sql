@@ -14,6 +14,12 @@ CREATE TABLE IF NOT EXISTS "aztec-chain-connection" (
 	"protocol_contract_addresses" jsonb NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "dropped_tx" (
+	"tx_hash" varchar PRIMARY KEY NOT NULL,
+	"created_at" timestamp NOT NULL,
+	"dropped_at" timestamp NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "body" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"block_hash" varchar NOT NULL
@@ -37,7 +43,6 @@ CREATE TABLE IF NOT EXISTS "tx_effect" (
 	"note_hashes" jsonb NOT NULL,
 	"nullifiers" jsonb NOT NULL,
 	"l2_to_l1_msgs" jsonb NOT NULL,
-	"contract_class_logs_length" bigint NOT NULL,
 	"private_logs" jsonb NOT NULL,
 	"public_logs" jsonb NOT NULL,
 	"contract_class_logs" jsonb NOT NULL
@@ -155,12 +160,8 @@ CREATE TABLE IF NOT EXISTS "archive" (
 CREATE TABLE IF NOT EXISTS "l2Block" (
 	"hash" varchar PRIMARY KEY NOT NULL,
 	"height" bigint NOT NULL,
-	CONSTRAINT "l2Block_height_unique" UNIQUE("height")
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "tx" (
-	"hash" varchar PRIMARY KEY NOT NULL,
-	"birth_timestamp" timestamp DEFAULT now() NOT NULL
+	"orphan_timestamp" timestamp,
+	"orphan_hasOrphanedParent" boolean
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_class_registered" (
@@ -173,11 +174,13 @@ CREATE TABLE IF NOT EXISTS "l2_contract_class_registered" (
 	"artifact_json" varchar,
 	"artifact_contract_name" varchar,
 	"contract_type" varchar,
+	"source_code_url" varchar,
 	CONSTRAINT "contract_class_id_version" PRIMARY KEY("contract_class_id","version")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_aztec_scan_notes" (
 	"address" varchar(66) PRIMARY KEY NOT NULL,
+	"name" varchar NOT NULL,
 	"origin" varchar NOT NULL,
 	"comment" varchar NOT NULL,
 	"related_l1_contract_addresses" jsonb,
@@ -218,7 +221,7 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_deployer_metadata" (
 CREATE TABLE IF NOT EXISTS "l2_contract_instance_update" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"address" varchar(66) NOT NULL,
-	"previous_contract_class_id" varchar(66) NOT NULL,
+	"prev_contract_class_id" varchar(66) NOT NULL,
 	"new_contract_class_id" varchar(66) NOT NULL,
 	"height" bigint NOT NULL,
 	"block_hash" varchar NOT NULL,
@@ -237,7 +240,7 @@ CREATE TABLE IF NOT EXISTS "l2_contract_instance_verified_deployment_arguments" 
 CREATE TABLE IF NOT EXISTS "l2_private_function" (
 	"contract_class_id" varchar(66) NOT NULL,
 	"artifact_metadata_hash" varchar(66) NOT NULL,
-	"utility_functions_artifact_tree_root" varchar(66) NOT NULL,
+	"utility_functions_tree_root" varchar(66) NOT NULL,
 	"private_function_tree_sibling_path" jsonb NOT NULL,
 	"private_function_tree_leaf_index" bigint NOT NULL,
 	"artifact_function_tree_sibling_path" jsonb NOT NULL,
@@ -259,6 +262,11 @@ CREATE TABLE IF NOT EXISTS "l2_utility_function" (
 	"utility_function_metadata_hash" varchar(66) NOT NULL,
 	"utility_function_bytecode" "bytea" NOT NULL,
 	CONSTRAINT "utility_function_contract_class" PRIMARY KEY("contract_class_id","utility_function_selector_value")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "tx" (
+	"hash" varchar PRIMARY KEY NOT NULL,
+	"birth_timestamp" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l1_generic_contract_event" (
@@ -296,6 +304,7 @@ CREATE TABLE IF NOT EXISTS "l1_l2_validator_status" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l1_l2_validator" (
 	"attester" varchar(42) PRIMARY KEY NOT NULL,
+	"rollup_address" varchar(42) NOT NULL,
 	"first_seen_at" timestamp NOT NULL
 );
 --> statement-breakpoint
@@ -516,4 +525,22 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "tx_hash_index" ON "tx_effect" USING btree ("tx_hash");
+CREATE INDEX IF NOT EXISTS "body_block_hash_idx" ON "body" USING btree ("block_hash");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "public_data_write_tx_effect_hash_idx" ON "public_data_write" USING btree ("tx_effect_hash");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "public_data_write_index_idx" ON "public_data_write" USING btree ("index");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "public_data_write_tx_effect_hash_index_idx" ON "public_data_write" USING btree ("tx_effect_hash","index");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "tx_hash_index" ON "tx_effect" USING btree ("tx_hash");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "tx_effect_body_id_idx" ON "tx_effect" USING btree ("body_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "tx_effect_index_idx" ON "tx_effect" USING btree ("index");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "tx_effect_body_id_index_idx" ON "tx_effect" USING btree ("body_id","index");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "content_commitment_header_id_idx" ON "content_commitment" USING btree ("header_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "gas_fees_global_variables_id_idx" ON "gas_fees" USING btree ("global_variables_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "global_variables_header_id_idx" ON "global_variables" USING btree ("header_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "header_block_hash_idx" ON "header" USING btree ("block_hash");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "partial_state_id_idx" ON "partial" USING btree ("state_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "state_header_id_idx" ON "state" USING btree ("header_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "height_idx" ON "l2Block" USING btree ("height");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "orphan_timestamp_idx" ON "l2Block" USING btree ("orphan_timestamp") WHERE "l2Block"."orphan_timestamp" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "height_orphan_idx" ON "l2Block" USING btree ("height","orphan_timestamp");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "l2_block_finalization_l2blockhash_idx" ON "l2BlockFinalizationStatus" USING btree ("l2_block_hash");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "l2_block_finalization_status_idx" ON "l2BlockFinalizationStatus" USING btree ("status");

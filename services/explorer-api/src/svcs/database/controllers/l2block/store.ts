@@ -173,7 +173,6 @@ export const store = async (
         noteHashes: txEff.noteHashes as HexString[],
         nullifiers: txEff.nullifiers as HexString[],
         l2ToL1Msgs: txEff.l2ToL1Msgs as HexString[],
-        contractClassLogsLength: txEff.contractClassLogsLength,
         privateLogs: txEff.privateLogs,
         publicLogs: txEff.publicLogs,
         contractClassLogs: txEff.contractClassLogs,

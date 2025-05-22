@@ -202,7 +202,8 @@ const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
       block,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
-    currentEternalCatchupHeight++;
+    currentEternalCatchupHeight =
+      (currentEternalCatchupHeight + 1) % currentProposedHeight || 1;
     currentEternalCatchupHeight = Math.min(
       currentEternalCatchupHeight,
       currentProposedHeight,

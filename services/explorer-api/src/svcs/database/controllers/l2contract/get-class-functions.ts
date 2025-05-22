@@ -1,3 +1,4 @@
+import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
@@ -5,7 +6,6 @@ import {
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { and, eq, getTableColumns } from "drizzle-orm";
-import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { l2PrivateFunction, l2UtilityFunction } from "../../schema/index.js";
 
 export const getL2ContractClassPrivateFunction = async (
@@ -27,14 +27,7 @@ export const getL2ContractClassPrivateFunction = async (
 
   return res.length > 0
     ? chicmozL2PrivateFunctionBroadcastedEventSchema.parse({
-        contractClassId: res[0].contractClassId,
-        artifactMetadataHash: res[0].artifactMetadataHash,
-        utilityFunctionsArtifactTreeRoot:
-          res[0].utilityFunctionsArtifactTreeRoot,
-        privateFunctionTreeSiblingPath: res[0].privateFunctionTreeSiblingPath,
-        privateFunctionTreeLeafIndex: res[0].privateFunctionTreeLeafIndex,
-        artifactFunctionTreeSiblingPath: res[0].artifactFunctionTreeSiblingPath,
-        artifactFunctionTreeLeafIndex: res[0].artifactFunctionTreeLeafIndex,
+        ...res[0],
         privateFunction: {
           selector: {
             value: res[0].privateFunction_selector_value,
@@ -58,13 +51,7 @@ export const getL2ContractClassPrivateFunctions = async (
     .where(eq(l2PrivateFunction.contractClassId, contractClassId));
   return res.map((r) =>
     chicmozL2PrivateFunctionBroadcastedEventSchema.parse({
-      contractClassId: r.contractClassId,
-      artifactMetadataHash: r.artifactMetadataHash,
-      utilityFunctionsArtifactTreeRoot: r.utilityFunctionsArtifactTreeRoot,
-      privateFunctionTreeSiblingPath: r.privateFunctionTreeSiblingPath,
-      privateFunctionTreeLeafIndex: r.privateFunctionTreeLeafIndex,
-      artifactFunctionTreeSiblingPath: r.artifactFunctionTreeSiblingPath,
-      artifactFunctionTreeLeafIndex: r.artifactFunctionTreeLeafIndex,
+      ...r,
       privateFunction: {
         selector: {
           value: r.privateFunction_selector_value,

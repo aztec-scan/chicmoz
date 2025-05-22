@@ -41,9 +41,6 @@ export const txEffect = pgTable(
     noteHashes: jsonb("note_hashes").notNull(),
     nullifiers: jsonb("nullifiers").notNull(),
     l2ToL1Msgs: jsonb("l2_to_l1_msgs").notNull().$type<HexString[]>(),
-    contractClassLogsLength: generateFrNumberColumn(
-      "contract_class_logs_length"
-    ).notNull(),
     privateLogs: jsonb("private_logs").notNull(),
     publicLogs: jsonb("public_logs").notNull(),
     contractClassLogs: jsonb("contract_class_logs").notNull(),

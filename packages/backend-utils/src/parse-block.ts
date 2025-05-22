@@ -10,13 +10,20 @@ const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
   return txEffects.map((txEffect) => {
     return {
       ...txEffect,
-      privateLogs: txEffect.privateLogs.map((log) => {
-        return log.toFields().map((f) => f.toJSON());
-      }),
-      contractClassLogsLength: txEffect.contractClassLogs.length,
-      publicLogs: txEffect.publicLogs.map((log) => {
-        return log.toFields().map((f) => f.toJSON());
-      }),
+      privateLogs: txEffect.privateLogs.map((log) => ({
+        fields: log.fields,
+        emittedLength: log.emittedLength,
+      })),
+      publicLogs: txEffect.publicLogs.map((log) => ({
+        contractAddress: log.contractAddress,
+        fields: log.fields,
+        emittedLength: log.emittedLength,
+      })),
+      contractClassLogs: txEffect.contractClassLogs.map((log) => ({
+        contractAddress: log.contractAddress,
+        fields: log.fields.fields,
+        emittedLength: log.emittedLength,
+      })),
       txHash: txEffect.txHash.toString(),
     };
   });

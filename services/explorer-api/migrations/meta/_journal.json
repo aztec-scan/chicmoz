@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744380777991,
-      "tag": "0000_colossal_silverclaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1744975050648,
-      "tag": "0001_pale_madame_web",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1745390180019,
-      "tag": "0002_finalizationStatus-correctly-ordered",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1745405637057,
-      "tag": "0003_nasty_rachel_grey",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1746019851032,
-      "tag": "0004_amazing_cerebro",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1747050194890,
-      "tag": "0005_talented_spirit",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1747312766569,
-      "tag": "0006_purple_gravity",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1747749858645,
-      "tag": "0007_chubby_gamora",
+      "when": 1747913816076,
+      "tag": "0000_adorable_white_queen",
       "breakpoints": true
     }
   ]
