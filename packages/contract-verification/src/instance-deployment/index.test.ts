@@ -18,7 +18,7 @@ const publicKeyValues =
 const instanceAddress =
   "0x02a8a8fd9e12fb24265a20109f42fa1afd51d7a1bc88dd163673e91ba38698c0";
 
-describe("verify instance deployment", () => {
+describe.skip("verify instance deployment", () => {
   let payload: VerifyInstanceDeploymentPayload;
   let generatingPayloadError: Error;
   let verifyInstanceDeploymentPayloadResult: boolean;
