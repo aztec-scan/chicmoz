@@ -31,7 +31,7 @@ contract SimpleLoggingUpdate {
     }
 
     #[public]
-    fn decrese_counter_public(counter_id: Field){
+    fn decrease_counter_public(counter_id: Field){
       context.emit_public_log(/*message=*/ "pub log");
       SimpleLoggingUpdate::at(context.this_address()).remove_from_counter_public(counter_id);
     }
