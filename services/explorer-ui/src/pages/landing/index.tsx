@@ -115,7 +115,9 @@ export const Landing: FC = () => {
               to={routes.aztecscanHealth.route}
               className="text-primary dark:text-white underline"
             >
-              Check health page for details
+              ⚠️ Currently Aztec public testnet is going through a governance
+              upgrade, it's very likely affecting Aztecscan. ⚠️ Otherwise: Check
+              health page for details
             </Link>
           </div>
         </div>
