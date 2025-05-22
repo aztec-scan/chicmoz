@@ -111,13 +111,15 @@ export const Landing: FC = () => {
         <div className="flex flex-col bg-white w-full h-96 justify-between rounded-lg shadow-md mt-20">
           <div className="flex flex-col items-center justify-center h-full">
             <h3>System is down</h3>
+            <p className="text-primary dark:text-white underline">
+              ⚠️ Currently Aztec public testnet is going through a governance
+              upgrade, it's very likely affecting Aztecscan. ⚠️
+            </p>
             <Link
               to={routes.aztecscanHealth.route}
               className="text-primary dark:text-white underline"
             >
-              ⚠️ Currently Aztec public testnet is going through a governance
-              upgrade, it's very likely affecting Aztecscan. ⚠️ Otherwise: Check
-              health page for details
+              Otherwise: Check health page for details
             </Link>
           </div>
         </div>
