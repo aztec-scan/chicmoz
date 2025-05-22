@@ -19,7 +19,7 @@
     "prettier": "3.1.0",
     "prettier-plugin-organize-imports": "3.2.4",
     "prettier-plugin-sort-json": "3.1.0",
-    "typescript": "5.2.2"
+    "typescript": "5.8.3"
   },
   "scripts": {
     "build:packages": "yarn workspaces foreach --parallel --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",

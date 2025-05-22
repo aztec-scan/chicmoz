@@ -17,8 +17,8 @@ import {
 } from "@aztec/l1-artifacts";
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { TokenBridgeContract } from "@aztec/noir-contracts.js/TokenBridge";
-import * as tokenBridgeContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_bridge_contract-TokenBridge" assert { type: "json" };
-import * as tokenContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_contract-Token" assert { type: "json" };
+import * as tokenBridgeContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_bridge_contract-TokenBridge" with { type: "json" };
+import * as tokenContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_contract-Token" with { type: "json" };
 import assert from "assert";
 import { getContract } from "viem";
 import { ETHEREUM_RPC_URL } from "../../environment.js";

@@ -61,7 +61,16 @@ export const parseDeluxe = ({
       (aztecScanNotes as ChicmozL2ContractInstanceDeluxe["aztecScanNotes"]) ??
       undefined,
     blockHash: instance.blockHash,
-    packedBytecode: Buffer.from(contractClass.packedBytecode),
+    // Ensure we have a Buffer as required by the schema
+    packedBytecode: Buffer.isBuffer(contractClass.packedBytecode)
+      ? contractClass.packedBytecode 
+      : Buffer.from(
+          ArrayBuffer.isView(contractClass.packedBytecode)
+            ? contractClass.packedBytecode 
+            : typeof contractClass.packedBytecode === 'string'
+              ? contractClass.packedBytecode
+              : JSON.stringify(contractClass.packedBytecode)
+        ),
     address: instance.address,
     version: instance.version,
     salt: instance.salt,
