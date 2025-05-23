@@ -1,5 +1,5 @@
 {
-  "id": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
+  "id": "c4470629-b2ef-4f36-b461-b6b046d03751",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2119,7 +2119,7 @@
         "attester": {
           "name": "attester",
           "type": "varchar(42)",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "rollup_address": {
@@ -2137,7 +2137,12 @@
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "l1_l2_validator_attester_rollup_address_pk": {
+          "name": "l1_l2_validator_attester_rollup_address_pk",
+          "columns": ["attester", "rollup_address"]
+        }
+      },
       "uniqueConstraints": {}
     },
     "public.l1_l2_validator_withdrawer": {

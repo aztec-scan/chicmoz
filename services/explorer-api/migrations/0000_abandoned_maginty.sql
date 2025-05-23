@@ -303,9 +303,10 @@ CREATE TABLE IF NOT EXISTS "l1_l2_validator_status" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l1_l2_validator" (
-	"attester" varchar(42) PRIMARY KEY NOT NULL,
+	"attester" varchar(42) NOT NULL,
 	"rollup_address" varchar(42) NOT NULL,
-	"first_seen_at" timestamp NOT NULL
+	"first_seen_at" timestamp NOT NULL,
+	CONSTRAINT "l1_l2_validator_attester_rollup_address_pk" PRIMARY KEY("attester","rollup_address")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "l1_l2_validator_withdrawer" (
