@@ -52,8 +52,8 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID,
 );
 
-export const AZTEC_RPC_URL_POOL = rpcNodePoolSchema.parse(
-  process.env.AZTEC_RPC_URL_POOL,
+export const AZTEC_RPC_URLS = rpcNodePoolSchema.parse(
+  process.env.AZTEC_RPC_URLS,
 );
 
 export const getConfigStr = () => `POLLER
@@ -62,7 +62,7 @@ AZTEC_DISABLED:                                            ${
 }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
 AZTEC_RPC_URL_POOL:                                        ${jsonStringify(
-  AZTEC_RPC_URL_POOL,
+  AZTEC_RPC_URLS,
 )}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${

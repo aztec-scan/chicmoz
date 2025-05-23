@@ -1,6 +1,6 @@
 import { AztecNode, createAztecNodeClient } from "@aztec/aztec.js";
 import { jsonStringify } from "@chicmoz-pkg/types";
-import { AZTEC_RPC_URL_POOL } from "../../../environment.js";
+import { AZTEC_RPC_URLS } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 
 interface NodeConfig {
@@ -16,10 +16,10 @@ let currentNodeIndex = 0;
 export const initPool = () => {
   logger.info(
     `Initializing Aztec node pool with clients ${jsonStringify(
-      AZTEC_RPC_URL_POOL,
+      AZTEC_RPC_URLS,
     )}`,
   );
-  nodePool = AZTEC_RPC_URL_POOL.map((node) => {
+  nodePool = AZTEC_RPC_URLS.map((node) => {
     return {
       id: node.name,
       url: node.url,

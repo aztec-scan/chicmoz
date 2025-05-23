@@ -59,10 +59,10 @@ spec:
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS
               value: "true"
-            - name: AZTEC_RPC_URL_POOL
+            - name: AZTEC_RPC_URLS
               valueFrom:
                 secretKeyRef:
                   name: global
-                  key: AZTEC_RPC_NODE_POOL_TESTNET
+                  key: AZTEC_RPC_NODES_TESTNET
 
 status: {}
