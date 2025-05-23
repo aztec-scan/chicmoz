@@ -12,7 +12,7 @@ interface NodeConfig {
 let nodePool: NodeConfig[] = [];
 let currentNodeIndex = 0;
 
-// init() get a list of node urls form env variables
+// init() get a list of node urls from  env variables
 export const initPool = () => {
   logger.info(
     `Initializing Aztec node pool with clients ${jsonStringify(
