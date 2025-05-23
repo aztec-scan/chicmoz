@@ -28,12 +28,15 @@ export enum ApiKey {
 const _apiSchema = z.enum([ApiKey.DEV, ApiKey.PROD_PUBLIC]);
 export const apiKeySchema = addNonProdDefault(_apiSchema, ApiKey.DEV);
 
-export const AztecNodeConfig = z.object({
+export const aztecNodeConfigSchema = z.object({
   name: z.string(),
   url: z.string(),
 });
 
-export type AztecNodeConfig = z.infer<typeof AztecNodeConfig>;
+export const aztecNodePoolConfig = z.array(aztecNodeConfigSchema);
+
+export type aztecNodePoolConfig = z.infer<typeof aztecNodePoolConfig>;
+export type AztecNodeConfig = z.infer<typeof aztecNodeConfigSchema>;
 
 export const rpcNodePoolSchema = z
   .string()
