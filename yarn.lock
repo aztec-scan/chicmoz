@@ -5643,14 +5643,14 @@ __metadata:
     eslint-plugin-import: "npm:2.29.0"
     husky: "npm:8.0.3"
     lint-staged: "npm:15.1.0"
-    prettier: "npm:3.1.0"
-    prettier-plugin-organize-imports: "npm:3.2.4"
-    prettier-plugin-sort-json: "npm:3.1.0"
+    prettier: "npm:3.5.3"
+    prettier-plugin-organize-imports: "npm:4.1.0"
+    prettier-plugin-sort-json: "npm:4.1.1"
     typescript: "npm:5.8.3"
   dependenciesMeta:
-    prettier-plugin-organize-imports@3.2.4:
+    prettier-plugin-organize-imports@4.1.0:
       unplugged: true
-    prettier-plugin-sort-json@3.1.0:
+    prettier-plugin-sort-json@4.1.1:
       unplugged: true
     tslib@2.6.3:
       unplugged: true
@@ -10572,6 +10572,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-plugin-organize-imports@npm:4.1.0":
+  version: 4.1.0
+  resolution: "prettier-plugin-organize-imports@npm:4.1.0"
+  peerDependencies:
+    prettier: ">=2.0"
+    typescript: ">=2.9"
+    vue-tsc: ^2.1.0
+  peerDependenciesMeta:
+    vue-tsc:
+      optional: true
+  checksum: fb2d6d415bac96b65a77ea7de9f708e8613436aeb9d82bbe63edeb312fd1362c0d3c57319bd4cc4adfc8b9964fb6c205cbbf8efd9546931b0f9874c0ae624a6a
+  languageName: node
+  linkType: hard
+
 "prettier-plugin-sort-json@npm:3.1.0":
   version: 3.1.0
   resolution: "prettier-plugin-sort-json@npm:3.1.0"
@@ -10581,12 +10595,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-plugin-sort-json@npm:4.1.1":
+  version: 4.1.1
+  resolution: "prettier-plugin-sort-json@npm:4.1.1"
+  peerDependencies:
+    prettier: ^3.0.0
+  checksum: b3b86ea679e95d0329c367aa860af4033d8a3b83a0656d7393f2005b2df78e20d19fbe2c40fe7b531262210e40060318a4287459c2a4f61c6a6bd1c2757e2b7d
+  languageName: node
+  linkType: hard
+
 "prettier@npm:3.1.0":
   version: 3.1.0
   resolution: "prettier@npm:3.1.0"
   bin:
     prettier: bin/prettier.cjs
   checksum: a45ea70aa97fde162ea4c4aba3dfc7859aa6a732a1db34458d9535dc3c2c16d3bc3fb5689e6cd76aa835562555303b02d9449fd2e15af3b73c8053557e25c5b6
+  languageName: node
+  linkType: hard
+
+"prettier@npm:3.5.3":
+  version: 3.5.3
+  resolution: "prettier@npm:3.5.3"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 3880cb90b9dc0635819ab52ff571518c35bd7f15a6e80a2054c05dbc8a3aa6e74f135519e91197de63705bcb38388ded7e7230e2178432a1468005406238b877
   languageName: node
   linkType: hard
 
