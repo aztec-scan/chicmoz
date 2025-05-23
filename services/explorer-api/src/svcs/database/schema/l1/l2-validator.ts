@@ -2,17 +2,11 @@ import { relations } from "drizzle-orm";
 import { pgTable, primaryKey, smallint, timestamp } from "drizzle-orm/pg-core";
 import { generateEthAddressColumn, generateUint256Column } from "../utils.js";
 
-export const l1L2ValidatorTable = pgTable(
-  "l1_l2_validator",
-  {
-    attester: generateEthAddressColumn("attester").notNull(),
-    rollupAddress: generateEthAddressColumn("rollup_address").notNull(),
-    firstSeenAt: timestamp("first_seen_at").notNull(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.attester, table.rollupAddress] }),
-  }),
-);
+export const l1L2ValidatorTable = pgTable("l1_l2_validator", {
+  attester: generateEthAddressColumn("attester").primaryKey().notNull(),
+  rollupAddress: generateEthAddressColumn("rollup_address").notNull(),
+  firstSeenAt: timestamp("first_seen_at").notNull(),
+});
 
 // TODO: is it better to have block-height instead of timestamp for all below?
 
@@ -27,7 +21,7 @@ export const l1L2ValidatorStakeTable = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
-  }),
+  })
 );
 
 export const l1L2ValidatorStatusTable = pgTable(
@@ -41,7 +35,7 @@ export const l1L2ValidatorStatusTable = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
-  }),
+  })
 );
 
 export const l1L2ValidatorWithdrawerTable = pgTable(
@@ -55,7 +49,7 @@ export const l1L2ValidatorWithdrawerTable = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
-  }),
+  })
 );
 
 export const l1L2ValidatorProposerTable = pgTable(
@@ -69,7 +63,7 @@ export const l1L2ValidatorProposerTable = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
-  }),
+  })
 );
 
 export const l1l2ValidatorRelations = relations(
@@ -79,7 +73,7 @@ export const l1l2ValidatorRelations = relations(
     statuses: many(l1L2ValidatorStatusTable),
     withdrawers: many(l1L2ValidatorWithdrawerTable),
     proposers: many(l1L2ValidatorProposerTable),
-  }),
+  })
 );
 
 export const l1L2ValidatorStakeRelations = relations(
@@ -89,7 +83,7 @@ export const l1L2ValidatorStakeRelations = relations(
       fields: [l1L2ValidatorStakeTable.attesterAddress],
       references: [l1L2ValidatorTable.attester],
     }),
-  }),
+  })
 );
 
 export const l1L2ValidatorStatusRelations = relations(
@@ -99,7 +93,7 @@ export const l1L2ValidatorStatusRelations = relations(
       fields: [l1L2ValidatorStatusTable.attesterAddress],
       references: [l1L2ValidatorTable.attester],
     }),
-  }),
+  })
 );
 
 export const l1L2ValidatorWithdrawerRelations = relations(
@@ -109,7 +103,7 @@ export const l1L2ValidatorWithdrawerRelations = relations(
       fields: [l1L2ValidatorWithdrawerTable.attesterAddress],
       references: [l1L2ValidatorTable.attester],
     }),
-  }),
+  })
 );
 
 export const l1L2ValidatorProposerRelations = relations(
@@ -119,5 +113,5 @@ export const l1L2ValidatorProposerRelations = relations(
       fields: [l1L2ValidatorProposerTable.attesterAddress],
       references: [l1L2ValidatorTable.attester],
     }),
-  }),
+  })
 );
