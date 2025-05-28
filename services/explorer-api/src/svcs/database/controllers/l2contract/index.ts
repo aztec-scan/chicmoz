@@ -1,3 +1,4 @@
+export * from "./get-artifact-by-hash.js";
 export * from "./get-class-functions.js";
 export * from "./get-contract-instance.js";
 export * from "./get-contract-instances.js";

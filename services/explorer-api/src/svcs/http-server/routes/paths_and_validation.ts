@@ -21,6 +21,7 @@ export const address = "address";
 export const contractClassId = "contractClassId";
 export const version = "version";
 export const functionSelector = "functionSelector";
+export const artifactHash = "artifactHash";
 
 export const paths = {
   latestHeight: "/l2/latest-height",
@@ -45,6 +46,8 @@ export const paths = {
   contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
   contractClassesByClassId: `/l2/contract-classes/:${contractClassId}`,
   contractClasses: `/l2/contract-classes`,
+
+  artifactsByArtifactHash: `/l2/artifacts/:${artifactHash}`,
 
   contractClassPrivateFunctions: `/l2/contract-classes/:${contractClassId}/private-functions`,
   contractClassPrivateFunction: `/l2/contract-classes/:${contractClassId}/private-functions/:${functionSelector}`,
@@ -159,6 +162,12 @@ export const getContractClassIdSchema = z.object({
 export const getContractClassesByCurrentClassIdSchema = z.object({
   params: z.object({
     [contractClassId]: hexStringSchema,
+  }),
+});
+
+export const getArtifactsByArtifactHashSchema = z.object({
+  params: z.object({
+    [artifactHash]: hexStringSchema,
   }),
 });
 
