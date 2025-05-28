@@ -5,6 +5,7 @@ import {
   PublicKeys,
   loadContractArtifact,
 } from "@aztec/aztec.js";
+import { getDefaultInitializer } from "@aztec/stdlib/abi";
 import {
   computeContractAddressFromInstance,
   computeInitializationHash,
@@ -31,7 +32,7 @@ export const verifyInstanceDeploymentPayload = async (
     JSON.parse(stringifiedArtifactJson) as unknown as NoirCompiledContract,
   );
 
-  const initFn = artifact.functions.find((fn) => fn.name === "constructor");
+  const initFn = getDefaultInitializer(artifact);
   const initializationHash = await computeInitializationHash(
     initFn,
     constructorArgs,
