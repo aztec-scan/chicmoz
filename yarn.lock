@@ -969,6 +969,7 @@ __metadata:
     "@chicmoz-pkg/postgres-helper": "workspace:^"
     "@chicmoz-pkg/redis-helper": "workspace:^"
     "@chicmoz-pkg/types": "workspace:^"
+    "@defi-wonderland/aztec-standards": "npm:0.0.0-73e84dcc"
     "@types/auto-bind": "npm:2.1.0"
     "@types/body-parser": "npm:1.19.5"
     "@types/cors": "npm:2.8.13"
@@ -1112,6 +1113,13 @@ __metadata:
     enabled: "npm:2.0.x"
     kuler: "npm:^2.0.0"
   checksum: a5133df8492802465ed01f2f0a5784585241a1030c362d54a602ed1839816d6c93d71dde05cf2ddb4fd0796238c19774406bd62fa2564b637907b495f52425fe
+  languageName: node
+  linkType: hard
+
+"@defi-wonderland/aztec-standards@npm:0.0.0-73e84dcc":
+  version: 0.0.0-73e84dcc
+  resolution: "@defi-wonderland/aztec-standards@npm:0.0.0-73e84dcc"
+  checksum: 7fa0744494f17b3f31faddecf346c408ebd5d1d1a86f89dfff12ce0929594a4fff8c71aecb4839076e2d9f0fe2d611de5c0b4eea369bc6e131c8a32e41c76c56
   languageName: node
   linkType: hard
 
