@@ -1,9 +1,10 @@
 import type { FC } from "react";
+import { CopyableJson } from "~/components/copyable-json";
 
 interface JsonTabProps {
   data: unknown;
 }
 
 export const JsonTab: FC<JsonTabProps> = ({ data }) => {
-  return <pre className="overflow-auto">{JSON.stringify(data, null, 2)}</pre>;
+  return <CopyableJson data={data} />;
 };

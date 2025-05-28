@@ -13,7 +13,7 @@ export const ContractInstanceDetails: FC = () => {
   const { address } = useParams({
     from: "/contracts/instances/$address",
   });
-  useSubTitle(`Ctrct inst ${address}`);
+  useSubTitle(`Address ${address}`);
   const {
     data: contractInstanceDetails,
     isLoading,

@@ -3,9 +3,11 @@ import { type UseQueryResult } from "@tanstack/react-query";
 import { useState, type FC } from "react";
 import { Loader } from "~/components/loader";
 import { OptionButtons } from "~/components/option-buttons";
+import { useDeployedContractInstances } from "~/hooks";
 import { contractClassTabs, type TabId } from "./constants";
 import { getDataFromMap } from "./display-utils";
 import { ArtifactExplorerTab } from "./tabs/artifact-explorer-tab";
+import { ArtifactJsonTab } from "./tabs/artifact-json-tab";
 import { ContractInstancesTab } from "./tabs/contract-instances";
 import { ContractVersionsTab } from "./tabs/contract-versions";
 import { JsonTab } from "./tabs/json-tab";
@@ -14,7 +16,6 @@ import {
   type SimpleArtifactData,
   type SimplifiedViewOfFunc,
 } from "./util";
-import { useDeployedContractInstances } from "~/hooks";
 
 interface TabSectionProps {
   contractClasses: UseQueryResult<
@@ -84,7 +85,10 @@ export const TabSection: FC<TabSectionProps> = ({
         return isContractArtifactLoading ? (
           <Loader amount={1} />
         ) : (
-          <JsonTab data={artifact} />
+          <ArtifactJsonTab
+            data={artifact}
+            artifactHash={selectedVersion?.artifactHash || ""}
+          />
         );
       case "artifactExplorer":
         return isContractArtifactLoading ? (
