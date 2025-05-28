@@ -42,7 +42,7 @@ export const openapi_GET_L2_ARTIFACTS_BY_ARTIFACT_HASH: OpenAPIObject["paths"] =
 export const GET_L2_ARTIFACTS_BY_ARTIFACT_HASH = asyncHandler(
   async (req, res) => {
     const { artifactHash } = getArtifactsByArtifactHashSchema.parse(req).params;
-    
+
     const artifactJson = await dbWrapper.get(
       ["l2", "artifacts", artifactHash],
       () => db.l2Contract.getArtifactByHash(artifactHash),
