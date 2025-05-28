@@ -5,7 +5,7 @@ import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 
 export const getArtifactByHash = async (
   artifactHash: HexString,
-): Promise<string | null> => {
+): Promise<object | null> => {
   const result = await db()
     .select({
       artifactJson: l2ContractClassRegistered.artifactJson,
@@ -18,5 +18,5 @@ export const getArtifactByHash = async (
     return null;
   }
 
-  return result[0].artifactJson;
+  return JSON.parse(result[0].artifactJson) as object;
 };

@@ -1,3 +1,4 @@
+export * from "./artifacts.js";
 export * from "./blocks.js";
 export * from "./chain-info.js";
 export * from "./contract-class-functions.js";
