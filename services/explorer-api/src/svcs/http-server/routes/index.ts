@@ -31,6 +31,8 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS,
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASSES,
 
+  ...controller.openapi_GET_L2_ARTIFACTS_BY_ARTIFACT_HASH,
+
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS,
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTION,
   ...controller.openapi_GET_L2_CONTRACT_CLASS_UTILITY_FUNCTIONS,
@@ -158,6 +160,11 @@ export const init = ({ router }: { router: Router }) => {
   router.get(
     paths.contractClasses,
     controller.GET_L2_REGISTERED_CONTRACT_CLASSES,
+  );
+
+  router.get(
+    paths.artifactsByArtifactHash,
+    controller.GET_L2_ARTIFACTS_BY_ARTIFACT_HASH,
   );
 
   router.get(
