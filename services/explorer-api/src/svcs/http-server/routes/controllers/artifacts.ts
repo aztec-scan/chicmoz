@@ -1,7 +1,12 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
+import { getContractJson } from "../../../../standard-contracts.js";
 import { controllers as db } from "../../../database/index.js";
-import { getArtifactsByArtifactHashSchema } from "../paths_and_validation.js";
+import {
+  getArtifactsByArtifactHashSchema,
+  postContrctClassStandardArtifactSchema,
+} from "../paths_and_validation.js";
+import { verifyArtifact } from "./contract-classes.js";
 import { dbWrapper } from "./utils/index.js";
 
 export const openapi_GET_L2_ARTIFACTS_BY_ARTIFACT_HASH: OpenAPIObject["paths"] =
@@ -55,5 +60,58 @@ export const GET_L2_ARTIFACTS_BY_ARTIFACT_HASH = asyncHandler(
 
     // Return the raw artifact JSON without any wrapper
     res.status(200).json(JSON.parse(artifactJson));
+  },
+);
+
+export const POST_L2_REGISTERED_CONTRACT_CLASS_STANDARD_ARTIFACT = asyncHandler(
+  async (req, res) => {
+    const {
+      params: { contractClassId, version: classVersion },
+      body: { name: standardName, version: standardVersion },
+    } = postContrctClassStandardArtifactSchema.parse(req);
+
+    try {
+      // Get the standard contract JSON
+      const contractJson = getContractJson({
+        name: standardName,
+        version: standardVersion,
+      });
+
+      // Verify the artifact using the standard contract JSON
+      const result = await verifyArtifact({
+        contractClassId,
+        version: classVersion,
+        stringifiedArtifactJson: contractJson,
+      });
+
+      if (result.alreadyExists) {
+        res.status(200).json(result.contractClass);
+      } else {
+        res.status(201).json(result.contractClass);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes("not found")) {
+          res
+            .status(404)
+            .send(
+              `Standard contract ${standardName} version ${standardVersion} not found`,
+            );
+          return;
+        }
+        if (error.message === "Contract class found in DB is not valid") {
+          res.status(500).send(error.message);
+          return;
+        }
+        if (
+          error.message === "Missing artifact json" ||
+          error.message === "Incorrect artifact"
+        ) {
+          res.status(400).send(error.message);
+          return;
+        }
+      }
+      throw error;
+    }
   },
 );
