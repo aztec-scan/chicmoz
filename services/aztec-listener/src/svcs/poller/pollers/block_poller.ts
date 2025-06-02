@@ -113,10 +113,10 @@ Proven height   PROCESSED ${heights.processedProvenBlockHeight} | CHAIN ${
         `🐹 error while processing proven blocks: ${(e as Error).stack}`,
       );
     }
-    //const nothingToProcess = proposedHeightDiff === 0 && provenHeightDiff === 0;
-    //if (nothingToProcess) {
-    //  await oneEternalCatchupFetch(chainProposedBlockHeight);
-    //}
+    const nothingToProcess = proposedHeightDiff === 0 && provenHeightDiff === 0;
+    if (nothingToProcess) {
+      await oneEternalCatchupFetch(chainProposedBlockHeight);
+    }
   } catch (e) {
     logger.error(`🐱 error while processing blocks: ${(e as Error).stack}`);
   } finally {
@@ -193,20 +193,20 @@ const ensureSaneValues = async (
   return heights;
 };
 
-//let currentEternalCatchupHeight = 1;
-//const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
-//  // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
-//  const block = await internalGetBlock(currentEternalCatchupHeight);
-//  if (block) {
-//    await onCatchupBlock(
-//      block,
-//      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
-//    );
-//    currentEternalCatchupHeight =
-//      (currentEternalCatchupHeight + 1) % currentProposedHeight || 1;
-//    currentEternalCatchupHeight = Math.min(
-//      currentEternalCatchupHeight,
-//      currentProposedHeight,
-//    );
-//  }
-//};
+let currentEternalCatchupHeight = 1;
+const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
+  // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
+  const block = await internalGetBlock(currentEternalCatchupHeight);
+  if (block) {
+    await onCatchupBlock(
+      block,
+      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+    );
+    currentEternalCatchupHeight =
+      (currentEternalCatchupHeight + 1) % currentProposedHeight || 1;
+    currentEternalCatchupHeight = Math.min(
+      currentEternalCatchupHeight,
+      currentProposedHeight,
+    );
+  }
+};
