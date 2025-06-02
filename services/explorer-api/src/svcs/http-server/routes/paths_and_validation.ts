@@ -11,7 +11,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
-import { getContractJsonSchema } from "../../../standard-contracts.js";
+import { getStandardContractJsonSchema } from "../../../standard-contracts.js";
 
 export const heightOrHash = "heightOrHash";
 export const blockHeight = "blockHeight";
@@ -175,7 +175,7 @@ export const getArtifactsByArtifactHashSchema = z.object({
 
 export const postContrctClassStandardArtifactSchema = z.object({
   params: getContractClassSchema.shape.params,
-  body: getContractJsonSchema,
+  body: getStandardContractJsonSchema,
 });
 
 export const getContractClassPrivateFunctionsSchema = z.object({

@@ -2,12 +2,12 @@ import { NoirCompiledContract } from "@aztec/aztec.js";
 import TokenContractJson from "@defi-wonderland/aztec-standards/historical/0.0.0-73e84dcc/target/token_contract-Token.json" with { type: "json" };
 import { z } from "zod";
 
-export const getContractJsonSchema = z.object({
+export const getStandardContractJsonSchema = z.object({
   name: z.string(),
   version: z.string(),
 });
 
-export type GetContractJsonSchema = z.infer<typeof getContractJsonSchema>;
+export type GetStandardContractJson = z.infer<typeof getStandardContractJsonSchema>;
 
 const contracts: Record<string, Record<string, NoirCompiledContract>> = {
   "0.0.0-73e84dcc": {
@@ -15,7 +15,7 @@ const contracts: Record<string, Record<string, NoirCompiledContract>> = {
   },
 };
 
-export const getContractJson = (args: GetContractJsonSchema) => {
+export const getContractJson = (args: GetStandardContractJson) => {
   const { name, version } = args;
   const contract = contracts[version]?.[name];
   if (!contract) {

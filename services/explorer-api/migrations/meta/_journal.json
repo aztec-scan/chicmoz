@@ -8,6 +8,13 @@
       "when": 1747913816076,
       "tag": "0000_adorable_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1748873225098,
+      "tag": "0001_public_puck",
+      "breakpoints": true
     }
   ]
 }

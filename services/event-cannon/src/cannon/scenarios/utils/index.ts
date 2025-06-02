@@ -269,6 +269,26 @@ export const registerContractClassArtifact = async (
   });
 };
 
+export const registerStandardContractArtifact = async (
+  contractLoggingName: string,
+  contractClassId: string,
+  version: number,
+  standardName: string,
+  standardVersion: string,
+) => {
+  const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${version}/standard-artifact`;
+  const postData = JSON.stringify({
+    name: standardName,
+    version: standardVersion,
+  });
+  await callExplorerApi({
+    loggingString: `🏗 registerStandardContractArtifact ${contractLoggingName}`,
+    urlStr: url,
+    postData,
+    method: "POST",
+  });
+}
+
 export const verifyContractInstanceDeployment = async ({
   contractLoggingName,
   contractInstanceAddress,

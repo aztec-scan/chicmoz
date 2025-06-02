@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
+import { logger } from "../../../../logger.js";
 import { getContractJson } from "../../../../standard-contracts.js";
 import { controllers as db } from "../../../database/index.js";
 import {
@@ -71,17 +72,26 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_STANDARD_ARTIFACT = asyncHandler(
     } = postContrctClassStandardArtifactSchema.parse(req);
 
     try {
-      // Get the standard contract JSON
       const contractJson = getContractJson({
         name: standardName,
         version: standardVersion,
       });
-
-      // Verify the artifact using the standard contract JSON
+      logger.info(
+        `
+contractClassId: ${contractClassId}
+classVersion: ${classVersion}
+standardName: ${standardName}
+standardVersion: ${standardVersion}
+`,
+      );
       const result = await verifyArtifact({
         contractClassId,
         version: classVersion,
         stringifiedArtifactJson: contractJson,
+        standardData: {
+          name: standardName,
+          version: standardVersion,
+        },
       });
 
       if (result.alreadyExists) {

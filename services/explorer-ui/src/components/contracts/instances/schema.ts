@@ -1,4 +1,4 @@
-import { contractTypeSchema } from "@chicmoz-pkg/types";
+import { chicmozL2ContractClassRegisteredEventSchema } from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export type ContractInstance = z.infer<typeof contractInstanceSchema>;
@@ -11,7 +11,10 @@ export const contractInstanceSchema = z.object({
   contractClassId: z.string(),
   deployer: z.string(),
   contractTypeSchema: z
-    .lazy(() => contractTypeSchema)
+    .lazy(
+      () =>
+        chicmozL2ContractClassRegisteredEventSchema.shape.standardContractType,
+    )
     .nullable()
     .optional(),
   aztecScanOriginNotes: z

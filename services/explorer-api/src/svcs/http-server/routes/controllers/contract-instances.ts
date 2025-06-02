@@ -383,11 +383,11 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       ).catch((err) => {
         logger.warn(`Failed to cache contract class: ${err}`);
       });
-      await db.l2Contract.addArtifactJson(
-        dbContractClass.contractClassId,
-        dbContractClass.version,
-        stringifiedArtifactJson,
-      );
+      await db.l2Contract.addArtifactData({
+        contractClassId: dbContractClass.contractClassId,
+        version: dbContractClass.version,
+        artifactJson: stringifiedArtifactJson,
+      });
     }
 
     const artifactString =

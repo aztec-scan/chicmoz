@@ -1,7 +1,4 @@
-import {
-  ContractType,
-  type ChicmozL2ContractClassRegisteredEvent,
-} from "@chicmoz-pkg/types";
+import { type ChicmozL2ContractClassRegisteredEvent } from "@chicmoz-pkg/types";
 import { type DetailItem } from "~/components/info-display/key-value-display";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
@@ -57,10 +54,10 @@ export const getContractClassKeyValueData = (
     },
     sourceCode,
   ];
-  if (data.contractType && data.contractType !== ContractType.Unknown) {
+  if (data.standardContractType) {
     valueData.push({
       label: "CONTRACT TYPE",
-      value: data.contractType,
+      value: data.standardContractType,
       tooltip: "Matched with DeFi-Wonderland's standard contracts",
     });
   }
