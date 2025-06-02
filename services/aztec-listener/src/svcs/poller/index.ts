@@ -29,6 +29,15 @@ export const init = async () => {
   }
   await ensureInitializedBlockHeights();
   const initResult = await initNetworkClient();
+  // Initialize with chainInfo and use type assertions to satisfy TypeScript
+  nodeInfo = {
+    nodeVersion: "unknown",
+    l1ChainId: initResult.chainInfo.l1ChainId,
+    rollupVersion: Number(initResult.chainInfo.rollupVersion), // Convert bigint to number
+    l1ContractAddresses: initResult.chainInfo.l1ContractAddresses as unknown as NodeInfo["l1ContractAddresses"],
+    protocolContractAddresses: initResult.chainInfo.protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
+    enr: undefined, // Add missing required property
+  };
   logger.info(`Aztec chain info: ${jsonStringify(initResult.chainInfo)}`);
   logger.info(`Aztec sequencer info: ${jsonStringify(initResult.sequencer)}`);
 };

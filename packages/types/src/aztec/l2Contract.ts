@@ -28,7 +28,7 @@ export type ChicmozL2ContractInstanceDeployedEvent = z.infer<
 
 export const chicmozL2ContractInstanceUpdatedEventSchema = z.object({
   address: aztecAddressSchema,
-  previousContractClassId: frSchema,
+  prevContractClassId: frSchema,
   newContractClassId: frSchema,
   blockOfChange: chicmozL2BlockSchema.shape.height,
   blockHash: chicmozL2BlockSchema.shape.hash,
@@ -84,7 +84,7 @@ export const chicmozL2PrivateFunctionBroadcastedEventSchema = z.object({
   contractClassId:
     chicmozL2ContractClassRegisteredEventSchema.shape.contractClassId,
   artifactMetadataHash: frSchema,
-  utilityFunctionsArtifactTreeRoot: frSchema,
+  utilityFunctionsTreeRoot: frSchema,
   privateFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?
   privateFunctionTreeLeafIndex: z.number(),
   artifactFunctionTreeSiblingPath: z.array(frSchema), // TODO: is it fixed size?

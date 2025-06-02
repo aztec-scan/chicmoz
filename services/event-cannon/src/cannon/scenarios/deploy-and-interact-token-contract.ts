@@ -5,7 +5,7 @@ import {
   waitForPXE,
 } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
-import * as tokenContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_contract-Token" assert { type: "json" };
+import * as tokenContractArtifactJson from "@aztec/noir-contracts.js/artifacts/token_contract-Token" with { type: "json" };
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
 import {

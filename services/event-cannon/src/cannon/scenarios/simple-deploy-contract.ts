@@ -6,7 +6,7 @@ import {
   registerContractClassArtifact,
 } from "./utils/index.js";
 import { EasyPrivateVotingContract } from "@aztec/noir-contracts.js/EasyPrivateVoting";
-import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" assert { type: "json" };
+import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" with { type: "json" };
 
 export async function run() {
   logger.info("===== SIMPLE DEPLOY CONTRACT =====");

@@ -6,9 +6,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@anatine/zod-openapi": "2.2.6",
-    "@aztec/aztec.js": "0.86.0",
-    "@aztec/protocol-contracts": "0.86.0",
-    "@aztec/stdlib": "0.86.0",
+    "@aztec/aztec.js": "0.87.2",
+    "@aztec/protocol-contracts": "0.87.2",
+    "@aztec/stdlib": "0.87.2",
     "@chicmoz-pkg/backend-utils": "workspace:^",
     "@chicmoz-pkg/contract-verification": "workspace:^",
     "@chicmoz-pkg/error-middleware": "workspace:^",
@@ -55,7 +55,7 @@
     "eslint-plugin-n": "15.0.0 || 16.0.0 ",
     "eslint-plugin-promise": "6.0.0",
     "supertest": "6.3.3",
-    "typescript": "5.2.2"
+    "typescript": "5.8.3"
   },
   "scripts": {
     "prebuild": "rm -rf build; mkdir build",

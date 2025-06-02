@@ -53,14 +53,15 @@ const init = async (
 export const getDb = () => {
   try {
     const state = getSvcState(serviceId);
-    if (state === MicroserviceBaseSvcState.SHUTTING_DOWN) {
-      throw new Error("Database is shutting down");
-    }
-    if (state === MicroserviceBaseSvcState.DOWN) {
-      throw new Error("Database is down");
-    }
-    if (state === MicroserviceBaseSvcState.INITIALIZING) {
-      throw new Error("Database is initializing");
+
+    if (state !== MicroserviceBaseSvcState.UP) {
+      if (state === MicroserviceBaseSvcState.SHUTTING_DOWN) {
+        throw new Error("Database is shutting down");
+      } else if (state === MicroserviceBaseSvcState.DOWN) {
+        throw new Error("Database is down");
+      } else if (state === MicroserviceBaseSvcState.INITIALIZING) {
+        throw new Error("Database is initializing");
+      }
     }
   } catch (error) {
     throw new Error("Database is not initialized");

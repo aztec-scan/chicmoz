@@ -23,7 +23,7 @@ spec:
           resources:
             limits:
               memory: 300Mi
-              cpu: 500m
+              cpu: 200m
           ports:
             - name: http-app-port
               containerPort: 80

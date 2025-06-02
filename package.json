@@ -16,10 +16,10 @@
     "eslint-plugin-import": "2.29.0",
     "husky": "8.0.3",
     "lint-staged": "15.1.0",
-    "prettier": "3.1.0",
-    "prettier-plugin-organize-imports": "3.2.4",
-    "prettier-plugin-sort-json": "3.1.0",
-    "typescript": "5.2.2"
+    "prettier": "3.5.3",
+    "prettier-plugin-organize-imports": "4.1.0",
+    "prettier-plugin-sort-json": "4.1.1",
+    "typescript": "5.8.3"
   },
   "scripts": {
     "build:packages": "yarn workspaces foreach --parallel --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",
@@ -33,10 +33,10 @@
     "prepare": "husky install"
   },
   "dependenciesMeta": {
-    "prettier-plugin-organize-imports@3.2.4": {
+    "prettier-plugin-organize-imports@4.1.0": {
       "unplugged": true
     },
-    "prettier-plugin-sort-json@3.1.0": {
+    "prettier-plugin-sort-json@4.1.1": {
       "unplugged": true
     },
     "tslib@2.6.3": {

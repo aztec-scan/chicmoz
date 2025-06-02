@@ -12,7 +12,6 @@ const constructor = "constructor";
 const claimPublic = "claim_public";
 const claimPrivate = "claim_private";
 const exitToL1Private = "exit_to_l1_private";
-const syncNote = "sync_notes";
 
 const requiredFunctionNames = [
   getConfig,
@@ -23,7 +22,6 @@ const requiredFunctionNames = [
   claimPublic,
   claimPrivate,
   exitToL1Private,
-  syncNote,
 ];
 
 const anyFunction = z.object({
@@ -71,11 +69,6 @@ const exitToL1PrivateSchema = z.object({
   custom_attributes: z.array(z.string()),
 });
 
-const syncNoteSchema = z.object({
-  name: z.string().regex(new RegExp(`^${syncNote}$`)),
-  custom_attributes: z.array(z.string()),
-});
-
 const requiredFunctions = z.union([
   getConfigSchema,
   exitToL1PublicSchema,
@@ -85,7 +78,6 @@ const requiredFunctions = z.union([
   claimPublicSchema,
   claimPrivateSchema,
   exitToL1PrivateSchema,
-  syncNoteSchema,
 ]);
 
 const tokenBridgeSchema = z.object({

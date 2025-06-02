@@ -9,8 +9,8 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/aztec.js": "0.86.0",
-    "@aztec/l1-artifacts": "0.86.0",
+    "@aztec/aztec.js": "0.87.2",
+    "@aztec/l1-artifacts": "0.87.2",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",
     "@chicmoz-pkg/message-registry": "workspace:^",
@@ -34,7 +34,7 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-n": "15.0.0 || 16.0.0 ",
     "eslint-plugin-promise": "6.0.0",
-    "typescript": "5.2.2"
+    "typescript": "5.8.3"
   },
   "scripts": {
     "prebuild": "rm -rf build; mkdir build",

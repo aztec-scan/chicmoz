@@ -35,9 +35,14 @@ export const CopyableText: FC<Props> = ({
         {textArea ? (
           <Textarea className="text-sm flex-grow" value={text} readOnly />
         ) : (
-          <span className="relative inline-block font-mono dark:text-white">{text}</span>
+          <span className="relative inline-block font-mono dark:text-white">
+            {text}
+          </span>
         )}
-        <CopyIcon className="cursor-pointer hover:opacity-80 dark:text-gray-300" onClick={handleCopy} />
+        <CopyIcon
+          className="cursor-pointer hover:opacity-80 dark:text-gray-300"
+          onClick={handleCopy}
+        />
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export const ContractClassDetails: FC = () => {
   const { id, version } = useParams({
     from: "/contracts/classes/$id/versions/$version",
   });
-  useSubTitle(`Address ${id}`);
+  useSubTitle(`Class ${id}`);
 
   const contractClassesRes = useContractClasses(id);
 

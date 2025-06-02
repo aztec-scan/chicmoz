@@ -102,7 +102,10 @@ export class MessageBus {
 
     const kafkaMessages: Message[] = [];
     for (const m of messages) {
-      kafkaMessages.push({ value: Buffer.from(BSON.serialize({ data: m })) });
+      // Serialize the data and create a Buffer
+      const serialized = BSON.serialize({ data: m });
+      // Ensure we're using a Buffer as required by the Message interface
+      kafkaMessages.push({ value: Buffer.from(serialized) });
     } // double check
 
     await this.#producer!.send({ topic, messages: kafkaMessages });
@@ -112,7 +115,7 @@ export class MessageBus {
   async subscribe<T>(
     groupId: string,
     topic: string,
-    cb: ((event: T) => Promise<void>) | ((event: T) => void)
+    cb: ((event: T) => Promise<void>) | ((event: T) => void),
   ) {
     this.logger.info(`Kafka (sub): connecting to consumer group ${groupId}`);
     if (!this.#consumers[groupId]) {
@@ -137,8 +140,8 @@ export class MessageBus {
       if (this.shouldCrash(payload.payload.error)) {
         this.logger.error(
           `FATAL: not recoverable error: ${JSON.stringify(
-            payload.payload.error
-          )}`
+            payload.payload.error,
+          )}`,
         );
         process.kill(process.pid, "SIGTERM");
         return;
@@ -157,9 +160,9 @@ export class MessageBus {
               await this.subscribe(
                 groupId,
                 topicName,
-                currentTopics[topicName]
+                currentTopics[topicName],
               );
-            })
+            }),
           );
           await this.runConsumer(groupId);
         }, 5000);
@@ -180,7 +183,22 @@ export class MessageBus {
         //   `Kafka: received message from topic ${topic} in group ${groupId}`
         // );
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const data = BSON.deserialize(message.value!).data;
+        // Convert Buffer to Uint8Array before deserializing
+        const messageValue = message.value!;
+        const valueAsUint8Array =
+          messageValue instanceof Buffer
+            ? new Uint8Array(messageValue)
+            : typeof messageValue === "string"
+              ? new TextEncoder().encode(messageValue)
+              : new Uint8Array(0);
+        // Add proper type assertion to satisfy the linter
+        const deserializedObj = BSON.deserialize(valueAsUint8Array);
+        if (typeof deserializedObj?.data !== "object") {
+          throw new Error(
+            `Deserialized message does not contain a valid data object`,
+          );
+        }
+        const data = deserializedObj.data as object;
         const cb = this.#consumers[groupId]?.topicCallbacks[topic];
         if (cb) {
           try {
@@ -189,12 +207,12 @@ export class MessageBus {
           } catch (e) {
             if (e instanceof Error) {
               this.logger.error(
-                `Provided callback for topic ${topic} failed: ${e.stack}`
+                `Provided callback for topic ${topic} failed: ${e.stack}`,
               );
             } else {
               this.logger.warn(
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                `Provided callback for topic ${topic} failed with non-Error: ${e}`
+                `Provided callback for topic ${topic} failed with non-Error: ${e}`,
               );
             }
           }

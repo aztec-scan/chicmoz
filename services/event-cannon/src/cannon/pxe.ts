@@ -1,4 +1,4 @@
-import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
+import { getDeployedTestAccountsWallets } from "@aztec/accounts/testing";
 import {
   AccountWallet,
   AztecNode,
@@ -7,10 +7,8 @@ import {
   createPXEClient,
   waitForPXE,
 } from "@aztec/aztec.js";
-import { NODE_ENV, NodeEnv } from "@chicmoz-pkg/types";
 import { AZTEC_RPC_URL } from "../environment.js";
 import { logger } from "../logger.js";
-import { getNewAccount } from "./scenarios/utils/index.js";
 
 let pxe: PXE;
 let aztecNode: AztecNode;
@@ -26,17 +24,8 @@ export const setup = async () => {
   await waitForPXE(pxe);
   const info = await pxe.getPXEInfo();
   logger.info(JSON.stringify(info));
-  let initialAccountWallets;
-  if (NODE_ENV === NodeEnv.DEV) {
-    initialAccountWallets = await getInitialTestAccountsWallets(pxe);
-  } else if (NODE_ENV === NodeEnv.PROD) {
-    initialAccountWallets = await Promise.all([
-      getNewAccount(pxe, "Alice").then(({ wallet }) => wallet),
-      getNewAccount(pxe, "Bob").then(({ wallet }) => wallet),
-      getNewAccount(pxe, "Charlie").then(({ wallet }) => wallet),
-    ]);
-  }
-  if (!initialAccountWallets) throw new Error("No initial accounts");
+  const initialAccountWallets = await getDeployedTestAccountsWallets(pxe);
+  logger.info(`Found ${initialAccountWallets.length} initial accounts`);
   const [alice, bob, charlie] = initialAccountWallets;
   namedWallets = {
     alice,
@@ -46,16 +35,16 @@ export const setup = async () => {
 };
 
 export const getAztecNodeClient = () => {
-  if (!aztecNode) throw new Error("Aztec Node not initialized");
+  if (!aztecNode) {throw new Error("Aztec Node not initialized");}
   return aztecNode;
 };
 
 export const getPxe = () => {
-  if (!pxe) throw new Error("PXE not initialized");
+  if (!pxe) {throw new Error("PXE not initialized");}
   return pxe;
 };
 
 export const getWallets = () => {
-  if (!namedWallets) throw new Error("Wallets not initialized");
+  if (!namedWallets) {throw new Error("Wallets not initialized");}
   return namedWallets;
 };

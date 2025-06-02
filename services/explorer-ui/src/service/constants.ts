@@ -48,6 +48,7 @@ export const aztecExplorer = {
     `/l2/blocks/${hash}/contract-instances`,
   getL2ContractInstancesByClassId: (classId: string) =>
     `/l2/contract-classes/${classId}/contract-instances`,
+  getL2Artifacts: (artifactHash: string) => `/l2/artifacts/${artifactHash}`,
   getL2VerifiedContracts: "/l2/verified-contracts",
   getL2VerifiedContractByInstanceAddress: (address: string) =>
     `/l2/verified-contracts/${address}`,

@@ -36,6 +36,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
+import { getWallets } from "../../pxe.js";
 import { callExplorerApi } from "./explorer-api.js";
 
 export const truncateHashString = (value: string) => {
@@ -90,7 +91,7 @@ export const getNewSchnorrAccount = async ({
   const { address } = await schnorrAccount.getCompleteAddress();
   logger.info(`    Deploying Schnorr account to network... (${accountName})`);
   await logAndWaitForTx(
-    schnorrAccount.deploy(),
+    schnorrAccount.deploy({ deployWallet: getWallets().alice }),
     `Deploying account ${accountName}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
@@ -230,7 +231,7 @@ export const publicDeployAccounts = async (
   }
   const deployCalls: ContractFunctionInteraction[] = [
     await registerContractClass(sender, SchnorrAccountContractArtifact),
-    ...((
+    ...(
       await Promise.all(
         notPubliclyDeployedAccounts.map(async (contractMetadata) => {
           if (!contractMetadata.contractInstance) {
@@ -242,7 +243,7 @@ export const publicDeployAccounts = async (
           return deployInstance(sender, contractMetadata.contractInstance);
         }),
       )
-    ).filter((call) => call !== undefined) as ContractFunctionInteraction[]),
+    ).filter((call) => call !== undefined),
   ];
   const batch = new BatchCall(sender, deployCalls);
   await batch.send().wait();

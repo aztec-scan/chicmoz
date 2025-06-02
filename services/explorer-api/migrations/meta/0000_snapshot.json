@@ -1,5 +1,5 @@
 {
-  "id": "c4f90e59-9f48-4564-b829-25863a5705b7",
+  "id": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -95,6 +95,34 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.dropped_tx": {
+      "name": "dropped_tx",
+      "schema": "",
+      "columns": {
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dropped_at": {
+          "name": "dropped_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.body": {
       "name": "body",
       "schema": "",
@@ -113,7 +141,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "body_block_hash_idx": {
+          "name": "body_block_hash_idx",
+          "columns": [
+            {
+              "expression": "block_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "body_block_hash_l2Block_hash_fk": {
           "name": "body_block_hash_l2Block_hash_fk",
@@ -164,7 +208,59 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "public_data_write_tx_effect_hash_idx": {
+          "name": "public_data_write_tx_effect_hash_idx",
+          "columns": [
+            {
+              "expression": "tx_effect_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "public_data_write_index_idx": {
+          "name": "public_data_write_index_idx",
+          "columns": [
+            {
+              "expression": "index",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "public_data_write_tx_effect_hash_index_idx": {
+          "name": "public_data_write_tx_effect_hash_index_idx",
+          "columns": [
+            {
+              "expression": "tx_effect_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "index",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "public_data_write_tx_effect_hash_tx_effect_tx_hash_fk": {
           "name": "public_data_write_tx_effect_hash_tx_effect_tx_hash_fk",
@@ -238,12 +334,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contract_class_logs_length": {
-          "name": "contract_class_logs_length",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
         "private_logs": {
           "name": "private_logs",
           "type": "jsonb",
@@ -269,6 +359,57 @@
           "columns": [
             {
               "expression": "tx_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tx_effect_body_id_idx": {
+          "name": "tx_effect_body_id_idx",
+          "columns": [
+            {
+              "expression": "body_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tx_effect_index_idx": {
+          "name": "tx_effect_index_idx",
+          "columns": [
+            {
+              "expression": "index",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tx_effect_body_id_index_idx": {
+          "name": "tx_effect_body_id_index_idx",
+          "columns": [
+            {
+              "expression": "body_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "index",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -336,7 +477,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "content_commitment_header_id_idx": {
+          "name": "content_commitment_header_id_idx",
+          "columns": [
+            {
+              "expression": "header_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "content_commitment_header_id_header_id_fk": {
           "name": "content_commitment_header_id_header_id_fk",
@@ -381,7 +538,23 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "gas_fees_global_variables_id_idx": {
+          "name": "gas_fees_global_variables_id_idx",
+          "columns": [
+            {
+              "expression": "global_variables_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "gas_fees_global_variables_id_global_variables_id_fk": {
           "name": "gas_fees_global_variables_id_global_variables_id_fk",
@@ -456,7 +629,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "global_variables_header_id_idx": {
+          "name": "global_variables_header_id_idx",
+          "columns": [
+            {
+              "expression": "header_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "global_variables_header_id_header_id_fk": {
           "name": "global_variables_header_id_header_id_fk",
@@ -501,7 +690,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "header_block_hash_idx": {
+          "name": "header_block_hash_idx",
+          "columns": [
+            {
+              "expression": "block_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "header_block_hash_l2Block_hash_fk": {
           "name": "header_block_hash_l2Block_hash_fk",
@@ -714,7 +919,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "partial_state_id_idx": {
+          "name": "partial_state_id_idx",
+          "columns": [
+            {
+              "expression": "state_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "partial_state_id_state_id_fk": {
           "name": "partial_state_id_state_id_fk",
@@ -792,7 +1013,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "state_header_id_idx": {
+          "name": "state_header_id_idx",
+          "columns": [
+            {
+              "expression": "header_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "state_header_id_header_id_fk": {
           "name": "state_header_id_header_id_fk",
@@ -983,38 +1220,74 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "l2Block_height_unique": {
-          "name": "l2Block_height_unique",
-          "nullsNotDistinct": false,
-          "columns": ["height"]
-        }
-      }
-    },
-    "public.tx": {
-      "name": "tx",
-      "schema": "",
-      "columns": {
-        "hash": {
-          "name": "hash",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
         },
-        "birth_timestamp": {
-          "name": "birth_timestamp",
+        "orphan_timestamp": {
+          "name": "orphan_timestamp",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": false
+        },
+        "orphan_hasOrphanedParent": {
+          "name": "orphan_hasOrphanedParent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "height_idx": {
+          "name": "height_idx",
+          "columns": [
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "orphan_timestamp_idx": {
+          "name": "orphan_timestamp_idx",
+          "columns": [
+            {
+              "expression": "orphan_timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"l2Block\".\"orphan_timestamp\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "height_orphan_idx": {
+          "name": "height_orphan_idx",
+          "columns": [
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "orphan_timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -1076,6 +1349,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "source_code_url": {
+          "name": "source_code_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1106,6 +1385,12 @@
           "name": "address",
           "type": "varchar(66)",
           "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
           "notNull": true
         },
         "origin": {
@@ -1359,8 +1644,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "previous_contract_class_id": {
-          "name": "previous_contract_class_id",
+        "prev_contract_class_id": {
+          "name": "prev_contract_class_id",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1478,8 +1763,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "utility_functions_artifact_tree_root": {
-          "name": "utility_functions_artifact_tree_root",
+        "utility_functions_tree_root": {
+          "name": "utility_functions_tree_root",
           "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
@@ -1604,6 +1889,29 @@
           "columns": ["contract_class_id", "utility_function_selector_value"]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "public.tx": {
+      "name": "tx",
+      "schema": "",
+      "columns": {
+        "hash": {
+          "name": "hash",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "birth_timestamp": {
+          "name": "birth_timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "public.l1_generic_contract_event": {
@@ -1812,6 +2120,12 @@
           "name": "attester",
           "type": "varchar(42)",
           "primaryKey": true,
+          "notNull": true
+        },
+        "rollup_address": {
+          "name": "rollup_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
           "notNull": true
         },
         "first_seen_at": {
@@ -2137,7 +2451,38 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "l2_block_finalization_l2blockhash_idx": {
+          "name": "l2_block_finalization_l2blockhash_idx",
+          "columns": [
+            {
+              "expression": "l2_block_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "l2_block_finalization_status_idx": {
+          "name": "l2_block_finalization_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "l2_block_finalization_status_pk": {

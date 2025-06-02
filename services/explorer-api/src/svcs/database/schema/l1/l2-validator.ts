@@ -4,6 +4,7 @@ import { generateEthAddressColumn, generateUint256Column } from "../utils.js";
 
 export const l1L2ValidatorTable = pgTable("l1_l2_validator", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
+  // TODO: rollup should be part of the primary key!!!
   rollupAddress: generateEthAddressColumn("rollup_address").notNull(),
   firstSeenAt: timestamp("first_seen_at").notNull(),
 });

@@ -9,11 +9,11 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/accounts": "0.86.0",
-    "@aztec/aztec.js": "0.86.0",
-    "@aztec/ethereum": "0.86.0",
-    "@aztec/l1-artifacts": "0.86.0",
-    "@aztec/noir-contracts.js": "0.86.0",
+    "@aztec/accounts": "0.87.2",
+    "@aztec/aztec.js": "0.87.2",
+    "@aztec/ethereum": "0.87.2",
+    "@aztec/l1-artifacts": "0.87.2",
+    "@aztec/noir-contracts.js": "0.87.2",
     "@chicmoz-pkg/contract-verification": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/types": "workspace:^",
@@ -29,11 +29,11 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-n": "15.0.0 || 16.0.0 ",
     "eslint-plugin-promise": "6.0.0",
-    "typescript": "5.2.2"
+    "typescript": "5.8.3"
   },
   "scripts": {
     "prebuild": "rm -rf build; mkdir build",
-    "build": "yarn tsc",
+    "build": "yarn tsc --skipLibCheck --experimentalDecorators --module esnext",
     "predev": "yarn build",
     "dev": "yarn node build/index.js",
     "start": "yarn node --unhandled-rejections=strict --enable-source-maps build/index.js",

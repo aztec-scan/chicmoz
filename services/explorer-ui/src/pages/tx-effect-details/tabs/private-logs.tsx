@@ -2,19 +2,26 @@ import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 
 interface PrivateLogsArgs {
-  logs: string[][]
+  logs: {
+    fields: string[];
+    emittedLength: number;
+  }[];
 }
 
 export const PrivateLogs: FC<PrivateLogsArgs> = ({ logs }) => (
   <div>
-    {logs.map((log, index) => (
+    {logs.map(({ fields, emittedLength }, index) => (
       <div key={index}>
         <h4>Log {index + 1}</h4>
         <KeyValueDisplay
           data={[
             {
               label: "data",
-              value: log.toString(),
+              value: fields.toString(),
+            },
+            {
+              label: "emittedLength",
+              value: emittedLength.toString(),
             },
           ]}
         />

@@ -20,9 +20,10 @@ export const verifyArtifactPayload = async (
   ) as NoirCompiledContract;
   const loadedArtifact = loadContractArtifact(parsedArtifact);
   const contractClass = await getContractClassFromArtifact(loadedArtifact);
-  const isMatchingByteCode = storedArtifact.packedBytecode.equals(
-    contractClass.packedBytecode,
-  );
+  const storedBytes = Uint8Array.from(storedArtifact.packedBytecode);
+  const contractBytes = Uint8Array.from(contractClass.packedBytecode);
+  const isMatchingByteCode = storedBytes.length === contractBytes.length &&
+    storedBytes.every((value, index) => value === contractBytes[index]);
   return {
     isMatchingByteCode,
     artifactContractName: parsedArtifact.name ?? "PARSE ERROR",

@@ -22,8 +22,8 @@ spec:
         - image: registry.digitalocean.com/aztlan-containers/auth:latest
           resources:
             limits:
-              memory: 1000Mi
-              cpu: 500m
+              memory: 400Mi
+              cpu: 300m
           ports:
             - name: http-app-port
               containerPort: 80
