@@ -5,6 +5,10 @@ export const BLOCK_POLL_INTERVAL_MS = z.coerce
   .number()
   .default(3000)
   .parse(process.env.BLOCK_POLL_INTERVAL_MS);
+export const CATCHUP_POLL_WAIT_TIME_MS = z.coerce
+  .number()
+  .default(200)
+  .parse(process.env.CATCHUP_POLL_WAIT_TIME_MS);
 export const TX_POLL_INTERVAL_MS = z.coerce
   .number()
   .default(4000) // NOTE: https://github.com/aztec-scan/chicmoz/issues/430#issuecomment-2841287541

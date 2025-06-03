@@ -44,8 +44,6 @@ spec:
               value: "5000"
             - name: L2_NETWORK_ID
               value: "DEVNET"
-            - name: AZTEC_GENESIS_CATCHUP
-              value: "true"
             - name: AZTEC_LISTEN_FOR_BLOCKS
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS

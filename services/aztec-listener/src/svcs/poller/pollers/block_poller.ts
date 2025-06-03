@@ -3,6 +3,7 @@ import {
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS,
   AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS,
   BLOCK_POLL_INTERVAL_MS,
+  CATCHUP_POLL_WAIT_TIME_MS,
 } from "../../../environment.js";
 import { onBlock, onCatchupBlock } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
@@ -135,7 +136,7 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
     logger.info(`🐱 catchup proposed block ${height}`);
-    await new Promise((r) => setTimeout(r, 200));
+    await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
   } else {
     await onBlock(
       block,
@@ -153,7 +154,7 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
     );
     logger.info(`🐱 catchup proven block ${height}`);
-    await new Promise((r) => setTimeout(r, 200));
+    await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
   } else {
     await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
   }

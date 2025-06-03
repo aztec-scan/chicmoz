@@ -51,8 +51,6 @@ spec:
               value: "production"
             - name: L2_NETWORK_ID
               value: "TESTNET"
-            - name: AZTEC_GENESIS_CATCHUP
-              value: "false"
             - name: IGNORE_PROCESSED_HEIGHT
               value: "false"
             - name: AZTEC_LISTEN_FOR_BLOCKS
