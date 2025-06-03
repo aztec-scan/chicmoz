@@ -1,4 +1,4 @@
-import { Outlet, useMatch, useParams } from "@tanstack/react-router";
+import { Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
@@ -16,9 +16,11 @@ export const ContractClassDetails: FC = () => {
   const { id, version } = useParams({
     from: "/contracts/classes/$id/versions/$version",
   });
-  const isOnChildRoute = useMatch({
-    from: "/contracts/classes/$id/versions/$version/submit-standard-contract",
-  });
+  const location = useLocation();
+
+  const isOnChildRoute = location.pathname.includes(
+    "/submit-standard-contract",
+  );
 
   useSubTitle(`Class ${id}`);
 
