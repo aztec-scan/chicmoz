@@ -1,8 +1,5 @@
-import { NoirCompiledContract } from "@aztec/aztec.js";
-import { getContractType } from "@chicmoz-pkg/contract-verification";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  ContractType,
   chicmozL2ContractClassRegisteredEventSchema,
   type ChicmozL2ContractClassRegisteredEvent,
 } from "@chicmoz-pkg/types";
@@ -11,6 +8,7 @@ import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
+import {z} from "zod";
 
 export const getL2RegisteredContractClass = async (
   contractClassId: ChicmozL2ContractClassRegisteredEvent["contractClassId"],
@@ -55,25 +53,7 @@ export const getL2RegisteredContractClasses = async ({
     .limit(limit)
     .orderBy(desc(l2ContractClassRegistered.version));
 
-  return result.map((r) => {
-    let tokenData = {
-      contractType: ContractType.Unknown,
-      artifactContractName: "",
-    };
-    if (includeArtifactJson && r.artifactJson) {
-      const parsedArtifactJson = JSON.parse(
-        r.artifactJson,
-      ) as unknown as NoirCompiledContract;
-      const contractTypeResult = getContractType(parsedArtifactJson);
-      tokenData = {
-        ...contractTypeResult,
-      };
-    }
-    return chicmozL2ContractClassRegisteredEventSchema.parse({
-      ...r,
-      ...tokenData,
-    });
-  });
+  return z.array(chicmozL2ContractClassRegisteredEventSchema).parse(result);
 };
 
 export const getLatestL2RegisteredContractClasses = async (): Promise<

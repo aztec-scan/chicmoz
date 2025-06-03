@@ -14,7 +14,6 @@ import {
 import { l2Block } from "../index.js";
 import {
   bufferType,
-  contractTypeDbEnum,
   generateAztecAddressColumn,
   generateConcatFrPointColumn,
   generateFrColumn,
@@ -68,9 +67,7 @@ export const l2ContractInstanceDeployed = pgTable(
 export const l2ContractInstanceUpdate = pgTable("l2_contract_instance_update", {
   id: uuid("id").primaryKey().defaultRandom(),
   address: generateAztecAddressColumn("address").notNull().unique(),
-  prevContractClassId: generateFrColumn(
-    "prev_contract_class_id",
-  ).notNull(),
+  prevContractClassId: generateFrColumn("prev_contract_class_id").notNull(),
   newContractClassId: generateFrColumn("new_contract_class_id").notNull(),
   blockOfChange: bigint("height", { mode: "bigint" }).notNull(),
   blockHash: varchar("block_hash")
@@ -93,7 +90,8 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
-    contractType: contractTypeDbEnum("contract_type"),
+    standardContractType: varchar("contract_type"),
+    standardContractVersion: varchar("contract_version"),
     sourceCodeUrl: varchar("source_code_url"),
   },
   (t) => ({

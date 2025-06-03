@@ -8,6 +8,7 @@ import {
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { and, eq } from "drizzle-orm";
+import { GetStandardContractJson } from "../../../../standard-contracts.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -53,15 +54,26 @@ export const storeContractClass = async (
     });
 };
 
-export const addArtifactJson = async (
-  contractClassId: string,
-  version: number,
-  artifactJson: string,
-): Promise<void> => {
+export const addArtifactData = async ({
+  contractClassId,
+  version,
+  artifactJson,
+  contractName,
+  standardData,
+}: {
+  contractClassId: string;
+  version: number;
+  artifactJson: string;
+  contractName?: string;
+  standardData?: GetStandardContractJson;
+}): Promise<void> => {
   await db()
     .update(l2ContractClassRegistered)
     .set({
       artifactJson,
+      artifactContractName: contractName ?? null,
+      standardContractType: standardData?.name ?? null,
+      standardContractVersion: standardData?.version ?? null,
     })
     .where(
       and(

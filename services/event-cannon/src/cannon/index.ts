@@ -1,5 +1,6 @@
 import {
   INIFINITE_LOOP,
+  SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT,
   SCENARIO_DELAY,
   SCENARIO_DEPLOY_AND_UPDATE,
   SCENARIO_FUNCTIONS_VOTE,
@@ -77,20 +78,28 @@ export async function init() {
     });
   }
 
+  if (SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT) {
+    scenariosToRun.push({
+      envVar: "SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT",
+      scenario: scenarios.deployAztecStandardTokenContract,
+    });
+  }
+
   logger.info(`
 SCENARIO_DELAY:                  ${SCENARIO_DELAY / 1000} seconds
 INIFINITE_LOOP:                  ${INIFINITE_LOOP ? "✅" : "❌"}
 =======================
-SCENARIO_SIMPLE_DEFAULT_ACCOUNT: ${SCENARIO_SIMPLE_DEFAULT_ACCOUNT ? "✅" : "❌"
-    }
-SCENARIO_TOKEN_CONTRACT:         ${SCENARIO_TOKEN_CONTRACT ? "✅" : "❌"}
-SCENARIO_DEPLOY_AND_UPDATE:      ${SCENARIO_DEPLOY_AND_UPDATE ? "✅" : "❌"}
-SCENARIO_FUNCTIONS_VOTE:         ${SCENARIO_FUNCTIONS_VOTE ? "✅" : "❌"}
-SCENARIO_SIMPLE_CONTRACT:        ${SCENARIO_SIMPLE_CONTRACT ? "✅" : "❌"}
-SCENARIO_SIMPLE_LOG:             ${SCENARIO_SIMPLE_LOG ? "✅" : "❌"}
-SCENARIO_L1L2_PUBLIC_MESSAGING:  ${SCENARIO_L1L2_PUBLIC_MESSAGING ? "✅" : "❌"}
-SCENARIO_L1L2_PRIVATE_MESSAGING: ${SCENARIO_L1L2_PRIVATE_MESSAGING ? "✅" : "❌"
-    }
+SCENARIO_SIMPLE_DEFAULT_ACCOUNT:        ${
+    SCENARIO_SIMPLE_DEFAULT_ACCOUNT ? "✅" : "❌"
+  }
+SCENARIO_TOKEN_CONTRACT:                ${SCENARIO_TOKEN_CONTRACT ? "✅" : "❌"}
+SCENARIO_DEPLOY_AND_UPDATE:             ${SCENARIO_DEPLOY_AND_UPDATE ? "✅" : "❌"}
+SCENARIO_FUNCTIONS_VOTE:                ${SCENARIO_FUNCTIONS_VOTE ? "✅" : "❌"}
+SCENARIO_SIMPLE_CONTRACT:               ${SCENARIO_SIMPLE_CONTRACT ? "✅" : "❌"}
+SCENARIO_SIMPLE_LOG:                    ${SCENARIO_SIMPLE_LOG ? "✅" : "❌"}
+SCENARIO_L1L2_PUBLIC_MESSAGING:         ${SCENARIO_L1L2_PUBLIC_MESSAGING ? "✅" : "❌"}
+SCENARIO_L1L2_PRIVATE_MESSAGING:        ${SCENARIO_L1L2_PRIVATE_MESSAGING ? "✅" : "❌"}
+SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT ? "✅" : "❌"}
 `);
 
   await setup();
@@ -106,7 +115,9 @@ SCENARIO_L1L2_PRIVATE_MESSAGING: ${SCENARIO_L1L2_PRIVATE_MESSAGING ? "✅" : "�
 
 const runScenarios = async () => {
   for (const scenario of scenariosToRun) {
-    if (isShutdown) { return; }
+    if (isShutdown) {
+      return;
+    }
     logger.info(`Running scenario: ${scenario.envVar}`);
     try {
       await scenario.scenario();
@@ -115,7 +126,7 @@ const runScenarios = async () => {
       logger.error(`Error running scenario: ${(e as Error).stack ?? e}`);
     }
     logger.info(
-      `waiting ${SCENARIO_DELAY / 1000} seconds before next scenario...`
+      `waiting ${SCENARIO_DELAY / 1000} seconds before next scenario...`,
     );
     await new Promise((resolve) => setTimeout(resolve, SCENARIO_DELAY));
   }

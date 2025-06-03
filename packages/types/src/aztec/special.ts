@@ -8,7 +8,6 @@ import {
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
   chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema,
-  contractTypeSchema,
 } from "./l2Contract.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
 
@@ -48,7 +47,10 @@ export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   uploadedAt: z.coerce.date(),
   reviewedAt: z.coerce.date().optional(),
   contractType: z
-    .lazy(() => contractTypeSchema)
+    .lazy(
+      () =>
+        chicmozL2ContractClassRegisteredEventSchema.shape.standardContractType,
+    )
     .nullable()
     .optional(),
   aztecScanNotes: aztecScanNoteSchema.nullable().optional(),

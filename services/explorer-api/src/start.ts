@@ -38,5 +38,6 @@ URL: ${sourceCodeUrl}`);
       });
     }
   }
+
   await subscribeHandlers();
 };

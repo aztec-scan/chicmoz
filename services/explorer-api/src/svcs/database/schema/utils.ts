@@ -1,6 +1,5 @@
 import {
   ChicmozL2BlockFinalizationStatus,
-  ContractType,
   L2NetworkId,
 } from "@chicmoz-pkg/types";
 import { ColumnBuilderBaseConfig, ColumnDataType } from "drizzle-orm";
@@ -61,5 +60,3 @@ export const l2NetworkIdDbEnum = (name: string) =>
   varchar(name).$type<L2NetworkId>();
 export const l2BlockFinalizationStatusDbEnum = (name: string) =>
   smallint(name).$type<ChicmozL2BlockFinalizationStatus>();
-export const contractTypeDbEnum = (name: string) =>
-  varchar(name).$type<ContractType>();

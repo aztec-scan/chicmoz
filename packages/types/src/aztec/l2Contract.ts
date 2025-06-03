@@ -51,14 +51,6 @@ export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema =
 export type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema =
   z.infer<typeof chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema>;
 
-export enum ContractType {
-  Unknown = "Unknown",
-  Token = "Token",
-  TokenBridge = "TokenBridge",
-}
-
-export const contractTypeSchema = z.nativeEnum(ContractType);
-
 export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   blockHash: chicmozL2BlockSchema.shape.hash,
   contractClassId: frSchema,
@@ -68,7 +60,8 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   packedBytecode: bufferSchema,
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
-  contractType: contractTypeSchema.nullable().optional(),
+  standardContractType: z.string().nullable().optional(),
+  standardContractVersion: z.string().nullable().optional(),
   sourceCodeUrl: z.string().nullable().optional(),
 });
 

@@ -1,11 +1,14 @@
-import { ContractType, chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema } from "@chicmoz-pkg/types";
+import {
+  ChicmozL2ContractClassRegisteredEvent,
+  chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema,
+} from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export type VerifyArtifactPayload = {
   stringifiedArtifactJson: string;
 };
 export type ArtifactParsingResult = {
-  contractType: ContractType;
+  contractType: ChicmozL2ContractClassRegisteredEvent["standardContractType"];
   contractName: string;
 };
 
@@ -14,7 +17,6 @@ export type ContractTypeParsingResult = {
   contractName: string;
   details: string;
 };
-
 
 export const verifyInstanceDeploymentPayloadSchema = z.lazy(() =>
   z.object({

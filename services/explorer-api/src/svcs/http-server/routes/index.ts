@@ -167,6 +167,11 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L2_ARTIFACTS_BY_ARTIFACT_HASH,
   );
 
+  router.post(
+    paths.contrctClassStandardArtifact,
+    controller.POST_L2_REGISTERED_CONTRACT_CLASS_STANDARD_ARTIFACT,
+  );
+
   router.get(
     paths.contractClassPrivateFunctions,
     controller.GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS,

@@ -11,6 +11,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
+import { getStandardContractJsonSchema } from "../../../standard-contracts.js";
 
 export const heightOrHash = "heightOrHash";
 export const blockHeight = "blockHeight";
@@ -46,6 +47,7 @@ export const paths = {
   contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
   contractClassesByClassId: `/l2/contract-classes/:${contractClassId}`,
   contractClasses: `/l2/contract-classes`,
+  contrctClassStandardArtifact: `/l2/contract-classes/:${contractClassId}/versions/:${version}/standard-artifact`,
 
   artifactsByArtifactHash: `/l2/artifacts/:${artifactHash}`,
 
@@ -169,6 +171,11 @@ export const getArtifactsByArtifactHashSchema = z.object({
   params: z.object({
     [artifactHash]: hexStringSchema,
   }),
+});
+
+export const postContrctClassStandardArtifactSchema = z.object({
+  params: getContractClassSchema.shape.params,
+  body: getStandardContractJsonSchema,
 });
 
 export const getContractClassPrivateFunctionsSchema = z.object({
