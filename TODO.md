@@ -77,13 +77,13 @@ cd ~/c/chicmoz && yarn build && yarn lint && yarn test
 - ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/schema/l2tx/index.ts
 - ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2Tx/\*
 
-### Refactor onPendingTxs to just try to store the value in DB
+### Refactor onPendingTxs to just try to store the value in DB ✅
 
 i.e. not checking if it should be dropped etc.
 
 #### relevant files
 
-- /home/filip/c/chicmoz/services/explorer-api/src/events/received/on-pending-txs.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/events/received/on-pending-txs.ts
 
 ### Add new schema for contractInstanceBalance
 
