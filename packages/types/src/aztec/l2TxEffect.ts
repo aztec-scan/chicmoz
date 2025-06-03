@@ -5,6 +5,7 @@ import { frNumberSchema, frSchema } from "./utils.js";
 export const chicmozL2PendingTxSchema = z.object({
   // TODO: this schema needs to be properly defined, perhaps merged with txEffect
   hash: hexStringSchema,
+  feePayer: hexStringSchema.optional(),
   birthTimestamp: z.number(),
 });
 

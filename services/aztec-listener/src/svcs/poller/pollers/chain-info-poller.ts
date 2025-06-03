@@ -13,5 +13,5 @@ export const startPolling = () => {
 };
 
 export const stopPolling = () => {
-  if (pollInterval) clearInterval(pollInterval);
+  if (pollInterval) {clearInterval(pollInterval);}
 };

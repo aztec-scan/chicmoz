@@ -2,6 +2,7 @@ import {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
+  ChicmozL2DroppedTx,
   ChicmozL2PendingTx,
   ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
@@ -17,6 +18,10 @@ export type NewBlockEvent = {
 
 export type PendingTxsEvent = {
   txs: ChicmozL2PendingTx[];
+};
+
+export type DroppedTxsEvent = {
+  txs: ChicmozL2DroppedTx[];
 };
 
 export type CatchupBlockEvent = NewBlockEvent;
@@ -54,6 +59,7 @@ export type L2_MESSAGES = {
   NEW_BLOCK_EVENT: NewBlockEvent;
   CATCHUP_BLOCK_EVENT: CatchupBlockEvent;
   PENDING_TXS_EVENT: PendingTxsEvent;
+  DROPPED_TXS_EVENT: DroppedTxsEvent;
   L2_RPC_NODE_ERROR_EVENT: ChicmozL2RpcNodeErrorEvent;
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
   SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;

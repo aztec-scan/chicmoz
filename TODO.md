@@ -28,12 +28,12 @@ cd ~/c/chicmoz && yarn build && yarn lint && yarn test
 
 ## aztec-listener
 
-### Store pending txs in aztec-listener DB
+### Store pending txs in aztec-listener DB ✅
 
-1. create new schema for pending txs
-2. extract onPendingTxs to separate file
-   - if the pendingTx is new, publish as pendingTxEvent
-   - if there is a pendingTx in DB but no longer in pending, publish droppedTxEvent
+1. ✅ create new schema for pending txs
+2. ✅ extract onPendingTxs to separate file
+   - ✅ if the pendingTx is new, publish as pendingTxEvent
+   - ✅ if there is a pendingTx in DB but no longer in pending, publish droppedTxEvent
 
 #### schema
 
