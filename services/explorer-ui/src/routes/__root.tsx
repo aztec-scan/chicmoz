@@ -90,6 +90,12 @@ export const routes = {
                   version: {
                     route: "/$version",
                     title: "Contract Class Details",
+                    children: {
+                      submitStandardContract: {
+                        route: "/submit-standard-contract",
+                        title: "Submit Standard Contract",
+                      },
+                    },
                   },
                 },
               },

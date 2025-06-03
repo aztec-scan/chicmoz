@@ -41,6 +41,10 @@ const ContractsInstancesAddressLazyImport = createFileRoute(
 const ContractsClassesIdVersionsVersionLazyImport = createFileRoute(
   '/contracts/classes/$id/versions/$version',
 )()
+const ContractsClassesIdVersionsVersionSubmitStandardContractLazyImport =
+  createFileRoute(
+    '/contracts/classes/$id/versions/$version/submit-standard-contract',
+  )()
 
 // Create/Update Routes
 
@@ -166,6 +170,16 @@ const ContractsClassesIdVersionsVersionLazyRoute =
     import('./routes/contracts/classes.$id.versions.$version.lazy').then(
       (d) => d.Route,
     ),
+  )
+
+const ContractsClassesIdVersionsVersionSubmitStandardContractLazyRoute =
+  ContractsClassesIdVersionsVersionSubmitStandardContractLazyImport.update({
+    path: '/submit-standard-contract',
+    getParentRoute: () => ContractsClassesIdVersionsVersionLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/contracts/classes.$id.versions.$version.submit-standard-contract.lazy'
+    ).then((d) => d.Route),
   )
 
 // Populate the FileRoutesByPath interface
@@ -305,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsClassesIdVersionsVersionLazyImport
       parentRoute: typeof rootRoute
     }
+    '/contracts/classes/$id/versions/$version/submit-standard-contract': {
+      id: '/contracts/classes/$id/versions/$version/submit-standard-contract'
+      path: '/submit-standard-contract'
+      fullPath: '/contracts/classes/$id/versions/$version/submit-standard-contract'
+      preLoaderRoute: typeof ContractsClassesIdVersionsVersionSubmitStandardContractLazyImport
+      parentRoute: typeof ContractsClassesIdVersionsVersionLazyImport
+    }
   }
 }
 
@@ -329,7 +350,10 @@ export const routeTree = rootRoute.addChildren({
   ContractsInstancesAddressLazyRoute,
   L1ValidatorsAttesterAddressLazyRoute,
   L1ValidatorsIndexLazyRoute,
-  ContractsClassesIdVersionsVersionLazyRoute,
+  ContractsClassesIdVersionsVersionLazyRoute:
+    ContractsClassesIdVersionsVersionLazyRoute.addChildren({
+      ContractsClassesIdVersionsVersionSubmitStandardContractLazyRoute,
+    }),
 })
 
 /* prettier-ignore-end */
@@ -416,7 +440,14 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "l1/validators/index.lazy.tsx"
     },
     "/contracts/classes/$id/versions/$version": {
-      "filePath": "contracts/classes.$id.versions.$version.lazy.tsx"
+      "filePath": "contracts/classes.$id.versions.$version.lazy.tsx",
+      "children": [
+        "/contracts/classes/$id/versions/$version/submit-standard-contract"
+      ]
+    },
+    "/contracts/classes/$id/versions/$version/submit-standard-contract": {
+      "filePath": "contracts/classes.$id.versions.$version.submit-standard-contract.lazy.tsx",
+      "parent": "/contracts/classes/$id/versions/$version"
     }
   }
 }

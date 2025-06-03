@@ -111,3 +111,38 @@ export const chicmozL2UtilityFunctionBroadcastedEventSchema = z.object({
 export type ChicmozL2UtilityFunctionBroadcastedEvent = z.infer<
   typeof chicmozL2UtilityFunctionBroadcastedEventSchema
 >;
+
+export const CONTRACT_STANDARDS = {
+  "0.0.0-73e84dcc": ["token", "dripper"],
+};
+
+export const contractStandardVersionSchema = z.enum(
+  Object.keys(CONTRACT_STANDARDS) as [keyof typeof CONTRACT_STANDARDS],
+);
+
+export type ContractStandardVersion = keyof typeof CONTRACT_STANDARDS;
+
+export const contractStandardNameSchema = <V extends ContractStandardVersion>(
+  version: V,
+) => z.enum(CONTRACT_STANDARDS[version] as [string, ...string[]]);
+
+export const contractStandardSchema = z
+  .object({
+    version: contractStandardVersionSchema,
+    name: z.string(),
+  })
+  .refine(
+    (data) =>
+      CONTRACT_STANDARDS[data.version as ContractStandardVersion].includes(
+        data.name,
+      ),
+    {
+      message: "Contract name is not valid for the specified version",
+      path: ["name"],
+    },
+  );
+
+export type ContractStandardName<V extends ContractStandardVersion> =
+  (typeof CONTRACT_STANDARDS)[V][number];
+
+export type ContractStandard = z.infer<typeof contractStandardSchema>;

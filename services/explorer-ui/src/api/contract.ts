@@ -141,4 +141,27 @@ export const ContractL2API = {
       response.data,
     );
   },
+  submitStandardContract: async ({
+    classId,
+    version,
+    standardVersion,
+    standardName,
+  }: {
+    classId: string;
+    version: string;
+    standardVersion: string;
+    standardName: string;
+  }): Promise<ChicmozL2ContractClassRegisteredEvent> => {
+    const response = await client.post(
+      aztecExplorer.postL2ContractClassStandardArtifact(classId, version),
+      {
+        version: standardVersion,
+        name: standardName,
+      },
+    );
+    return validateResponse(
+      chicmozL2ContractClassRegisteredEventSchema,
+      response.data,
+    );
+  },
 };

@@ -1,4 +1,4 @@
-import { useParams } from "@tanstack/react-router";
+import { Outlet, useMatch, useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
@@ -16,6 +16,10 @@ export const ContractClassDetails: FC = () => {
   const { id, version } = useParams({
     from: "/contracts/classes/$id/versions/$version",
   });
+  const isOnChildRoute = useMatch({
+    from: "/contracts/classes/$id/versions/$version/submit-standard-contract",
+  });
+
   useSubTitle(`Class ${id}`);
 
   const contractClassesRes = useContractClasses(id);
@@ -33,6 +37,12 @@ export const ContractClassDetails: FC = () => {
   if (!version) {
     return <div>No version provided</div>;
   }
+
+  // If we're on a child route, just render the outlet
+  if (isOnChildRoute) {
+    return <Outlet />;
+  }
+
   const selectedVersion = selectedVersionWithArtifactRes?.data
     ? selectedVersionWithArtifactRes.data
     : contractClassesRes.data?.find(
@@ -80,6 +90,7 @@ export const ContractClassDetails: FC = () => {
           contractArtifactError={selectedVersionWithArtifactRes.error}
         />
       </div>
+      <Outlet />
     </div>
   );
 };
