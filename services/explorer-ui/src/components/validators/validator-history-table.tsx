@@ -48,6 +48,17 @@ export const ValidatorHistoryTable: FC<Props> = ({
             <h3 className="ml-0.5">{title}</h3>
           </div>
         )}
+        <p className="text-sm text-gray-500">
+          Psst!{" "}
+          <a
+            href="https://aztec.starfrich.me/"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:font-bold hover:text-purple-light"
+          >
+            Check out Starfrich's dashboard for even more detailed stats.
+          </a>
+        </p>
 
         <DataTable
           isLoading={isLoading}
