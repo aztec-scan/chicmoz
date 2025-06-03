@@ -61,6 +61,7 @@ export const paths = {
   contractInstancesWithAztecScanNotes:
     "/l2/contract-instances/with-aztec-scan-notes",
   contractInstance: `/l2/contract-instances/:${address}`,
+  contractInstanceBalance: `/l2/contract-instance/:${address}/balance`,
   contractInstances: "/l2/contract-instances",
 
   search: "/l2/search",
@@ -251,6 +252,15 @@ export const getL1L2ValidatorSchema = z.object({
 export const getSequencerSchema = z.object({
   params: z.object({
     enr: chicmozL2SequencerSchema.shape.enr,
+  }),
+});
+
+export const getContractInstanceBalanceSchema = z.object({
+  params: z.object({
+    [address]: hexStringSchema,
+  }),
+  query: z.object({
+    isPublic: z.coerce.boolean().default(true),
   }),
 });
 

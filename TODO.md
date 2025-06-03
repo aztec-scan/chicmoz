@@ -101,7 +101,7 @@ needs new files
 
 - ✅ /home/filip/c/chicmoz/services/explorer-api/src/events/received/index.ts
 
-### create new endpoint that retreives balances that have an address that is also a contract instance
+### create new endpoint that retreives balances that have an address that is also a contract instance ✅
 
 `/l2/contract-instance/:address/balance?isPublic=false` (default isPublic=true)
 
@@ -113,10 +113,10 @@ also needs new separate files
 
 ##### files to take inspiration from
 
-- /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/controllers/contract-instances.ts
-- /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2contract/get-contract-instances.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/controllers/contract-instances.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2contract/get-contract-instances.ts
 
 ##### files to modify
 
-- /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/paths_and_validation.ts
-- /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/index.ts/home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/paths_and_validation.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/paths_and_validation.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/index.ts
