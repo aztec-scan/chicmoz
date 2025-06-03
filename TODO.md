@@ -64,20 +64,57 @@ cd ~/c/chicmoz && yarn build && yarn lint && yarn test
 ##### Files to modify or adjacent files:
 
 - /home/filip/c/chicmoz/services/aztec-listener/src/svcs/poller/network-client/index.ts
-  TODO
+- /home/filip/c/chicmoz/services/aztec-listener/src/svcs/poller/pollers/txs_poller.ts
 
 ## explorer-api
 
-TODO
-
 ### Update pending txs schema to also have feePayer
+
+#### relevant files
+
+- /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/schema/l2tx/index.ts
+- /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2Tx/\*
 
 ### Refactor onPendingTxs to just try to store the value in DB
 
+i.e. not checking if it should be dropped etc.
+
+#### relevant files
+
+- /home/filip/c/chicmoz/services/explorer-api/src/events/received/on-pending-txs.ts
+
 ### Add new schema for contractInstanceBalance
+
+needs new file
 
 - contractAddress
 - balance
 - timestamp
 
 ### Add new event-listeners for droppedTxEvent(which deletes pending) and contractInstanceBalance
+
+needs new files
+
+#### relevant files
+
+- /home/filip/c/chicmoz/services/explorer-api/src/events/received/index.ts
+
+### create new endpoint that retreives balances that have an address that is also a contract instance
+
+`/l2/contract-instance/:address/balance?isPublic=false` (default isPublic=true)
+
+It just takes latest entry from contractInstanceBalance table
+
+also needs new separate files
+
+#### relevant files
+
+##### files to take inspiration from
+
+- /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/controllers/contract-instances.ts
+- /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2contract/get-contract-instances.ts
+
+##### files to modify
+
+- /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/paths_and_validation.ts
+- /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/index.ts/home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/paths_and_validation.ts
