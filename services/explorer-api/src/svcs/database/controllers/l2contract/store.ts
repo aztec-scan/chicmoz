@@ -1,6 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   ChicmozL2ContractInstanceUpdatedEvent,
+  ContractStandard,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeployedEvent,
   type ChicmozL2ContractInstanceVerifiedDeploymentArgumnetsSchema,
@@ -8,7 +9,6 @@ import {
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { and, eq } from "drizzle-orm";
-import { GetStandardContractJson } from "../../../../standard-contracts.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -65,7 +65,7 @@ export const addArtifactData = async ({
   version: number;
   artifactJson: string;
   contractName?: string;
-  standardData?: GetStandardContractJson;
+  standardData?: ContractStandard;
 }): Promise<void> => {
   await db()
     .update(l2ContractClassRegistered)

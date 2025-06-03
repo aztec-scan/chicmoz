@@ -21,6 +21,8 @@ export const aztecExplorer = {
   getL2DroppedTxByHash: (hash: string) => `/l2/dropped-txs/${hash}`,
   getL2ContractClassByIdAndVersion: (classId: string, version: string) =>
     `/l2/contract-classes/${classId}/versions/${version}`,
+  postL2ContractClassStandardArtifact: (classId: string, version: string) =>
+    `/l2/contract-classes/${classId}/versions/${version}/standard-artifact`,
   getL2ContractClasses: (classId?: string) =>
     classId ? `/l2/contract-classes/${classId}` : "/l2/contract-classes",
   getL2ContractClassPrivateFunctions: (

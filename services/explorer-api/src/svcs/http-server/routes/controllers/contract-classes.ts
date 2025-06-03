@@ -1,16 +1,18 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
 import { verifyArtifactPayload } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
-import { chicmozL2ContractClassRegisteredEventSchema } from "@chicmoz-pkg/types";
+import {
+  chicmozL2ContractClassRegisteredEventSchema,
+  ContractStandard,
+} from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { GetStandardContractJson } from "../../../../standard-contracts.js";
 import { controllers as db } from "../../../database/index.js";
 import {
-  getContractClassSchema,
   getContractClassesByCurrentClassIdSchema,
+  getContractClassSchema,
   postContrctClassArtifactSchema,
 } from "../paths_and_validation.js";
 import {
@@ -190,7 +192,7 @@ export const verifyArtifact = async ({
   contractClassId: string;
   version: number;
   stringifiedArtifactJson: string | NoirCompiledContract;
-  standardData?: GetStandardContractJson;
+  standardData?: ContractStandard;
 }) => {
   const contractClassString = await dbWrapper.get(
     ["l2", "contract-classes", contractClassId, version],
@@ -252,14 +254,6 @@ export const verifyArtifact = async ({
   ).catch((err) => {
     logger.warn(`Failed to cache contract class: ${err}`);
   });
-  logger.info(
-    `
-    contractClassId: ${contractClassId}
-    version: ${version}
-    contractName: ${parsed.name}
-    standardData: ${standardData ? JSON.stringify(standardData) : "none"}
-    `,
-  );
 
   await db.l2Contract.addArtifactData({
     contractClassId: dbContractClass.contractClassId,
