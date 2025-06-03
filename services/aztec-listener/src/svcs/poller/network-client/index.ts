@@ -5,6 +5,7 @@ import {
   ChicmozL2Sequencer,
   NODE_ENV,
   NodeEnv,
+  jsonStringify,
   l2NetworkIdSchema,
 } from "@chicmoz-pkg/types";
 import { IBackOffOptions, backOff } from "exponential-backoff";
@@ -95,7 +96,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
 const checkValidatorStats = async () => {
   try {
     const stats = await aztecNode.getValidatorsStats();
-    logger.info(`Validator stats: ${JSON.stringify(stats, null, 2)}`);
+    logger.info(`Validator stats: ${jsonStringify(stats)}`);
   } catch (e) {
     logger.warn(`Failed to fetch validator stats: ${(e as Error).message}`);
   }
@@ -130,7 +131,7 @@ export const getFreshInfo = async (): Promise<{
     l1ChainId,
     rollupVersion,
     enr:
-      enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX // NOTE: this is to anonymize the node
+      (enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX) // NOTE: this is to anonymize the node
         ? L2_NETWORK_ID
         : undefined,
     l1ContractAddresses: l1ContractAddresses,
