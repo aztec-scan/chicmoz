@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { AztecNode, NodeInfo, createAztecNodeClient } from "@aztec/aztec.js";
+import {
+  AztecAddress,
+  AztecNode,
+  Fr,
+  NodeInfo,
+  ProtocolContractAddress,
+  createAztecNodeClient,
+} from "@aztec/aztec.js";
+import { deriveStorageSlotInMap } from "@aztec/stdlib/hash";
 import {
   ChicmozChainInfo,
   ChicmozL2Sequencer,
@@ -190,3 +198,15 @@ export const getLatestProvenHeight = async () => {
 };
 
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");
+
+export const getBalanceOf = async (
+  blockNumber: number | "latest",
+  address: AztecAddress,
+) => {
+  const slot = await deriveStorageSlotInMap(new Fr(1), address);
+  return callNodeFunction("getPublicStorageAt", [
+    blockNumber,
+    ProtocolContractAddress.FeeJuice,
+    slot,
+  ]);
+};
