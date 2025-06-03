@@ -18,6 +18,8 @@ or
 cd ~/c/chicmoz/services/explorer-api && yarn build && yarn lint
 ```
 
+for each task done mark with ✅
+
 when all is done make sure it works
 
 ```bash
