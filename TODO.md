@@ -93,13 +93,13 @@ needs new file
 - ✅ balance
 - ✅ timestamp
 
-### Add new event-listeners for droppedTxEvent(which deletes pending) and contractInstanceBalance
+### Add new event-listeners for droppedTxEvent(which deletes pending) and contractInstanceBalance ✅
 
 needs new files
 
 #### relevant files
 
-- /home/filip/c/chicmoz/services/explorer-api/src/events/received/index.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/events/received/index.ts
 
 ### create new endpoint that retreives balances that have an address that is also a contract instance
 
