@@ -1,5 +1,10 @@
+import {
+  CONTRACT_STANDARDS,
+  type ContractStandardVersion,
+} from "@chicmoz-pkg/types";
 import { useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
+import { ContractL2API } from "~/api/contract";
 import { Button } from "~/components/ui/button";
 import {
   Select,
@@ -8,15 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { CONTRACT_STANDARDS, type ContractStandardVersion } from "@chicmoz-pkg/types";
-import { ContractL2API } from "~/api/contract";
 import { useSubTitle } from "~/hooks";
 
 export const SubmitStandardContract: FC = () => {
   const { id, version } = useParams({
     from: "/contracts/classes/$id/versions/$version/submit-standard-contract",
   });
-  
+
   useSubTitle(`Submit Standard Contract - Class ${id}`);
 
   const [selectedVersion, setSelectedVersion] = useState<string>("");
@@ -88,23 +91,34 @@ export const SubmitStandardContract: FC = () => {
     }
   };
 
-  const isSubmitDisabled = !selectedVersion || !selectedContractType || isSubmitting;
+  const isSubmitDisabled =
+    !selectedVersion || !selectedContractType || isSubmitting;
 
   return (
     <div className="mx-auto px-[70px] max-w-[1440px]">
       <div className="flex flex-wrap m-3">
-        <h3 className="mt-2 text-primary md:hidden">Submit Standard Contract</h3>
-        <h2 className="hidden md:block md:mt-6 md:text-primary">Submit Standard Contract</h2>
+        <h3 className="mt-2 text-primary md:hidden">
+          Submit Standard Contract
+        </h3>
+        <h2 className="hidden md:block md:mt-6 md:text-primary">
+          Submit Standard Contract
+        </h2>
       </div>
 
       <div className="flex flex-col gap-4 mt-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Contract Class Information</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Contract Class Information
+              </h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <div><strong>Class ID:</strong> {id}</div>
-                <div><strong>Version:</strong> {version}</div>
+                <div>
+                  <strong>Class ID:</strong> {id}
+                </div>
+                <div>
+                  <strong>Version:</strong> {version}
+                </div>
               </div>
             </div>
 
@@ -113,7 +127,10 @@ export const SubmitStandardContract: FC = () => {
                 <label className="block text-sm font-medium mb-2">
                   Standard Contract Version
                 </label>
-                <Select value={selectedVersion} onValueChange={handleVersionChange}>
+                <Select
+                  value={selectedVersion}
+                  onValueChange={handleVersionChange}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a version" />
                   </SelectTrigger>
@@ -131,8 +148,8 @@ export const SubmitStandardContract: FC = () => {
                 <label className="block text-sm font-medium mb-2">
                   Contract Type
                 </label>
-                <Select 
-                  value={selectedContractType} 
+                <Select
+                  value={selectedContractType}
                   onValueChange={handleContractTypeChange}
                   disabled={!selectedVersion}
                 >
@@ -151,7 +168,7 @@ export const SubmitStandardContract: FC = () => {
             </div>
 
             <div className="pt-4">
-              <Button 
+              <Button
                 onClick={handleSubmit}
                 disabled={isSubmitDisabled}
                 className="w-full md:w-auto"
@@ -161,11 +178,13 @@ export const SubmitStandardContract: FC = () => {
             </div>
 
             {submitResult && (
-              <div className={`p-4 rounded-md ${
-                submitResult.success 
-                  ? "bg-green-50 border border-green-200 text-green-800" 
-                  : "bg-red-50 border border-red-200 text-red-800"
-              }`}>
+              <div
+                className={`p-4 rounded-md ${
+                  submitResult.success
+                    ? "bg-green-50 border border-green-200 text-green-800"
+                    : "bg-red-50 border border-red-200 text-red-800"
+                }`}
+              >
                 {submitResult.message}
               </div>
             )}

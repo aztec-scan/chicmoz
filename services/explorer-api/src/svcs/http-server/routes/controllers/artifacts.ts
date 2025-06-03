@@ -75,14 +75,6 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_STANDARD_ARTIFACT = asyncHandler(
         name: standardName,
         version: standardVersion,
       });
-      if (!contractJson) {
-        res
-          .status(404)
-          .send(
-            `Standard contract ${standardName} version ${standardVersion} not found`,
-          );
-        return;
-      }
       const result = await verifyArtifact({
         contractClassId,
         version: classVersion,
