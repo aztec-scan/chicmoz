@@ -70,12 +70,12 @@ cd ~/c/chicmoz && yarn build && yarn lint && yarn test
 
 ## explorer-api
 
-### Update pending txs schema to also have feePayer
+### Update pending txs schema to also have feePayer ✅
 
 #### relevant files
 
-- /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/schema/l2tx/index.ts
-- /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2Tx/\*
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/schema/l2tx/index.ts
+- ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/database/controllers/l2Tx/\*
 
 ### Refactor onPendingTxs to just try to store the value in DB
 

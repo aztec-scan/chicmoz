@@ -5,6 +5,7 @@ import { droppedTx } from "../dropped-tx/index.js";
 
 export const l2Tx = pgTable("tx", {
   hash: varchar("hash").notNull().$type<HexString>().primaryKey(),
+  feePayer: varchar("fee_payer").$type<HexString>(),
   birthTimestamp: timestamp("birth_timestamp").notNull().defaultNow(),
 });
 

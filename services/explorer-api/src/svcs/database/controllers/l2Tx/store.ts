@@ -8,6 +8,7 @@ export const storeL2Tx = async (tx: ChicmozL2PendingTx): Promise<void> => {
     .insert(l2Tx)
     .values({
       hash: tx.hash,
+      feePayer: tx.feePayer,
       birthTimestamp: new Date(tx.birthTimestamp),
     })
     .onConflictDoNothing()
