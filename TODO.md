@@ -18,7 +18,7 @@ or
 cd ~/c/chicmoz/services/explorer-api && yarn build && yarn lint
 ```
 
-for each task done mark with ✅
+for each task done: mark with ✅ and commit the changes with appropriate message
 
 when all is done make sure it works
 
