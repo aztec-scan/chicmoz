@@ -75,6 +75,14 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_STANDARD_ARTIFACT = asyncHandler(
         name: standardName,
         version: standardVersion,
       });
+      if (!contractJson) {
+        res
+          .status(404)
+          .send(
+            `Standard contract ${standardName} version ${standardVersion} not found`,
+          );
+        return;
+      }
       const result = await verifyArtifact({
         contractClassId,
         version: classVersion,
@@ -93,11 +101,7 @@ export const POST_L2_REGISTERED_CONTRACT_CLASS_STANDARD_ARTIFACT = asyncHandler(
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes("not found")) {
-          res
-            .status(404)
-            .send(
-              `Standard contract ${standardName} version ${standardVersion} not found`,
-            );
+          res.status(404).send(error.message);
           return;
         }
         if (error.message === "Contract class found in DB is not valid") {

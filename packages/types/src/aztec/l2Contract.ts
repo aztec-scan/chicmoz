@@ -113,7 +113,7 @@ export type ChicmozL2UtilityFunctionBroadcastedEvent = z.infer<
 >;
 
 export const CONTRACT_STANDARDS = {
-  "0.0.0-73e84dcc": ["token"],
+  "0.0.0-73e84dcc": ["token", "dripper"],
 };
 
 export const contractStandardVersionSchema = z.enum(
