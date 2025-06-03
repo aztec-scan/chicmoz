@@ -37,7 +37,7 @@ spec:
           name: aztec-listener
           resources:
             limits:
-              memory: 300Mi
+              memory: 2000Mi
               cpu: 500m
           envFrom:
             - configMapRef:
