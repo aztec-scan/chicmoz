@@ -56,12 +56,12 @@ cd ~/c/chicmoz && yarn build && yarn lint && yarn test
 - /home/filip/c/chicmoz/services/aztec-listener/src/svcs/database/schema.ts
 - /home/filip/c/chicmoz/packages/message-registry/src/aztec.ts
 
-### When a proven block arrives
+### When a proven block arrives ✅
 
-1. go through txEffects and find pending tx in DB
-2. for each pending tx
-   - query balanceOf(feePayer) and publish as contractInstanceBalance
-   - remove pending tx in aztec-listener
+1. ✅ go through txEffects and find pending tx in DB
+2. ✅ for each pending tx
+   - ✅ query balanceOf(feePayer) and publish as contractInstanceBalance
+   - ✅ remove pending tx in aztec-listener
 
 ##### Files to modify or adjacent files:
 

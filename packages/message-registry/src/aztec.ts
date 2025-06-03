@@ -24,6 +24,12 @@ export type DroppedTxsEvent = {
   txs: ChicmozL2DroppedTx[];
 };
 
+export type ContractInstanceBalanceEvent = {
+  contractAddress: string;
+  balance: string;
+  timestamp: number;
+};
+
 export type CatchupBlockEvent = NewBlockEvent;
 
 export type ChicmozL2RpcNodeAliveEvent = {
@@ -60,6 +66,7 @@ export type L2_MESSAGES = {
   CATCHUP_BLOCK_EVENT: CatchupBlockEvent;
   PENDING_TXS_EVENT: PendingTxsEvent;
   DROPPED_TXS_EVENT: DroppedTxsEvent;
+  CONTRACT_INSTANCE_BALANCE_EVENT: ContractInstanceBalanceEvent;
   L2_RPC_NODE_ERROR_EVENT: ChicmozL2RpcNodeErrorEvent;
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
   SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;
