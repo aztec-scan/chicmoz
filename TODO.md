@@ -85,13 +85,13 @@ i.e. not checking if it should be dropped etc.
 
 - ✅ /home/filip/c/chicmoz/services/explorer-api/src/events/received/on-pending-txs.ts
 
-### Add new schema for contractInstanceBalance
+### Add new schema for contractInstanceBalance ✅
 
 needs new file
 
-- contractAddress
-- balance
-- timestamp
+- ✅ contractAddress
+- ✅ balance
+- ✅ timestamp
 
 ### Add new event-listeners for droppedTxEvent(which deletes pending) and contractInstanceBalance
 
