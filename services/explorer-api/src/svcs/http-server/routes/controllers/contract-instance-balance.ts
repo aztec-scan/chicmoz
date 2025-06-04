@@ -38,7 +38,6 @@ export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
   async (req, res) => {
     const {
       params: { address },
-      query: { isPublic },
     } = getContractInstanceBalanceSchema.parse(req);
 
     const balanceData = await dbWrapper.get(
@@ -47,7 +46,6 @@ export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
         "contract-instance",
         address,
         "balance",
-        isPublic ? "public" : "private",
       ],
       () => getLatestContractInstanceBalance(address),
     );

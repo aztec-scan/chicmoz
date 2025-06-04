@@ -257,9 +257,6 @@ export const getSequencerSchema = z.object({
 
 export const getContractInstanceBalanceSchema = z.object({
   params: getContractInstanceSchema.shape.params,
-  query: z.object({
-    isPublic: z.coerce.boolean().default(true),
-  }),
 });
 
 export const getContractInstancesWithAztecScanNotesSchema = z.object({

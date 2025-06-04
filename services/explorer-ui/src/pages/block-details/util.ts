@@ -80,7 +80,7 @@ export const getBlockDetails = (
     {
       label: "Raw Data",
       value: "View raw data",
-      extLink: `${API_URL}/${aztecExplorer.getL2BlockByHash}${latestBlock.height}`,
+      extLink: `${API_URL}${aztecExplorer.getL2BlockByHash}${latestBlock.height}`,
     },
   ];
 };
