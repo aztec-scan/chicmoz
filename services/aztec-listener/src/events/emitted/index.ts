@@ -84,14 +84,14 @@ export const onL2RpcNodeError = (
     ChicmozL2RpcNodeError,
     "rpcUrl" | "count" | "createdAt" | "lastSeenAt"
   >,
+  rpcUrl?: string,
 ) => {
   let event;
   try {
     event = {
       nodeError: chicmozL2RpcNodeErrorSchema.parse({
         ...rpcNodeError,
-        //WARN: What to do here?
-        rpcUrl: AZTEC_RPC_URLS[0].url,
+        rpcUrl: rpcUrl,
         count: 1,
         createdAt: new Date(),
         lastSeenAt: new Date(),
