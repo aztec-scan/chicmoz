@@ -11,7 +11,7 @@ import { onL2RpcNodeError } from "../../events/emitted/index.js";
 import { logger } from "../../logger.js";
 import { ensureInitializedBlockHeights } from "../database/heights.controller.js";
 import { init as initNetworkClient } from "./network-client/index.js";
-import * as blockPoller from "./pollers/block_poller.js";
+import * as blockPoller from "./pollers/block_poller/index.js";
 import * as chainInfoPoller from "./pollers/chain-info-poller.js";
 import * as pendingTxsPoller from "./pollers/txs_poller.js";
 
@@ -34,8 +34,10 @@ export const init = async () => {
     nodeVersion: "unknown",
     l1ChainId: initResult.chainInfo.l1ChainId,
     rollupVersion: Number(initResult.chainInfo.rollupVersion), // Convert bigint to number
-    l1ContractAddresses: initResult.chainInfo.l1ContractAddresses as unknown as NodeInfo["l1ContractAddresses"],
-    protocolContractAddresses: initResult.chainInfo.protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
+    l1ContractAddresses: initResult.chainInfo
+      .l1ContractAddresses as unknown as NodeInfo["l1ContractAddresses"],
+    protocolContractAddresses: initResult.chainInfo
+      .protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
     enr: undefined, // Add missing required property
   };
   logger.info(`Aztec chain info: ${jsonStringify(initResult.chainInfo)}`);
@@ -49,8 +51,12 @@ export const startPoller = async () => {
     forceStartFromProvenHeight:
       AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
   });
-  if (AZTEC_LISTEN_FOR_PENDING_TXS) {pendingTxsPoller.startPolling();}
-  if (AZTEC_LISTEN_FOR_CHAIN_INFO) {chainInfoPoller.startPolling();}
+  if (AZTEC_LISTEN_FOR_PENDING_TXS) {
+    pendingTxsPoller.startPolling();
+  }
+  if (AZTEC_LISTEN_FOR_CHAIN_INFO) {
+    chainInfoPoller.startPolling();
+  }
 };
 
 export const getNodeInfo = () => nodeInfo;

@@ -133,14 +133,14 @@ also needs new separate files
 
 - services/aztec-listener/src/svcs/database/schema.ts
 
-## handleProvenTransactions to separate file
+## handleProvenTransactions to separate file ✅
 
 currently here: services/aztec-listener/src/svcs/poller/pollers/block_poller.ts
 
-## handleProvenTransactions should not query "latest" but the block that was just proven
+## handleProvenTransactions should not query "latest" but the block that was just proven ✅
 
-## types should be parsed with zod, and dates should use coerce with default NOW
+## types should be parsed with zod, and dates should use coerce with default NOW ✅
 
-## look over OpenAPI-schema
+## look over OpenAPI-schema ✅
 
 services/explorer-api/src/svcs/http-server/routes/controllers/contract-instance-balance.ts
