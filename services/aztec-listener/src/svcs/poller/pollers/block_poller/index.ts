@@ -150,8 +150,6 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
 const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   const block = await internalGetBlock(height);
 
-  await handleProvenTransactions(block);
-
   if (isCatchup) {
     await onCatchupBlock(
       block,
@@ -162,6 +160,8 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   } else {
     await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
   }
+
+  await handleProvenTransactions(block);
   await storeProcessedProvenBlockHeight(height);
 };
 

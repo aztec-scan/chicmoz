@@ -47,8 +47,6 @@ export const onCatchupBlock = async (
 };
 // TODO: onCatchupRequestFromExplorerApi
 
-
-
 export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   const event = { chainInfo };
   logger.info(`🔗 publishing CHAIN_INFO_EVENT...`);
