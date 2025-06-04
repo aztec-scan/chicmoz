@@ -1,6 +1,6 @@
 import { ContractInstanceBalanceEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { bigint } from "zod";
+import { z } from "zod";
 import { logger } from "../../../../logger.js";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 
@@ -12,7 +12,7 @@ export const storeContractInstanceBalance = async (
       .insert(contractInstanceBalance)
       .values({
         ...data,
-        balance: bigint().parse(data.balance),
+        balance: z.coerce.bigint().parse(data.balance),
       })
       .onConflictDoNothing();
 
