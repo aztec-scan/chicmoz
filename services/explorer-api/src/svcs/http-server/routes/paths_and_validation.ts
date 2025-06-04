@@ -256,9 +256,7 @@ export const getSequencerSchema = z.object({
 });
 
 export const getContractInstanceBalanceSchema = z.object({
-  params: z.object({
-    [address]: hexStringSchema,
-  }),
+  params: getContractInstanceSchema.shape.params,
   query: z.object({
     isPublic: z.coerce.boolean().default(true),
   }),

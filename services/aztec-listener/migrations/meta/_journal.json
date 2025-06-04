@@ -8,6 +8,13 @@
       "when": 1740133549634,
       "tag": "0000_numerous_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749026487296,
+      "tag": "0001_boring_stellaris",
+      "breakpoints": true
     }
   ]
 }

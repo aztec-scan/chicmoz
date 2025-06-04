@@ -2,6 +2,7 @@ import {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
+  ChicmozL2ContractInstanceDeployedEvent,
   ChicmozL2DroppedTx,
   ChicmozL2PendingTx,
   ChicmozL2RpcNode,
@@ -25,9 +26,9 @@ export type DroppedTxsEvent = {
 };
 
 export type ContractInstanceBalanceEvent = {
-  contractAddress: string;
+  contractAddress: ChicmozL2ContractInstanceDeployedEvent["address"];
   balance: string;
-  timestamp: number;
+  timestamp: Date;
 };
 
 export type CatchupBlockEvent = NewBlockEvent;
@@ -56,7 +57,7 @@ export type ChicmozL2BlockFinalizationUpdateEvent = {
 
 export function generateL2TopicName(
   networkId: L2NetworkId,
-  topic: keyof L2_MESSAGES
+  topic: keyof L2_MESSAGES,
 ): L2Topic {
   return `${networkId}__${topic}`;
 }

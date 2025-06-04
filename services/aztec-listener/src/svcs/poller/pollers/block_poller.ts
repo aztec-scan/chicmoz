@@ -1,6 +1,5 @@
 import { AztecAddress, L2Block } from "@aztec/aztec.js";
 import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
-import { ContractInstanceBalanceEvent } from "@chicmoz-pkg/message-registry";
 import {
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS,
   AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS,
@@ -9,11 +8,6 @@ import {
 } from "../../../environment.js";
 import { onBlock, onCatchupBlock } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
-import { publishMessage } from "../../message-bus/index.js";
-import {
-  getAllPendingTxs,
-  deletePendingTx,
-} from "../../database/pending-txs.controller.js";
 import {
   getBlockHeights,
   storeBlockHeights,
@@ -21,8 +15,13 @@ import {
   storeProcessedProvenBlockHeight,
 } from "../../database/heights.controller.js";
 import {
-  getBlock,
+  deletePendingTx,
+  getAllPendingTxs,
+} from "../../database/pending-txs.controller.js";
+import { publishMessage } from "../../message-bus/index.js";
+import {
   getBalanceOf,
+  getBlock,
   getLatestProposedHeight,
   getLatestProvenHeight,
 } from "../network-client/index.js";
@@ -156,10 +155,10 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
 
 const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   const block = await internalGetBlock(height);
-  
+
   // Handle proven transactions
   await handleProvenTransactions(block);
-  
+
   if (isCatchup) {
     await onCatchupBlock(
       block,
@@ -189,7 +188,7 @@ const handleProvenTransactions = async (block: L2Block) => {
 
     // Find pending txs that are now proven
     const provenPendingTxs = pendingTxs.filter((pendingTx) =>
-      provenTxHashes.includes(pendingTx.txHash)
+      provenTxHashes.includes(pendingTx.txHash),
     );
 
     if (provenPendingTxs.length === 0) {
@@ -197,28 +196,32 @@ const handleProvenTransactions = async (block: L2Block) => {
     }
 
     const blockNumber = Number(block.header.globalVariables.blockNumber);
-    logger.info(`🎯 Found ${provenPendingTxs.length} proven pending txs in block ${blockNumber}`);
+    logger.info(
+      `🎯 Found ${provenPendingTxs.length} proven pending txs in block ${blockNumber}`,
+    );
 
     // For each proven pending tx, query balance and publish event
     for (const provenTx of provenPendingTxs) {
       try {
         // Convert feePayer string to AztecAddress
         const feePayerAddress = AztecAddress.fromString(provenTx.feePayer);
-        
+
         // Query balance of feePayer
         const balance = await getBalanceOf("latest", feePayerAddress);
-        
+
         // Publish contractInstanceBalance event
         await publishMessage("CONTRACT_INSTANCE_BALANCE_EVENT", {
           contractAddress: provenTx.feePayer,
           balance: balance.toString(),
-          timestamp: Date.now(),
-        } as ContractInstanceBalanceEvent);
+          timestamp: new Date(),
+        });
 
         // Remove pending tx from DB
         await deletePendingTx(provenTx.txHash);
 
-        logger.info(`✅ Processed proven tx ${provenTx.txHash}, balance: ${balance.toString()}`);
+        logger.info(
+          `✅ Processed proven tx ${provenTx.txHash}, balance: ${balance.toString()}`,
+        );
       } catch (error) {
         logger.error(`Error processing proven tx ${provenTx.txHash}:`, error);
       }

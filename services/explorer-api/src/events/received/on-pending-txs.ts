@@ -13,15 +13,15 @@ import { handleDuplicateError } from "./utils.js";
 
 const onPendingTxs = async ({ txs }: PendingTxsEvent) => {
   logger.info(`🕐 Received ${txs.length} pending txs to store`);
-  
+
   // Just try to store each tx in the database
   for (const tx of txs) {
     try {
       const res = chicmozL2PendingTxSchema.parse(tx);
       await storeL2Tx(res);
-      logger.debug(`✅ Stored pending tx: ${res.hash}`);
+      logger.debug(`✅ Stored pending tx: ${res.txHash}`);
     } catch (e) {
-      handleDuplicateError(e as Error, `tx ${tx.hash}`);
+      handleDuplicateError(e as Error, `tx ${tx.txHash}`);
     }
   }
 };

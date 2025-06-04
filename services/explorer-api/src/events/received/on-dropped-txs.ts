@@ -12,19 +12,15 @@ import { deleteTx } from "../../svcs/database/controllers/l2Tx/index.js";
 
 const onDroppedTxs = async ({ txs }: DroppedTxsEvent) => {
   logger.info(`🗑️ Received ${txs.length} dropped txs to handle`);
-  
+
   for (const droppedTx of txs) {
     try {
       // Store as dropped transaction
-      await storeDroppedTx({
-        txHash: droppedTx.txHash,
-        createdAt: droppedTx.createdAt,
-        droppedAt: droppedTx.droppedAt,
-      });
-      
+      await storeDroppedTx(droppedTx);
+
       // Delete from pending transactions
       await deleteTx(droppedTx.txHash);
-      
+
       logger.info(`✅ Processed dropped tx: ${droppedTx.txHash}`);
     } catch (error) {
       logger.error(`Error processing dropped tx ${droppedTx.txHash}:`, error);

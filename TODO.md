@@ -120,3 +120,27 @@ also needs new separate files
 
 - ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/paths_and_validation.ts
 - ✅ /home/filip/c/chicmoz/services/explorer-api/src/svcs/http-server/routes/index.ts
+
+# TODO - updates
+
+## fee payer should not be optional ✅
+
+## controller file should not define type/interface, but just the schema ✅
+
+- services/aztec-listener/src/svcs/database/pending-txs.controller.ts
+
+## schema not use hexstring? ✅
+
+- services/aztec-listener/src/svcs/database/schema.ts
+
+## handleProvenTransactions to separate file
+
+currently here: services/aztec-listener/src/svcs/poller/pollers/block_poller.ts
+
+## handleProvenTransactions should not query "latest" but the block that was just proven
+
+## types should be parsed with zod, and dates should use coerce with default NOW
+
+## look over OpenAPI-schema
+
+services/explorer-api/src/svcs/http-server/routes/controllers/contract-instance-balance.ts

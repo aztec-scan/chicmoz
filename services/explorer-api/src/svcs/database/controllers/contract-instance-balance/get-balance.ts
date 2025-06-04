@@ -1,17 +1,11 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { HexString } from "@chicmoz-pkg/types";
+import { ChicmozContractInstanceBalance, HexString } from "@chicmoz-pkg/types";
 import { desc, eq } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 
-export interface ContractInstanceBalanceResult {
-  contractAddress: HexString;
-  balance: string;
-  timestamp: Date;
-}
-
 export const getLatestContractInstanceBalance = async (
-  contractAddress: HexString
-): Promise<ContractInstanceBalanceResult | null> => {
+  contractAddress: HexString,
+): Promise<ChicmozContractInstanceBalance | null> => {
   const result = await db()
     .select()
     .from(contractInstanceBalance)
@@ -23,5 +17,5 @@ export const getLatestContractInstanceBalance = async (
     return null;
   }
 
-  return result[0] as ContractInstanceBalanceResult;
+  return result[0];
 };

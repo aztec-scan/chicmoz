@@ -12,7 +12,7 @@ export const removePendingAndDroppedTx = async (
     for (const txEffect of Object.values(txEffects)) {
       const tx = await dbTx
         .delete(l2Tx)
-        .where(eq(l2Tx.hash, txEffect.txHash))
+        .where(eq(l2Tx.txHash, txEffect.txHash))
         .returning();
       if (!tx) {
         continue;
@@ -33,7 +33,7 @@ export const removePendingAndDroppedTx = async (
           .set({
             birthTimestamp: tx[0].birthTimestamp,
           })
-          .where(eq(l2Tx.hash, txEffect.txHash));
+          .where(eq(l2Tx.txHash, txEffect.txHash));
       }
     }
   });

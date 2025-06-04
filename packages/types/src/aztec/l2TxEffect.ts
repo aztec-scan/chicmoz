@@ -3,25 +3,17 @@ import { aztecAddressSchema, hexStringSchema } from "../general.js";
 import { frNumberSchema, frSchema } from "./utils.js";
 
 export const chicmozL2PendingTxSchema = z.object({
-  // TODO: this schema needs to be properly defined, perhaps merged with txEffect
-  hash: hexStringSchema,
-  feePayer: hexStringSchema.optional(),
-  birthTimestamp: z.number(),
+  txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
+  feePayer: aztecAddressSchema,
+  birthTimestamp: z.coerce.date().default(() => new Date()),
 });
 
-/**
- * Represents a transaction that was dropped from the system.
- * This could be due to a reorg or becoming stale.
- */
 export const chicmozL2DroppedTxSchema = z.object({
-  txHash: hexStringSchema,
-  createdAt: z.coerce.date(),
-  droppedAt: z.coerce.date(),
+  txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
+  createdAsPendingAt: z.coerce.date(),
+  droppedAt: z.coerce.date().default(() => new Date()),
 });
 
-/**
- * Represents effects of a transaction on the L2 state.
- */
 export const chicmozL2TxEffectSchema = z.object({
   revertCode: z.preprocess(
     (val) => {
@@ -33,7 +25,7 @@ export const chicmozL2TxEffectSchema = z.object({
     z.object({ code: z.number() }),
   ),
   txHash: hexStringSchema,
-  txBirthTimestamp: z.number().optional(),
+  txBirthTimestamp: z.coerce.date().optional(),
   transactionFee: frNumberSchema,
   noteHashes: z.array(frSchema),
   nullifiers: z.array(frSchema),

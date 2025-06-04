@@ -4,23 +4,25 @@ import {
   generateL2TopicName,
   getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import { HexString } from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../constants.js";
 import { L2_NETWORK_ID } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { storeContractInstanceBalance } from "../../svcs/database/controllers/contract-instance-balance/index.js";
 
-const onContractInstanceBalance = async (event: ContractInstanceBalanceEvent) => {
+const onContractInstanceBalance = async (
+  event: ContractInstanceBalanceEvent,
+) => {
   try {
-    await storeContractInstanceBalance({
-      contractAddress: event.contractAddress as HexString,
-      balance: event.balance,
-      timestamp: new Date(event.timestamp),
-    });
-    
-    logger.info(`💰 Processed contract instance balance for ${event.contractAddress}`);
+    await storeContractInstanceBalance(event);
+
+    logger.info(
+      `💰 Processed contract instance balance for ${event.contractAddress}`,
+    );
   } catch (error) {
-    logger.error(`Error processing contract instance balance for ${event.contractAddress}:`, error);
+    logger.error(
+      `Error processing contract instance balance for ${event.contractAddress}:`,
+      error,
+    );
   }
 };
 
