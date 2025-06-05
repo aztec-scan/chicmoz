@@ -68,7 +68,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
         args,
       )) as Promise<ReturnType<AztecNode[K]>>;
 
-      void onL2RpcNodeAlive(node.url);
+      void onL2RpcNodeAlive(node.url, node.name);
       return result;
     }, backOffOptions);
     return res;
