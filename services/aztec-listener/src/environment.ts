@@ -1,5 +1,4 @@
 import {
-  jsonStringify,
   l2NetworkIdSchema,
   rpcNodePoolSchema,
   type L2NetworkId,
@@ -59,15 +58,21 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
 export const AZTEC_RPC_URLS = rpcNodePoolSchema.parse(
   process.env.AZTEC_RPC_URLS,
 );
+const printPool = () => {
+  let finalString = "";
+  AZTEC_RPC_URLS.forEach(
+    (node) =>
+      (finalString = `${finalString}Name: ${node.name}\nURL: ${node.url}\n\n`),
+  );
+  return finalString.trim();
+};
 
 export const getConfigStr = () => `POLLER
 AZTEC_DISABLED:                                            ${
   AZTEC_DISABLED ? "✅" : "❌"
 }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
-AZTEC_RPC_URL_POOL:                                        ${jsonStringify(
-  AZTEC_RPC_URLS,
-)}
+AZTEC_RPC_URL_POOL:                                        ${printPool()}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
