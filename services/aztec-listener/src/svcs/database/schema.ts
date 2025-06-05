@@ -12,8 +12,17 @@ export const heightsTable = pgTable("heights", {
   chainProvenBlockHeight: integer("chainProvenBlockHeight").notNull(),
 });
 
-export const pendingTxsTable = pgTable("pending_txs", {
+export const txStateValues = [
+  "pending",
+  "dropped",
+  "proposed",
+  "proven",
+] as const;
+export type TxState = (typeof txStateValues)[number];
+
+export const txsTable = pgTable("txs_table", {
   txHash: varchar("tx_hash").notNull().$type<HexString>().primaryKey(),
   feePayer: generateAztecAddressColumn("fee_payer").notNull(),
   birthTimestamp: timestamp("birth_timestamp").notNull().defaultNow(),
+  txState: varchar("tx_state").notNull().$type<TxState>(),
 });

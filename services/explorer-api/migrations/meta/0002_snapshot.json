@@ -1,5 +1,5 @@
 {
-  "id": "2ad09a86-65ee-4461-b246-ae7bf7749520",
+  "id": "f53f13ca-1a05-4531-be18-92192b3acad2",
   "prevId": "957ea187-a3a0-480b-a9f4-77f35163aaf6",
   "version": "7",
   "dialect": "postgresql",
@@ -107,7 +107,7 @@
         },
         "balance": {
           "name": "balance",
-          "type": "bigint",
+          "type": "numeric(77, 0)",
           "primaryKey": false,
           "notNull": true
         },

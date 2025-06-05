@@ -1,5 +1,6 @@
 import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
 import {
+  AZTEC_DISABLE_ETERNAL_CATCHUP,
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS,
   AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS,
   BLOCK_POLL_INTERVAL_MS,
@@ -18,7 +19,7 @@ import {
   getLatestProposedHeight,
   getLatestProvenHeight,
 } from "../../network-client/index.js";
-import { handleProvenTransactions } from "./handle-proven-block.js";
+import { handleProvenTransactions } from "./handle-proven-block-txs.js";
 
 let timeoutId: number | undefined;
 let cancelPolling = false;
@@ -200,6 +201,9 @@ const ensureSaneValues = async (
 
 let currentEternalCatchupHeight = 1;
 const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
+  if (AZTEC_DISABLE_ETERNAL_CATCHUP) {
+    return;
+  }
   // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
   const block = await internalGetBlock(currentEternalCatchupHeight);
   if (block) {

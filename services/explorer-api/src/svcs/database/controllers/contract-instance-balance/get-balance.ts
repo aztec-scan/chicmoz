@@ -1,5 +1,9 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { ChicmozContractInstanceBalance, HexString } from "@chicmoz-pkg/types";
+import {
+  ChicmozContractInstanceBalance,
+  chicmozContractInstanceBalanceSchema,
+  HexString,
+} from "@chicmoz-pkg/types";
 import { desc, eq } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 
@@ -17,5 +21,5 @@ export const getLatestContractInstanceBalance = async (
     return null;
   }
 
-  return result[0];
+  return chicmozContractInstanceBalanceSchema.parse(result[0]);
 };

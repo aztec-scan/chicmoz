@@ -15,6 +15,13 @@
       "when": 1749026487296,
       "tag": "0001_boring_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749116197761,
+      "tag": "0002_flowery_oracle",
+      "breakpoints": true
     }
   ]
 }

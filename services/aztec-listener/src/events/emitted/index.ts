@@ -20,9 +20,12 @@ export const onBlock = async (
 ) => {
   const height = Number(block.header.globalVariables.blockNumber);
   const finalizationStatusStr =
-    ChicmozL2BlockFinalizationStatus[finalizationStatus];
+    finalizationStatus ===
+    ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+      ? `🦊 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`
+      : `🐴 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`;
   logger.info(
-    `🦊 publishing (${finalizationStatusStr}) block ${height} (hash: ${(
+    `${finalizationStatusStr} block ${height} (hash: ${(
       await block.hash()
     ).toString()})...`,
   );
