@@ -72,7 +72,7 @@ AZTEC_DISABLED:                                            ${
   AZTEC_DISABLED ? "✅" : "❌"
 }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
-AZTEC_RPC_URL_POOL:                                        ${printPool()}
+AZTEC_RPC_URL_POOL:                                        \n${printPool()}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
