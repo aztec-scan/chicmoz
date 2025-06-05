@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { AztecNode, NodeInfo, createAztecNodeClient } from "@aztec/aztec.js";
+import { AztecNode, NodeInfo } from "@aztec/aztec.js";
 import {
   ChicmozChainInfo,
   ChicmozL2Sequencer,
   NODE_ENV,
   NodeEnv,
-  jsonStringify,
   l2NetworkIdSchema,
 } from "@chicmoz-pkg/types";
 import { IBackOffOptions, backOff } from "exponential-backoff";
 import {
-  AZTEC_RPC_URL,
   L2_NETWORK_ID,
   MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS,
 } from "../../../environment.js";
@@ -25,12 +23,12 @@ import {
   getChicmozChainInfoFromNodeInfo,
   getSequencerFromNodeInfo,
 } from "./utils.js";
-
-let aztecNode: AztecNode;
+import { getNodeUrls, getRpcNode, initPool } from "./pool.js";
 
 const backOffOptions: Partial<IBackOffOptions> = {
   numOfAttempts: 5,
   maxDelay: 10000,
+  //TODO: change to 200 when node pool is implemented
   startingDelay: 2000,
   retry: (e, attemptNumber: number) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -54,36 +52,38 @@ const backOffOptions: Partial<IBackOffOptions> = {
   },
 };
 
-const node = () => {
-  if (!aztecNode) {
-    throw new Error("Node not initialized");
-  }
-  return aztecNode;
-};
-
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
   args?: Parameters<AztecNode[K]>,
 ): Promise<ReturnType<AztecNode[K]>> => {
+  let nodeURL;
   try {
     const res = await backOff(async () => {
+      const node = getRpcNode();
+
+      nodeURL = node.url;
       // eslint-disable-next-line @typescript-eslint/ban-types
-      return (await (node()[fnName] as Function).apply(
-        node(),
+      const result = (await (node.instance[fnName] as Function).apply(
+        node.instance,
         args,
       )) as Promise<ReturnType<AztecNode[K]>>;
+
+      void onL2RpcNodeAlive(node.url, node.name);
+      return result;
     }, backOffOptions);
-    onL2RpcNodeAlive(AZTEC_RPC_URL);
     return res;
   } catch (e) {
     logger.warn(`Aztec failed to call ${fnName}`);
-    onL2RpcNodeError({
-      name: (e as Error).name ?? "UnknownName",
-      message: (e as Error).message ?? "UnknownMessage",
-      cause: JSON.stringify((e as Error).cause) ?? "UnknownCause",
-      stack: (e as Error).stack ?? "UnknownStack",
-      data: { fnName, args, error: e },
-    });
+    onL2RpcNodeError(
+      {
+        name: (e as Error).name ?? "UnknownName",
+        message: (e as Error).message ?? "UnknownMessage",
+        cause: JSON.stringify((e as Error).cause) ?? "UnknownCause",
+        stack: (e as Error).stack ?? "UnknownStack",
+        data: { fnName, args, error: e },
+      },
+      nodeURL,
+    );
     if ((e as Error).cause) {
       logger.warn(
         `Aztec failed to fetch: ${JSON.stringify((e as Error).cause)}`,
@@ -93,30 +93,19 @@ const callNodeFunction = async <K extends keyof AztecNode>(
   }
 };
 
-const checkValidatorStats = async () => {
-  try {
-    const stats = await aztecNode.getValidatorsStats();
-    logger.info(`Validator stats: ${jsonStringify(stats)}`);
-  } catch (e) {
-    logger.warn(`Failed to fetch validator stats: ${(e as Error).message}`);
-  }
-};
-
 const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const init = async () => {
-  logger.info(`Initializing Aztec node client with ${AZTEC_RPC_URL}`);
-  aztecNode = createAztecNodeClient(AZTEC_RPC_URL);
-  await checkValidatorStats();
+  initPool();
   await sleep(1000);
   return getFreshInfo();
 };
 
 export const getFreshInfo = async (): Promise<{
   chainInfo: ChicmozChainInfo;
-  sequencer: ChicmozL2Sequencer;
+  sequencers: ChicmozL2Sequencer[];
 }> => {
   const {
     nodeVersion,
@@ -143,20 +132,22 @@ export const getFreshInfo = async (): Promise<{
   onChainInfo(chainInfo).catch((e) => {
     logger.error(`Aztec failed to publish chain info: ${(e as Error).message}`);
   });
-  const sequencer = getSequencerFromNodeInfo(
-    L2_NETWORK_ID,
-    AZTEC_RPC_URL,
-    nodeInfo,
-  );
-  onL2SequencerInfo(sequencer).catch((e) => {
-    logger.error(
-      `Aztec failed to publish sequencer info: ${(e as Error).message}`,
-    );
+
+  const sequencers = getNodeUrls().map((url) => {
+    const sequencer = getSequencerFromNodeInfo(L2_NETWORK_ID, url, nodeInfo);
+
+    onL2SequencerInfo(sequencer).catch((e) => {
+      logger.error(
+        `Aztec failed to publish sequencer info: ${(e as Error).message}`,
+      );
+    });
+
+    return sequencer;
   });
 
   return {
     chainInfo,
-    sequencer,
+    sequencers,
   };
 };
 
