@@ -11,10 +11,14 @@ const bottleneckOpts: Bottleneck.ConstructorOptions = {
   strategy: Bottleneck.strategy.LEAK,
 };
 
-export const onL2RpcNodeAlive = (rpcUrl: ChicmozL2RpcNode["rpcUrl"]) => {
-  const event = { rpcUrl, timestamp: new Date().getTime() };
-  if (!publishBottlenecks[rpcUrl])
+export const onL2RpcNodeAlive = (
+  rpcUrl: ChicmozL2RpcNode["rpcUrl"],
+  rpcName: string,
+) => {
+  const event = { rpcName, rpcUrl, timestamp: new Date().getTime() };
+  if (!publishBottlenecks[rpcUrl]) {
     publishBottlenecks[rpcUrl] = new Bottleneck(bottleneckOpts);
+  }
 
   publishBottlenecks[rpcUrl]
     .schedule(async () => {
@@ -25,7 +29,7 @@ export const onL2RpcNodeAlive = (rpcUrl: ChicmozL2RpcNode["rpcUrl"]) => {
         logger.debug(`✔ onL2RpcNodeAlive on bottleneck error: ${e.message}`);
       } else {
         logger.warn(
-          `✔ onL2RpcNodeAlive on publish error: ${(e as Error).message}`
+          `✔ onL2RpcNodeAlive on publish error: ${(e as Error).message}`,
         );
       }
     });

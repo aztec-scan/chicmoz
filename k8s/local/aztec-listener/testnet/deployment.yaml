@@ -51,11 +51,9 @@ spec:
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS
               value: "true"
-            - name: AZTEC_RPC_URL
+            - name: AZTEC_RPC_URLS
               valueFrom:
                 secretKeyRef:
                   name: global
-                  key: TESTNET_OBSCURA_L2_RPC_1
-                  #key: TESTNET_OBSCURA_L2_RPC_2
-                  #key: TESTNET_AZTEC_L2_BOOTNODE_RPC
+                  key: AZTEC_RPC_NODES_TESTNET
 status: {}
