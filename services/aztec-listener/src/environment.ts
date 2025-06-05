@@ -62,7 +62,7 @@ const printPool = () => {
   let finalString = "";
   AZTEC_RPC_URLS.forEach(
     (node) =>
-      (finalString = `${finalString}Name: ${node.name}\nURL: ${node.url}\n\n`),
+      (finalString = `  ${finalString}Name: ${node.name}\nURL: ${node.url}\n\n`),
   );
   return finalString.trim();
 };
