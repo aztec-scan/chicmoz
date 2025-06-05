@@ -104,7 +104,7 @@ export const replaceIpAddress = (url: string) => {
 
     return host; // Return as-is if can't parse
   } catch (error) {
-    throw new Error("Failed to extract IP/domain from URL");
+    return url;
   }
 };
 export const onL2RpcNodeError = (
