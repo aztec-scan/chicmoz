@@ -123,6 +123,7 @@ jobs:
           DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
           DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
           DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+          AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_TESTNET }}
         run: |
           MAX_RETRIES=3
           RETRY_DELAY=10
