@@ -33,9 +33,9 @@ export const aztecNodeConfigSchema = z.object({
   url: z.string(),
 });
 
-export const aztecNodePoolConfig = z.array(aztecNodeConfigSchema);
+export const aztecNodePoolConfigSchema = z.array(aztecNodeConfigSchema);
 
-export type aztecNodePoolConfig = z.infer<typeof aztecNodePoolConfig>;
+export type AztecNodePoolConfig = z.infer<typeof aztecNodePoolConfigSchema>;
 export type AztecNodeConfig = z.infer<typeof aztecNodeConfigSchema>;
 
 export const rpcNodePoolSchema = z
