@@ -1,4 +1,8 @@
-import { l2NetworkIdSchema, type L2NetworkId } from "@chicmoz-pkg/types";
+import {
+  l2NetworkIdSchema,
+  rpcNodePoolSchema,
+  type L2NetworkId,
+} from "@chicmoz-pkg/types";
 import { z } from "zod";
 
 export const BLOCK_POLL_INTERVAL_MS = z.coerce
@@ -48,9 +52,6 @@ export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
   .default(false)
   .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
 
-export const AZTEC_RPC_URL =
-  process.env.AZTEC_RPC_URL ?? "http://localhost:8080";
-
 export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";
 
@@ -58,12 +59,24 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID,
 );
 
+export const AZTEC_RPC_URLS = rpcNodePoolSchema.parse(
+  process.env.AZTEC_RPC_URLS,
+);
+const printPool = () => {
+  let finalString = "";
+  AZTEC_RPC_URLS.forEach(
+    (node) =>
+      (finalString = `  ${finalString}Name: ${node.name}\nURL: ${node.url}\n\n`),
+  );
+  return finalString.trim();
+};
+
 export const getConfigStr = () => `POLLER
 AZTEC_DISABLED:                                            ${
   AZTEC_DISABLED ? "✅" : "❌"
 }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
-AZTEC_RPC_URL:                                             ${AZTEC_RPC_URL}
+AZTEC_RPC_URL_POOL:                                        \n${printPool()}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"

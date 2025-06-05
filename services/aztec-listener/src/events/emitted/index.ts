@@ -6,7 +6,6 @@ import {
   ChicmozL2Sequencer,
   chicmozL2RpcNodeErrorSchema,
 } from "@chicmoz-pkg/types";
-import { AZTEC_RPC_URL } from "../../environment.js";
 import { logger } from "../../logger.js";
 import {
   publishMessage,
@@ -62,22 +61,52 @@ export const onL2SequencerInfo = async (sequencer: ChicmozL2Sequencer) => {
   await publishMessage("SEQUENCER_INFO_EVENT", event);
 };
 
-const IP_ADDRESS = AZTEC_RPC_URL.split("//")[1].split(":")[0];
-const replaceIpAddress = (str: string) =>
-  str.replaceAll(IP_ADDRESS, "xxx.xxx.xxx.xxx");
+const isIpAddress = (str: string) => {
+  // Check if string is a valid IPv4 address
+  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (ipv4Regex.test(str)) {
+    const parts = str.split(".");
+    return parts.every((part) => parseInt(part) >= 0 && parseInt(part) <= 255);
+  }
+};
 
+export const replaceIpAddress = (url: string) => {
+  if (!url || typeof url !== "string") {
+    throw new Error("Invalid URL provided");
+  }
+
+  try {
+    const host = url.split("//")[1].split(":")[0];
+
+    if (isIpAddress(host)) {
+      return "xxx.xxx.xxx.xxx"; // Hide IP address
+    }
+
+    // If it's a domain, extract just the domain name (remove subdomains)
+    const domainParts = host.split(".");
+    if (domainParts.length >= 2) {
+      // Return the last two parts (domain.tld)
+      return domainParts.slice(-2).join(".");
+    }
+
+    return host; // Return as-is if can't parse
+  } catch (error) {
+    return url;
+  }
+};
 export const onL2RpcNodeError = (
   rpcNodeError: Omit<
     ChicmozL2RpcNodeError,
     "rpcUrl" | "count" | "createdAt" | "lastSeenAt"
   >,
+  rpcUrl?: string,
 ) => {
   let event;
   try {
     event = {
       nodeError: chicmozL2RpcNodeErrorSchema.parse({
         ...rpcNodeError,
-        rpcUrl: AZTEC_RPC_URL,
+        rpcUrl: rpcUrl,
         count: 1,
         createdAt: new Date(),
         lastSeenAt: new Date(),

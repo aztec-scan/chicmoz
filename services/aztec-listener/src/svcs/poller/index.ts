@@ -41,7 +41,7 @@ export const init = async () => {
     enr: undefined, // Add missing required property
   };
   logger.info(`Aztec chain info: ${jsonStringify(initResult.chainInfo)}`);
-  logger.info(`Aztec sequencer info: ${jsonStringify(initResult.sequencer)}`);
+  logger.info(`Aztec sequencers info: ${jsonStringify(initResult.sequencers)}`);
 };
 
 export const startPoller = async () => {

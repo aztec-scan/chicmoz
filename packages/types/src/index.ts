@@ -11,6 +11,6 @@ export const jsonStringify = (param: unknown): string => {
   return JSON.stringify(
     param,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    (_key, value) => (typeof value === "bigint" ? value.toString() : value)
+    (_key, value) => (typeof value === "bigint" ? value.toString() : value),
   );
 };
