@@ -28,8 +28,7 @@ import { getNodeUrls, getRpcNode, initPool } from "./pool.js";
 const backOffOptions: Partial<IBackOffOptions> = {
   numOfAttempts: 5,
   maxDelay: 10000,
-  //TODO: change to 200 when node pool is implemented
-  startingDelay: 2000,
+  startingDelay: 200,
   retry: (e, attemptNumber: number) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const errorCode = e.cause?.code;
