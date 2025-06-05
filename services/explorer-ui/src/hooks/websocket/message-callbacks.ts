@@ -1,12 +1,12 @@
 import {
   chicmozL2BlockSchema,
   chicmozL2PendingTxSchema,
-  type UiBlockTable,
+  chicmozL2TxEffectSchema,
   type ChicmozL2Block,
   type ChicmozL2BlockLight,
   type ChicmozL2PendingTx,
+  type UiBlockTable,
   type WebsocketUpdateMessageReceiver,
-  chicmozL2TxEffectSchema,
 } from "@chicmoz-pkg/types";
 import { type useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -102,9 +102,11 @@ export const updatePendingTxs = (
       return [...oldData, ...txs]
         .filter(
           (tx, index, self) =>
-            self.findIndex((t) => t.hash === tx.hash) === index,
+            self.findIndex((t) => t.txHash === tx.txHash) === index,
         )
-        .sort((a, b) => b.birthTimestamp - a.birthTimestamp);
+        .sort(
+          (a, b) => b.birthTimestamp.getTime() - a.birthTimestamp.getTime(),
+        );
     },
   );
 };

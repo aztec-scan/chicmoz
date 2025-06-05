@@ -24,8 +24,12 @@ export async function updateValidatorsState(
     return;
   }
   for (const validator of currentDbValues) {
-    const found = validators.find((v) => v.attester === validator.attester);
-    if (!found) {
+    const foundAndIsNotAlreadyExiting = validators.find(
+      (v) =>
+        v.attester === validator.attester &&
+        v.status !== L1L2ValidatorStatus.EXITING,
+    );
+    if (!foundAndIsNotAlreadyExiting) {
       logger.info(
         `🤖 L1L2 validator ${validator.attester} not found in event, setting to EXITING`,
       );

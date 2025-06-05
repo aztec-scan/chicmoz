@@ -1,7 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import {
-  HexString,
-} from "@chicmoz-pkg/types";
+import { HexString } from "@chicmoz-pkg/types";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import {
@@ -172,7 +170,7 @@ const storeOrphanedTxEffectsAsDropped = async (
     try {
       await storeDroppedTx({
         txHash: tx.txHash,
-        createdAt: tx.txBirthTimestamp,
+        createdAsPendingAt: tx.txBirthTimestamp,
         droppedAt: timestamp,
       });
     } catch (error) {

@@ -1,5 +1,4 @@
-import { L2Block, TxHash } from "@aztec/aztec.js";
-import { PendingTxsEvent } from "@chicmoz-pkg/message-registry";
+import { L2Block } from "@aztec/aztec.js";
 import {
   ChicmozChainInfo,
   ChicmozL2BlockFinalizationStatus,
@@ -20,9 +19,12 @@ export const onBlock = async (
 ) => {
   const height = Number(block.header.globalVariables.blockNumber);
   const finalizationStatusStr =
-    ChicmozL2BlockFinalizationStatus[finalizationStatus];
+    finalizationStatus ===
+    ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+      ? `🦊 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`
+      : `🐴 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`;
   logger.info(
-    `🦊 publishing (${finalizationStatusStr}) block ${height} (hash: ${(
+    `${finalizationStatusStr} block ${height} (hash: ${(
       await block.hash()
     ).toString()})...`,
   );
@@ -46,21 +48,6 @@ export const onCatchupBlock = async (
   });
 };
 // TODO: onCatchupRequestFromExplorerApi
-
-export const onPendingTxs = async (txs: TxHash[]) => {
-  if (!txs || txs.length === 0) {
-    return;
-  }
-
-  await publishMessage("PENDING_TXS_EVENT", {
-    txs: txs.map((tx) => {
-      return {
-        hash: tx.toString(),
-        birthTimestamp: new Date().getTime(),
-      };
-    }),
-  } as PendingTxsEvent);
-};
 
 export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   const event = { chainInfo };

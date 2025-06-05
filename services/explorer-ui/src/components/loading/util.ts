@@ -1,13 +1,13 @@
 import { formatTimeSince } from "~/lib/utils";
 
-export const getEmptyTxEffectData = (hash?: string, timestamp?: number) => [
+export const getEmptyTxEffectData = (hash?: string, date?: Date) => [
   {
     label: "HASH",
     value: hash,
   },
   {
     label: "CREATED AS PENDING TX",
-    value: timestamp ? `${formatTimeSince(timestamp)} ago` : undefined,
+    value: date ? `${formatTimeSince(date.getTime())} ago` : undefined,
   },
   {
     label: "TRANSACTION FEE (FJ)",

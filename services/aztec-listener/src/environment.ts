@@ -47,6 +47,10 @@ export const AZTEC_LISTEN_FOR_PENDING_TXS =
 export const AZTEC_LISTEN_FOR_CHAIN_INFO =
   process.env.AZTEC_LISTEN_FOR_CHAIN_INFO === "true";
 export const AZTEC_DISABLED = process.env.AZTEC_DISABLED === "true";
+export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
+  .boolean()
+  .default(false)
+  .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
 
 export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";

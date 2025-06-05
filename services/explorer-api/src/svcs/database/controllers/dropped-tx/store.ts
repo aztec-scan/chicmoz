@@ -6,11 +6,7 @@ import { droppedTx } from "../../schema/dropped-tx/index.js";
 export const storeDroppedTx = async (tx: ChicmozL2DroppedTx): Promise<void> => {
   const res = await db()
     .insert(droppedTx)
-    .values({
-      txHash: tx.txHash,
-      createdAt: tx.createdAt,
-      droppedAt: tx.droppedAt,
-    })
+    .values(tx)
     .onConflictDoNothing()
     .returning();
   if (res.length > 0) {

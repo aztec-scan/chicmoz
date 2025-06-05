@@ -9,7 +9,7 @@ import { type PendingTxSchema } from "./pending-txs-schema";
 // Define the columns for the pending tx table
 export const PendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
   {
-    accessorKey: "hash",
+    accessorKey: "txHash",
     header: ({ column }) => (
       <DataTableColumnHeader
         className="text-purple-dark text-sm "
@@ -18,7 +18,7 @@ export const PendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const hash = row.getValue("hash");
+      const hash = row.getValue("txHash");
       if (typeof hash !== "string") {
         return null;
       }

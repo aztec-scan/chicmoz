@@ -1,6 +1,7 @@
 import { generateSchema } from "@anatine/zod-openapi";
 import {
   chicmozChainInfoSchema,
+  chicmozContractInstanceBalanceSchema,
   chicmozFeeRecipientSchema,
   chicmozL1GenericContractEventSchema,
   chicmozL1L2ValidatorHistorySchema,
@@ -147,6 +148,16 @@ export const contractInstanceResponse = getResponse(
 export const contractInstanceResponseArray = getResponse(
   z.array(cleanedContractInstanceDeluxeSchema),
   "contractInstanceArray",
+);
+
+export const contractInstanceBalanceResponse = getResponse(
+  chicmozContractInstanceBalanceSchema,
+  "contractInstanceBalance",
+);
+
+export const contractInstanceBalanceResponseArray = getResponse(
+  z.array(chicmozContractInstanceBalanceSchema),
+  "contractInstanceBalanceArray",
 );
 
 export const verifiedContractInstanceResponse = getResponse(
