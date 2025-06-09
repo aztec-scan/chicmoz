@@ -6,7 +6,7 @@ import { publishMessage } from "../../svcs/message-bus/index.js";
 
 export const onPendingTxs = async (pendingTxs: Tx[]) => {
   try {
-    const storedPendingTxs = await getTxs(["pending"]);
+    const storedTxs = await getTxs();
 
     const currentPendingTxs: ChicmozL2PendingTx[] = await Promise.all(
       pendingTxs.map(async (tx) => ({
@@ -18,20 +18,18 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
 
     const newTxs = currentPendingTxs.filter(
       (currentTx) =>
-        !storedPendingTxs.some(
-          (storedTx) => storedTx.txHash === currentTx.txHash,
-        ),
+        !storedTxs.some((storedTx) => storedTx.txHash === currentTx.txHash),
     );
 
-    const droppedTxs = storedPendingTxs.filter(
-      (storedTx) =>
-        !currentPendingTxs.some(
-          (currentTx) => currentTx.txHash === storedTx.txHash,
-        ),
-    );
+    const newDroppedTxs = storedTxs.filter((storedTx) => {
+      const dbTx = !currentPendingTxs.find(
+        (currentTx) => currentTx.txHash === storedTx.txHash,
+      );
+      return dbTx && storedTx.txState === "pending";
+    });
 
     logger.info(
-      `🕐 total pending txs: ${currentPendingTxs.length}, new txs: ${newTxs.length}, dropped txs: ${droppedTxs.length}`,
+      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, new dropped txs: ${newDroppedTxs.length}`,
     );
 
     if (newTxs.length > 0) {
@@ -47,20 +45,20 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       );
     }
 
-    if (droppedTxs.length > 0) {
-      for (const droppedTx of droppedTxs) {
+    if (newDroppedTxs.length > 0) {
+      for (const droppedTx of newDroppedTxs) {
         await storeOrUpdate(droppedTx, "dropped");
       }
 
       await publishMessage("DROPPED_TXS_EVENT", {
-        txs: droppedTxs.map((tx) => ({
+        txs: newDroppedTxs.map((tx) => ({
           txHash: tx.txHash,
           createdAsPendingAt: tx.birthTimestamp,
           droppedAt: new Date(),
         })),
       });
       logger.info(
-        `🗑️ Published DROPPED_TXS_EVENT for ${droppedTxs.length} dropped txs`,
+        `🗑️ Published DROPPED_TXS_EVENT for ${newDroppedTxs.length} dropped txs`,
       );
     }
   } catch (error) {

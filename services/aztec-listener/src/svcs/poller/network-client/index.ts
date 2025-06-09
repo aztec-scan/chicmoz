@@ -66,6 +66,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
   try {
     const res = await backOff(async () => {
       const node = getRpcNode();
+      logger.info(`🧋 Calling Aztec node function: ${fnName} on ${node.name}`);
 
       nodeURL = node.url;
       // eslint-disable-next-line @typescript-eslint/ban-types

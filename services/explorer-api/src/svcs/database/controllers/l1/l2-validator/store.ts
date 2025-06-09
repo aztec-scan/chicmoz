@@ -15,7 +15,7 @@ import { getL1L2Validator } from "./get-single.js";
 export async function updateValidatorsState(
   event: L1L2ValidatorEvent,
 ): Promise<void> {
-  const validators = event.validators.map((validator) => ({
+  const eventValidators = event.validators.map((validator) => ({
     ...validator,
     stake: BigInt(validator.stake),
   }));
@@ -23,28 +23,28 @@ export async function updateValidatorsState(
   if (currentDbValues === null) {
     return;
   }
-  for (const validator of currentDbValues) {
-    const foundAndIsNotAlreadyExiting = validators.find(
-      (v) =>
-        v.attester === validator.attester &&
-        v.status !== L1L2ValidatorStatus.EXITING,
+  for (const dbValidator of currentDbValues) {
+    const found = eventValidators.find(
+      (eventValidator) =>
+        eventValidator.attester === dbValidator.attester &&
+        eventValidator.rollupAddress === dbValidator.rollupAddress,
     );
-    if (!foundAndIsNotAlreadyExiting) {
+    if (!found && dbValidator.status !== L1L2ValidatorStatus.EXITING) {
       logger.info(
-        `🤖 L1L2 validator ${validator.attester} not found in event, setting to EXITING`,
+        `🤖 L1L2 validator ${dbValidator.attester} not found in event, setting to EXITING`,
       );
       await _store(
         {
-          ...validator,
+          ...dbValidator,
           latestSeenChangeAt: new Date(),
           status: L1L2ValidatorStatus.EXITING,
           stake: 0n,
         },
-        validator,
+        dbValidator,
       );
     }
   }
-  for (const validator of validators) {
+  for (const validator of eventValidators) {
     const found = currentDbValues.find(
       (v) => v.attester === validator.attester,
     );
