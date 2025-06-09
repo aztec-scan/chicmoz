@@ -72,11 +72,12 @@ export const getBlockDetails = (
       value: "Not yet proposed",
       timestamp: proposedOnL1Date?.getTime() ?? undefined,
     },
-    {
-      label: "Proof Verified on L1",
-      value: "Not yet verified",
-      timestamp: proofVerifiedOnL1Date?.getTime() ?? undefined,
-    },
+    // NOTE: not all blocks have this
+    //{
+    //  label: "Proof Verified on L1",
+    //  value: "Not yet verified",
+    //  timestamp: proofVerifiedOnL1Date?.getTime() ?? undefined,
+    //},
     {
       label: "Raw Data",
       value: "View raw data",
