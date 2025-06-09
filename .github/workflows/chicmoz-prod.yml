@@ -123,6 +123,7 @@ jobs:
           DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
           DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
           DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+          AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_TESTNET }}
         run: |
           MAX_RETRIES=3
           RETRY_DELAY=10
@@ -136,6 +137,7 @@ jobs:
             --from-literal=DEVNET_AZTEC_L2_BOOTNODE_RPC=$DEVNET_AZTEC_L2_BOOTNODE_RPC \
             --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
             --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
+            --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_TESTNET \
             -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
 
           for i in $(seq 1 $MAX_RETRIES); do
