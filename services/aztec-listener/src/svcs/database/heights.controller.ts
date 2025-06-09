@@ -72,8 +72,6 @@ export async function getBlockHeights() {
     .from(heightsTable)
     .where(eq(heightsTable.networkId, L2_NETWORK_ID))
     .limit(1);
-  if (!result) {
-    throw new Error("FATAL: block heights not initialized");
-  }
+  if (result.length === 0) {throw new Error("FATAL: block heights not initialized");}
   return result[0];
 }

@@ -40,20 +40,3 @@ export const deleteTx = async (txHash: HexString, txState?: TxState) => {
     await db().delete(txsTable).where(eq(txsTable.txHash, txHash));
   }
 };
-
-export const getTxByHash = async (txHash: HexString, txState?: TxState) => {
-  if (txState) {
-    const result = await db()
-      .select()
-      .from(txsTable)
-      .where(and(eq(txsTable.txHash, txHash), eq(txsTable.txState, txState)))
-      .limit(1);
-    return result.length > 0 ? result[0] : null;
-  }
-  const result = await db()
-    .select()
-    .from(txsTable)
-    .where(eq(txsTable.txHash, txHash))
-    .limit(1);
-  return result.length > 0 ? result[0] : null;
-};

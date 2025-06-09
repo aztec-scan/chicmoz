@@ -1,12 +1,16 @@
 import { AztecAddress, L2Block } from "@aztec/aztec.js";
 import { logger } from "../../../../logger.js";
-import { deleteTx, getTxs } from "../../../database/txs.controller.js";
+import { txsController } from "../../../database/index.js";
 import { publishMessage } from "../../../message-bus/index.js";
 import { getBalanceOf } from "../../network-client/index.js";
 
 export const handleProvenTransactions = async (block: L2Block) => {
   try {
-    const notProvenTxs = await getTxs(["pending", "dropped", "proposed"]);
+    const notProvenTxs = await txsController.getTxs([
+      "pending",
+      "dropped",
+      "proposed",
+    ]);
     if (notProvenTxs.length === 0) {
       return;
     }
@@ -48,7 +52,7 @@ export const handleProvenTransactions = async (block: L2Block) => {
           timestamp: new Date(),
         });
 
-        await deleteTx(provenTx.txHash);
+        await txsController.deleteTx(provenTx.txHash);
       } catch (error) {
         logger.error(`Error processing proven tx ${provenTx.txHash}:`, error);
       }

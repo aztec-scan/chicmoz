@@ -15,9 +15,6 @@ export const getBlockDetails = (
   const proposedOnL1Date: Date | undefined | null =
     latestBlock?.proposedOnL1?.l1BlockTimestamp;
 
-  const proofVerifiedOnL1Date: Date | undefined | null =
-    latestBlock?.proofVerifiedOnL1?.l1BlockTimestamp;
-
   return [
     { label: "Block Number", value: "" + latestBlock.height },
     { label: "Block Hash", value: latestBlock.hash },

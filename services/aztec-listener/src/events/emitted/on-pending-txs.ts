@@ -1,12 +1,12 @@
 import { Tx } from "@aztec/aztec.js";
 import { ChicmozL2PendingTx } from "@chicmoz-pkg/types";
 import { logger } from "../../logger.js";
-import { getTxs, storeOrUpdate } from "../../svcs/database/txs.controller.js";
+import { txsController } from "../../svcs/database/index.js";
 import { publishMessage } from "../../svcs/message-bus/index.js";
 
 export const onPendingTxs = async (pendingTxs: Tx[]) => {
   try {
-    const storedTxs = await getTxs();
+    const storedTxs = await txsController.getTxs();
 
     const currentPendingTxs: ChicmozL2PendingTx[] = await Promise.all(
       pendingTxs.map(async (tx) => ({
@@ -34,7 +34,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
 
     if (newTxs.length > 0) {
       for (const newTx of newTxs) {
-        await storeOrUpdate(newTx, "pending");
+        await txsController.storeOrUpdate(newTx, "pending");
       }
 
       await publishMessage("PENDING_TXS_EVENT", {
@@ -47,7 +47,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
 
     if (newDroppedTxs.length > 0) {
       for (const droppedTx of newDroppedTxs) {
-        await storeOrUpdate(droppedTx, "dropped");
+        await txsController.storeOrUpdate(droppedTx, "dropped");
       }
 
       await publishMessage("DROPPED_TXS_EVENT", {
