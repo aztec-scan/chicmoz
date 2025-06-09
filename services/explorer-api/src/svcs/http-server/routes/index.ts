@@ -219,7 +219,10 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
   );
   router.get(paths.contractInstance, controller.GET_L2_CONTRACT_INSTANCE);
-  router.get(paths.contractInstanceBalance, controller.GET_L2_CONTRACT_INSTANCE_BALANCE);
+  router.get(
+    paths.contractInstanceBalance,
+    controller.GET_L2_CONTRACT_INSTANCE_BALANCE,
+  );
   router.get(paths.contractInstances, controller.GET_L2_CONTRACT_INSTANCES);
 
   router.get(paths.search, controller.L2_SEARCH);

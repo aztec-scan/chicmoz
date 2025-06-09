@@ -41,12 +41,7 @@ export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
     } = getContractInstanceBalanceSchema.parse(req);
 
     const balanceData = await dbWrapper.get(
-      [
-        "l2",
-        "contract-instance",
-        address,
-        "balance",
-      ],
+      ["l2", "contract-instance", address, "balance"],
       () => getLatestContractInstanceBalance(address),
     );
     res.status(200).json(JSON.parse(balanceData));

@@ -1,8 +1,8 @@
+import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 import { DataTableColumnHeader } from "../data-table";
-import { Link } from "@tanstack/react-router";
 import { TimeAgoCell } from "../formated-time-cell";
 import { type PendingTxSchema } from "./pending-txs-schema";
 

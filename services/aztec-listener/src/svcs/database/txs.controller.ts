@@ -22,7 +22,9 @@ export const storeOrUpdate = async (
     });
 };
 
-export const getTxs = async (statesWhitelist: TxState[] = ["pending", "dropped", "proposed", "proven"]) => {
+export const getTxs = async (
+  statesWhitelist: TxState[] = ["pending", "dropped", "proposed", "proven"],
+) => {
   return await db()
     .select()
     .from(txsTable)

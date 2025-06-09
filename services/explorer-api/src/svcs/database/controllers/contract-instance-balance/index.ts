@@ -1,2 +1,2 @@
-export * from "./store.js";
 export * from "./get-balance.js";
+export * from "./store.js";
