@@ -14,10 +14,6 @@ const onContractInstanceBalance = async (
 ) => {
   try {
     await storeContractInstanceBalance(event);
-
-    logger.info(
-      `💰 Processed contract instance balance for ${event.contractAddress}`,
-    );
   } catch (error) {
     logger.error(
       `Error processing contract instance balance for ${event.contractAddress}:`,

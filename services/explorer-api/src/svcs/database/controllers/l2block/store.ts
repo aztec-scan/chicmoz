@@ -5,7 +5,9 @@ import {
   HexString,
   type ChicmozL2Block,
 } from "@chicmoz-pkg/types";
+import { and, asc, eq, isNull, lt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
+import { logger } from "../../../../logger.js";
 import {
   archive,
   body,
@@ -204,7 +206,7 @@ export const store = async (
   });
 };
 
-export const ensureFinalizationStatusStored = async (
+const _ensureFinalizationStatusStored = async (
   l2BlockHash: HexString,
   l2BlockNumber: bigint,
   status: ChicmozL2BlockFinalizationStatus,
@@ -217,4 +219,83 @@ export const ensureFinalizationStatusStored = async (
       status,
     })
     .onConflictDoNothing();
+};
+
+export const ensureFinalizationStatusStored = async (
+  l2BlockHash: HexString,
+  l2BlockNumber: bigint,
+  status: ChicmozL2BlockFinalizationStatus,
+): Promise<void> => {
+  await _ensureFinalizationStatusStored(l2BlockHash, l2BlockNumber, status);
+  await ensureParentBlocksFinalizationStatusStored(l2BlockNumber, status);
+};
+
+const ensureParentBlocksFinalizationStatusStored = async (
+  l2BlockNumber: bigint,
+  status: ChicmozL2BlockFinalizationStatus,
+): Promise<void> => {
+  const parentBlockNumber = l2BlockNumber;
+  await db().transaction(async (tx) => {
+    const blocksOnOtherStatus = tx
+      .selectDistinctOn([l2BlockFinalizationStatusTable.l2BlockNumber], {
+        blockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
+        hash: l2Block.hash,
+      })
+      .from(l2BlockFinalizationStatusTable)
+      .innerJoin(
+        l2Block,
+        eq(l2BlockFinalizationStatusTable.l2BlockHash, l2Block.hash),
+      )
+      .where(
+        and(
+          lt(l2BlockFinalizationStatusTable.status, status),
+          lt(l2BlockFinalizationStatusTable.l2BlockNumber, parentBlockNumber),
+          isNull(l2Block.orphan_timestamp),
+        ),
+      );
+
+    const allBlocksOnSameStatus = tx
+      .select({
+        blockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
+        hash: l2Block.hash,
+      })
+      .from(l2BlockFinalizationStatusTable)
+      .innerJoin(
+        l2Block,
+        eq(l2BlockFinalizationStatusTable.l2BlockHash, l2Block.hash),
+      )
+      .where(
+        and(
+          eq(l2BlockFinalizationStatusTable.status, status),
+          lt(l2BlockFinalizationStatusTable.l2BlockNumber, parentBlockNumber),
+          isNull(l2Block.orphan_timestamp),
+        ),
+      );
+
+    const blocksWithMissingStatus = await blocksOnOtherStatus
+      .except(allBlocksOnSameStatus)
+      .orderBy(asc(l2BlockFinalizationStatusTable.l2BlockNumber));
+    let counter = 0;
+    if (blocksWithMissingStatus.length > 0) {
+      logger.info(
+        `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
+      );
+    }
+    for (const block of blocksWithMissingStatus) {
+      if (blocksWithMissingStatus.length < 25) {
+        logger.info(
+          `Ensuring status ${ChicmozL2BlockFinalizationStatus[status]} for block ${block.blockNumber} (${block.hash})`,
+        );
+      } else if (counter++ % 100 === 0) {
+        logger.info(
+          `Ensuring status ${ChicmozL2BlockFinalizationStatus[status]} for block ${block.blockNumber} (${counter} of ${blocksWithMissingStatus.length} processed)`,
+        );
+      }
+      await _ensureFinalizationStatusStored(
+        block.hash,
+        block.blockNumber,
+        status,
+      );
+    }
+  });
 };
