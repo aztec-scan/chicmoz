@@ -2,6 +2,8 @@ import {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
+  ChicmozL2ContractInstanceDeployedEvent,
+  ChicmozL2DroppedTx,
   ChicmozL2PendingTx,
   ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
@@ -17,6 +19,16 @@ export type NewBlockEvent = {
 
 export type PendingTxsEvent = {
   txs: ChicmozL2PendingTx[];
+};
+
+export type DroppedTxsEvent = {
+  txs: ChicmozL2DroppedTx[];
+};
+
+export type ContractInstanceBalanceEvent = {
+  contractAddress: ChicmozL2ContractInstanceDeployedEvent["address"];
+  balance: string;
+  timestamp: Date;
 };
 
 export type CatchupBlockEvent = NewBlockEvent;
@@ -45,7 +57,7 @@ export type ChicmozL2BlockFinalizationUpdateEvent = {
 
 export function generateL2TopicName(
   networkId: L2NetworkId,
-  topic: keyof L2_MESSAGES
+  topic: keyof L2_MESSAGES,
 ): L2Topic {
   return `${networkId}__${topic}`;
 }
@@ -54,6 +66,8 @@ export type L2_MESSAGES = {
   NEW_BLOCK_EVENT: NewBlockEvent;
   CATCHUP_BLOCK_EVENT: CatchupBlockEvent;
   PENDING_TXS_EVENT: PendingTxsEvent;
+  DROPPED_TXS_EVENT: DroppedTxsEvent;
+  CONTRACT_INSTANCE_BALANCE_EVENT: ContractInstanceBalanceEvent;
   L2_RPC_NODE_ERROR_EVENT: ChicmozL2RpcNodeErrorEvent;
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
   SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;

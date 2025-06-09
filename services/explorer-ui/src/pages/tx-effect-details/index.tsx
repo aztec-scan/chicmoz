@@ -76,7 +76,7 @@ export const TxEffectDetails: FC = () => {
       <LoadingDetails
         title="Pending Transaction"
         emptyData={getEmptyTxEffectData(
-          pendingTx.hash,
+          pendingTx.txHash,
           pendingTx.birthTimestamp,
         )}
       />

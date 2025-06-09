@@ -1,23 +1,25 @@
 import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
 import {
+  AZTEC_DISABLE_ETERNAL_CATCHUP,
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS,
   AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS,
   BLOCK_POLL_INTERVAL_MS,
   CATCHUP_POLL_WAIT_TIME_MS,
-} from "../../../environment.js";
-import { onBlock, onCatchupBlock } from "../../../events/emitted/index.js";
-import { logger } from "../../../logger.js";
+} from "../../../../environment.js";
+import { onBlock, onCatchupBlock } from "../../../../events/emitted/index.js";
+import { logger } from "../../../../logger.js";
 import {
   getBlockHeights,
   storeBlockHeights,
   storeProcessedProposedBlockHeight,
   storeProcessedProvenBlockHeight,
-} from "../../database/heights.controller.js";
+} from "../../../database/heights.controller.js";
 import {
   getBlock,
   getLatestProposedHeight,
   getLatestProvenHeight,
-} from "../network-client/index.js";
+} from "../../network-client/index.js";
+import { handleProvenTransactions } from "./handle-proven-block-txs.js";
 
 let timeoutId: number | undefined;
 let cancelPolling = false;
@@ -148,6 +150,7 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
 
 const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   const block = await internalGetBlock(height);
+
   if (isCatchup) {
     await onCatchupBlock(
       block,
@@ -158,6 +161,8 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   } else {
     await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
   }
+
+  await handleProvenTransactions(block);
   await storeProcessedProvenBlockHeight(height);
 };
 
@@ -196,6 +201,9 @@ const ensureSaneValues = async (
 
 let currentEternalCatchupHeight = 1;
 const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
+  if (AZTEC_DISABLE_ETERNAL_CATCHUP) {
+    return;
+  }
   // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
   const block = await internalGetBlock(currentEternalCatchupHeight);
   if (block) {

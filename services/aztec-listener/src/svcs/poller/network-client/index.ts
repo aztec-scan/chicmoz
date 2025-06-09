@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { AztecNode, NodeInfo } from "@aztec/aztec.js";
+import {
+  AztecAddress,
+  AztecNode,
+  Fr,
+  NodeInfo,
+  ProtocolContractAddress,
+} from "@aztec/aztec.js";
+import { deriveStorageSlotInMap } from "@aztec/stdlib/hash";
 import {
   ChicmozChainInfo,
   ChicmozL2Sequencer,
@@ -19,11 +26,11 @@ import {
   onL2SequencerInfo,
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
+import { getNodeUrls, getRpcNode, initPool } from "./pool.js";
 import {
   getChicmozChainInfoFromNodeInfo,
   getSequencerFromNodeInfo,
 } from "./utils.js";
-import { getNodeUrls, getRpcNode, initPool } from "./pool.js";
 
 const backOffOptions: Partial<IBackOffOptions> = {
   numOfAttempts: 5,
@@ -59,6 +66,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
   try {
     const res = await backOff(async () => {
       const node = getRpcNode();
+      logger.info(`🧋 Calling Aztec node function: ${fnName} on ${node.name}`);
 
       nodeURL = node.url;
       // eslint-disable-next-line @typescript-eslint/ban-types
@@ -180,3 +188,15 @@ export const getLatestProvenHeight = async () => {
 };
 
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");
+
+export const getBalanceOf = async (
+  blockNumber: number | "latest",
+  address: AztecAddress,
+) => {
+  const slot = await deriveStorageSlotInMap(new Fr(1), address);
+  return callNodeFunction("getPublicStorageAt", [
+    blockNumber,
+    ProtocolContractAddress.FeeJuice,
+    slot,
+  ]);
+};

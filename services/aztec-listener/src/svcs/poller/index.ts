@@ -11,7 +11,7 @@ import { onL2RpcNodeError } from "../../events/emitted/index.js";
 import { logger } from "../../logger.js";
 import { ensureInitializedBlockHeights } from "../database/heights.controller.js";
 import { init as initNetworkClient } from "./network-client/index.js";
-import * as blockPoller from "./pollers/block_poller.js";
+import * as blockPoller from "./pollers/block_poller/index.js";
 import * as chainInfoPoller from "./pollers/chain-info-poller.js";
 import * as pendingTxsPoller from "./pollers/txs_poller.js";
 

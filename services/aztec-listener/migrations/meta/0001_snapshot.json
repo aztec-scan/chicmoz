@@ -1,0 +1,85 @@
+{
+  "id": "3d3fe4cc-586a-4c19-872e-7bf5e85753a0",
+  "prevId": "fe801f44-c496-4e6f-9d0a-07a41d6e6c68",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.heights": {
+      "name": "heights",
+      "schema": "",
+      "columns": {
+        "networkId": {
+          "name": "networkId",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "processedProposedBlockHeight": {
+          "name": "processedProposedBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainProposedBlockHeight": {
+          "name": "chainProposedBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processedProvenBlockHeight": {
+          "name": "processedProvenBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainProvenBlockHeight": {
+          "name": "chainProvenBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pending_txs": {
+      "name": "pending_txs",
+      "schema": "",
+      "columns": {
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "fee_payer": {
+          "name": "fee_payer",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_timestamp": {
+          "name": "birth_timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

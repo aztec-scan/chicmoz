@@ -1,15 +1,15 @@
+import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 import { DataTableColumnHeader } from "../data-table";
-import { Link } from "@tanstack/react-router";
 import { TimeAgoCell } from "../formated-time-cell";
 import { type PendingTxSchema } from "./pending-txs-schema";
 
 // Define the columns for the pending tx table
 export const PendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
   {
-    accessorKey: "hash",
+    accessorKey: "txHash",
     header: ({ column }) => (
       <DataTableColumnHeader
         className="text-purple-dark text-sm "
@@ -18,7 +18,7 @@ export const PendingTxsColumns: ColumnDef<PendingTxSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const hash = row.getValue("hash");
+      const hash = row.getValue("txHash");
       if (typeof hash !== "string") {
         return null;
       }

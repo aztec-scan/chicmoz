@@ -6,10 +6,13 @@ import { l2RpcNodeErrorTable } from "../../../schema/l2/rpc-node-error.js";
 import { l2RpcNodeTable } from "../../../schema/l2/rpc-node.js";
 
 export async function storeL2RpcNodeError(
-  rpcNodeError: ChicmozL2RpcNodeError
+  rpcNodeError: ChicmozL2RpcNodeError,
 ): Promise<void> {
   const { name, rpcUrl, cause, message, stack, data } = rpcNodeError;
-  assert(rpcUrl, "rpcUrl is required to store rpc node error");
+  assert(
+    rpcUrl,
+    `rpcUrl is required to store rpc node error ${JSON.stringify(rpcNodeError)}`,
+  );
 
   await db().transaction(async (tx) => {
     const rpcNodeRes = await tx

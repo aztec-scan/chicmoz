@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { aztecAddressSchema } from "../index.js";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
 export const CHICMOZ_TYPES_AZTEC_VERSION = "0.87.2";
@@ -85,3 +86,13 @@ export const chicmozL2SequencerSchema = z.object({
 export type ChicmozL2RpcNode = z.infer<typeof chicmozL2RpcNodeSchema>;
 export type ChicmozL2RpcNodeError = z.infer<typeof chicmozL2RpcNodeErrorSchema>;
 export type ChicmozL2Sequencer = z.infer<typeof chicmozL2SequencerSchema>;
+
+export const chicmozContractInstanceBalanceSchema = z.object({
+  contractAddress: aztecAddressSchema,
+  balance: z.coerce.bigint().nonnegative(),
+  timestamp: z.coerce.date().default(() => new Date()),
+});
+
+export type ChicmozContractInstanceBalance = z.infer<
+  typeof chicmozContractInstanceBalanceSchema
+>;
