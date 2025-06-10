@@ -52,7 +52,7 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => {
     {
       label: "RAW DATA",
       value: "View raw data",
-      extLink: `${API_URL}${aztecExplorer.getL2TxEffectByHash}${data.txHash}`,
+      extLink: `${API_URL}${aztecExplorer.getL2TxEffectByHash(data.txHash)}`,
     },
   ];
 };
