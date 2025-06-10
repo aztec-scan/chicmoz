@@ -1,5 +1,5 @@
 import { type ChicmozL2PendingTx } from "@chicmoz-pkg/types";
-import { type FC } from "react";
+import { useMemo, type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OrphanedBanner } from "~/components/orphaned-banner";
@@ -15,15 +15,15 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
 
   const { data: latestBlocks } = useLatestTableBlocks();
 
-  const blocksCreatedSinceTx = (() => {
+  const blocksCreatedSinceTx = useMemo(() => {
     if (!latestBlocks || latestBlocks.length === 0) return 0;
 
     const blocksAfterTx = latestBlocks.filter(
-      (block) => block.timestamp > pendingTxDetails.birthTimestamp,
+      (block) => block.timestamp > pendingTxDetails.birthTimestamp.getTime(),
     );
 
     return blocksAfterTx.length;
-  })();
+  }, [latestBlocks, pendingTxDetails.birthTimestamp]);
 
   const isStaleTransaction = blocksCreatedSinceTx >= 2;
 
@@ -57,11 +57,11 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay
               data={[
-                { label: "Hash", value: pendingTxDetails.hash },
+                { label: "Hash", value: pendingTxDetails.txHash },
                 {
                   label: "Timestamp",
                   value: pendingTxDetails.birthTimestamp.toString(),
-                  timestamp: pendingTxDetails.birthTimestamp,
+                  timestamp: pendingTxDetails.birthTimestamp.getTime(),
                 },
               ]}
             />

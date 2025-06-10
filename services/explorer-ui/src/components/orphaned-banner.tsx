@@ -12,7 +12,7 @@ interface OrphanedBannerProps {
 
 export const OrphanedBanner: React.FC<OrphanedBannerProps> = ({
   type = "block",
-  blockAmount,
+  blockAmount = 0,
 }) => {
   const getTitle = () => {
     switch (type) {

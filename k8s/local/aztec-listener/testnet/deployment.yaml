@@ -51,6 +51,8 @@ spec:
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS
               value: "true"
+            - name: AZTEC_DISABLE_ETERNAL_CATCHUP
+              value: "true"
             - name: AZTEC_RPC_URLS
               valueFrom:
                 secretKeyRef:

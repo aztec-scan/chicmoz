@@ -1,9 +1,9 @@
 import {
-  chicmozL2TxEffectDeluxeSchema,
-  type ChicmozL2TxEffectDeluxe,
   chicmozL2BlockSchema,
-  type UiTxEffectTable,
+  chicmozL2TxEffectDeluxeSchema,
   uiTxEffectTableSchema,
+  type ChicmozL2TxEffectDeluxe,
+  type UiTxEffectTable,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { aztecExplorer } from "~/service/constants";
@@ -12,7 +12,7 @@ import client, { validateResponse } from "./client";
 export const TxEffectsAPI = {
   getTxEffectByHash: async (hash: string): Promise<ChicmozL2TxEffectDeluxe> => {
     const response = await client.get(
-      `${aztecExplorer.getL2TxEffectByHash}/${hash}`,
+      `${aztecExplorer.getL2TxEffectByHash(hash)}`,
     );
     return validateResponse(chicmozL2TxEffectDeluxeSchema, response.data);
   },

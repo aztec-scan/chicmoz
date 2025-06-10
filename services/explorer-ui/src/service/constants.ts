@@ -11,7 +11,7 @@ export const aztecExplorer = {
   getL2OrphanedBlocksLimited: "/l2/blocks/orphans",
   getL2Reorgs: "/l2/reorgs",
   getL2TxEffects: "/l2/tx-effects",
-  getL2TxEffectByHash: "/l2/tx-effects/",
+  getL2TxEffectByHash: (hash: string) => `/l2/tx-effects/${hash}`,
   getL2TxEffectsByHeight: (height: bigint) => `/l2/blocks/${height}/tx-effects`,
   getL2TxEffectByHeightAndIndex: (height: bigint, index: number) =>
     `/l2/blocks/${height}/txEffects/${index}`,

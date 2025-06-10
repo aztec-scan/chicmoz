@@ -1,3 +1,4 @@
+import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import { relations } from "drizzle-orm";
 import {
@@ -14,7 +15,6 @@ import {
 import { l2Block } from "../index.js";
 import {
   bufferType,
-  generateAztecAddressColumn,
   generateConcatFrPointColumn,
   generateFrColumn,
 } from "../utils.js";

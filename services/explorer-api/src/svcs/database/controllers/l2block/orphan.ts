@@ -1,7 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import {
-  HexString,
-} from "@chicmoz-pkg/types";
+import { HexString } from "@chicmoz-pkg/types";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import {
@@ -127,11 +125,17 @@ export const handleReorgOrphaning = async (
   });
 };
 
+type DB = ReturnType<typeof db>;
+type DBTransactionFunction = DB["transaction"];
+type DBTransactionFunctionCallback = Parameters<DBTransactionFunction>[0];
+type DBTransactionFunctionCallbackParameter =
+  Parameters<DBTransactionFunctionCallback>[0];
+
 /**
  * Find transaction effects in an orphaned block and store them as dropped transactions
  */
 const storeOrphanedTxEffectsAsDropped = async (
-  dbTx: ReturnType<typeof db>,
+  dbTx: DBTransactionFunctionCallbackParameter,
   blockHash: HexString,
   timestamp: Date,
 ): Promise<void> => {
@@ -172,7 +176,7 @@ const storeOrphanedTxEffectsAsDropped = async (
     try {
       await storeDroppedTx({
         txHash: tx.txHash,
-        createdAt: tx.txBirthTimestamp,
+        createdAsPendingAt: tx.txBirthTimestamp,
         droppedAt: timestamp,
       });
     } catch (error) {

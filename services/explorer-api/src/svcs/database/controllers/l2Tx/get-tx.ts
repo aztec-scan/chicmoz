@@ -34,7 +34,7 @@ export const getTxByHash = async (
   const res = await db()
     .select({ ...getTableColumns(l2Tx) })
     .from(l2Tx)
-    .where(eq(l2Tx.hash, hash))
+    .where(eq(l2Tx.txHash, hash))
     .limit(1);
 
   if (!res) {
@@ -45,8 +45,5 @@ export const getTxByHash = async (
     return null;
   }
 
-  return chicmozL2PendingTxSchema.parse({
-    hash: res[0].hash,
-    birthTimestamp: res[0].birthTimestamp.getTime(),
-  });
+  return res[0];
 };

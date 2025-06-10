@@ -27,9 +27,6 @@ export const generateUint256Column = (name: string) =>
 export const generateFrNumberColumn = (name: string) =>
   bigint(name, { mode: "number" });
 
-export const generateAztecAddressColumn = (name: string) =>
-  varchar(name, { length: 66 });
-
 export const generateEthAddressColumn = (name: string) =>
   varchar(name, { length: 42 });
 

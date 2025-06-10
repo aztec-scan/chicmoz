@@ -4,6 +4,7 @@ import { ChicmozL1L2Validator, L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { logger } from "../../../../../logger.js";
 import {
   l1L2ValidatorProposerTable,
+  l1L2ValidatorRollupAddress,
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
@@ -15,7 +16,7 @@ import { getL1L2Validator } from "./get-single.js";
 export async function updateValidatorsState(
   event: L1L2ValidatorEvent,
 ): Promise<void> {
-  const validators = event.validators.map((validator) => ({
+  const eventValidators = event.validators.map((validator) => ({
     ...validator,
     stake: BigInt(validator.stake),
   }));
@@ -23,24 +24,28 @@ export async function updateValidatorsState(
   if (currentDbValues === null) {
     return;
   }
-  for (const validator of currentDbValues) {
-    const found = validators.find((v) => v.attester === validator.attester);
-    if (!found) {
+  for (const dbValidator of currentDbValues) {
+    const found = eventValidators.find(
+      (eventValidator) =>
+        eventValidator.attester === dbValidator.attester &&
+        eventValidator.rollupAddress === dbValidator.rollupAddress,
+    );
+    if (!found && dbValidator.status !== L1L2ValidatorStatus.EXITING) {
       logger.info(
-        `🤖 L1L2 validator ${validator.attester} not found in event, setting to EXITING`,
+        `🤖 L1L2 validator ${dbValidator.attester} not found in event, setting to EXITING`,
       );
       await _store(
         {
-          ...validator,
+          ...dbValidator,
           latestSeenChangeAt: new Date(),
           status: L1L2ValidatorStatus.EXITING,
           stake: 0n,
         },
-        validator,
+        dbValidator,
       );
     }
   }
-  for (const validator of validators) {
+  for (const validator of eventValidators) {
     const found = currentDbValues.find(
       (v) => v.attester === validator.attester,
     );
@@ -68,9 +73,18 @@ async function _store(
 
   await db().transaction(async (tx) => {
     if (!currentDbValues) {
-      await tx
-        .insert(l1L2ValidatorTable)
-        .values({ attester, rollupAddress, firstSeenAt });
+      await tx.insert(l1L2ValidatorTable).values({ attester, firstSeenAt });
+    }
+
+    if (
+      !currentDbValues ||
+      (currentDbValues && currentDbValues.rollupAddress !== rollupAddress)
+    ) {
+      await tx.insert(l1L2ValidatorRollupAddress).values({
+        attesterAddress: attester,
+        rollupAddress,
+        timestamp: latestSeenChangeAt,
+      });
     }
 
     if (
