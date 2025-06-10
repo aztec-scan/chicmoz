@@ -2,7 +2,7 @@ import { z } from "zod";
 import { aztecAddressSchema } from "../index.js";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
-export const CHICMOZ_TYPES_AZTEC_VERSION = "0.87.2";
+export const CHICMOZ_TYPES_AZTEC_VERSION = "0.87.8";
 
 export const L1ContractAddressesSchema = z.object({
   rollupAddress: z.string().startsWith("0x"),
