@@ -45,12 +45,12 @@ export const TxEffectDetails: FC = () => {
     );
   }
 
-  if (txEffectsError && !pendingTx) {
+  if (txEffectsError && !pendingTx && !droppedTx) {
     return <div>Error loading transaction details</div>;
   }
 
   // Dropped transaction - display dropped banner with details
-  if (!txEffects && !pendingTx && droppedTx) {
+  if (droppedTx) {
     return (
       <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
         <div>
