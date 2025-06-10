@@ -132,8 +132,8 @@ export class SimpleLoggingContract extends ContractBase {
     /** constructor() */
     constructor: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** decrease_counter_public(counter_id: field) */
-    decrease_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** decrese_counter_public(counter_id: field) */
+    decrese_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** get_counter_value(counter_id: field) */
     get_counter_value: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
