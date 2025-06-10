@@ -4,6 +4,7 @@ import { ChicmozL1L2Validator, L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { logger } from "../../../../../logger.js";
 import {
   l1L2ValidatorProposerTable,
+  l1L2ValidatorRollupAddress,
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
@@ -72,9 +73,18 @@ async function _store(
 
   await db().transaction(async (tx) => {
     if (!currentDbValues) {
-      await tx
-        .insert(l1L2ValidatorTable)
-        .values({ attester, rollupAddress, firstSeenAt });
+      await tx.insert(l1L2ValidatorTable).values({ attester, firstSeenAt });
+    }
+
+    if (
+      !currentDbValues ||
+      (currentDbValues && currentDbValues.rollupAddress !== rollupAddress)
+    ) {
+      await tx.insert(l1L2ValidatorRollupAddress).values({
+        attesterAddress: attester,
+        rollupAddress,
+        timestamp: latestSeenChangeAt,
+      });
     }
 
     if (
