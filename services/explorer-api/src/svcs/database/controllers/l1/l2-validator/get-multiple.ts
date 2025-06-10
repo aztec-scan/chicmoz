@@ -147,9 +147,8 @@ export async function getAllL1L2Validators(
 
         return chicmozL1L2ValidatorSchema.parse(validator);
       })
-      .filter(
-        (v) => v !== null && (status ? v.status === status : true),
-      ) as ChicmozL1L2Validator[];
+      .filter((v) => v !== null && (status ? v.status === status : true))
+      .map((v) => chicmozL1L2ValidatorSchema.parse(v));
 
     return validators;
   });
