@@ -185,13 +185,13 @@ const ensureSaneValues = async (
   }
   if (heights.processedProposedBlockHeight > heights.chainProposedBlockHeight) {
     logger.warn(
-      `🐷 processed proposed block height is higher than chain proposed height: ${heights.processedProvenBlockHeight} > ${heights.chainProvenBlockHeight}. This might be L2 (or even L1?) reorg. Backing up DB-value to match chain proposed height.`,
+      `🐷 processed proposed block height is higher than chain proposed height: ${heights.processedProposedBlockHeight} > ${heights.chainProposedBlockHeight}. This might be L2 (or even L1?) reorg. Backing up DB-value to match chain proposed height.`,
     );
     heights.processedProposedBlockHeight = heights.chainProposedBlockHeight;
   }
   if (heights.processedProposedBlockHeight < heights.chainProvenBlockHeight) {
     logger.debug(
-      `🐷 processed proposed block height is lower than chain proven height: ${heights.processedProvenBlockHeight} < ${heights.chainProvenBlockHeight}. Adjusting DB-value so that block is not fetched twice.`,
+      `🐷 processed proposed block height is lower than chain proven height: ${heights.processedProposedBlockHeight} < ${heights.chainProvenBlockHeight}. Adjusting DB-value so that block is not fetched twice.`,
     );
     heights.processedProposedBlockHeight = heights.chainProvenBlockHeight;
   }
