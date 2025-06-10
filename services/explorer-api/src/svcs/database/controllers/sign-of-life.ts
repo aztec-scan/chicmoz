@@ -1,6 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { desc, eq, isNotNull, sql } from "drizzle-orm";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   body,
   l2Block,
@@ -33,7 +32,7 @@ export const getABlock = async () => {
 };
 
 export const getABlockWithTxEffects = async () => {
-  const dbInstance = db() as NodePgDatabase;
+  const dbInstance = db();
   const dbRes = await dbInstance
     .select({
       block: {

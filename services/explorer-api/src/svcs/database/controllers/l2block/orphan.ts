@@ -125,11 +125,17 @@ export const handleReorgOrphaning = async (
   });
 };
 
+type DB = ReturnType<typeof db>;
+type DBTransactionFunction = DB["transaction"];
+type DBTrascanctionFunctionCallback = Parameters<DBTransactionFunction>[0];
+type DBTransactionFunctionCallbackParameter =
+  Parameters<DBTrascanctionFunctionCallback>[0];
+
 /**
  * Find transaction effects in an orphaned block and store them as dropped transactions
  */
 const storeOrphanedTxEffectsAsDropped = async (
-  dbTx: ReturnType<typeof db>,
+  dbTx: DBTransactionFunctionCallbackParameter,
   blockHash: HexString,
   timestamp: Date,
 ): Promise<void> => {
