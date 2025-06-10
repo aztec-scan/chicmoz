@@ -6,7 +6,7 @@ import {
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
 } from "@chicmoz-pkg/types";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import {
   archive,
@@ -161,7 +161,12 @@ export const addL1L2ProofVerified = async (
       l2BlockHash: l2Block.hash,
     })
     .from(l2Block)
-    .where(eq(l2Block.height, proofVerifiedData.l2BlockNumber));
+    .where(
+      and(
+        isNull(l2Block.orphan_timestamp),
+        eq(l2Block.height, proofVerifiedData.l2BlockNumber),
+      ),
+    );
   let l2BlockHash;
 
   if (l2BlockHashResSimple.length === 0) {
@@ -172,26 +177,8 @@ export const addL1L2ProofVerified = async (
   } else if (l2BlockHashResSimple.length === 1) {
     l2BlockHash = l2BlockHashResSimple[0].l2BlockHash;
   } else {
-    const l2BlockHashRes = await db()
-      .select({
-        l2BlockHash: l2Block.hash,
-      })
-      .from(l2Block)
-      .innerJoin(
-        l1L2BlockProposedTable,
-        eq(l2Block.height, l1L2BlockProposedTable.l2BlockNumber),
-      )
-      .innerJoin(archive, eq(l2Block.hash, archive.fk))
-      .where(
-        and(
-          eq(l1L2BlockProposedTable.l1BlockHash, proofVerifiedData.l1BlockHash),
-          eq(l1L2BlockProposedTable.archive, archive.root),
-        ),
-      )
-      .limit(1);
-    l2BlockHash = l2BlockHashRes?.[0]?.l2BlockHash;
-    logger.warn(
-      `Multiple L2 blocks found for L1L2ProofVerified ${proofVerifiedData.l2BlockNumber} guessing on block hash "${l2BlockHash}"`,
+    throw new Error(
+      `addL1L2ProofVerified: Multiple L2 blocks found for height ${proofVerifiedData.l2BlockNumber}, this should not happen.`,
     );
   }
 

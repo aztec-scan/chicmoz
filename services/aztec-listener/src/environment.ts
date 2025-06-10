@@ -11,7 +11,7 @@ export const BLOCK_POLL_INTERVAL_MS = z.coerce
   .parse(process.env.BLOCK_POLL_INTERVAL_MS);
 export const CATCHUP_POLL_WAIT_TIME_MS = z.coerce
   .number()
-  .default(200)
+  .default(100)
   .parse(process.env.CATCHUP_POLL_WAIT_TIME_MS);
 export const TX_POLL_INTERVAL_MS = z.coerce
   .number()
@@ -47,6 +47,10 @@ export const AZTEC_LISTEN_FOR_PENDING_TXS =
 export const AZTEC_LISTEN_FOR_CHAIN_INFO =
   process.env.AZTEC_LISTEN_FOR_CHAIN_INFO === "true";
 export const AZTEC_DISABLED = process.env.AZTEC_DISABLED === "true";
+export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
+  .boolean()
+  .default(false)
+  .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
 
 export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";

@@ -43,6 +43,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCE,
+  ...controller.openapi_GET_L2_CONTRACT_INSTANCE_BALANCE,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
   ...controller.openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT,
@@ -218,6 +219,10 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
   );
   router.get(paths.contractInstance, controller.GET_L2_CONTRACT_INSTANCE);
+  router.get(
+    paths.contractInstanceBalance,
+    controller.GET_L2_CONTRACT_INSTANCE_BALANCE,
+  );
   router.get(paths.contractInstances, controller.GET_L2_CONTRACT_INSTANCES);
 
   router.get(paths.search, controller.L2_SEARCH);

@@ -31,7 +31,6 @@ export const getRpcNode = (): RpcNode => {
     );
   }
   const node = nodePool[currentNodeIndex];
-  logger.info(`🧋 Using node ${node.name}`);
   currentNodeIndex = (currentNodeIndex + 1) % nodePool.length;
   return node;
 };
