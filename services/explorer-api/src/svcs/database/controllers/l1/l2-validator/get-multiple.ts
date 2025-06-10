@@ -8,6 +8,7 @@ import { L2_NETWORK_ID } from "../../../../../environment.js";
 import { logger } from "../../../../../logger.js";
 import {
   l1L2ValidatorProposerTable,
+  l1L2ValidatorRollupAddress,
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
@@ -26,7 +27,18 @@ export async function getAllL1L2Validators(
   }
 
   return db().transaction(async (dbTx) => {
-    // Create subqueries for latest records using DISTINCT ON
+    const latestRollupAddresses = dbTx
+      .selectDistinctOn([l1L2ValidatorRollupAddress.attesterAddress], {
+        attesterAddress: l1L2ValidatorRollupAddress.attesterAddress,
+        rollupAddress: l1L2ValidatorRollupAddress.rollupAddress,
+        timestamp: l1L2ValidatorRollupAddress.timestamp,
+      })
+      .from(l1L2ValidatorRollupAddress)
+      .orderBy(
+        l1L2ValidatorRollupAddress.attesterAddress,
+        desc(l1L2ValidatorRollupAddress.timestamp),
+      )
+      .as("latest_rollup_addresses");
     const latestStakes = dbTx
       .selectDistinctOn([l1L2ValidatorStakeTable.attesterAddress], {
         attesterAddress: l1L2ValidatorStakeTable.attesterAddress,
@@ -83,7 +95,7 @@ export async function getAllL1L2Validators(
     const result = await dbTx
       .select({
         attester: l1L2ValidatorTable.attester,
-        rollupAddress: l1L2ValidatorTable.rollupAddress,
+        rollupAddress: latestRollupAddresses.rollupAddress,
         firstSeenAt: l1L2ValidatorTable.firstSeenAt,
         stake: latestStakes.stake,
         status: latestStatuses.status,
@@ -95,6 +107,10 @@ export async function getAllL1L2Validators(
         proposerTimestamp: latestProposers.timestamp,
       })
       .from(l1L2ValidatorTable)
+      .leftJoin(
+        latestRollupAddresses,
+        eq(latestRollupAddresses.attesterAddress, l1L2ValidatorTable.attester),
+      )
       .leftJoin(
         latestStakes,
         eq(latestStakes.attesterAddress, l1L2ValidatorTable.attester),
@@ -113,7 +129,7 @@ export async function getAllL1L2Validators(
       )
       .where(
         eq(
-          l1L2ValidatorTable.rollupAddress,
+          latestRollupAddresses.rollupAddress,
           chainInfo.l1ContractAddresses.rollupAddress,
         ),
       );
