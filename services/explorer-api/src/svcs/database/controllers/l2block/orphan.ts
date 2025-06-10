@@ -127,9 +127,9 @@ export const handleReorgOrphaning = async (
 
 type DB = ReturnType<typeof db>;
 type DBTransactionFunction = DB["transaction"];
-type DBTrascanctionFunctionCallback = Parameters<DBTransactionFunction>[0];
+type DBTransactionFunctionCallback = Parameters<DBTransactionFunction>[0];
 type DBTransactionFunctionCallbackParameter =
-  Parameters<DBTrascanctionFunctionCallback>[0];
+  Parameters<DBTransactionFunctionCallback>[0];
 
 /**
  * Find transaction effects in an orphaned block and store them as dropped transactions
