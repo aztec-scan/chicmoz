@@ -13,6 +13,7 @@ import {
 } from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import { getDroppedTxEffectData, getTxEffectData } from "./utils";
+import { PendingTxDetails } from "./pending-tx-details";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -72,15 +73,7 @@ export const TxEffectDetails: FC = () => {
 
   // Pending TX exists but no tx effects yet
   if (pendingTx && !txEffects) {
-    return (
-      <LoadingDetails
-        title="Pending Transaction"
-        emptyData={getEmptyTxEffectData(
-          pendingTx.hash,
-          pendingTx.birthTimestamp,
-        )}
-      />
-    );
+    return <PendingTxDetails pendingTxDetails={pendingTx} />;
   }
 
   // No data found

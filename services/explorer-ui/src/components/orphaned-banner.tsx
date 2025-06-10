@@ -1,11 +1,18 @@
 import { OctagonAlert } from "lucide-react";
 
 interface OrphanedBannerProps {
-  type?: "block" | "tx-effect" | "contract-instance" | "contract-class";
+  type?:
+    | "block"
+    | "tx-effect"
+    | "contract-instance"
+    | "contract-class"
+    | "pending-tx";
+  blockAmount?: number;
 }
 
 export const OrphanedBanner: React.FC<OrphanedBannerProps> = ({
   type = "block",
+  blockAmount,
 }) => {
   const getTitle = () => {
     switch (type) {
@@ -15,6 +22,8 @@ export const OrphanedBanner: React.FC<OrphanedBannerProps> = ({
         return "Orphaned Contract Instance";
       case "contract-class":
         return "Orphaned Contract Class";
+      case "pending-tx":
+        return "Stale transaction";
       default:
         return "Orphaned Block";
     }
@@ -28,6 +37,8 @@ export const OrphanedBanner: React.FC<OrphanedBannerProps> = ({
         return "This contract instance was deployed in an orphaned block and is no longer part of the canonical chain.";
       case "contract-class":
         return "This contract class was registered in an orphaned block and is no longer part of the canonical chain.";
+      case "pending-tx":
+        return `This pending transaction has not been included in ${blockAmount} blocks`;
       default:
         return "This block has been orphaned and is no longer part of the canonical chain.";
     }
