@@ -46,7 +46,7 @@ export const getTxByHash = async (
   }
 
   return chicmozL2PendingTxSchema.parse({
-    hash: res[0].txHash,
+    txHash: res[0].txHash,
     feePayer: res[0].feePayer,
     birthTimestamp: res[0].birthTimestamp.getTime(),
   });
