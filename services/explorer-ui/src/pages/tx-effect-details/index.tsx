@@ -13,6 +13,7 @@ import {
 } from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import { getDroppedTxEffectData, getTxEffectData } from "./utils";
+import { PendingTxDetails } from "./pending-tx-details";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -44,12 +45,12 @@ export const TxEffectDetails: FC = () => {
     );
   }
 
-  if (txEffectsError && !pendingTx) {
+  if (txEffectsError && !pendingTx && !droppedTx) {
     return <div>Error loading transaction details</div>;
   }
 
   // Dropped transaction - display dropped banner with details
-  if (!txEffects && !pendingTx && droppedTx) {
+  if (droppedTx) {
     return (
       <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
         <div>
@@ -72,15 +73,7 @@ export const TxEffectDetails: FC = () => {
 
   // Pending TX exists but no tx effects yet
   if (pendingTx && !txEffects) {
-    return (
-      <LoadingDetails
-        title="Pending Transaction"
-        emptyData={getEmptyTxEffectData(
-          pendingTx.txHash,
-          pendingTx.birthTimestamp,
-        )}
-      />
-    );
+    return <PendingTxDetails pendingTxDetails={pendingTx} />;
   }
 
   // No data found
