@@ -77,6 +77,15 @@ export const useContractInstance = (
   });
 };
 
+export const useContractInstanceBalance = (
+  address: string,
+): UseQueryResult<ChicmozContractInstanceBalance, Error> => {
+  return useQuery<ChicmozContractInstanceBalance, Error>({
+    queryKey: queryKeyGenerator.contractInstanceBalance(address),
+    queryFn: () => ContractL2API.getContractInstanceBalance(address),
+  });
+};
+
 export const useLatestContractInstances = (): UseQueryResult<
   ChicmozL2ContractInstanceDeluxe[],
   Error

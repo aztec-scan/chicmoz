@@ -53,6 +53,7 @@ export const queryKeyGenerator = {
     classId,
   ],
   contractInstance: (address: string) => ["contractInstance", address],
+  contractInstanceBalance: (address: string) => ["contractInstanceBalance", address],
   latestContractInstances: ["latestContractInstances"],
   contractInstancesWithAztecScanNotes: ["contractInstancesWithAztecScanNotes"],
   contractInstancesWithBalance: ["contractInstancesWithBalance"],
