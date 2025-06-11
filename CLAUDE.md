@@ -237,7 +237,7 @@ src/components/
 
 ### PR Structure
 
-- the title of a PR has the following structure `<prefix>: <desctiption of the content>`
+- the title of a PR has the following structure `<prefix>: <description of the content>`
   `<prefix>` = either "bug", "hotfix", "feat", "ux"
 - do not write `generated with claude` in the descriptions.
-- for the pr descriprions please use a consise desctiption and make it short. just the key poits
+- for the PR descriptions please use a concise description and make it short. Just the key points.
