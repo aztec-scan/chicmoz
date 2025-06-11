@@ -2,6 +2,9 @@ import {
   type ChicmozContractInstanceBalance,
   type ChicmozL2ContractInstanceDeluxe,
 } from "@chicmoz-pkg/types";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { CustomTooltip } from "~/components/custom-tooltip";
+import { Link } from "@tanstack/react-router";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
@@ -13,6 +16,32 @@ export const getContractData = (
   balance?: ChicmozContractInstanceBalance,
 ) => {
   const link = `${routes.contracts.route}${routes.contracts.children.classes.route}/${data.contractClassId}/versions/${data.version}`;
+  const standardContractType = data.standardContractType
+    ? {
+        label: "STANDARD CONTRACT TYPE",
+        value: `${data.standardContractType}${
+          data.standardContractVersion
+            ? ` v${data.standardContractVersion}`
+            : ""
+        }`,
+        tooltip: "Matched with DeFi-Wonderland's standard contracts",
+      }
+    : {
+        label: "STANDARD CONTRACT TYPE",
+        value: "CUSTOM",
+        customValue: (
+          <div className="text-gray-400 dark:text-gray-500 flex flex-grow items-end justify-end gap-1">
+            <CustomTooltip content="If you think this is a standard contract, please let us know!">
+              <Link
+                to={`${routes.contracts.route}/${routes.contracts.children.classes.route}/${data.contractClassId}/${routes.contracts.children.classes.children.id.children.versions.route}/${data.version}/${routes.contracts.children.classes.children.id.children.versions.children.version.children.submitStandardContract.route}`}
+              >
+                <ExclamationTriangleIcon />
+              </Link>
+            </CustomTooltip>
+            Not available
+          </div>
+        ),
+      };
   const displayData = [
     {
       label: "ADDRESS",
@@ -39,6 +68,7 @@ export const getContractData = (
       value: "View raw data",
       extLink: `${API_URL}${aztecExplorer.getL2ContractInstance(data.address)}`,
     },
+    standardContractType,
   ];
   const isDeployerContract =
     process.env.NODE_ENV === "development" &&
