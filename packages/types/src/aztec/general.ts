@@ -61,6 +61,7 @@ export const chicmozL2RpcNodeSchema = z.object({
 export const chicmozL2RpcNodeErrorSchema = z.object({
   rpcNodeId: z.string().optional(),
   rpcUrl: chicmozL2RpcNodeSchema.shape.rpcUrl.optional(),
+  nodeName: z.string().optional(),
   name: z.string(),
   cause: z.string(),
   message: z.string(),

@@ -116,7 +116,9 @@ export const onL2RpcNodeError = (
     logger.warn(`❌ onL2RpcNodeError on parse error: ${(e as Error).message}`);
     return;
   }
-  logger.info(`❌ publishing L2_RPC_NODE_ERROR_EVENT...`);
+  logger.info(
+    `❌ publishing L2_RPC_NODE_ERROR_EVENT ${rpcNodeError.nodeName ? `(${rpcNodeError.nodeName})` : ""}...`,
+  );
   event.nodeError.cause = replaceIpAddress(event.nodeError.cause);
   event.nodeError.stack = replaceIpAddress(event.nodeError.stack);
   event.nodeError.message = replaceIpAddress(event.nodeError.message);
