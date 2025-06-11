@@ -232,3 +232,12 @@ src/components/
 - Each service provides health endpoints
 - System health available at explorer-api `/health` endpoint
 - Database connection status tracked in `aztec-chain-connection` table
+
+## Git
+
+### PR Structure
+
+- the title of a PR has the following structure `<prefix>: <desctiption of the content>`
+  `<prefix>` = either "bug", "hotfix", "feat", "ux"
+- do not write `generated with claude` in the descriptions.
+- for the pr descriprions please use a consise desctiption and make it short. just the key poits
