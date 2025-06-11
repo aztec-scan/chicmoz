@@ -4,7 +4,7 @@ import {
   chicmozContractInstanceBalanceSchema,
   HexString,
 } from "@chicmoz-pkg/types";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, gt } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 
 export const getLatestContractInstanceBalance = async (
@@ -22,4 +22,19 @@ export const getLatestContractInstanceBalance = async (
   }
 
   return chicmozContractInstanceBalanceSchema.parse(result[0]);
+};
+
+export const getCotractIstacesWithBalance = async (): Promise<
+  ChicmozContractInstanceBalance[]
+> => {
+  const result = await db()
+    .selectDistinctOn([contractInstanceBalance.contractAddress])
+    .from(contractInstanceBalance)
+    .orderBy(
+      contractInstanceBalance.contractAddress,
+      desc(contractInstanceBalance.timestamp),
+    )
+    .where(gt(contractInstanceBalance.balance, "0"));
+
+  return result.map((row) => chicmozContractInstanceBalanceSchema.parse(row));
 };

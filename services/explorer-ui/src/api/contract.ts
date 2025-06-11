@@ -1,9 +1,11 @@
 import {
   aztecScanNoteSchema,
+  chicmozContractInstanceBalanceSchema,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeluxeSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
+  type ChicmozContractInstanceBalance,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeluxe,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
@@ -116,6 +118,17 @@ export const ContractL2API = {
     );
     return validateResponse(
       contractInstancesWithAztecScanNotesSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstancesWithBalance: async (): Promise<
+    ChicmozContractInstanceBalance[]
+  > => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstancesWithBalance,
+    );
+    return validateResponse(
+      chicmozContractInstanceBalanceSchema.array(),
       response.data,
     );
   },

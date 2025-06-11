@@ -62,6 +62,7 @@ export const paths = {
     "/l2/contract-instances/with-aztec-scan-notes",
   contractInstance: `/l2/contract-instances/:${address}`,
   contractInstanceBalance: `/l2/contract-instances/:${address}/balance`,
+  contractInstancesWithBalance: "/l2/contract-instances/with-balance",
   contractInstances: "/l2/contract-instances",
 
   search: "/l2/search",
