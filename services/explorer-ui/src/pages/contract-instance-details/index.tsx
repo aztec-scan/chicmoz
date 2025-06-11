@@ -27,6 +27,7 @@ export const ContractInstanceDetails: FC = () => {
     return <div>Loading...</div>;
   }
   if (error) {
+    console.error("Error fetching contract instance details:", error);
     return <div>Error</div>;
   }
   if (!contractInstanceDetails) {

@@ -18,10 +18,10 @@ import {
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { z } from "zod";
-import { CACHE_TTL_SECONDS } from "../../../../environment.js";
-import { logger } from "../../../../logger.js";
-import { l2Contract } from "../../../database/controllers/index.js";
-import { controllers as db } from "../../../database/index.js";
+import { CACHE_TTL_SECONDS } from "../../../../../environment.js";
+import { logger } from "../../../../../logger.js";
+import { l2Contract } from "../../../../database/controllers/index.js";
+import { controllers as db } from "../../../../database/index.js";
 import {
   getContractInstanceSchema,
   getContractInstancesByBlockHashSchema,
@@ -29,12 +29,13 @@ import {
   getContractInstancesSchema,
   getContractInstancesWithAztecScanNotesSchema,
   postVerifiedContractInstanceSchema,
-} from "../paths_and_validation.js";
+} from "../../paths_and_validation.js";
 import {
   contractInstanceResponse,
   contractInstanceResponseArray,
   dbWrapper,
-} from "./utils/index.js";
+} from "../utils/index.js";
+import { getProtocolContract } from "./protocol-contracts.js";
 
 export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
@@ -72,6 +73,16 @@ const contractInstanceKeys = (address: string) => [
 export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
   const { address } = getContractInstanceSchema.parse(req).params;
   const { includeArtifactJson } = getContractInstanceSchema.parse(req).query;
+  const protocolContract = getProtocolContract(address);
+  if (protocolContract) {
+    res.status(200).json({
+      ...protocolContract,
+      artifactJson: includeArtifactJson
+        ? JSON.stringify(protocolContract.artifactJson)
+        : undefined,
+    });
+    return;
+  }
   const instanceData = await dbWrapper.get(contractInstanceKeys(address), () =>
     db.l2Contract.getL2DeployedContractInstanceByAddress(
       address,
