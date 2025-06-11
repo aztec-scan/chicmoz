@@ -4,6 +4,7 @@ import { type FC } from "react";
 import {
   useChainErrors,
   useChainInfo,
+  useContractInstancesWithBalance,
   useSequencers,
   useSubTitle,
 } from "~/hooks";
@@ -36,6 +37,12 @@ export const DevPage: FC = () => {
     isLoading: isSequencersLoading,
     error: sequencersError,
   } = useSequencers();
+
+  const {
+    data: contractInstancesWithBalance,
+    isLoading: isContractInstancesWithBalanceLoading,
+    error: contractInstancesWithBalanceError,
+  } = useContractInstancesWithBalance();
 
   const generateCard = (title: string, content: string | JSX.Element) => (
     <div className="bg-white w-full rounded-lg shadow-md p-4 md:w-[80%] mt-4">
@@ -162,6 +169,36 @@ stack:          ${error.stack}
                 2,
               )}
             </pre>
+          )}
+        </>,
+      )}
+      {generateCard(
+        "Instances with balance",
+        <>
+          {isContractInstancesWithBalanceLoading && <p>Loading...</p>}
+          {contractInstancesWithBalanceError && (
+            <p>Error: {contractInstancesWithBalanceError.message}</p>
+          )}
+          {contractInstancesWithBalance && (
+            <div>
+              <p>
+                Found {contractInstancesWithBalance.length} contract instances
+                with balance
+              </p>
+              {contractInstancesWithBalance.length > 0 && (
+                <pre>
+                  {JSON.stringify(
+                    contractInstancesWithBalance.map((instance) => ({
+                      contractAddress: instance.contractAddress,
+                      balance: Number(instance.balance),
+                      timestamp: instance.timestamp,
+                    })),
+                    null,
+                    2,
+                  )}
+                </pre>
+              )}
+            </div>
           )}
         </>,
       )}

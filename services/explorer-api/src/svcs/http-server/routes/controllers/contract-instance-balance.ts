@@ -1,12 +1,15 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
-import { getLatestContractInstanceBalance } from "../../../database/controllers/contract-instance-balance/index.js";
+import {
+  getLatestContractInstanceBalance,
+  getCotractIstacesWithBalance,
+} from "../../../database/controllers/contract-instance-balance/index.js";
 import { getContractInstanceBalanceSchema } from "../paths_and_validation.js";
 import { contractInstanceBalanceResponse, dbWrapper } from "./utils/index.js";
 
 export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE: OpenAPIObject["paths"] =
   {
-    "/l2/contract-instance/{address}/balance": {
+    "/l2/contract-instances/{address}/balance": {
       get: {
         tags: ["L2", "contract-instances"],
         summary: "Get contract instance balance by address",
@@ -34,6 +37,31 @@ export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE: OpenAPIObject["paths"] =
     },
   };
 
+export const openapi_GET_L2_CONTRACT_INSTANCES_WITH_BALANCE: OpenAPIObject["paths"] =
+  {
+    "/l2/contract-instances/with-balance": {
+      get: {
+        tags: ["L2", "contract-instances"],
+        summary: "Get all contract instances with balance",
+        responses: {
+          "200": {
+            description: "List of contract instances with balance",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/ChicmozContractInstanceBalance",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
 export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
   async (req, res) => {
     const {
@@ -43,6 +71,16 @@ export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
     const balanceData = await dbWrapper.get(
       ["l2", "contract-instance", address, "balance"],
       () => getLatestContractInstanceBalance(address),
+    );
+    res.status(200).json(JSON.parse(balanceData));
+  },
+);
+
+export const GET_L2_CONTRACT_INSTANCES_WITH_BALANCE = asyncHandler(
+  async (req, res) => {
+    const balanceData = await dbWrapper.get(
+      ["l2", "contract-instances", "with-balance"],
+      () => getCotractIstacesWithBalance(),
     );
     res.status(200).json(JSON.parse(balanceData));
   },
