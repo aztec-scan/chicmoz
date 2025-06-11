@@ -28,7 +28,7 @@ type OptionButtonProps<T extends OptionItems> = {
 const withAvailableTooltip = (
   isAvailable: boolean,
   key: number,
-  children: React.ReactNode
+  children: React.ReactNode,
 ) => {
   // TODO: refactor to use CustomTooltip component instead?
   if (!isAvailable) {
@@ -48,6 +48,9 @@ export const OptionButtons = <T extends OptionItems>({
   onOptionSelect,
   selectedItem,
 }: OptionButtonProps<T>) => {
+  // Check if any options are available
+  const hasAnyAvailableOptions = Object.values(availableOptions).some(Boolean);
+  
   return (
     <>
       <div className="hidden lg:flex flex-row gap-4 mb-4 justify-center">
@@ -66,10 +69,10 @@ export const OptionButtons = <T extends OptionItems>({
               >
                 {option.label}
               </Button>
-              {selectedItem === option.id && (
+              {hasAnyAvailableOptions && selectedItem === option.id && (
                 <Separator className="h-0.5 bg-gray-700 w-1/2" />
               )}
-            </div>
+            </div>,
           );
         })}
       </div>
@@ -79,17 +82,15 @@ export const OptionButtons = <T extends OptionItems>({
             <SelectValue placeholder={selectedItem} />
           </SelectTrigger>
           <SelectContent>
-            {
-              options.map((option, key) => (
-                <SelectItem
-                  key={key}
-                  disabled={!availableOptions[option.id]}
-                  value={option.id}
-                >
-                  {option.label}
-                </SelectItem>
-              ))
-            }
+            {options.map((option, key) => (
+              <SelectItem
+                key={key}
+                disabled={!availableOptions[option.id]}
+                value={option.id}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
