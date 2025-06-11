@@ -87,7 +87,7 @@ export const TabSection: FC<TabSectionProps> = ({
         ) : (
           <ArtifactJsonTab
             data={artifact}
-            artifactHash={selectedVersion?.artifactHash || ""}
+            artifactHash={selectedVersion?.artifactHash ?? ""}
           />
         );
       case "artifactExplorer":

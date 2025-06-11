@@ -7,6 +7,8 @@ export const tabIds = [
   "verifiedDeployment",
   "contactDetails",
   "aztecScanNotes",
+  "contractClassArtifect",
+  "contractClassArtifectExplorer",
 ] as const;
 
 export const tabIdSchema = z.enum(tabIds);
@@ -22,6 +24,8 @@ export const verifiedDeploymentTabs: Tab[] = [
   { id: "verifiedDeployment", label: "Verified deployment" },
   { id: "contactDetails", label: "Contact details" },
   { id: "aztecScanNotes", label: "Aztec Scan notes" },
+  { id: "contractClassArtifect", label: "Contract Artifect" },
+  { id: "contractClassArtifectExplorer", label: "Artifect Explorer" },
 ];
 
 export interface VerifiedDeploymentData {
