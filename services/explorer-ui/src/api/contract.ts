@@ -101,6 +101,17 @@ export const ContractL2API = {
       response.data,
     );
   },
+  getContractInstanceBalance: async (
+    address: string,
+  ): Promise<ChicmozContractInstanceBalance> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstanceBalance(address),
+    );
+    return validateResponse(
+      chicmozContractInstanceBalanceSchema,
+      response.data,
+    );
+  },
   getContractInstances: async (): Promise<
     ChicmozL2ContractInstanceDeluxe[]
   > => {
