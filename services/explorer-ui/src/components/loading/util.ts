@@ -74,7 +74,7 @@ export const getEmptyBlockData = (hash?: string, timestamp?: number) => [
     value: undefined,
   },
 ];
-export const getEmptyContractIstanceData = () => [
+export const getEmptyContractInstanceData = () => [
   {
     label: "ADDRESS",
     value: undefined,

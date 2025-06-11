@@ -13,7 +13,7 @@ import {
   getVerifiedContractInstanceDeploymentData,
 } from "./util";
 import { LoadingDetails } from "~/components/loading/loading-details";
-import { getEmptyContractIstanceData } from "~/components/loading/util";
+import { getEmptyContractInstanceData } from "~/components/loading/util";
 
 export const ContractInstanceDetails: FC = () => {
   const { address } = useParams({
@@ -40,7 +40,7 @@ export const ContractInstanceDetails: FC = () => {
     return (
       <LoadingDetails
         title="Loading Contract instances details"
-        emptyData={getEmptyContractIstanceData()}
+        emptyData={getEmptyContractInstanceData()}
       />
     );
   }
