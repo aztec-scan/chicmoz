@@ -80,7 +80,7 @@ export const TabsSection: FC<PillSectionProps> = ({
         onOptionSelect={onOptionSelect}
         selectedItem={selectedTab}
       />
-      {hasAnyAvailableOptions ?? (
+      {hasAnyAvailableOptions && (
         <div className="bg-white rounded-lg shadow-md p-4">
           <div className="flex flex-col gap-4 md:flex-row ">
             <div className="bg-white w-full rounded-lg">
