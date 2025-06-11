@@ -25,11 +25,19 @@ import {
   onL2SequencerInfo,
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
-import { getAmountOfOnlineNodes, getNodeUrls, getRpcNode, initPool, setNodeOffline } from "./pool.js";
+import {
+  getAmountOfOnlineNodes,
+  getNodeUrls,
+  getRpcNode,
+  initPool,
+  setNodeOffline,
+} from "./pool.js";
 import {
   getChicmozChainInfoFromNodeInfo,
   getSequencerFromNodeInfo,
 } from "./utils.js";
+
+const offlineCauses = ["Service Unavailable"];
 
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
@@ -64,7 +72,20 @@ const callNodeFunction = async <K extends keyof AztecNode>(
           );
           return true;
         }
-        setNodeOffline(currentNode, fnName, e, args);
+        if (
+          (
+            e as {
+              cause?: { message: string; code?: number };
+            }
+          ).cause?.message &&
+          offlineCauses.some((cause) =>
+            (e as { cause?: { message: string } }).cause?.message.includes(
+              cause,
+            ),
+          )
+        ) {
+          setNodeOffline(currentNode, fnName, e, args);
+        }
         currentNode = getRpcNode();
         return true;
       },

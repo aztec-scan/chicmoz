@@ -25,7 +25,7 @@ const resetPools = () => {
 
 export const getAmountOfOnlineNodes = () => {
   return onlinePool.length;
-}
+};
 
 export const initPool = () => {
   allNodes = AZTEC_RPC_URLS.map((node) => {
@@ -114,8 +114,7 @@ export const setNodeOffline = <K extends keyof AztecNode>(
   );
   currentNodeIndex = 0;
   if (onlinePool.length === 0) {
-    throw new Error(
-      "FATAL: All nodes in the pool are offline. Please check the node statuses.",
-    );
+    logger.error("All nodes in the pool are offline. Resetting pools.");
+    resetPools();
   }
 };
