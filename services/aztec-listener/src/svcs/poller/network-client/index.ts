@@ -14,7 +14,7 @@ import {
   NodeEnv,
   l2NetworkIdSchema,
 } from "@chicmoz-pkg/types";
-import { IBackOffOptions, backOff } from "exponential-backoff";
+import { backOff } from "exponential-backoff";
 import {
   L2_NETWORK_ID,
   MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS,
@@ -22,82 +22,55 @@ import {
 import {
   onChainInfo,
   onL2RpcNodeAlive,
-  onL2RpcNodeError,
   onL2SequencerInfo,
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
-import { getNodeUrls, getRpcNode, initPool } from "./pool.js";
+import { getAmountOfOnlineNodes, getNodeUrls, getRpcNode, initPool, setNodeOffline } from "./pool.js";
 import {
   getChicmozChainInfoFromNodeInfo,
   getSequencerFromNodeInfo,
 } from "./utils.js";
 
-const backOffOptions: Partial<IBackOffOptions> = {
-  numOfAttempts: 5,
-  maxDelay: 10000,
-  startingDelay: 200,
-  retry: (e, attemptNumber: number) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const errorCode = e.cause?.code;
-    const isRetriableProductionError = errorCode === "ECONNRESET";
-    const isRetriableDevelopmentError =
-      errorCode === "ECONNREFUSED" || errorCode === "ENOTFOUND";
-    if (isRetriableProductionError) {
-      logger.warn(
-        `🤡 Aztec connection reset, retrying attempt ${attemptNumber}...`,
-      );
-      return true;
-    } else if (NODE_ENV === NodeEnv.DEV && isRetriableDevelopmentError) {
-      logger.warn(
-        `🤡🤡 Aztec connection refused or not found, retrying attempt ${attemptNumber}...`,
-      );
-      return true;
-    }
-
-    return false;
-  },
-};
-
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
   args?: Parameters<AztecNode[K]>,
 ): Promise<ReturnType<AztecNode[K]>> => {
-  let nodeURL;
-  try {
-    const res = await backOff(async () => {
-      const node = getRpcNode();
-      logger.info(`🧋 Calling Aztec node function: ${fnName} on ${node.name}`);
-
-      nodeURL = node.url;
+  let currentNode = getRpcNode();
+  const res = await backOff(
+    async () => {
+      logger.info(
+        `🧋 Calling Aztec node function: ${fnName} on ${currentNode.name}`,
+      );
       // eslint-disable-next-line @typescript-eslint/ban-types
-      const result = (await (node.instance[fnName] as Function).apply(
-        node.instance,
+      const result = (await (currentNode.instance[fnName] as Function).apply(
+        currentNode.instance,
         args,
       )) as Promise<ReturnType<AztecNode[K]>>;
-
-      void onL2RpcNodeAlive(node.url, node.name);
+      void onL2RpcNodeAlive(currentNode.url, currentNode.name);
       return result;
-    }, backOffOptions);
-    return res;
-  } catch (e) {
-    logger.warn(`Aztec failed to call ${fnName}`);
-    onL2RpcNodeError(
-      {
-        name: (e as Error).name ?? "UnknownName",
-        message: (e as Error).message ?? "UnknownMessage",
-        cause: JSON.stringify((e as Error).cause) ?? "UnknownCause",
-        stack: (e as Error).stack ?? "UnknownStack",
-        data: { fnName, args, error: e },
+    },
+    {
+      numOfAttempts: getAmountOfOnlineNodes(),
+      maxDelay: 2000,
+      startingDelay: 200,
+      retry: (e, attemptNumber: number) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const errorCode = e.cause?.code;
+        const isRetriableDevelopmentError =
+          errorCode === "ECONNREFUSED" || errorCode === "ENOTFOUND";
+        if (NODE_ENV === NodeEnv.DEV && isRetriableDevelopmentError) {
+          logger.warn(
+            `🤡🤡 Aztec connection refused or not found, retrying attempt ${attemptNumber}...`,
+          );
+          return true;
+        }
+        setNodeOffline(currentNode, fnName, e, args);
+        currentNode = getRpcNode();
+        return true;
       },
-      nodeURL,
-    );
-    if ((e as Error).cause) {
-      logger.warn(
-        `Aztec failed to fetch: ${JSON.stringify((e as Error).cause)}`,
-      );
-    }
-    throw e;
-  }
+    },
+  );
+  return res;
 };
 
 const sleep = async (ms: number) => {
