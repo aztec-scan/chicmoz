@@ -1,11 +1,17 @@
-import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
+import {
+  type ChicmozContractInstanceBalance,
+  type ChicmozL2ContractInstanceDeluxe,
+} from "@chicmoz-pkg/types";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
 const HARDCODED_DEPLOYER =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
+export const getContractData = (
+  data: ChicmozL2ContractInstanceDeluxe,
+  balance?: ChicmozContractInstanceBalance,
+) => {
   const link = `${routes.contracts.route}${routes.contracts.children.classes.route}/${data.contractClassId}/versions/${data.version}`;
   const displayData = [
     {
@@ -25,11 +31,13 @@ export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
     { label: "VERSION", value: data.version.toString(), link },
     { label: "DEPLOYER", value: data.deployer },
     {
+      label: "FEE JUICE BALANCE",
+      value: !balance ? "0" : balance.balance.toString(),
+    },
+    {
       label: "RAW DATA",
       value: "View raw data",
-      extLink: `${API_URL}${aztecExplorer.getL2ContractInstance(
-        data.address,
-      )}`,
+      extLink: `${API_URL}${aztecExplorer.getL2ContractInstance(data.address)}`,
     },
   ];
   const isDeployerContract =
@@ -103,7 +111,8 @@ export const getVerifiedContractInstanceDeploymentData = (
         },
         {
           label: "CONSTRUCTOR ARGS",
-          value: data.verifiedDeploymentArguments.constructorArgs.join(", ") ?? "[]",
+          value:
+            data.verifiedDeploymentArguments.constructorArgs.join(", ") ?? "[]",
         },
       ]
     : undefined;

@@ -1,8 +1,14 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+import { LoadingDetails } from "~/components/loading/loading-details";
+import { getEmptyContractInstanceData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
-import { useContractInstance, useSubTitle } from "~/hooks";
+import {
+  useContractInstance,
+  useContractInstanceBalance,
+  useSubTitle,
+} from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import {
   getContractData,
@@ -20,18 +26,37 @@ export const ContractInstanceDetails: FC = () => {
     error,
   } = useContractInstance(address);
 
+  const { data: contractInstanceBalance } = useContractInstanceBalance(address);
+
   if (!address) {
-    return <div>No contract address</div>;
+    return (
+      <LoadingDetails
+        title="No Contract instance address provided"
+        description={"Please provided a correct hash"}
+      />
+    );
   }
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <LoadingDetails
+        title="Loading Contract instances details"
+        emptyData={getEmptyContractInstanceData()}
+      />
+    );
   }
   if (error) {
-    console.error("Error fetching contract instance details:", error);
-    return <div>Error</div>;
+    <LoadingDetails
+      title="Error fetching the contract-instance details"
+      description={"Please try to reload the page"}
+    />;
   }
   if (!contractInstanceDetails) {
-    return <div>No data</div>;
+    return (
+      <LoadingDetails
+        title="No Contract instance found"
+        description={`Please check if the cotract instance address: ${address} is correct`}
+      />
+    );
   }
 
   const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
@@ -54,21 +79,22 @@ export const ContractInstanceDetails: FC = () => {
             <OrphanedBanner type="contract-instance" />
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay data={getContractData(contractInstanceDetails)} />
+            <KeyValueDisplay
+              data={getContractData(
+                contractInstanceDetails,
+                contractInstanceBalance,
+              )}
+            />
           </div>
         </div>
       </div>
-      {verifiedDeploymentArguments?.length ??
-      deployerMetadata?.length ??
-      aztecScanNotes?.length ? (
-        <div className="mt-5">
-          <TabsSection
-            verifiedDeploymentData={verifiedDeploymentArguments}
-            deployerMetadata={deployerMetadata}
-            aztecScanNotes={aztecScanNotes}
-          />
-        </div>
-      ) : null}
+      <div className="mt-5">
+        <TabsSection
+          verifiedDeploymentData={verifiedDeploymentArguments}
+          deployerMetadata={deployerMetadata}
+          aztecScanNotes={aztecScanNotes}
+        />
+      </div>
     </div>
   );
 };

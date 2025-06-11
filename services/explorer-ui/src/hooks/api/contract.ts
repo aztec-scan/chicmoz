@@ -1,4 +1,5 @@
 import {
+  type ChicmozContractInstanceBalance,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeluxe,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
@@ -76,6 +77,15 @@ export const useContractInstance = (
   });
 };
 
+export const useContractInstanceBalance = (
+  address: string,
+): UseQueryResult<ChicmozContractInstanceBalance, Error> => {
+  return useQuery<ChicmozContractInstanceBalance, Error>({
+    queryKey: queryKeyGenerator.contractInstanceBalance(address),
+    queryFn: () => ContractL2API.getContractInstanceBalance(address),
+  });
+};
+
 export const useLatestContractInstances = (): UseQueryResult<
   ChicmozL2ContractInstanceDeluxe[],
   Error
@@ -93,6 +103,16 @@ export const useContractInstancesWithAztecScanNotes = (): UseQueryResult<
   return useQuery<ChicmozL2ContractInstanceWithAztecScanNotes[], Error>({
     queryKey: queryKeyGenerator.contractInstancesWithAztecScanNotes,
     queryFn: () => ContractL2API.getContractInstancesWithAztecScanNotes(),
+  });
+};
+
+export const useContractInstancesWithBalance = (): UseQueryResult<
+  ChicmozContractInstanceBalance[],
+  Error
+> => {
+  return useQuery<ChicmozContractInstanceBalance[], Error>({
+    queryKey: queryKeyGenerator.contractInstancesWithBalance,
+    queryFn: () => ContractL2API.getContractInstancesWithBalance(),
   });
 };
 

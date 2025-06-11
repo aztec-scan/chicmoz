@@ -74,3 +74,27 @@ export const getEmptyBlockData = (hash?: string, timestamp?: number) => [
     value: undefined,
   },
 ];
+export const getEmptyContractInstanceData = () => [
+  {
+    label: "ADDRESS",
+    value: undefined,
+  },
+  {
+    label: "CLASS ID",
+    value: undefined,
+  },
+  {
+    label: "BLOCK HASH",
+    value: undefined,
+  },
+  { label: "VERSION", value: undefined },
+  { label: "DEPLOYER", value: undefined },
+  {
+    label: "FEE JUICE BALANCE",
+    value: undefined,
+  },
+  {
+    label: "RAW DATA",
+    value: undefined,
+  },
+];
