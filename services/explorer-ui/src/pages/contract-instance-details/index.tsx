@@ -2,11 +2,7 @@ import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OrphanedBanner } from "~/components/orphaned-banner";
-import {
-  useContractInstance,
-  useContractInstanceBalance,
-  useSubTitle,
-} from "~/hooks";
+import { useContractInstance, useSubTitle } from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import { getContractData } from "./util";
 import { LoadingDetails } from "~/components/loading/loading-details";
@@ -22,8 +18,6 @@ export const ContractInstanceDetails: FC = () => {
     isLoading,
     error,
   } = useContractInstance(address);
-
-  const { data: contractInstanceBalance } = useContractInstanceBalance(address);
 
   if (!address) {
     return (
@@ -57,7 +51,7 @@ export const ContractInstanceDetails: FC = () => {
   }
 
   return (
-    <div className="mx-auto px-[70px] max-w-[1440px]">
+    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-col gap-4 mt-8">
         <div className="flex flex-wrap m-3">
           <h3 className="mt-2 text-primary md:hidden">
@@ -73,12 +67,7 @@ export const ContractInstanceDetails: FC = () => {
             <OrphanedBanner type="contract-instance" />
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay
-              data={getContractData(
-                contractInstanceDetails,
-                contractInstanceBalance,
-              )}
-            />
+            <KeyValueDisplay data={getContractData(contractInstanceDetails)} />
           </div>
         </div>
       </div>

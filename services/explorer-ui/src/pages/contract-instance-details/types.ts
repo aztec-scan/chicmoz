@@ -4,6 +4,7 @@ import { type DetailItem } from "~/components/info-display/key-value-display";
 export type tabId = "verifiedDeployment" | "contactDetails" | "aztecScanNotes";
 
 export const tabIds = [
+  "feeJuiceBalance",
   "verifiedDeployment",
   "contactDetails",
   "aztecScanNotes",
@@ -21,6 +22,7 @@ export const tabSchema = z.object({
 export type Tab = z.infer<typeof tabSchema>;
 
 export const verifiedDeploymentTabs: Tab[] = [
+  { id: "feeJuiceBalance", label: "Feejuice Balance" },
   { id: "verifiedDeployment", label: "Verified deployment" },
   { id: "contactDetails", label: "Contact details" },
   { id: "aztecScanNotes", label: "Aztec Scan notes" },
