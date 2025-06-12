@@ -68,7 +68,8 @@ export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE_HISTORY: OpenAPIObject["pa
     "/l2/contract-instances/{address}/balance/history": {
       get: {
         tags: ["L2", "contract-instances"],
-        summary: "Get contract instance balance history by address",
+        summary: "Get contract instance balance history by address (limited to 1000 most recent entries)",
+        description: "Returns the balance history for a contract instance, ordered chronologically by timestamp. Results are limited to the 1000 most recent entries for performance optimization.",
         parameters: [
           {
             name: "address",
@@ -82,11 +83,12 @@ export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE_HISTORY: OpenAPIObject["pa
         ],
         responses: {
           "200": {
-            description: "List of balance records ordered by timestamp",
+            description: "List of balance records ordered by timestamp (max 1000 entries)",
             content: {
               "application/json": {
                 schema: {
                   type: "array",
+                  maxItems: 1000,
                   items: {
                     $ref: "#/components/schemas/ChicmozContractInstanceBalance",
                   },

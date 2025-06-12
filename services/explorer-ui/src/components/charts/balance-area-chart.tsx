@@ -21,7 +21,7 @@ interface BalanceAreaChartProps {
   yAxisMin: number;
   yAxisMax: number;
   timeFormatter: (timestamp: number) => string;
-  formatTooltipValue: (value: number) => [string, string];
+  formatTooltipValue: (value: number) => string[];
   formatTooltipLabel: (timestamp: number) => string;
 }
 
@@ -40,13 +40,7 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} dataKey={"balance"}>
           <defs>
-            <linearGradient
-              id="balanceGradient"
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
+            <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={"#715EC2 "} stopOpacity={0.3} />
               <stop offset="95%" stopColor="#715EC2 " stopOpacity={0} />
             </linearGradient>
@@ -90,3 +84,4 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
     </div>
   );
 };
+

@@ -58,7 +58,7 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
       {/* Current Balance Display */}
       <BalanceHeader
         currentBalance={Number(latestBalance.balance)}
-        lastUpdated={latestBalance.timestamp}
+        lastUpdated={latestBalance.timestamp.toString()}
       />
 
       {/* Chart */}
@@ -69,7 +69,7 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
           </h4>
           <FilterButton onClick={toggleFilters} />
         </div>
-        
+
         {/* Collapsible Date Range Filters */}
         {showFilters && (
           <DateRangeFilter
@@ -106,3 +106,4 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
     </div>
   );
 };
+

@@ -46,7 +46,8 @@ export const getContractInstanceBalanceHistory = async (
     .select()
     .from(contractInstanceBalance)
     .where(eq(contractInstanceBalance.contractAddress, contractAddress))
-    .orderBy(contractInstanceBalance.timestamp);
+    .orderBy(contractInstanceBalance.timestamp)
+    .limit(1000);
 
   return result.map((row) => chicmozContractInstanceBalanceSchema.parse(row));
 };
