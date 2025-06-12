@@ -24,7 +24,7 @@ export const getLatestContractInstanceBalance = async (
   return chicmozContractInstanceBalanceSchema.parse(result[0]);
 };
 
-export const getCotractIstacesWithBalance = async (): Promise<
+export const getCotractInstacesWithBalance = async (): Promise<
   ChicmozContractInstanceBalance[]
 > => {
   const result = await db()

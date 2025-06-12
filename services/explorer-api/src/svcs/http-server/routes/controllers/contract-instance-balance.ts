@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import {
   getLatestContractInstanceBalance,
-  getCotractIstacesWithBalance,
+  getCotractInstacesWithBalance,
   getContractInstanceBalanceHistory,
 } from "../../../database/controllers/contract-instance-balance/index.js";
 import { getContractInstanceBalanceSchema } from "../paths_and_validation.js";
@@ -68,8 +68,10 @@ export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE_HISTORY: OpenAPIObject["pa
     "/l2/contract-instances/{address}/balance/history": {
       get: {
         tags: ["L2", "contract-instances"],
-        summary: "Get contract instance balance history by address (limited to 1000 most recent entries)",
-        description: "Returns the balance history for a contract instance, ordered chronologically by timestamp. Results are limited to the 1000 most recent entries for performance optimization.",
+        summary:
+          "Get contract instance balance history by address (limited to 1000 most recent entries)",
+        description:
+          "Returns the balance history for a contract instance, ordered chronologically by timestamp. Results are limited to the 1000 most recent entries for performance optimization.",
         parameters: [
           {
             name: "address",
@@ -83,7 +85,8 @@ export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE_HISTORY: OpenAPIObject["pa
         ],
         responses: {
           "200": {
-            description: "List of balance records ordered by timestamp (max 1000 entries)",
+            description:
+              "List of balance records ordered by timestamp (max 1000 entries)",
             content: {
               "application/json": {
                 schema: {
@@ -119,7 +122,7 @@ export const GET_L2_CONTRACT_INSTANCES_WITH_BALANCE = asyncHandler(
   async (req, res) => {
     const balanceData = await dbWrapper.get(
       ["l2", "contract-instances", "with-balance"],
-      () => getCotractIstacesWithBalance(),
+      () => getCotractInstacesWithBalance(),
     );
     res.status(200).json(JSON.parse(balanceData));
   },
