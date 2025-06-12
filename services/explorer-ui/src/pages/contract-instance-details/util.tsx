@@ -1,7 +1,4 @@
-import {
-  type ChicmozContractInstanceBalance,
-  type ChicmozL2ContractInstanceDeluxe,
-} from "@chicmoz-pkg/types";
+import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { CustomTooltip } from "~/components/custom-tooltip";
 import { Link } from "@tanstack/react-router";
