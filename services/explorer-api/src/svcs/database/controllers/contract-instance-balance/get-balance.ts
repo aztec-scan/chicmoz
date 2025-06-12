@@ -38,3 +38,15 @@ export const getCotractIstacesWithBalance = async (): Promise<
 
   return result.map((row) => chicmozContractInstanceBalanceSchema.parse(row));
 };
+
+export const getContractInstanceBalanceHistory = async (
+  contractAddress: HexString,
+): Promise<ChicmozContractInstanceBalance[]> => {
+  const result = await db()
+    .select()
+    .from(contractInstanceBalance)
+    .where(eq(contractInstanceBalance.contractAddress, contractAddress))
+    .orderBy(contractInstanceBalance.timestamp);
+
+  return result.map((row) => chicmozContractInstanceBalanceSchema.parse(row));
+};
