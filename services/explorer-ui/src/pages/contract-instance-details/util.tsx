@@ -1,7 +1,4 @@
-import {
-  type ChicmozContractInstanceBalance,
-  type ChicmozL2ContractInstanceDeluxe,
-} from "@chicmoz-pkg/types";
+import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { CustomTooltip } from "~/components/custom-tooltip";
@@ -11,11 +8,9 @@ import { API_URL, aztecExplorer } from "~/service/constants";
 
 export const getContractData = ({
   data,
-  balance,
   isProtocolContract,
 }: {
   data: ChicmozL2ContractInstanceDeluxe;
-  balance?: ChicmozContractInstanceBalance;
   isProtocolContract?: boolean;
 }) => {
   const standardContractType = data.standardContractType
@@ -45,7 +40,7 @@ export const getContractData = ({
         ),
       };
   const ccLink = `${routes.contracts.route}${routes.contracts.children.classes.route}/${data.contractClassId}/versions/${data.version}`;
-  const displayData: DetailItem[] = [
+  let displayData: DetailItem[] = [
     {
       label: "ADDRESS",
       value: data.address,
@@ -62,17 +57,13 @@ export const getContractData = ({
     },
   ];
   if (!isProtocolContract) {
-    displayData.concat([
+    displayData = displayData.concat([
       {
         label: "BLOCK HASH",
         value: data.blockHash,
         link: `/blocks/${data.blockHash}`,
       },
       { label: "DEPLOYER", value: data.deployer },
-      {
-        label: "FEE JUICE BALANCE",
-        value: !balance ? "0" : balance.balance.toString(),
-      },
       standardContractType,
     ]);
   } else {

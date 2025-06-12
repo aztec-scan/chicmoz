@@ -3,10 +3,11 @@ import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OptionButtons } from "~/components/option-buttons";
-import { useContractClass } from "~/hooks";
+import { useContractClass, useContractInstanceBalanceHistory } from "~/hooks";
 import { type SimpleArtifactData } from "../contract-class-details/artifact-parser";
 import { ArtifactExplorerTab } from "../contract-class-details/tabs/artifact-explorer-tab";
 import { ArtifactJsonTab } from "../contract-class-details/tabs/artifact-json-tab";
+import { FeeJuiceBalance } from "./feejuice-balance";
 import { verifiedDeploymentTabs, type TabId } from "./types";
 import { getVerifiedContractInstanceDeploymentData } from "./util";
 
@@ -24,7 +25,12 @@ export const TabsSection: FC<PillSectionProps> = ({
     version: contractInstanceDetails.version.toString(),
     includeArtifactJson: true,
   });
-  const [selectedTab, setSelectedTab] = useState<TabId>("verifiedDeployment");
+
+  const balanceHistoryRes = useContractInstanceBalanceHistory(
+    contractInstanceDetails.address,
+  );
+
+  const [selectedTab, setSelectedTab] = useState<TabId>("feeJuiceBalance");
   const onOptionSelect = (value: string) => {
     setSelectedTab(value as TabId);
   };
@@ -36,6 +42,8 @@ export const TabsSection: FC<PillSectionProps> = ({
     contractClassArtifect: !!selectedVersionWithArtifactRes.data?.artifactJson,
     contractClassArtifectExplorer:
       !!selectedVersionWithArtifactRes.data?.artifactJson,
+    feeJuiceBalance:
+      !!balanceHistoryRes.data && balanceHistoryRes.data.length > 0,
   };
 
   // Check if any options are available
@@ -43,6 +51,12 @@ export const TabsSection: FC<PillSectionProps> = ({
 
   const renderTabContent = () => {
     switch (selectedTab) {
+      case "feeJuiceBalance":
+        return balanceHistoryRes.isLoading ? (
+          <Loader amount={1} />
+        ) : (
+          <FeeJuiceBalance historyData={balanceHistoryRes.data ?? []} />
+        );
       case "contactDetails":
         return <KeyValueDisplay data={deployerMetadata ?? []} />;
       case "verifiedDeployment":

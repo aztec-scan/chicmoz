@@ -4,12 +4,7 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyContractInstanceData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
-import {
-  useChainInfo,
-  useContractInstance,
-  useContractInstanceBalance,
-  useSubTitle,
-} from "~/hooks";
+import { useChainInfo, useContractInstance, useSubTitle } from "~/hooks";
 import { TabsSection } from "./tabs-section";
 import { getContractData } from "./util";
 
@@ -23,8 +18,6 @@ export const ContractInstanceDetails: FC = () => {
     isLoading,
     error,
   } = useContractInstance(address);
-
-  const { data: contractInstanceBalance } = useContractInstanceBalance(address);
 
   const { data: chainInfo } = useChainInfo();
 
@@ -68,7 +61,7 @@ export const ContractInstanceDetails: FC = () => {
     : "Contract instance details";
 
   return (
-    <div className="mx-auto px-[70px] max-w-[1440px]">
+    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-col gap-4 mt-8">
         <div className="flex flex-wrap m-3">
           <h3 className="mt-2 text-primary md:hidden">{titleStr}</h3>
@@ -85,7 +78,6 @@ export const ContractInstanceDetails: FC = () => {
             <KeyValueDisplay
               data={getContractData({
                 data: contractInstanceDetails,
-                balance: contractInstanceBalance,
                 isProtocolContract,
               })}
             />
