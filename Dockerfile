@@ -4,14 +4,12 @@ RUN apk update && apk add jq python3 make g++
 
 WORKDIR /usr/main
 
+RUN yarn install
+
 COPY .yarn .yarn
 COPY .yarnrc.yml .yarnrc.yml
 COPY package.json package.json
 COPY yarn.lock yarn.lock
-
-RUN yarn install
-# RUN yarn config set enableNetwork false
-
 COPY services services
 COPY packages packages
 
