@@ -5,6 +5,7 @@ import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyContractInstanceData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import {
+  useChainInfo,
   useContractInstance,
   useContractInstanceBalance,
   useSubTitle,
@@ -24,6 +25,12 @@ export const ContractInstanceDetails: FC = () => {
   } = useContractInstance(address);
 
   const { data: contractInstanceBalance } = useContractInstanceBalance(address);
+
+  const { data: chainInfo } = useChainInfo();
+
+  const isProtocolContract =
+    chainInfo?.protocolContractAddresses &&
+    Object.values(chainInfo.protocolContractAddresses).includes(address);
 
   if (!address) {
     return (
@@ -74,10 +81,11 @@ export const ContractInstanceDetails: FC = () => {
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay
-              data={getContractData(
-                contractInstanceDetails,
-                contractInstanceBalance,
-              )}
+              data={getContractData({
+                data: contractInstanceDetails,
+                balance: contractInstanceBalance,
+                isProtocolContract,
+              })}
             />
           </div>
         </div>
