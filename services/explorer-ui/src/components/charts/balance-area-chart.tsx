@@ -56,9 +56,19 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
           />
           <YAxis
             domain={[yAxisMin, yAxisMax]}
-            tickFormatter={(value) => value.toLocaleString()}
-            tick={{ fontSize: 10 }}
-            className="text-xs"
+            tick={false}
+            axisLine={false}
+            tickLine={false}
+            label={{
+              value: "Balance",
+              angle: -90,
+              position: "Left",
+              style: {
+                textAnchor: "middle",
+                fontSize: "18px",
+                fill: "#6b7280",
+              },
+            }}
           />
           <Tooltip
             formatter={formatTooltipValue}
@@ -84,4 +94,3 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
     </div>
   );
 };
-

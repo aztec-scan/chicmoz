@@ -10,23 +10,24 @@ interface ChartDataPoint {
 export const useBalanceChartData = (
   historyData: ChicmozContractInstanceBalance[],
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   return useMemo(() => {
     // Sort data by timestamp to ensure chronological order
     const sortedData = [...historyData].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     // Filter data based on date range
     const filteredData = (() => {
       if (!startDate && !endDate) return sortedData;
-      
+
       return sortedData.filter((item) => {
         const itemDate = new Date(item.timestamp);
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate + "T23:59:59") : null; // Include end of day
-        
+
         if (start && itemDate < start) return false;
         if (end && itemDate > end) return false;
         return true;
@@ -34,7 +35,10 @@ export const useBalanceChartData = (
     })();
 
     // Get latest balance from filtered data or original data if no filter
-    const latestBalance = filteredData.length > 0 ? filteredData[filteredData.length - 1] : sortedData[sortedData.length - 1];
+    const latestBalance =
+      filteredData.length > 0
+        ? filteredData[filteredData.length - 1]
+        : sortedData[sortedData.length - 1];
 
     // Prepare data for chart
     const chartData: ChartDataPoint[] = filteredData.map((item) => ({
@@ -48,7 +52,7 @@ export const useBalanceChartData = (
     const minBalance = Math.min(...balances);
     const maxBalance = Math.max(...balances);
     const balanceRange = maxBalance - minBalance;
-    
+
     // Add padding to Y-axis (10% on each side)
     const yAxisPadding = balanceRange * 0.1;
     const yAxisMin = Math.max(0, minBalance - yAxisPadding);
@@ -108,8 +112,16 @@ export const useBalanceChartData = (
     };
 
     // Get min and max dates for input constraints
-    const minDateForInput = sortedData.length > 0 ? new Date(sortedData[0].timestamp).toISOString().split('T')[0] : "";
-    const maxDateForInput = sortedData.length > 0 ? new Date(sortedData[sortedData.length - 1].timestamp).toISOString().split('T')[0] : "";
+    const minDateForInput =
+      sortedData.length > 0
+        ? new Date(sortedData[0].timestamp).toISOString().split("T")[0]
+        : "";
+    const maxDateForInput =
+      sortedData.length > 0
+        ? new Date(sortedData[sortedData.length - 1].timestamp)
+            .toISOString()
+            .split("T")[0]
+        : "";
 
     return {
       sortedData,
@@ -128,3 +140,4 @@ export const useBalanceChartData = (
     };
   }, [historyData, startDate, endDate]);
 };
+

@@ -85,25 +85,43 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
           />
         )}
 
-        <BalanceAreaChart
-          data={chartData}
-          minTime={minTime}
-          maxTime={maxTime}
-          yAxisMin={yAxisMin}
-          yAxisMax={yAxisMax}
-          timeFormatter={timeFormatter}
-          formatTooltipValue={formatTooltipValue}
-          formatTooltipLabel={formatTooltipLabel}
-        />
+        {filteredData.length === 0 && (startDate || endDate) ? (
+          <div className="h-64 md:h-80 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <div className="text-lg font-medium mb-2">No data found</div>
+              <div className="text-sm">
+                No balance entries found for the selected date range
+                {startDate &&
+                  ` from ${new Date(startDate).toLocaleDateString()}`}
+                {endDate && ` to ${new Date(endDate).toLocaleDateString()}`}
+              </div>
+              <div className="text-sm mt-2 text-gray-400">
+                Try adjusting your date range or clear the filter to see all
+                data
+              </div>
+            </div>
+          </div>
+        ) : (
+          <BalanceAreaChart
+            data={chartData}
+            minTime={minTime}
+            maxTime={maxTime}
+            yAxisMin={yAxisMin}
+            yAxisMax={yAxisMax}
+            timeFormatter={timeFormatter}
+            formatTooltipValue={formatTooltipValue}
+            formatTooltipLabel={formatTooltipLabel}
+          />
+        )}
+        {/* Summary Stats */}
+        {filteredData.length > 0 && (
+          <BalanceStats
+            totalRecords={filteredData.length}
+            peakBalance={Math.max(...chartData.map((d) => d.balance))}
+            lowestBalance={Math.min(...chartData.map((d) => d.balance))}
+          />
+        )}
       </div>
-
-      {/* Summary Stats */}
-      <BalanceStats
-        totalRecords={filteredData.length}
-        peakBalance={Math.max(...chartData.map((d) => d.balance))}
-        lowestBalance={Math.min(...chartData.map((d) => d.balance))}
-      />
     </div>
   );
 };
-
