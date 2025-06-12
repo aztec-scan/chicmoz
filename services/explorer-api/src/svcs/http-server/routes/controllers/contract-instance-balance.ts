@@ -6,7 +6,12 @@ import {
   getContractInstanceBalanceHistory,
 } from "../../../database/controllers/contract-instance-balance/index.js";
 import { getContractInstanceBalanceSchema } from "../paths_and_validation.js";
-import { contractInstanceBalanceResponse, dbWrapper } from "./utils/index.js";
+import {
+  contractInstanceBalanceHistoryResponse,
+  contractInstanceBalanceResponse,
+  contractInstanceWithBalanceResponse,
+  dbWrapper,
+} from "./utils/index.js";
 
 export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE: OpenAPIObject["paths"] =
   {
@@ -44,21 +49,7 @@ export const openapi_GET_L2_CONTRACT_INSTANCES_WITH_BALANCE: OpenAPIObject["path
       get: {
         tags: ["L2", "contract-instances"],
         summary: "Get all contract instances with balance",
-        responses: {
-          "200": {
-            description: "List of contract instances with balance",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: {
-                    $ref: "#/components/schemas/ChicmozContractInstanceBalance",
-                  },
-                },
-              },
-            },
-          },
-        },
+        responses: contractInstanceWithBalanceResponse,
       },
     },
   };
@@ -83,23 +74,7 @@ export const openapi_GET_L2_CONTRACT_INSTANCE_BALANCE_HISTORY: OpenAPIObject["pa
             },
           },
         ],
-        responses: {
-          "200": {
-            description:
-              "List of balance records ordered by timestamp (max 1000 entries)",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  maxItems: 1000,
-                  items: {
-                    $ref: "#/components/schemas/ChicmozContractInstanceBalance",
-                  },
-                },
-              },
-            },
-          },
-        },
+        responses: contractInstanceBalanceHistoryResponse,
       },
     },
   };
