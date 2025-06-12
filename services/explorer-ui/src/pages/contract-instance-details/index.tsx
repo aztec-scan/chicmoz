@@ -10,10 +10,7 @@ import {
   useSubTitle,
 } from "~/hooks";
 import { TabsSection } from "./tabs-section";
-import {
-  getContractData,
-  getVerifiedContractInstanceDeploymentData,
-} from "./util";
+import { getContractData } from "./util";
 
 export const ContractInstanceDetails: FC = () => {
   const { address } = useParams({
@@ -59,9 +56,6 @@ export const ContractInstanceDetails: FC = () => {
     );
   }
 
-  const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
-    getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
-
   return (
     <div className="mx-auto px-[70px] max-w-[1440px]">
       <div className="flex flex-col gap-4 mt-8">
@@ -89,11 +83,7 @@ export const ContractInstanceDetails: FC = () => {
         </div>
       </div>
       <div className="mt-5">
-        <TabsSection
-          verifiedDeploymentData={verifiedDeploymentArguments}
-          deployerMetadata={deployerMetadata}
-          aztecScanNotes={aztecScanNotes}
-        />
+        <TabsSection contractInstanceDetails={contractInstanceDetails} />
       </div>
     </div>
   );
