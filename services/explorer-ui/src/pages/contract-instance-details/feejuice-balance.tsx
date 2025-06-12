@@ -47,7 +47,7 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
   // Early return for empty data
   if (!historyData || historyData.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
+      <div className="text-center text-gray-500 dark:text-gray-400 py-8">
         No balance history available for this contract instance.
       </div>
     );
@@ -62,9 +62,9 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
       />
 
       {/* Chart */}
-      <div className="hidden md:block bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+      <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 md:p-6">
         <div className="flex justify-between items-center mb-3 md:mb-4">
-          <h4 className="text-base md:text-lg font-semibold text-gray-700">
+          <h4 className="text-base md:text-lg font-semibold text-gray-700 dark:text-gray-200">
             Balance History
           </h4>
           <FilterButton onClick={toggleFilters} />
@@ -87,7 +87,7 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
 
         {filteredData.length === 0 && (startDate || endDate) ? (
           <div className="h-64 md:h-80 flex items-center justify-center">
-            <div className="text-center text-gray-500">
+            <div className="text-center text-gray-500 dark:text-gray-400">
               <div className="text-lg font-medium mb-2">No data found</div>
               <div className="text-sm">
                 No balance entries found for the selected date range
@@ -95,7 +95,7 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
                   ` from ${new Date(startDate).toLocaleDateString()}`}
                 {endDate && ` to ${new Date(endDate).toLocaleDateString()}`}
               </div>
-              <div className="text-sm mt-2 text-gray-400">
+              <div className="text-sm mt-2 text-gray-400 dark:text-gray-500">
                 Try adjusting your date range or clear the filter to see all
                 data
               </div>

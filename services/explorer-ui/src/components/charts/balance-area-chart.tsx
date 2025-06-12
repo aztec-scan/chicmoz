@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useEffect, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -35,6 +35,24 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
   formatTooltipValue,
   formatTooltipLabel,
 }) => {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkDarkMode();
+    
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="h-64 md:h-80">
       <ResponsiveContainer width="100%" height="100%">
@@ -66,7 +84,7 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
               style: {
                 textAnchor: "middle",
                 fontSize: "18px",
-                fill: "#6b7280",
+                fill: isDark ? "#9ca3af" : "#6b7280",
               },
             }}
           />
@@ -74,10 +92,11 @@ export const BalanceAreaChart: FC<BalanceAreaChartProps> = ({
             formatter={formatTooltipValue}
             labelFormatter={formatTooltipLabel}
             contentStyle={{
-              backgroundColor: "white",
-              border: "1px solid #e5e7eb",
+              backgroundColor: isDark ? "#1f2937" : "white",
+              border: isDark ? "1px solid #4b5563" : "1px solid #e5e7eb",
               borderRadius: "8px",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+              color: isDark ? "#e5e7eb" : "#374151",
             }}
           />
           <Area
