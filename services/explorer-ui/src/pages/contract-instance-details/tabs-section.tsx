@@ -1,13 +1,14 @@
+import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
-import { OptionButtons } from "~/components/option-buttons";
-import { verifiedDeploymentTabs, type TabId } from "./types";
-import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
-import { getVerifiedContractInstanceDeploymentData } from "./util";
-import { useContractClass } from "~/hooks";
 import { Loader } from "~/components/loader";
-import { ArtifactJsonTab } from "../contract-class-details/tabs/artifact-json-tab";
+import { OptionButtons } from "~/components/option-buttons";
+import { useContractClass } from "~/hooks";
+import { type SimpleArtifactData } from "../contract-class-details/artifact-parser";
 import { ArtifactExplorerTab } from "../contract-class-details/tabs/artifact-explorer-tab";
+import { ArtifactJsonTab } from "../contract-class-details/tabs/artifact-json-tab";
+import { verifiedDeploymentTabs, type TabId } from "./types";
+import { getVerifiedContractInstanceDeploymentData } from "./util";
 
 interface PillSectionProps {
   contractInstanceDetails: ChicmozL2ContractInstanceDeluxe;
@@ -53,7 +54,11 @@ export const TabsSection: FC<PillSectionProps> = ({
           <Loader amount={1} />
         ) : (
           <ArtifactJsonTab
-            data={selectedVersionWithArtifactRes.data?.artifactJson}
+            data={
+              JSON.parse(
+                selectedVersionWithArtifactRes.data?.artifactJson ?? "{}",
+              ) as SimpleArtifactData
+            }
             artifactHash={
               selectedVersionWithArtifactRes.data?.artifactHash ?? ""
             }

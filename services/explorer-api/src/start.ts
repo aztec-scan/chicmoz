@@ -8,7 +8,7 @@ import { logger } from "./logger.js";
 import { updateContractInstanceAztecScanNotes } from "./svcs/database/controllers/l2/aztec-scan-notes.js";
 import { deleteAllTxs } from "./svcs/database/controllers/l2Tx/delete-all-txs.js";
 import { updateContractClassManualSourceCodeUrl } from "./svcs/database/controllers/l2contract/update.js";
-import { initializeProtocolContracts } from "./svcs/http-server/routes/controllers/contract-instances/protocol-contracts.js";
+import { initializeProtocolContracts } from "./utils/protocol-contracts.js";
 
 export const start = async () => {
   await deleteAllTxs(); // TODO: perhaps a more specific deleteAllTxs should be created, also some logs could be good.
