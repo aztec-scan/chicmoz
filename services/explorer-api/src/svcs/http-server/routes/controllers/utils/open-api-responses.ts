@@ -155,6 +155,16 @@ export const contractInstanceBalanceResponse = getResponse(
   "contractInstanceBalance",
 );
 
+export const contractInstanceWithBalanceResponse = getResponse(
+  chicmozContractInstanceBalanceSchema,
+  "contractInstanceWithBalance",
+);
+
+export const contractInstanceBalanceHistoryResponse = getResponse(
+  z.array(chicmozContractInstanceBalanceSchema),
+  "contractInstanceBalanceHistory",
+);
+
 export const contractInstanceBalanceResponseArray = getResponse(
   z.array(chicmozContractInstanceBalanceSchema),
   "contractInstanceBalanceArray",

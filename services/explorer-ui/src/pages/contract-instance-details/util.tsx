@@ -1,7 +1,4 @@
-import {
-  type ChicmozContractInstanceBalance,
-  type ChicmozL2ContractInstanceDeluxe,
-} from "@chicmoz-pkg/types";
+import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { CustomTooltip } from "~/components/custom-tooltip";
 import { Link } from "@tanstack/react-router";
@@ -11,10 +8,7 @@ import { API_URL, aztecExplorer } from "~/service/constants";
 const HARDCODED_DEPLOYER =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-export const getContractData = (
-  data: ChicmozL2ContractInstanceDeluxe,
-  balance?: ChicmozContractInstanceBalance,
-) => {
+export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
   const link = `${routes.contracts.route}${routes.contracts.children.classes.route}/${data.contractClassId}/versions/${data.version}`;
   const standardContractType = data.standardContractType
     ? {
@@ -59,10 +53,6 @@ export const getContractData = (
     },
     { label: "VERSION", value: data.version.toString(), link },
     { label: "DEPLOYER", value: data.deployer },
-    {
-      label: "FEE JUICE BALANCE",
-      value: !balance ? "0" : balance.balance.toString(),
-    },
     {
       label: "RAW DATA",
       value: "View raw data",
