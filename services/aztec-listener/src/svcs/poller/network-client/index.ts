@@ -137,7 +137,7 @@ export const getFreshInfo = async (): Promise<{
         protocolContractAddresses: protocolContractAddresses,
       };
       const cInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
-      if (!chainInfo || chainInfo.rollupVersion < chainInfo.rollupVersion) {
+      if (!chainInfo || chainInfo.rollupVersion < cInfo.rollupVersion) {
         await onChainInfo(cInfo).catch((e) => {
           logger.error(
             `Aztec failed to publish chain info: ${(e as Error).message}`,
