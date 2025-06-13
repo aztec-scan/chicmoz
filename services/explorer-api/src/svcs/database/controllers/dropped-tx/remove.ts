@@ -3,6 +3,8 @@ import { HexString } from "@chicmoz-pkg/types";
 import { eq } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import { droppedTx } from "../../../database/schema/dropped-tx/index.js";
+import { txEffect } from "../../schema/index.js";
+import { getDroppedTxs } from "./get-tx.js";
 
 /**
  * Removes a dropped transaction by its hash
@@ -23,4 +25,22 @@ export const removeDroppedTxByHash = async (
   }
 
   return deletedEntries.length;
+};
+
+export const removeDroppedThatHaveTxEffects = async (): Promise<number> => {
+  const allDroppedTxs = await getDroppedTxs();
+  let count = 0;
+  for (const tx of allDroppedTxs) {
+    const txEffectRes = await db()
+      .select()
+      .from(txEffect)
+      .where(eq(txEffect.txHash, tx.txHash))
+      .limit(1);
+    if (txEffectRes.length > 0) {
+      await removeDroppedTxByHash(tx.txHash);
+      count++;
+    }
+  }
+  logger.info(`🗑️🗑️🔥🔥 removed ${count} dropped txs that already had a txEffect`);
+  return count;
 };

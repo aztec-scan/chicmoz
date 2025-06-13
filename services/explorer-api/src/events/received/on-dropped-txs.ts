@@ -9,19 +9,23 @@ import { L2_NETWORK_ID } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { storeDroppedTx } from "../../svcs/database/controllers/dropped-tx/store.js";
 import { deleteTx } from "../../svcs/database/controllers/l2Tx/index.js";
+import { txEffectExists } from "../../svcs/database/controllers/l2TxEffect/get-tx-effect.js";
 
 const onDroppedTxs = async ({ txs }: DroppedTxsEvent) => {
   logger.info(`🗑️ Received ${txs.length} dropped txs to handle`);
 
   for (const droppedTx of txs) {
+    const isAlreadyStored = await txEffectExists(droppedTx.txHash);
+    if (isAlreadyStored) {
+      logger.info(`🗑️ Dropped tx ${droppedTx.txHash} already exists, skipping`);
+      continue;
+    }
     try {
       // Store as dropped transaction
       await storeDroppedTx(droppedTx);
 
       // Delete from pending transactions
       await deleteTx(droppedTx.txHash);
-
-      logger.info(`✅ Processed dropped tx: ${droppedTx.txHash}`);
     } catch (error) {
       logger.error(`Error processing dropped tx ${droppedTx.txHash}:`, error);
     }

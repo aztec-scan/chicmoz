@@ -275,3 +275,16 @@ export const getTxEffectDynamicWhere = async (
 
   return chicmozL2TxEffectDeluxeSchema.parse(toParse);
 };
+
+export const txEffectExists = async (hash: HexString): Promise<boolean> => {
+  const res = await db()
+    .select({
+      txHash: txEffect.txHash,
+    })
+    .from(txEffect)
+    .where(eq(txEffect.txHash, hash))
+    .limit(1)
+    .execute();
+
+  return res.length > 0;
+};
