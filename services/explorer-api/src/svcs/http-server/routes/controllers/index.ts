@@ -4,7 +4,7 @@ export * from "./chain-info.js";
 export * from "./contract-class-functions.js";
 export * from "./contract-classes.js";
 export * from "./contract-instance-balance.js";
-export * from "./contract-instances/index.js";
+export * from "./contract-instances.js";
 export * from "./dropped-tx.js";
 export * from "./fee-recipients.js";
 export * from "./inofficial.js";
