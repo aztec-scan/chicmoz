@@ -32,6 +32,9 @@ export const updateBlock = (
           : 0;
 
       if (block.height < maxKnownHeight) {
+        console.log(
+          `Reorg detected: incoming block ${block.height} < max known ${maxKnownHeight}`,
+        );
         void Promise.all([
           queryClient.invalidateQueries({
             queryKey: queryKeyGenerator.latestTableBlocks,
