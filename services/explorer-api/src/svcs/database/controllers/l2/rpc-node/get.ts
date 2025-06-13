@@ -14,6 +14,6 @@ export async function getL2RpcNode(
     .from(l2RpcNodeTable)
     .where(eq(l2RpcNodeTable.rpcUrl, rpcUrl))
     .limit(1);
-  assert(res[0].name, "rpc node not found");
+  assert(res?.[0].name, "rpc node not found");
   return chicmozL2RpcNodeSchema.parse(res[0]);
 }
