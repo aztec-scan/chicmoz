@@ -16,31 +16,40 @@ export async function getAllSequencers(): Promise<ChicmozL2Sequencer[]> {
     .select({
       ...getTableColumns(l2SequencerTable),
       lastSeenAt: l2RpcNodeTable.lastSeenAt,
+      rpcNodeName: l2RpcNodeTable.name,
+      rpcUrl: l2RpcNodeTable.rpcUrl,
     })
     .from(l2SequencerTable)
-    .innerJoin(l2RpcNodeTable, eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name))
+    .innerJoin(
+      l2RpcNodeTable,
+      eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name),
+    )
     .execute();
   return z.array(chicmozL2SequencerSchema).parse(dbResult);
 }
 
 export async function getSequencerByEnr(
-  enr: ChicmozL2Sequencer["enr"]
+  enr: ChicmozL2Sequencer["enr"],
 ): Promise<ChicmozL2SequencerDeluxe | null> {
   return db().transaction(async (tx) => {
     const sequencerRes = await tx
       .select({
         ...getTableColumns(l2SequencerTable),
         lastSeenAt: l2RpcNodeTable.lastSeenAt,
+        rpcNodeName: l2RpcNodeTable.name,
+        rpcUrl: l2RpcNodeTable.rpcUrl,
       })
       .from(l2SequencerTable)
       .where(eq(l2SequencerTable.enr, enr))
       .innerJoin(
         l2RpcNodeTable,
-        eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name)
+        eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name),
       )
       .limit(1)
       .execute();
-    if (sequencerRes.length === 0) {return null;}
+    if (sequencerRes.length === 0) {
+      return null;
+    }
     const errors = await tx
       .select()
       .from(l2RpcNodeErrorTable)

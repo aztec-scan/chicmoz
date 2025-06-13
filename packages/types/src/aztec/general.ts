@@ -59,7 +59,7 @@ export const chicmozL2RpcNodeSchema = z.object({
 });
 
 export const chicmozL2RpcNodeErrorSchema = z.object({
-  rpcNodeId: z.string().optional(),
+  rpcNodeName: z.string().optional(),
   rpcUrl: chicmozL2RpcNodeSchema.shape.rpcUrl.optional(),
   nodeName: z.string().optional(),
   name: z.string(),
@@ -74,7 +74,7 @@ export const chicmozL2RpcNodeErrorSchema = z.object({
 
 export const chicmozL2SequencerSchema = z.object({
   enr: z.string(),
-  rpcNodeId: z.string().optional(),
+  rpcNodeName: z.string().optional(),
   rpcUrl: z.string().optional(),
   l2NetworkId: l2NetworkIdSchema,
   rollupVersion: z.coerce.bigint().nonnegative(),

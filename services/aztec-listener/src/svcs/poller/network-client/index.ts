@@ -37,7 +37,7 @@ import {
   getSequencerFromNodeInfo,
 } from "./utils.js";
 
-const offlineCauses = ["Service Unavailable"];
+const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway"];
 
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
@@ -86,6 +86,9 @@ const callNodeFunction = async <K extends keyof AztecNode>(
           )
         ) {
           setNodeOffline(currentNode, fnName, e, args);
+          if (forceNode) {
+            return false;
+          }
         }
         currentNode = forceNode ?? getRpcNode();
         return true;
@@ -116,43 +119,50 @@ export const getFreshInfo = async (): Promise<{
   let chainInfo: ChicmozChainInfo | undefined = undefined;
   const sequencers: ChicmozL2Sequencer[] = [];
   for (const node of allNodes) {
-    const {
-      nodeVersion,
-      l1ChainId,
-      rollupVersion,
-      enr,
-      l1ContractAddresses,
-      protocolContractAddresses,
-    } = await callNodeFunction("getNodeInfo", undefined, node);
-    const nodeInfo: NodeInfo = {
-      nodeVersion,
-      l1ChainId,
-      rollupVersion,
-      enr,
-      l1ContractAddresses: l1ContractAddresses,
-      protocolContractAddresses: protocolContractAddresses,
-    };
-    const cInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
-    if (!chainInfo || chainInfo.rollupVersion < chainInfo.rollupVersion) {
-      await onChainInfo(cInfo).catch((e) => {
+    try {
+      const {
+        nodeVersion,
+        l1ChainId,
+        rollupVersion,
+        enr,
+        l1ContractAddresses,
+        protocolContractAddresses,
+      } = await callNodeFunction("getNodeInfo", undefined, node);
+      const nodeInfo: NodeInfo = {
+        nodeVersion,
+        l1ChainId,
+        rollupVersion,
+        enr,
+        l1ContractAddresses: l1ContractAddresses,
+        protocolContractAddresses: protocolContractAddresses,
+      };
+      const cInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
+      if (!chainInfo || chainInfo.rollupVersion < chainInfo.rollupVersion) {
+        await onChainInfo(cInfo).catch((e) => {
+          logger.error(
+            `Aztec failed to publish chain info: ${(e as Error).message}`,
+          );
+        });
+        chainInfo = cInfo;
+      }
+
+      const sequencer = getSequencerFromNodeInfo(
+        L2_NETWORK_ID,
+        node.url,
+        nodeInfo,
+      );
+
+      await onL2SequencerInfo(sequencer).catch((e) => {
         logger.error(
-          `Aztec failed to publish chain info: ${(e as Error).message}`,
+          `Aztec failed to publish sequencer info: ${(e as Error).message}`,
         );
       });
-      chainInfo = cInfo;
-    }
-
-    const sequencer = getSequencerFromNodeInfo(
-      L2_NETWORK_ID,
-      node.url,
-      nodeInfo,
-    );
-
-    await onL2SequencerInfo(sequencer).catch((e) => {
+    } catch (e) {
       logger.error(
-        `Aztec failed to publish sequencer info: ${(e as Error).message}`,
+        `Failed to fetch node info from ${node.name}: ${(e as Error).stack}`,
       );
-    });
+      continue;
+    }
   }
 
   if (!chainInfo) {

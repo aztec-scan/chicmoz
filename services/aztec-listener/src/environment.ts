@@ -63,10 +63,10 @@ export const AZTEC_RPC_URLS = rpcNodePoolSchema.parse(
   process.env.AZTEC_RPC_URLS,
 );
 const printPool = () => {
-  let finalString = "";
+  let finalString = "\n";
   AZTEC_RPC_URLS.forEach(
     (node) =>
-      (finalString = `  ${finalString}Name: ${node.name}\nURL: ${node.url}\n\n`),
+      (finalString = `${finalString}  Name: ${node.name}\n  URL: ${node.url}\n\n`),
   );
   return finalString.trim();
 };
@@ -76,7 +76,7 @@ AZTEC_DISABLED:                                            ${
   AZTEC_DISABLED ? "✅" : "❌"
 }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
-AZTEC_RPC_URL_POOL:                                        \n${printPool()}
+AZTEC_RPC_URL_POOL:                                        ${printPool()}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
