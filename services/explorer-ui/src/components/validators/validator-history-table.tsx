@@ -5,6 +5,7 @@ import { ValidatorHistoryTableColumns } from "./validator-history-table-columns"
 
 interface Props {
   title?: string;
+  attesterAddress: string;
   history?: ChicmozL1L2ValidatorHistory;
   isLoading: boolean;
   error?: Error | null;
@@ -16,6 +17,7 @@ interface Props {
 export const ValidatorHistoryTable: FC<Props> = ({
   title,
   history,
+  attesterAddress,
   isLoading,
   error,
   disableSizeSelector,
@@ -51,7 +53,7 @@ export const ValidatorHistoryTable: FC<Props> = ({
         <p className="text-sm text-gray-500">
           Psst!{" "}
           <a
-            href="https://aztec.starfrich.me/"
+            href={`https://aztec.starfrich.me/?tab=nodeStats&validator_address=${attesterAddress}`}
             target="_blank"
             rel="noreferrer"
             className="hover:font-bold hover:text-purple-light"

@@ -14,7 +14,7 @@ import {
   useL1L2ValidatorHistory,
 } from "~/hooks/api/l1-l2-validator";
 import { routes } from "~/routes/__root";
-import {API_URL, aztecExplorer} from "~/service/constants";
+import { API_URL, aztecExplorer } from "~/service/constants";
 
 const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
   return [
@@ -113,6 +113,7 @@ export const ValidatorDetailsPage: FC = () => {
 
           <ValidatorHistoryTable
             title="Validator History"
+            attesterAddress={attesterAddress}
             history={historyData}
             isLoading={isHistoryLoading}
             error={historyError}
