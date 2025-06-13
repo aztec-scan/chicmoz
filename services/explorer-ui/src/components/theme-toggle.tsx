@@ -1,7 +1,6 @@
-import { MoonIcon, SunIcon, MonitorIcon } from "lucide-react";
+import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme as useNextTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Theme } from "~/types";
 import { Button } from "./ui/button";
 
 interface ThemeToggleProps {
@@ -42,8 +41,6 @@ export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
   const cycleTheme = () => {
     if (theme === "light") {
       setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
     } else {
       setTheme("light");
     }
@@ -57,10 +54,6 @@ export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
     } else if (theme === "dark") {
       return (
         <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />
-      );
-    } else {
-      return (
-        <MonitorIcon className={`${sizeClass} hover:text-accent-foreground`} />
       );
     }
   };
