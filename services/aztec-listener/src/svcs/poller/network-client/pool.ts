@@ -3,7 +3,7 @@ import { AZTEC_RPC_URLS } from "../../../environment.js";
 import { onL2RpcNodeError } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
 
-interface RpcNode {
+export interface RpcNode {
   name: string;
   url: string;
   instance: AztecNode;
@@ -117,4 +117,8 @@ export const setNodeOffline = <K extends keyof AztecNode>(
     logger.error("All nodes in the pool are offline. Resetting pools.");
     resetPools();
   }
+};
+
+export const getAllRpcNodes = (): RpcNode[] => {
+  return allNodes;
 };

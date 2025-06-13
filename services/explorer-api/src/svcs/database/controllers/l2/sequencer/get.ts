@@ -18,7 +18,7 @@ export async function getAllSequencers(): Promise<ChicmozL2Sequencer[]> {
       lastSeenAt: l2RpcNodeTable.lastSeenAt,
     })
     .from(l2SequencerTable)
-    .leftJoin(l2RpcNodeTable, eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name))
+    .innerJoin(l2RpcNodeTable, eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name))
     .execute();
   return z.array(chicmozL2SequencerSchema).parse(dbResult);
 }
@@ -34,7 +34,7 @@ export async function getSequencerByEnr(
       })
       .from(l2SequencerTable)
       .where(eq(l2SequencerTable.enr, enr))
-      .leftJoin(
+      .innerJoin(
         l2RpcNodeTable,
         eq(l2SequencerTable.rpcNodeName, l2RpcNodeTable.name)
       )
