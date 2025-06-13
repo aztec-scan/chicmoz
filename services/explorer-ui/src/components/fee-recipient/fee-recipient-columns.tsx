@@ -5,7 +5,7 @@ import { type ChicmozFeeRecipient } from "@chicmoz-pkg/types";
 import { CustomTooltip } from "../custom-tooltip";
 import { CopyableText } from "../copy-text";
 
-export const FeeReceipientsColums: ColumnDef<ChicmozFeeRecipient>[] = [
+export const FeeRecipientColums: ColumnDef<ChicmozFeeRecipient>[] = [
   {
     accessorKey: "l2Address",
     header: ({ column }) => (
@@ -30,7 +30,6 @@ export const FeeReceipientsColums: ColumnDef<ChicmozFeeRecipient>[] = [
       />
     ),
     cell: ({ row }) => {
-      console.log(row.getValue("feesReceived"));
       return (
         <CustomTooltip content="The amount of FJ received">
           <div className="font-mono">

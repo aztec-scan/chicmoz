@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
 import { type ChicmozFeeRecipient } from "@chicmoz-pkg/types";
-import { FeeReceipientsColums } from "./fee-recipient-columns";
+import { FeeRecipientColums } from "./fee-recipient-columns";
 
 interface Props {
   title?: string;
-  feeReceipients?: ChicmozFeeRecipient[];
+  feeRecipients?: ChicmozFeeRecipient[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -15,7 +15,7 @@ interface Props {
 
 export const FeeReceipientsTable: FC<Props> = ({
   title,
-  feeReceipients,
+  feeRecipients,
   isLoading,
   error,
   disableSizeSelector,
@@ -35,8 +35,8 @@ export const FeeReceipientsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={feeReceipients ?? []}
-          columns={FeeReceipientsColums}
+          data={feeRecipients ?? []}
+          columns={FeeRecipientColums}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

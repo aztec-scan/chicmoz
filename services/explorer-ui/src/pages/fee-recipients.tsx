@@ -26,7 +26,7 @@ export const FeeRecipientPage: FC = () => {
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5">
         <InfoBadge
-          title="Amount of fee receipients"
+          title="Amount of fee recipients"
           isLoading={isLoading}
           error={error}
           data={data ? data.length.toString() : ""}
@@ -39,7 +39,7 @@ export const FeeRecipientPage: FC = () => {
         />
       </div>
       <div className="rounded-lg shadow-lg">
-        <FeeReceipientsTable feeReceipients={data} isLoading={isLoading} />
+        <FeeReceipientsTable feeRecipients={data} isLoading={isLoading} />
       </div>
     </div>
   );
