@@ -51,11 +51,17 @@ export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
 
   const getIcon = () => {
     if (theme === "light") {
-      return <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />;
+      return (
+        <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />
+      );
     } else if (theme === "dark") {
-      return <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />;
+      return (
+        <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />
+      );
     } else {
-      return <MonitorIcon className={`${sizeClass} hover:text-accent-foreground`} />;
+      return (
+        <MonitorIcon className={`${sizeClass} hover:text-accent-foreground`} />
+      );
     }
   };
 
