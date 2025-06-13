@@ -1,6 +1,6 @@
 import { NodeInfo } from "@aztec/aztec.js";
 import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
-import { NODE_ENV, NodeEnv, jsonStringify } from "@chicmoz-pkg/types";
+import { NODE_ENV, NodeEnv } from "@chicmoz-pkg/types";
 import {
   AZTEC_LISTEN_FOR_CHAIN_INFO,
   AZTEC_LISTEN_FOR_PENDING_TXS,
@@ -8,7 +8,6 @@ import {
   getConfigStr,
 } from "../../environment.js";
 import { onL2RpcNodeError } from "../../events/emitted/index.js";
-import { logger } from "../../logger.js";
 import { ensureInitializedBlockHeights } from "../database/heights.controller.js";
 import { init as initNetworkClient } from "./network-client/index.js";
 import * as blockPoller from "./pollers/block_poller/index.js";
@@ -40,8 +39,6 @@ export const init = async () => {
       .protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
     enr: undefined, // Add missing required property
   };
-  logger.info(`Aztec chain info: ${jsonStringify(initResult.chainInfo)}`);
-  logger.info(`Aztec sequencers info: ${jsonStringify(initResult.sequencers)}`);
 };
 
 export const startPoller = async () => {

@@ -151,6 +151,7 @@ export const getFreshInfo = async (): Promise<{
         node.url,
         nodeInfo,
       );
+      sequencers.push(sequencer);
 
       await onL2SequencerInfo(sequencer).catch((e) => {
         logger.error(
