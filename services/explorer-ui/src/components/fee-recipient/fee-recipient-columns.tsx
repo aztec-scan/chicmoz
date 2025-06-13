@@ -82,15 +82,14 @@ export const FeeReceipientsColums: ColumnDef<ChicmozFeeRecipient>[] = [
       <DataTableColumnHeader
         className="text-purple-dark text-sm"
         column={column}
-        title={"part of total fees received"}
+        title={"% of total fees received"}
       />
     ),
     cell: ({ row }) => {
+      const percentage = Number(row.getValue("partOfTotalFeesReceived"));
       return (
-        <CustomTooltip content="Part of total fees received">
-          <div className="font-mono">
-            {row.getValue("partOfTotalFeesReceived")}
-          </div>
+        <CustomTooltip content="% of total fees received">
+          <div className="font-mono">{percentage * 100}%</div>
         </CustomTooltip>
       );
     },

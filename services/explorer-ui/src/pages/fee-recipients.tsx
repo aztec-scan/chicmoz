@@ -26,13 +26,13 @@ export const FeeRecipientPage: FC = () => {
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5">
         <InfoBadge
-          title="Total feeReceipients"
+          title="Amount of fee receipients"
           isLoading={isLoading}
           error={error}
           data={data ? data.length.toString() : ""}
         />
         <InfoBadge
-          title="Total amount feesReceived"
+          title="Total amount fees received"
           isLoading={isLoading}
           error={error}
           data={getTotalReceived.toString()}
