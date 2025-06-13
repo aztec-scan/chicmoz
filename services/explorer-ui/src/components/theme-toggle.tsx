@@ -1,7 +1,6 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme as useNextTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Theme } from "~/types";
 import { Button } from "./ui/button";
 
 interface ThemeToggleProps {
@@ -9,7 +8,7 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
-  const { theme, setTheme } = useNextTheme();
+  const { theme, setTheme, resolvedTheme } = useNextTheme();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch by only rendering after mount
@@ -39,19 +38,35 @@ export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
     return <Button variant="ghost" size="icon" className="w-9" />;
   }
 
+  const cycleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  };
+
+  const getIcon = () => {
+    if (resolvedTheme === "dark") {
+      return (
+        <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />
+      );
+    } else {
+      return (
+        <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />
+      );
+    }
+  };
+
   return (
     <Button
       variant="ghost"
       size="icon"
       className="w-9 text-white hover:text-white hover:bg-purple-light/20"
-      onClick={() => setTheme(theme === Theme.DARK ? Theme.LIGHT : Theme.DARK)}
+      onClick={cycleTheme}
       aria-label="Toggle theme"
     >
-      {theme === Theme.DARK ? (
-        <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />
-      ) : (
-        <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />
-      )}
+      {getIcon()}
     </Button>
   );
 }
