@@ -90,11 +90,20 @@ export const ContractL2API = {
       response.data,
     );
   },
-  getContractInstance: async (
-    address: string,
-  ): Promise<ChicmozL2ContractInstanceDeluxe> => {
+  getContractInstance: async ({
+    address,
+    includeArtifactJson,
+  }: {
+    address: string;
+    includeArtifactJson?: boolean;
+  }): Promise<ChicmozL2ContractInstanceDeluxe> => {
     const response = await client.get(
       aztecExplorer.getL2ContractInstance(address),
+      {
+        params: {
+          includeArtifactJson,
+        },
+      },
     );
     return validateResponse(
       chicmozL2ContractInstanceDeluxeSchema,
@@ -137,6 +146,17 @@ export const ContractL2API = {
   > => {
     const response = await client.get(
       aztecExplorer.getL2ContractInstancesWithBalance,
+    );
+    return validateResponse(
+      chicmozContractInstanceBalanceSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstanceBalanceHistory: async (
+    address: string,
+  ): Promise<ChicmozContractInstanceBalance[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstanceBalanceHistory(address),
     );
     return validateResponse(
       chicmozContractInstanceBalanceSchema.array(),

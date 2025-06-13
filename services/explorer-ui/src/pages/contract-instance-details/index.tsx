@@ -4,16 +4,9 @@ import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyContractInstanceData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
-import {
-  useContractInstance,
-  useContractInstanceBalance,
-  useSubTitle,
-} from "~/hooks";
+import { useChainInfo, useContractInstance, useSubTitle } from "~/hooks";
 import { TabsSection } from "./tabs-section";
-import {
-  getContractData,
-  getVerifiedContractInstanceDeploymentData,
-} from "./util";
+import { getContractData } from "./util";
 
 export const ContractInstanceDetails: FC = () => {
   const { address } = useParams({
@@ -26,7 +19,11 @@ export const ContractInstanceDetails: FC = () => {
     error,
   } = useContractInstance(address);
 
-  const { data: contractInstanceBalance } = useContractInstanceBalance(address);
+  const { data: chainInfo } = useChainInfo();
+
+  const isProtocolContract =
+    chainInfo?.protocolContractAddresses &&
+    Object.values(chainInfo.protocolContractAddresses).includes(address);
 
   if (!address) {
     return (
@@ -45,32 +42,33 @@ export const ContractInstanceDetails: FC = () => {
     );
   }
   if (error) {
-    <LoadingDetails
-      title="Error fetching the contract-instance details"
-      description={"Please try to reload the page"}
-    />;
+    return (
+      <LoadingDetails
+        title="Error fetching the contract-instance details"
+        description={"Please try to reload the page"}
+      />
+    );
   }
   if (!contractInstanceDetails) {
     return (
       <LoadingDetails
         title="No Contract instance found"
-        description={`Please check if the cotract instance address: ${address} is correct`}
+        description={`Please check if the contract instance address: ${address} is correct`}
       />
     );
   }
 
-  const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
-    getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
+  const titleStr = isProtocolContract
+    ? "Protocol contract"
+    : "Contract instance details";
 
   return (
-    <div className="mx-auto px-[70px] max-w-[1440px]">
+    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
       <div className="flex flex-col gap-4 mt-8">
         <div className="flex flex-wrap m-3">
-          <h3 className="mt-2 text-primary md:hidden">
-            Contract instance details
-          </h3>
+          <h3 className="mt-2 text-primary md:hidden">{titleStr}</h3>
           <h2 className="hidden md:block md:mt-6 md:text-primary">
-            Contract instance details
+            {titleStr}
           </h2>
         </div>
         <div className="flex flex-col gap-4 mt-8">
@@ -80,20 +78,16 @@ export const ContractInstanceDetails: FC = () => {
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay
-              data={getContractData(
-                contractInstanceDetails,
-                contractInstanceBalance,
-              )}
+              data={getContractData({
+                data: contractInstanceDetails,
+                isProtocolContract,
+              })}
             />
           </div>
         </div>
       </div>
       <div className="mt-5">
-        <TabsSection
-          verifiedDeploymentData={verifiedDeploymentArguments}
-          deployerMetadata={deployerMetadata}
-          aztecScanNotes={aztecScanNotes}
-        />
+        <TabsSection contractInstanceDetails={contractInstanceDetails} />
       </div>
     </div>
   );

@@ -70,10 +70,14 @@ export const useContractClassUtilityFunctions = (
 
 export const useContractInstance = (
   address: string,
+  includeArtifactJson?: boolean,
 ): UseQueryResult<ChicmozL2ContractInstanceDeluxe, Error> => {
   return useQuery<ChicmozL2ContractInstanceDeluxe, Error>({
     queryKey: queryKeyGenerator.contractInstance(address),
-    queryFn: () => ContractL2API.getContractInstance(address),
+    queryFn: () => ContractL2API.getContractInstance({
+      address,
+      includeArtifactJson,
+    }),
   });
 };
 
@@ -83,6 +87,15 @@ export const useContractInstanceBalance = (
   return useQuery<ChicmozContractInstanceBalance, Error>({
     queryKey: queryKeyGenerator.contractInstanceBalance(address),
     queryFn: () => ContractL2API.getContractInstanceBalance(address),
+  });
+};
+
+export const useContractInstanceBalanceHistory = (
+  address: string,
+): UseQueryResult<ChicmozContractInstanceBalance[], Error> => {
+  return useQuery<ChicmozContractInstanceBalance[], Error>({
+    queryKey: queryKeyGenerator.contractInstanceBalanceHistory(address),
+    queryFn: () => ContractL2API.getContractInstanceBalanceHistory(address),
   });
 };
 

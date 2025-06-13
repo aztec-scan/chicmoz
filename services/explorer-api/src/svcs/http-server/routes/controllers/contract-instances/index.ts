@@ -20,6 +20,7 @@ import { OpenAPIObject } from "openapi3-ts/oas31";
 import { z } from "zod";
 import { CACHE_TTL_SECONDS } from "../../../../../environment.js";
 import { logger } from "../../../../../logger.js";
+import { getProtocolContractInstance } from "../../../../../utils/protocol-contracts.js";
 import { l2Contract } from "../../../../database/controllers/index.js";
 import { controllers as db } from "../../../../database/index.js";
 import {
@@ -35,7 +36,6 @@ import {
   contractInstanceResponseArray,
   dbWrapper,
 } from "../utils/index.js";
-import { getProtocolContract } from "./protocol-contracts.js";
 
 export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
@@ -73,12 +73,12 @@ const contractInstanceKeys = (address: string) => [
 export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
   const { address } = getContractInstanceSchema.parse(req).params;
   const { includeArtifactJson } = getContractInstanceSchema.parse(req).query;
-  const protocolContract = getProtocolContract(address);
+  const protocolContract = getProtocolContractInstance(address);
   if (protocolContract) {
     res.status(200).json({
       ...protocolContract,
       artifactJson: includeArtifactJson
-        ? JSON.stringify(protocolContract.artifactJson)
+        ? protocolContract.artifactJson
         : undefined,
     });
     return;
