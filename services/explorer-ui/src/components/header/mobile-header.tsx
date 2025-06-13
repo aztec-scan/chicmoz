@@ -75,9 +75,9 @@ export const MobileHeader = ({
       {/* Mobile Menu Content */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out
-        ${isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+        ${isMenuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"}`}
       >
-        <div className="px-4 pt-4 space-y-3">
+        <div className="px-4 pt-4 space-y-3 overflow-y-auto">
           {/* Search bar */}
           <div className="flex items-center mt-1 w-full">
             <SearchInput
