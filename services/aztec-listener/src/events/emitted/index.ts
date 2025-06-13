@@ -8,6 +8,7 @@ import {
   jsonStringify,
 } from "@chicmoz-pkg/types";
 import { logger } from "../../logger.js";
+import { txsController } from "../../svcs/database/index.js";
 import {
   publishMessage,
   publishMessageSync,
@@ -35,6 +36,36 @@ export const onBlock = async (
     finalizationStatus,
     blockNumber: height,
   });
+  const previouslyDroppedTransactions = await txsController.getTxs(["dropped"]);
+  const conclusivlyDroppedTxs = [];
+  for (const prevDroppedTx of previouslyDroppedTransactions) {
+    const txIsDropped = !block.body.txEffects.some(
+      (effect) => effect.txHash.toString() === prevDroppedTx.txHash,
+    );
+    if (txIsDropped) {
+      conclusivlyDroppedTxs.push(prevDroppedTx);
+    } else {
+      await txsController.storeOrUpdate(
+        prevDroppedTx,
+        finalizationStatus ===
+          ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+          ? "proposed"
+          : "proven",
+      );
+    }
+  }
+  if (conclusivlyDroppedTxs.length > 0) {
+    await publishMessage("DROPPED_TXS_EVENT", {
+      txs: conclusivlyDroppedTxs.map((tx) => ({
+        txHash: tx.txHash,
+        createdAsPendingAt: tx.birthTimestamp,
+        droppedAt: new Date(),
+      })),
+    });
+    for (const droppedTx of conclusivlyDroppedTxs) {
+      await txsController.deleteTx(droppedTx.txHash);
+    }
+  }
 };
 
 export const onCatchupBlock = async (

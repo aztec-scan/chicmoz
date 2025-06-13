@@ -72,19 +72,6 @@ export const SequencerHealthSection: FC = () => {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
           <div className="text-center py-8">
             <div className="text-red-500 mb-4">
-              <svg
-                className="h-12 w-12 mx-auto mb-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.762 0L3.052 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
               <div className="font-medium">Error Loading Sequencer Data</div>
             </div>
             {sequencersError && (
@@ -111,19 +98,6 @@ export const SequencerHealthSection: FC = () => {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
           <div className="text-center py-8">
             <div className="text-gray-500 dark:text-gray-400 mb-4">
-              <svg
-                className="h-12 w-12 mx-auto mb-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.034 0-3.9.785-5.291 2.09M6.343 6.343A8 8 0 1017.657 17.657 8 8 0 106.343 6.343z"
-                />
-              </svg>
               <div className="font-medium">No Sequencers Found</div>
               <div className="text-sm">
                 No sequencer data is currently available
@@ -177,34 +151,42 @@ export const SequencerHealthSection: FC = () => {
 
       {/* Unmatched Errors Section */}
       {unmatchedErrors.length > 0 && (
-        <div className="mt-8">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-primary dark:text-white">
-              Unmatched Errors
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Errors that could not be associated with any known sequencer
-            </p>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 dark:bg-gray-800">
+          {/* Sequencer Header */}
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex-1">
+              <h3 className="text-lg font-medium mb-4 text-primary dark:text-white">
+                Unmatched Errors
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Errors that could not be associated with any known sequencer
+              </p>
+            </div>
+            <SequencerErrorsTable
+              sequencerErrors={unmatchedErrors}
+              isLoading={false}
+              error={null}
+              disableSizeSelector={true}
+              disablePagination={unmatchedErrors.length <= 10}
+              maxEntries={20}
+            />
           </div>
-          <SequencerErrorsTable
-            sequencerErrors={unmatchedErrors}
-            isLoading={false}
-            error={null}
-            disableSizeSelector={true}
-            disablePagination={unmatchedErrors.length <= 10}
-            maxEntries={20}
-          />
         </div>
       )}
 
       {/* Show message when no errors at all */}
       {(!chainErrors || chainErrors.length === 0) && (
-        <div className="mt-8 text-center py-8 bg-white rounded-lg shadow-lg dark:bg-gray-800">
-          <div className="text-green-600 dark:text-green-400">
-            <div className="text-2xl mb-2">✅</div>
-            <div className="font-medium">No Errors Detected</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              All sequencers are operating without any reported errors
+        <div className="mt-8 p-8 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+          <h3 className="text-lg font-medium text-primary dark:text-white">
+            Unmatched Errors
+          </h3>
+          <div className="mt-8 text-center">
+            <div className="mb-4"></div>
+            <div className="text-green-600 dark:text-green-400">
+              <div className="font-medium">No Errors Detected</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                All sequencers are operating without any reported errors
+              </div>
             </div>
           </div>
         </div>

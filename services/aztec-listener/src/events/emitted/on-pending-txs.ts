@@ -49,17 +49,6 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       for (const droppedTx of newDroppedTxs) {
         await txsController.storeOrUpdate(droppedTx, "dropped");
       }
-
-      await publishMessage("DROPPED_TXS_EVENT", {
-        txs: newDroppedTxs.map((tx) => ({
-          txHash: tx.txHash,
-          createdAsPendingAt: tx.birthTimestamp,
-          droppedAt: new Date(),
-        })),
-      });
-      logger.info(
-        `🗑️ Published DROPPED_TXS_EVENT for ${newDroppedTxs.length} dropped txs`,
-      );
     }
   } catch (error) {
     logger.error("Error handling pending txs:", error);
