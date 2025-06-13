@@ -105,20 +105,14 @@ const protocolArtifactsByHash: Record<string, object> = {};
 
 export const getProtocolContractInstance = (
   address: string,
-): ChicmozL2ContractInstanceDeluxe | undefined => {
-  return protocolContractInstances[address];
-};
+): ChicmozL2ContractInstanceDeluxe | undefined =>
+  protocolContractInstances[address];
 
 export const getProtocolContractByClassId = (
   classId: string,
-): ChicmozL2ContractClassRegisteredEvent | undefined => {
-  return Object.values(protocolContractInstances).find(
-    (contract) => contract.contractClassId === classId,
-  );
-};
+): ChicmozL2ContractClassRegisteredEvent | undefined =>
+  protocolContractClasses[classId];
 
 export const getProtocolContractArtifactByHash = (
   artifactHash: string,
-): object | undefined => {
-  return protocolArtifactsByHash[artifactHash];
-};
+): object | undefined => protocolArtifactsByHash[artifactHash];

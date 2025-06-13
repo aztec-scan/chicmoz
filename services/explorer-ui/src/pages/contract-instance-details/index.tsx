@@ -42,16 +42,18 @@ export const ContractInstanceDetails: FC = () => {
     );
   }
   if (error) {
-    <LoadingDetails
-      title="Error fetching the contract-instance details"
-      description={"Please try to reload the page"}
-    />;
+    return (
+      <LoadingDetails
+        title="Error fetching the contract-instance details"
+        description={"Please try to reload the page"}
+      />
+    );
   }
   if (!contractInstanceDetails) {
     return (
       <LoadingDetails
         title="No Contract instance found"
-        description={`Please check if the cotract instance address: ${address} is correct`}
+        description={`Please check if the contract instance address: ${address} is correct`}
       />
     );
   }

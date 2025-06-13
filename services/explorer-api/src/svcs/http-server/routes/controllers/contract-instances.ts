@@ -78,7 +78,7 @@ export const GET_L2_CONTRACT_INSTANCE = asyncHandler(async (req, res) => {
     res.status(200).json({
       ...protocolContract,
       artifactJson: includeArtifactJson
-        ? JSON.stringify(protocolContract.artifactJson)
+        ? protocolContract.artifactJson
         : undefined,
     });
     return;
