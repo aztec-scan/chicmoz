@@ -8,7 +8,7 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
-  const { theme, setTheme } = useNextTheme();
+  const { theme, setTheme, resolvedTheme } = useNextTheme();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch by only rendering after mount
@@ -47,13 +47,13 @@ export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
   };
 
   const getIcon = () => {
-    if (theme === "light") {
-      return (
-        <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />
-      );
-    } else if (theme === "dark") {
+    if (resolvedTheme === "dark") {
       return (
         <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />
+      );
+    } else {
+      return (
+        <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />
       );
     }
   };
