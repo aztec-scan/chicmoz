@@ -2,6 +2,7 @@ import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { type Dispatch, type SetStateAction } from "react";
+import { useClickOutside } from "~/hooks";
 import { ThemeToggle } from "../theme-toggle";
 import { Button } from "../ui";
 import { type HeaderLink } from "./types";
@@ -17,6 +18,7 @@ export const DesktopBurgerMenu = ({
   setIsMenuOpen,
   links,
 }: DesktopBurgerMenuProps) => {
+  const menuRef = useClickOutside(() => setIsMenuOpen(false));
   // Group links by their group property
   const groupedLinks = links.reduce<Record<string, HeaderLink[]>>(
     (acc, link) => {
@@ -51,7 +53,7 @@ export const DesktopBurgerMenu = ({
       </Button>
 
       {isMenuOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-md bg-purple-light ring-1 ring-black ring-opacity-5 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+        <div ref={menuRef} className="absolute right-0 mt-2 w-48 rounded-md bg-purple-light ring-1 ring-black ring-opacity-5 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
           <div className="py-1" role="menu" aria-orientation="vertical">
             {groups.map((group, groupIndex) => (
               <div key={group}>
