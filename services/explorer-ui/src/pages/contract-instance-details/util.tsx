@@ -1,15 +1,18 @@
 import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { CustomTooltip } from "~/components/custom-tooltip";
 import { Link } from "@tanstack/react-router";
+import { CustomTooltip } from "~/components/custom-tooltip";
+import { type DetailItem } from "~/components/info-display/key-value-display";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
-const HARDCODED_DEPLOYER =
-  "0x0000000000000000000000000000000000000000000000000000000000000000";
-
-export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
-  const link = `${routes.contracts.route}${routes.contracts.children.classes.route}/${data.contractClassId}/versions/${data.version}`;
+export const getContractData = ({
+  data,
+  isProtocolContract,
+}: {
+  data: ChicmozL2ContractInstanceDeluxe;
+  isProtocolContract?: boolean;
+}) => {
   const standardContractType = data.standardContractType
     ? {
         label: "STANDARD CONTRACT TYPE",
@@ -36,7 +39,8 @@ export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
           </div>
         ),
       };
-  const displayData = [
+  const ccLink = `${routes.contracts.route}${routes.contracts.children.classes.route}/${data.contractClassId}/versions/${data.version}`;
+  let displayData: DetailItem[] = [
     {
       label: "ADDRESS",
       value: data.address,
@@ -44,32 +48,36 @@ export const getContractData = (data: ChicmozL2ContractInstanceDeluxe) => {
     {
       label: "CLASS ID",
       value: data.contractClassId,
-      link,
+      link: isProtocolContract ? undefined : ccLink,
     },
     {
-      label: "BLOCK HASH",
-      value: data.blockHash,
-      link: `/blocks/${data.blockHash}`,
+      label: "VERSION",
+      value: data.version.toString(),
+      link: isProtocolContract ? undefined : ccLink,
     },
-    { label: "VERSION", value: data.version.toString(), link },
-    { label: "DEPLOYER", value: data.deployer },
-    {
-      label: "RAW DATA",
-      value: "View raw data",
-      extLink: `${API_URL}${aztecExplorer.getL2ContractInstance(data.address)}`,
-    },
-    standardContractType,
   ];
-  const isDeployerContract =
-    process.env.NODE_ENV === "development" &&
-    data.deployer === HARDCODED_DEPLOYER;
-  if (isDeployerContract && !data.verifiedDeploymentArguments) {
+  if (!isProtocolContract) {
+    displayData = displayData.concat([
+      {
+        label: "BLOCK HASH",
+        value: data.blockHash,
+        link: `/blocks/${data.blockHash}`,
+      },
+      { label: "DEPLOYER", value: data.deployer },
+      standardContractType,
+    ]);
+  } else {
     displayData.push({
-      label: "DEPLOYER CONTRACT 🤖",
+      label: "PROTOCOL CONTRACT 🤖",
       value:
-        "This is a contract deployed by the hard-coded deployer. This message will only appear in development mode.",
+        "This is a contract provided by the protocol and used with a hardcoded address",
     });
   }
+  displayData.push({
+    label: "RAW DATA",
+    value: "View raw data",
+    extLink: `${API_URL}${aztecExplorer.getL2ContractInstance(data.address)}`,
+  });
   return displayData;
 };
 

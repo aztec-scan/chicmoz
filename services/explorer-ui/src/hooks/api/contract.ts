@@ -70,10 +70,14 @@ export const useContractClassUtilityFunctions = (
 
 export const useContractInstance = (
   address: string,
+  includeArtifactJson?: boolean,
 ): UseQueryResult<ChicmozL2ContractInstanceDeluxe, Error> => {
   return useQuery<ChicmozL2ContractInstanceDeluxe, Error>({
     queryKey: queryKeyGenerator.contractInstance(address),
-    queryFn: () => ContractL2API.getContractInstance(address),
+    queryFn: () => ContractL2API.getContractInstance({
+      address,
+      includeArtifactJson,
+    }),
   });
 };
 

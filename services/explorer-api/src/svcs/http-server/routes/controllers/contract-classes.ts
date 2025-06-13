@@ -9,6 +9,7 @@ import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
+import { getProtocolContractByClassId } from "../../../../utils/protocol-contracts.js";
 import { controllers as db } from "../../../database/index.js";
 import {
   getContractClassesByCurrentClassIdSchema,
@@ -63,6 +64,11 @@ export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
     const { contractClassId, version } =
       getContractClassSchema.parse(req).params;
     const { includeArtifactJson } = getContractClassSchema.parse(req).query;
+    const protocolContractClass = getProtocolContractByClassId(contractClassId);
+    if (protocolContractClass) {
+      res.status(200).json(protocolContractClass);
+      return;
+    }
     const contractClass = await dbWrapper.get(
       ["l2", "contract-classes", contractClassId, version],
       () =>
