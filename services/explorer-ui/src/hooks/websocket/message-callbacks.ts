@@ -26,6 +26,26 @@ export const updateBlock = (
       if (oldData.find((b) => b.blockHash === block.hash)) {
         return oldData;
       }
+      const maxKnownHeight =
+        oldData.length > 0
+          ? Math.max(...oldData.map((b) => Number(b.height)))
+          : 0;
+
+      if (block.height < maxKnownHeight) {
+        console.log(
+          `Reorg detected: incoming block ${block.height} < max known ${maxKnownHeight}`,
+        );
+        void Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: queryKeyGenerator.latestTableBlocks,
+          }),
+          queryClient.invalidateQueries({
+            queryKey: queryKeyGenerator.latestTableTxEffects,
+          }),
+        ]);
+        return;
+      }
+
       const mapedWebsockketBlock: UiBlockTable = {
         height: block.height,
         blockHash: block.hash,

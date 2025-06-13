@@ -1,5 +1,13 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, count, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  inArray,
+  isNull,
+} from "drizzle-orm";
 import {
   body,
   globalVariables,
@@ -42,7 +50,7 @@ export const getBlocksForUiTable = async ({
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
-    .where(whereRange)
+    .where(and(whereRange, isNull(l2Block.orphan_timestamp)))
     .orderBy(desc(l2Block.height))
     .limit(DB_MAX_BLOCKS)
     .execute();
@@ -165,11 +173,17 @@ export const getTxEffectForUiTable = async (
     case GetTypes.BlockHeightRange:
       if (args.from ?? args.to) {
         whereQuery = joinQuery
-          .where(getBlocksWhereRange({ from: args.from, to: args.to }))
+          .where(
+            and(
+              getBlocksWhereRange({ from: args.from, to: args.to }),
+              isNull(l2Block.orphan_timestamp),
+            ),
+          )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
           .limit(DB_MAX_TX_EFFECTS);
       } else {
         whereQuery = joinQuery
+          .where(isNull(l2Block.orphan_timestamp))
           .orderBy(desc(l2Block.height), desc(txEffect.index))
           .limit(DB_MAX_TX_EFFECTS);
       }
