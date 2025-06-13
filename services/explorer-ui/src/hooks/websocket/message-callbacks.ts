@@ -29,7 +29,10 @@ export const updateBlock = (
       const maxKnownHeight = Math.max(...oldData.map((b) => Number(b.height)));
       if (block.height < maxKnownHeight) {
         void queryClient.invalidateQueries({
-          queryKey: queryKeyGenerator.latestTableBlocks,
+          queryKey: [
+            queryKeyGenerator.latestTableBlocks,
+            queryKeyGenerator.latestTableTxEffects,
+          ],
         });
         return;
       }
