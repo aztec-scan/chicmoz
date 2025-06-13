@@ -12,7 +12,6 @@ import {
   ChicmozL2Sequencer,
   NODE_ENV,
   NodeEnv,
-  l2NetworkIdSchema,
 } from "@chicmoz-pkg/types";
 import { backOff } from "exponential-backoff";
 import {
@@ -120,10 +119,7 @@ export const getFreshInfo = async (): Promise<{
     nodeVersion,
     l1ChainId,
     rollupVersion,
-    enr:
-      (enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX) // NOTE: this is to anonymize the node
-        ? L2_NETWORK_ID
-        : undefined,
+    enr,
     l1ContractAddresses: l1ContractAddresses,
     protocolContractAddresses: protocolContractAddresses,
   };

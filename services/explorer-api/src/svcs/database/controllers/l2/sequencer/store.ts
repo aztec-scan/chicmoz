@@ -10,12 +10,15 @@ export async function storeL2Sequencer(
   const { enr, rpcUrl, l2NetworkId, rollupVersion, nodeVersion, l1ChainId } =
     sequencer;
   assert(rpcUrl, "rpcUrl is required");
+  // Use rpcUrl as name for now - this should be updated when sequencer type includes rpcNodeName
+  const name = rpcUrl;
   const lastSeenAt = new Date();
 
   await db().transaction(async (tx) => {
     const rpcNodeRes = await tx
       .insert(l2RpcNodeTable)
       .values({
+        name,
         rpcUrl,
         lastSeenAt,
       })
@@ -25,13 +28,13 @@ export async function storeL2Sequencer(
           lastSeenAt,
         },
       })
-      .returning({ id: l2RpcNodeTable.id });
+      .returning({ name: l2RpcNodeTable.name });
     const rpcNode = rpcNodeRes[0];
     await tx
       .insert(l2SequencerTable)
       .values({
         enr,
-        rpcNodeId: rpcNode.id,
+        rpcNodeName: rpcNode.name,
         l2NetworkId,
         rollupVersion,
         nodeVersion,
@@ -40,7 +43,7 @@ export async function storeL2Sequencer(
       .onConflictDoUpdate({
         target: l2SequencerTable.enr,
         set: {
-          rpcNodeId: rpcNode.id,
+          rpcNodeName: rpcNode.name,
           l2NetworkId,
           rollupVersion,
           nodeVersion,

@@ -52,8 +52,8 @@ export const nodeInfoSchema = z.object({
 });
 
 export const chicmozL2RpcNodeSchema = z.object({
+  name: z.string(),
   rpcUrl: z.string(),
-  id: z.string().optional(),
   createdAt: z.coerce.date(),
   lastSeenAt: z.coerce.date().optional(),
 });

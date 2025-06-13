@@ -35,6 +35,7 @@ export type CatchupBlockEvent = NewBlockEvent;
 
 export type ChicmozL2RpcNodeAliveEvent = {
   rpcUrl: ChicmozL2RpcNode["rpcUrl"];
+  rpcName: ChicmozL2RpcNode["name"];
   timestamp: number;
 };
 
