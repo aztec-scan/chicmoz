@@ -5,6 +5,7 @@ import {
   ChicmozL2RpcNodeError,
   ChicmozL2Sequencer,
   chicmozL2RpcNodeErrorSchema,
+  jsonStringify,
 } from "@chicmoz-pkg/types";
 import { logger } from "../../logger.js";
 import {
@@ -51,13 +52,13 @@ export const onCatchupBlock = async (
 
 export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   const event = { chainInfo };
-  logger.info(`🔗 publishing CHAIN_INFO_EVENT...`);
+  logger.info(`🔗 publishing CHAIN_INFO_EVENT ${jsonStringify(event)}`);
   await publishMessage("CHAIN_INFO_EVENT", event);
 };
 
 export const onL2SequencerInfo = async (sequencer: ChicmozL2Sequencer) => {
   const event = { sequencer };
-  logger.info(`🔍 publishing SEQUENCER_INFO_EVENT...`);
+  logger.info(`🔍 publishing SEQUENCER_INFO_EVENT ${jsonStringify(event)}`);
   await publishMessage("SEQUENCER_INFO_EVENT", event);
 };
 

@@ -15,7 +15,7 @@ import {
 
 const onL2RpcNodeAlive = async (event: ChicmozL2RpcNodeAliveEvent) => {
   logger.info(`✔ L2RpcNodeAlive ${JSON.stringify(event)}`);
-  await storeL2RpcNode(event.rpcUrl);
+  await storeL2RpcNode(event.rpcName, event.rpcUrl);
 };
 
 const onL2RpcNodeError = async (event: ChicmozL2RpcNodeErrorEvent) => {

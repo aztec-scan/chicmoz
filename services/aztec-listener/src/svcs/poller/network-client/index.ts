@@ -12,7 +12,6 @@ import {
   ChicmozL2Sequencer,
   NODE_ENV,
   NodeEnv,
-  l2NetworkIdSchema,
 } from "@chicmoz-pkg/types";
 import { backOff } from "exponential-backoff";
 import {
@@ -26,10 +25,11 @@ import {
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
 import {
+  getAllRpcNodes,
   getAmountOfOnlineNodes,
-  getNodeUrls,
   getRpcNode,
   initPool,
+  RpcNode,
   setNodeOffline,
 } from "./pool.js";
 import {
@@ -37,13 +37,14 @@ import {
   getSequencerFromNodeInfo,
 } from "./utils.js";
 
-const offlineCauses = ["Service Unavailable"];
+const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway"];
 
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
   args?: Parameters<AztecNode[K]>,
+  forceNode?: RpcNode,
 ): Promise<ReturnType<AztecNode[K]>> => {
-  let currentNode = getRpcNode();
+  let currentNode = forceNode ?? getRpcNode();
   const res = await backOff(
     async () => {
       logger.info(
@@ -85,8 +86,11 @@ const callNodeFunction = async <K extends keyof AztecNode>(
           )
         ) {
           setNodeOffline(currentNode, fnName, e, args);
+          if (forceNode) {
+            return false;
+          }
         }
-        currentNode = getRpcNode();
+        currentNode = forceNode ?? getRpcNode();
         return true;
       },
     },
@@ -108,43 +112,63 @@ export const getFreshInfo = async (): Promise<{
   chainInfo: ChicmozChainInfo;
   sequencers: ChicmozL2Sequencer[];
 }> => {
-  const {
-    nodeVersion,
-    l1ChainId,
-    rollupVersion,
-    enr,
-    l1ContractAddresses,
-    protocolContractAddresses,
-  } = await callNodeFunction("getNodeInfo");
-  const nodeInfo: NodeInfo = {
-    nodeVersion,
-    l1ChainId,
-    rollupVersion,
-    enr:
-      (enr ?? L2_NETWORK_ID === l2NetworkIdSchema.enum.SANDBOX) // NOTE: this is to anonymize the node
-        ? L2_NETWORK_ID
-        : undefined,
-    l1ContractAddresses: l1ContractAddresses,
-    protocolContractAddresses: protocolContractAddresses,
-  };
-  logger.info(`🧋 ${JSON.stringify(nodeInfo, null, 2)}`);
+  const allNodes = getAllRpcNodes();
+  if (allNodes.length === 0) {
+    throw new Error("No Aztec nodes available in the pool");
+  }
+  let chainInfo: ChicmozChainInfo | undefined = undefined;
+  const sequencers: ChicmozL2Sequencer[] = [];
+  for (const node of allNodes) {
+    try {
+      const {
+        nodeVersion,
+        l1ChainId,
+        rollupVersion,
+        enr,
+        l1ContractAddresses,
+        protocolContractAddresses,
+      } = await callNodeFunction("getNodeInfo", undefined, node);
+      const nodeInfo: NodeInfo = {
+        nodeVersion,
+        l1ChainId,
+        rollupVersion,
+        enr,
+        l1ContractAddresses: l1ContractAddresses,
+        protocolContractAddresses: protocolContractAddresses,
+      };
+      const cInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
+      if (!chainInfo || chainInfo.rollupVersion < cInfo.rollupVersion) {
+        await onChainInfo(cInfo).catch((e) => {
+          logger.error(
+            `Aztec failed to publish chain info: ${(e as Error).message}`,
+          );
+        });
+        chainInfo = cInfo;
+      }
 
-  const chainInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
-  onChainInfo(chainInfo).catch((e) => {
-    logger.error(`Aztec failed to publish chain info: ${(e as Error).message}`);
-  });
-
-  const sequencers = getNodeUrls().map((url) => {
-    const sequencer = getSequencerFromNodeInfo(L2_NETWORK_ID, url, nodeInfo);
-
-    onL2SequencerInfo(sequencer).catch((e) => {
-      logger.error(
-        `Aztec failed to publish sequencer info: ${(e as Error).message}`,
+      const sequencer = getSequencerFromNodeInfo(
+        L2_NETWORK_ID,
+        node.url,
+        nodeInfo,
       );
-    });
+      sequencers.push(sequencer);
 
-    return sequencer;
-  });
+      await onL2SequencerInfo(sequencer).catch((e) => {
+        logger.error(
+          `Aztec failed to publish sequencer info: ${(e as Error).message}`,
+        );
+      });
+    } catch (e) {
+      logger.error(
+        `Failed to fetch node info from ${node.name}: ${(e as Error).stack}`,
+      );
+      continue;
+    }
+  }
+
+  if (!chainInfo) {
+    throw new Error("Failed to fetch chain info from any Aztec node");
+  }
 
   return {
     chainInfo,

@@ -9,7 +9,7 @@ export async function getL2RpcNodeErrors(): Promise<ChicmozL2RpcNodeError[]> {
   const result = await db()
     .select({
       name: l2RpcNodeErrorTable.name,
-      rpcNodeId: l2RpcNodeErrorTable.rpcNodeId,
+      rpcNodeName: l2RpcNodeErrorTable.rpcNodeName,
       cause: l2RpcNodeErrorTable.cause,
       message: l2RpcNodeErrorTable.message,
       stack: l2RpcNodeErrorTable.stack,

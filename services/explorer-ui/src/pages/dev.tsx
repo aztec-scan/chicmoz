@@ -137,7 +137,7 @@ export const DevPage: FC = () => {
                   <hr />
                   <h3>{error.name}</h3>
                   {`
-rpcNodeId:      ${error.rpcNodeId}
+rpcNodeName:    ${error.rpcNodeName}
 count:          ${error.count}
 cause:          ${error.cause}
 firstSeen:      ${formatTimeSince(error.createdAt.getTime())} ago

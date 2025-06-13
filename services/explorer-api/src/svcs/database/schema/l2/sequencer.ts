@@ -4,7 +4,6 @@ import {
   integer,
   pgTable,
   timestamp,
-  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { l2NetworkIdDbEnum } from "../utils.js";
@@ -12,9 +11,9 @@ import { l2RpcNodeTable } from "./rpc-node.js";
 
 export const l2SequencerTable = pgTable("l2_sequencer", {
   enr: varchar("enr").primaryKey().notNull(),
-  rpcNodeId: uuid("rpc_node_id")
+  rpcNodeName: varchar("rpc_node_name")
     .notNull()
-    .references(() => l2RpcNodeTable.id, {
+    .references(() => l2RpcNodeTable.name, {
       onDelete: "cascade",
     }),
   l2NetworkId: l2NetworkIdDbEnum("l2_network_id").notNull(),
