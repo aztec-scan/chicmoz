@@ -1,4 +1,4 @@
-import { MoonIcon, SunIcon } from "lucide-react";
+import { MoonIcon, SunIcon, MonitorIcon } from "lucide-react";
 import { useTheme as useNextTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Theme } from "~/types";
@@ -39,19 +39,35 @@ export function ThemeToggle({ size = 5 }: ThemeToggleProps) {
     return <Button variant="ghost" size="icon" className="w-9" />;
   }
 
+  const cycleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else if (theme === "dark") {
+      setTheme("system");
+    } else {
+      setTheme("light");
+    }
+  };
+
+  const getIcon = () => {
+    if (theme === "light") {
+      return <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />;
+    } else if (theme === "dark") {
+      return <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />;
+    } else {
+      return <MonitorIcon className={`${sizeClass} hover:text-accent-foreground`} />;
+    }
+  };
+
   return (
     <Button
       variant="ghost"
       size="icon"
       className="w-9 text-white hover:text-white hover:bg-purple-light/20"
-      onClick={() => setTheme(theme === Theme.DARK ? Theme.LIGHT : Theme.DARK)}
+      onClick={cycleTheme}
       aria-label="Toggle theme"
     >
-      {theme === Theme.DARK ? (
-        <SunIcon className={`${sizeClass} hover:text-accent-foreground`} />
-      ) : (
-        <MoonIcon className={`${sizeClass} hover:text-accent-foreground`} />
-      )}
+      {getIcon()}
     </Button>
   );
 }
