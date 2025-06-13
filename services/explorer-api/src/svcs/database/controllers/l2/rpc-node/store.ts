@@ -4,7 +4,7 @@ import { l2RpcNodeTable } from "../../../schema/l2/rpc-node.js";
 
 export async function storeL2RpcNode(
   name: ChicmozL2RpcNode["name"],
-  rpcUrl: ChicmozL2RpcNode["rpcUrl"]
+  rpcUrl: ChicmozL2RpcNode["rpcUrl"],
 ): Promise<void> {
   const lastSeenAt = new Date();
   await db()

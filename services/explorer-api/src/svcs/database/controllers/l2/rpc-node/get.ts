@@ -7,7 +7,7 @@ import { l2RpcNodeTable } from "../../../schema/l2/rpc-node.js";
 type ChicmozDbL2RpcNode = ChicmozL2RpcNode;
 
 export async function getL2RpcNode(
-  rpcUrl: ChicmozL2RpcNode["rpcUrl"]
+  rpcUrl: ChicmozL2RpcNode["rpcUrl"],
 ): Promise<ChicmozDbL2RpcNode> {
   const res = await db()
     .select()
@@ -15,5 +15,5 @@ export async function getL2RpcNode(
     .where(eq(l2RpcNodeTable.rpcUrl, rpcUrl))
     .limit(1);
   assert(res[0].name, "rpc node not found");
-  return chicmozL2RpcNodeSchema.parse(res[0]) ;
+  return chicmozL2RpcNodeSchema.parse(res[0]);
 }

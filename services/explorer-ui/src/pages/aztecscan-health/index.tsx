@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import { useSubTitle, useSystemHealth } from "~/hooks";
-import { SystemHealthOverview } from "./system-health-overview";
 import { SequencerHealthSection } from "./sequencer-health-section";
+import { SystemHealthOverview } from "./system-health-overview";
 
 export const AztecscanHealth: FC = () => {
   const systemHealth = useSystemHealth();
