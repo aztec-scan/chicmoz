@@ -26,6 +26,14 @@ export const updateBlock = (
       if (oldData.find((b) => b.blockHash === block.hash)) {
         return oldData;
       }
+      const maxKnownHeight = Math.max(...oldData.map((b) => Number(b.height)));
+      if (block.height < maxKnownHeight) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeyGenerator.latestTableBlocks,
+        });
+        return;
+      }
+
       const mapedWebsockketBlock: UiBlockTable = {
         height: block.height,
         blockHash: block.hash,
