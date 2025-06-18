@@ -11,7 +11,9 @@ import { getBlock, getLatestProvenHeight } from "../network-client/index.js";
 let pollInterval: NodeJS.Timeout;
 
 export const startPolling = () => {
-  logger.info(`🔍 Starting dropped transaction verifier (interval: ${DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000}s)`);
+  logger.info(
+    `🔍 Starting dropped transaction verifier (interval: ${DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000}s)`,
+  );
   pollInterval = setInterval(() => {
     void verifyDroppedTransactions();
   }, DROPPED_TX_VERIFICATION_INTERVAL_MS);
@@ -26,8 +28,10 @@ export const stopPolling = () => {
 
 const verifyDroppedTransactions = async () => {
   try {
-    const suspectedDroppedTxs = await txsController.getTxs(["suspected_dropped"]);
-    
+    const suspectedDroppedTxs = await txsController.getTxs([
+      "suspected_dropped",
+    ]);
+
     if (suspectedDroppedTxs.length === 0) {
       logger.debug("🔍 No suspected dropped transactions to verify");
       return;
@@ -40,15 +44,22 @@ const verifyDroppedTransactions = async () => {
     });
 
     if (oldSuspectedTxs.length === 0) {
-      logger.debug(`🔍 ${suspectedDroppedTxs.length} suspected dropped txs found, but none are old enough (threshold: ${DROPPED_TX_AGE_THRESHOLD_MS / 1000}s)`);
+      logger.debug(
+        `🔍 ${suspectedDroppedTxs.length} suspected dropped txs found, but none are old enough (threshold: ${DROPPED_TX_AGE_THRESHOLD_MS / 1000}s)`,
+      );
       return;
     }
 
-    logger.info(`🔍 Verifying ${oldSuspectedTxs.length} old suspected dropped transactions`);
+    logger.info(
+      `🔍 Verifying ${oldSuspectedTxs.length} old suspected dropped transactions`,
+    );
 
     const latestHeight = await getLatestProvenHeight();
-    const startHeight = Math.max(1, latestHeight - DROPPED_TX_BLOCK_LOOKBACK + 1);
-    
+    const startHeight = Math.max(
+      1,
+      latestHeight - DROPPED_TX_BLOCK_LOOKBACK + 1,
+    );
+
     const recentBlockTxHashes = new Set<string>();
     for (let height = startHeight; height <= latestHeight; height++) {
       try {
@@ -59,7 +70,10 @@ const verifyDroppedTransactions = async () => {
           });
         }
       } catch (error) {
-        logger.warn(`🔍 Failed to fetch block ${height} for verification:`, error);
+        logger.warn(
+          `🔍 Failed to fetch block ${height} for verification:`,
+          error,
+        );
       }
     }
 
@@ -70,7 +84,9 @@ const verifyDroppedTransactions = async () => {
       if (recentBlockTxHashes.has(suspectedTx.txHash)) {
         recoveredTxs.push(suspectedTx);
         await txsController.storeOrUpdate(suspectedTx, "proven");
-        logger.info(`✅ Transaction ${suspectedTx.txHash} found in recent blocks, marked as proven`);
+        logger.info(
+          `✅ Transaction ${suspectedTx.txHash} found in recent blocks, marked as proven`,
+        );
       } else {
         definitivelyDroppedTxs.push(suspectedTx);
         await txsController.storeOrUpdate(suspectedTx, "dropped");
@@ -85,19 +101,23 @@ const verifyDroppedTransactions = async () => {
           droppedAt: new Date(),
         })),
       });
-      
-      logger.info(`🗑️ Confirmed ${definitivelyDroppedTxs.length} transactions as definitively dropped`);
-      
+
+      logger.info(
+        `🗑️ Confirmed ${definitivelyDroppedTxs.length} transactions as definitively dropped`,
+      );
+
       for (const droppedTx of definitivelyDroppedTxs) {
         await txsController.deleteTx(droppedTx.txHash);
       }
     }
 
     if (recoveredTxs.length > 0) {
-      logger.info(`🔄 Recovered ${recoveredTxs.length} transactions that were found in recent blocks`);
+      logger.info(
+        `🔄 Recovered ${recoveredTxs.length} transactions that were found in recent blocks`,
+      );
     }
-
   } catch (error) {
     logger.error("🔍 Error verifying dropped transactions:", error);
   }
 };
+

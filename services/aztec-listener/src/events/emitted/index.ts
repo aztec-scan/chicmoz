@@ -36,17 +36,26 @@ export const onBlock = async (
     finalizationStatus,
     blockNumber: height,
   });
-  const potentiallyIncludedTxs = await txsController.getTxs(["pending", "suspected_dropped"]);
-  const blockTxHashes = block.body.txEffects.map((effect) => effect.txHash.toString());
-  
+  const potentiallyIncludedTxs = await txsController.getTxs([
+    "pending",
+    "suspected_dropped",
+  ]);
+  const blockTxHashes = block.body.txEffects.map((effect) =>
+    effect.txHash.toString(),
+  );
+
   for (const potentialTx of potentiallyIncludedTxs) {
     const txFoundInBlock = blockTxHashes.includes(potentialTx.txHash);
     if (txFoundInBlock) {
-      const newState = finalizationStatus === ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
-        ? "proposed"
-        : "proven";
+      const newState =
+        finalizationStatus ===
+        ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+          ? "proposed"
+          : "proven";
       await txsController.storeOrUpdate(potentialTx, newState);
-      logger.info(`✅ Transaction ${potentialTx.txHash} found in block ${height}, updated to ${newState}`);
+      logger.info(
+        `✅ Transaction ${potentialTx.txHash} found in block ${height}, updated to ${newState}`,
+      );
     }
   }
 };

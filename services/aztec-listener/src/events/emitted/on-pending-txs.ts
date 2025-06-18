@@ -47,7 +47,10 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
 
     if (newSuspectedDroppedTxs.length > 0) {
       for (const suspectedDroppedTx of newSuspectedDroppedTxs) {
-        await txsController.storeOrUpdate(suspectedDroppedTx, "suspected_dropped");
+        await txsController.storeOrUpdate(
+          suspectedDroppedTx,
+          "suspected_dropped",
+        );
       }
       logger.info(
         `⚠️ Marked ${newSuspectedDroppedTxs.length} txs as suspected_dropped (missing from mempool)`,
