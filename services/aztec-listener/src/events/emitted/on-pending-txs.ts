@@ -29,21 +29,25 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       );
       const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
       const beyondGracePeriod = ageMs >= MEMPOOL_SYNC_GRACE_PERIOD_MS;
-      
-      return missingFromMempool && 
-             storedTx.txState === "pending" && 
-             beyondGracePeriod;
+
+      return (
+        missingFromMempool &&
+        storedTx.txState === "pending" &&
+        beyondGracePeriod
+      );
     });
 
-    // Count transactions in grace period for logging
+    //Can be removed: Count transactions in grace period for logging
     const txsInGracePeriod = storedTxs.filter((storedTx) => {
       const missingFromMempool = !currentPendingTxs.find(
         (currentTx) => currentTx.txHash === storedTx.txHash,
       );
       const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
       const inGracePeriod = ageMs < MEMPOOL_SYNC_GRACE_PERIOD_MS;
-      
-      return missingFromMempool && storedTx.txState === "pending" && inGracePeriod;
+
+      return (
+        missingFromMempool && storedTx.txState === "pending" && inGracePeriod
+      );
     });
 
     logger.info(
