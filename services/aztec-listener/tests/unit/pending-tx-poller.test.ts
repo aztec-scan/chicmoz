@@ -44,7 +44,10 @@ describe("onPendingTxs Function", () => {
     mockMessageBus.publishMessage.mockResolvedValue(undefined);
 
     // Execute
-    await onPendingTxs(mockAztecTxs);
+    await onPendingTxs(
+      // @ts-expect-error - Mock object doesn't implement full Tx interface
+      mockAztecTxs
+    );
 
     // Verify
     expect(mockTxsController.storeOrUpdate).toHaveBeenCalledTimes(2);
@@ -77,7 +80,10 @@ describe("onPendingTxs Function", () => {
     mockTxsController.storeOrUpdate.mockResolvedValue(undefined);
 
     // Execute
-    await onPendingTxs(mockAztecTxs);
+    await onPendingTxs(
+      // @ts-expect-error - Mock object doesn't implement full Tx interface
+      mockAztecTxs
+    );
 
     // Verify: Only the missing pending transaction is marked as suspected_dropped
     expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
@@ -109,7 +115,10 @@ describe("onPendingTxs Function", () => {
     mockMessageBus.publishMessage.mockResolvedValue(undefined);
 
     // Execute
-    await onPendingTxs(mockAztecTxs);
+    await onPendingTxs(
+      // @ts-expect-error - Mock object doesn't implement full Tx interface
+      mockAztecTxs
+    );
 
     // Verify: New tx stored as pending
     expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
@@ -169,7 +178,10 @@ describe("onPendingTxs Function", () => {
     );
 
     // Execute
-    await onPendingTxs([createMockAztecTx("test-tx")]);
+    await onPendingTxs([
+      // @ts-expect-error - Mock object doesn't implement full Tx interface
+      createMockAztecTx("test-tx")
+    ]);
 
     // Verify: Error logged
     expect(mockLogger.error).toHaveBeenCalledWith(

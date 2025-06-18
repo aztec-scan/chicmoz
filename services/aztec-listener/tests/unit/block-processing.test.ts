@@ -49,6 +49,7 @@ describe("onBlock Function", () => {
 
     // Execute with proposed block
     await onBlock(
+      // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
@@ -98,6 +99,7 @@ describe("onBlock Function", () => {
 
     // Execute with proven block
     await onBlock(
+      // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
     );
@@ -133,6 +135,7 @@ describe("onBlock Function", () => {
 
     // Execute
     await onBlock(
+      // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
@@ -164,6 +167,7 @@ describe("onBlock Function", () => {
 
     // Execute
     await onBlock(
+      // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
     );
@@ -199,6 +203,7 @@ describe("onBlock Function", () => {
 
     // Execute
     await onBlock(
+      // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
     );
