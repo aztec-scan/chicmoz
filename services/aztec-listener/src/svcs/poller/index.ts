@@ -13,6 +13,7 @@ import { init as initNetworkClient } from "./network-client/index.js";
 import * as blockPoller from "./pollers/block_poller/index.js";
 import * as chainInfoPoller from "./pollers/chain-info-poller.js";
 import * as pendingTxsPoller from "./pollers/txs_poller.js";
+import * as droppedTxVerifier from "./pollers/dropped-tx-verifier.js";
 
 let nodeInfo: NodeInfo;
 
@@ -50,6 +51,7 @@ export const startPoller = async () => {
   });
   if (AZTEC_LISTEN_FOR_PENDING_TXS) {
     pendingTxsPoller.startPolling();
+    droppedTxVerifier.startPolling();
   }
   if (AZTEC_LISTEN_FOR_CHAIN_INFO) {
     chainInfoPoller.startPolling();
@@ -69,5 +71,6 @@ export const pollerService: MicroserviceBaseSvc = {
     pendingTxsPoller.stopPolling();
     blockPoller.stopPolling();
     chainInfoPoller.stopPolling();
+    droppedTxVerifier.stopPolling();
   },
 };

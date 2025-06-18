@@ -24,7 +24,7 @@ export const storeOrUpdate = async (
 };
 
 export const getTxs = async (
-  statesWhitelist: TxState[] = ["pending", "dropped", "proposed", "proven"],
+  statesWhitelist: TxState[] = ["pending", "suspected_dropped", "dropped", "proposed", "proven"],
 ) => {
   return await db()
     .select()

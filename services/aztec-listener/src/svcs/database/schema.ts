@@ -14,6 +14,7 @@ export const heightsTable = pgTable("heights", {
 
 export const txStateValues = [
   "pending",
+  "suspected_dropped",
   "dropped",
   "proposed",
   "proven",

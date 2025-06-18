@@ -52,6 +52,19 @@ export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
   .default(false)
   .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
 
+export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
+  .number()
+  .default(300000) // 5 minutes
+  .parse(process.env.DROPPED_TX_VERIFICATION_INTERVAL_MS);
+export const DROPPED_TX_AGE_THRESHOLD_MS = z.coerce
+  .number()
+  .default(300000) // 5 minutes
+  .parse(process.env.DROPPED_TX_AGE_THRESHOLD_MS);
+export const DROPPED_TX_BLOCK_LOOKBACK = z.coerce
+  .number()
+  .default(10)
+  .parse(process.env.DROPPED_TX_BLOCK_LOOKBACK);
+
 export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";
 

@@ -21,7 +21,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
         !storedTxs.some((storedTx) => storedTx.txHash === currentTx.txHash),
     );
 
-    const newDroppedTxs = storedTxs.filter((storedTx) => {
+    const newSuspectedDroppedTxs = storedTxs.filter((storedTx) => {
       const dbTx = !currentPendingTxs.find(
         (currentTx) => currentTx.txHash === storedTx.txHash,
       );
@@ -29,7 +29,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
     });
 
     logger.info(
-      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, new dropped txs: ${newDroppedTxs.length}`,
+      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, new suspected dropped txs: ${newSuspectedDroppedTxs.length}`,
     );
 
     if (newTxs.length > 0) {
@@ -45,10 +45,13 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       );
     }
 
-    if (newDroppedTxs.length > 0) {
-      for (const droppedTx of newDroppedTxs) {
-        await txsController.storeOrUpdate(droppedTx, "dropped");
+    if (newSuspectedDroppedTxs.length > 0) {
+      for (const suspectedDroppedTx of newSuspectedDroppedTxs) {
+        await txsController.storeOrUpdate(suspectedDroppedTx, "suspected_dropped");
       }
+      logger.info(
+        `⚠️ Marked ${newSuspectedDroppedTxs.length} txs as suspected_dropped (missing from mempool)`,
+      );
     }
   } catch (error) {
     logger.error("Error handling pending txs:", error);
