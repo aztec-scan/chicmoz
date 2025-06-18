@@ -1,5 +1,6 @@
 import { Tx } from "@aztec/aztec.js";
 import { ChicmozL2PendingTx } from "@chicmoz-pkg/types";
+import { MEMPOOL_SYNC_GRACE_PERIOD_MS } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
 import { publishMessage } from "../../svcs/message-bus/index.js";
@@ -21,16 +22,39 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
         !storedTxs.some((storedTx) => storedTx.txHash === currentTx.txHash),
     );
 
+    const now = new Date();
     const newSuspectedDroppedTxs = storedTxs.filter((storedTx) => {
-      const dbTx = !currentPendingTxs.find(
+      const missingFromMempool = !currentPendingTxs.find(
         (currentTx) => currentTx.txHash === storedTx.txHash,
       );
-      return dbTx && storedTx.txState === "pending";
+      const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
+      const beyondGracePeriod = ageMs >= MEMPOOL_SYNC_GRACE_PERIOD_MS;
+      
+      return missingFromMempool && 
+             storedTx.txState === "pending" && 
+             beyondGracePeriod;
+    });
+
+    // Count transactions in grace period for logging
+    const txsInGracePeriod = storedTxs.filter((storedTx) => {
+      const missingFromMempool = !currentPendingTxs.find(
+        (currentTx) => currentTx.txHash === storedTx.txHash,
+      );
+      const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
+      const inGracePeriod = ageMs < MEMPOOL_SYNC_GRACE_PERIOD_MS;
+      
+      return missingFromMempool && storedTx.txState === "pending" && inGracePeriod;
     });
 
     logger.info(
-      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, new suspected dropped txs: ${newSuspectedDroppedTxs.length}`,
+      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, new suspected dropped txs: ${newSuspectedDroppedTxs.length}, txs in grace period: ${txsInGracePeriod.length}`,
     );
+
+    if (txsInGracePeriod.length > 0) {
+      logger.debug(
+        `⏳ ${txsInGracePeriod.length} txs missing from mempool but still in grace period (${MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000}s)`,
+      );
+    }
 
     if (newTxs.length > 0) {
       for (const newTx of newTxs) {
