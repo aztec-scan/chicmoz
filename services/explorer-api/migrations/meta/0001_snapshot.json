@@ -1,6 +1,6 @@
 {
-  "id": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "957ea187-a3a0-480b-a9f4-77f35163aaf6",
+  "prevId": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1346,6 +1346,12 @@
         },
         "contract_type": {
           "name": "contract_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_version": {
+          "name": "contract_version",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
