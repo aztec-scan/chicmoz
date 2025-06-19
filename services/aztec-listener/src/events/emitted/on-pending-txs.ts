@@ -49,31 +49,6 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       );
     });
 
-    //Can be removed: Count transactions in grace period for logging
-    const txsInGracePeriod = storedTxs.filter((storedTx) => {
-      const missingFromMempool = !currentPendingTxs.find(
-        (currentTx) => currentTx.txHash === storedTx.txHash,
-      );
-      const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
-      const inGracePeriod = ageMs < MEMPOOL_SYNC_GRACE_PERIOD_MS;
-
-      return (
-        missingFromMempool && storedTx.txState === "pending" && inGracePeriod
-      );
-    });
-
-    logger.info(
-      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, resubmitted txs: ${resubmittedTxs.length}, new suspected dropped txs: ${newSuspectedDroppedTxs.length}, txs in grace period: ${txsInGracePeriod.length}`,
-    );
-
-    if (txsInGracePeriod.length > 0) {
-      txsInGracePeriod.forEach((tx) =>
-        logger.debug(
-          `⏳ ${tx.txHash} tx missing from mempool but still in grace period (${MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000}s)`,
-        ),
-      );
-    }
-
     if (newTxs.length > 0) {
       for (const newTx of newTxs) {
         await txsController.storeOrUpdate(newTx, "pending");
