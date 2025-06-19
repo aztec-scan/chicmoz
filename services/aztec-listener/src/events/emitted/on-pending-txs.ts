@@ -42,13 +42,6 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
       const beyondGracePeriod = ageMs >= MEMPOOL_SYNC_GRACE_PERIOD_MS;
 
-      if (
-        missingFromMempool &&
-        storedTx.txState === "pending" &&
-        beyondGracePeriod
-      ) {
-        logger.info(`🤔 new suspectedDroppedTx ${storedTx.txHash}`);
-      }
       return (
         missingFromMempool &&
         storedTx.txState === "pending" &&
@@ -107,10 +100,10 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
             birthTimestamp: new Date(), // Fresh start timestamp
           };
           await txsController.storeOrUpdate(updatedTx, "pending");
-          logger.info(
-            `🔄 Transaction ${resubmittedTx.txHash} resubmitted: ${existingTx.txState} → pending (fresh timestamp)`,
-          );
         }
+        logger.info(
+          `🔄 Transaction ${resubmittedTx.txHash} resubmitted: → pending (fresh timestamp)`,
+        );
       }
 
       await publishMessage("PENDING_TXS_EVENT", {
@@ -127,10 +120,10 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
           suspectedDroppedTx,
           "suspected_dropped",
         );
-        logger.info(
-          `🚧 Marked ${suspectedDroppedTx.txHash} tx as suspected_dropped (missing from mempool)`,
-        );
       }
+      logger.info(
+        `🚧 Marked ${newSuspectedDroppedTxs.length} txs as suspected_dropped (missing from mempool)`,
+      );
     }
   } catch (error) {
     logger.error("Error handling pending txs:", error);
