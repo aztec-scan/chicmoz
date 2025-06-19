@@ -52,7 +52,8 @@ export const handleProvenTransactions = async (block: L2Block) => {
           timestamp: new Date(),
         });
 
-        await txsController.deleteTx(provenTx.txHash);
+        await txsController.storeOrUpdate(provenTx, "proven");
+        logger.info(`✅ Updated tx ${provenTx.txHash} to proven state`);
       } catch (error) {
         logger.error(`Error processing proven tx ${provenTx.txHash}:`, error);
       }

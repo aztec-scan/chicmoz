@@ -52,6 +52,6 @@ export const deleteTx = async (txHash: HexString, txState?: TxState) => {
       .returning();
   }
   logger.info(
-    `🗑️ Published DROPPED_TXS_EVENT for ${res.length} txs with hash ${txHash} and state ${txState}`,
+    `🗑️ Deleted ${res.length} txs with hash ${txHash} and state ${txState}`,
   );
 };

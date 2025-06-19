@@ -103,12 +103,8 @@ const verifyDroppedTransactions = async () => {
       });
 
       logger.info(
-        `🗑️ Confirmed ${definitivelyDroppedTxs.length} transactions as definitively dropped`,
+        `🗑️ Confirmed ${definitivelyDroppedTxs.length} transactions as definitively dropped (kept in DB for audit trail)`,
       );
-
-      for (const droppedTx of definitivelyDroppedTxs) {
-        await txsController.deleteTx(droppedTx.txHash);
-      }
     }
 
     if (recoveredTxs.length > 0) {
