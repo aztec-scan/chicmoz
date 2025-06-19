@@ -1,5 +1,9 @@
 // Integration tests for race condition prevention
 // Tests the main bug fix: transactions included in blocks while pending poller runs
+//
+// NOTE: These tests represent logical flows. In the actual implementation,
+// transitions to suspected_dropped require a 30-second grace period to prevent
+// false positives from node pool mempool inconsistencies.
 
 import { describe, it, expect } from "vitest";
 

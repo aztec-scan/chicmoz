@@ -1,5 +1,9 @@
 // Integration tests for complete end-to-end flows
 // Tests complex scenarios with multiple components working together
+//
+// NOTE: These tests represent logical flows. In the actual implementation,
+// transitions to suspected_dropped require a 30-second grace period to prevent
+// false positives from node pool mempool inconsistencies.
 
 import { describe, it, expect } from "vitest";
 
@@ -18,6 +22,7 @@ describe("End-to-End Transaction Flows", () => {
     const currentMempool = ["tx-will-be-included"];
 
     // Apply pending poller logic
+    // NOTE: In actual implementation, this transition requires grace period (30s)
     transactions.forEach((tx) => {
       if (!currentMempool.includes(tx.txHash) && tx.state === "pending") {
         tx.state = "suspected_dropped";
@@ -57,7 +62,8 @@ describe("End-to-End Transaction Flows", () => {
     // Step 1: Transaction starts as pending
     expect(txState).toBe("pending");
 
-    // Step 2: Transaction disappears from mempool
+    // Step 2: Transaction disappears from mempool (after grace period)
+    // NOTE: In actual implementation, this requires 30-second grace period
     const mempoolTxs: string[] = [];
     if (!mempoolTxs.includes(txHash) && txState === "pending") {
       txState = "suspected_dropped";

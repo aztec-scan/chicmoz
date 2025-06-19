@@ -30,9 +30,10 @@ vi.mock("../../src/svcs/poller/network-client/index.js", () => ({
   getLatestProvenHeight: mockNetworkClient.getLatestProvenHeight,
 }));
 
-// Mock environment constants
-const DROPPED_TX_AGE_THRESHOLD_MS = 5000;
-const DROPPED_TX_BLOCK_LOOKBACK = 3;
+// Import actual environment constants to match production behavior
+// Mock environment constants - using production values for realistic testing
+const DROPPED_TX_AGE_THRESHOLD_MS = 300000; // 5 minutes (matches production)
+const DROPPED_TX_BLOCK_LOOKBACK = 10; // 10 blocks (matches production)
 
 // Extract the core verification logic for testing
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
@@ -159,18 +160,18 @@ describe("Dropped Transaction Verifier Logic", () => {
       createMockDbTx(
         "recovered-tx",
         "suspected_dropped",
-        new Date(now.getTime() - 10000),
-      ), // 10s old
+        new Date(now.getTime() - DROPPED_TX_AGE_THRESHOLD_MS - 60000),
+      ), // 6 minutes old (beyond threshold)
       createMockDbTx(
         "truly-dropped-tx",
         "suspected_dropped",
-        new Date(now.getTime() - 8000),
-      ), // 8s old
+        new Date(now.getTime() - DROPPED_TX_AGE_THRESHOLD_MS - 30000),
+      ), // 5.5 minutes old (beyond threshold)
       createMockDbTx(
         "too-young-tx",
         "suspected_dropped",
-        new Date(now.getTime() - 1000),
-      ), // 1s old
+        new Date(now.getTime() - 60000),
+      ), // 1 minute old (below threshold)
     ];
 
     // Mock recent blocks with one recovered transaction
@@ -249,19 +250,19 @@ describe("Dropped Transaction Verifier Logic", () => {
   });
 
   it("should handle case where all suspected transactions are too young", async () => {
-    // Setup: Only young suspected transactions
+    // Setup: Only young suspected transactions (below 5-minute threshold)
     const now = new Date();
     const youngTxs = [
       createMockDbTx(
         "young-tx-1",
         "suspected_dropped",
-        new Date(now.getTime() - 1000),
-      ), // 1s old
+        new Date(now.getTime() - 60000),
+      ), // 1 minute old (below threshold)
       createMockDbTx(
         "young-tx-2",
         "suspected_dropped",
-        new Date(now.getTime() - 2000),
-      ), // 2s old
+        new Date(now.getTime() - 120000),
+      ), // 2 minutes old (below threshold)
     ];
 
     mockTxsController.getTxs.mockResolvedValue(youngTxs);
@@ -280,8 +281,8 @@ describe("Dropped Transaction Verifier Logic", () => {
     const oldTx = createMockDbTx(
       "old-tx",
       "suspected_dropped",
-      new Date(now.getTime() - 10000),
-    );
+      new Date(now.getTime() - DROPPED_TX_AGE_THRESHOLD_MS - 10000),
+    ); // 5 minutes + 10 seconds old (beyond threshold)
 
     mockTxsController.getTxs.mockResolvedValue([oldTx]);
     mockNetworkClient.getLatestProvenHeight.mockRejectedValue(
@@ -304,8 +305,8 @@ describe("Dropped Transaction Verifier Logic", () => {
     const oldTx = createMockDbTx(
       "old-tx",
       "suspected_dropped",
-      new Date(now.getTime() - 10000),
-    );
+      new Date(now.getTime() - DROPPED_TX_AGE_THRESHOLD_MS - 10000),
+    ); // 5 minutes + 10 seconds old (beyond threshold)
 
     mockTxsController.getTxs.mockResolvedValue([oldTx]);
     mockTxsController.storeOrUpdate.mockResolvedValue(undefined);
@@ -342,8 +343,8 @@ describe("Dropped Transaction Verifier Logic", () => {
     const oldTx = createMockDbTx(
       "old-tx",
       "suspected_dropped",
-      new Date(now.getTime() - 10000),
-    );
+      new Date(now.getTime() - DROPPED_TX_AGE_THRESHOLD_MS - 10000),
+    ); // 5 minutes + 10 seconds old (beyond threshold)
 
     mockTxsController.getTxs.mockResolvedValue([oldTx]);
     mockTxsController.storeOrUpdate.mockResolvedValue(undefined);

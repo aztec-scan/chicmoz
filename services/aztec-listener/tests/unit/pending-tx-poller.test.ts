@@ -11,6 +11,20 @@ import {
   resetAllMocks,
 } from "../mocks/index.js";
 
+// Constants for grace period testing
+const MEMPOOL_SYNC_GRACE_PERIOD_MS = 30000; // 30 seconds
+
+// Helper to create transactions with specific ages
+const createMockDbTxWithAge = (
+  txHash: string,
+  txState: "pending" | "suspected_dropped" | "dropped" | "proposed" | "proven",
+  ageMs: number,
+  feePayer = "0x1234567890abcdef",
+) => {
+  const birthTimestamp = new Date(Date.now() - ageMs);
+  return createMockDbTx(txHash, txState, birthTimestamp, feePayer);
+};
+
 // Mock the dependencies
 vi.mock("../../src/svcs/database/index.js", () => ({
   txsController: mockTxsController,
@@ -66,12 +80,13 @@ describe("onPendingTxs Function", () => {
     );
   });
 
-  it("should mark transactions as suspected_dropped when missing from mempool", async () => {
-    // Setup: Transactions in DB, but missing from current mempool
+  it("should mark transactions as suspected_dropped only after grace period", async () => {
+    // Setup: Transactions in DB with different ages, missing from current mempool
     const storedTxs = [
-      createMockDbTx("tx-still-pending", "pending"),
-      createMockDbTx("tx-missing", "pending"),
-      createMockDbTx("tx-already-proposed", "proposed"),
+      createMockDbTx("tx-still-pending", "pending"), // This one is still in mempool
+      createMockDbTxWithAge("tx-missing-old", "pending", MEMPOOL_SYNC_GRACE_PERIOD_MS + 5000), // 35 seconds old - beyond grace period
+      createMockDbTxWithAge("tx-missing-new", "pending", 15000), // 15 seconds old - within grace period
+      createMockDbTx("tx-already-proposed", "proposed"), // Non-pending state
     ];
 
     const mockAztecTxs = [createMockAztecTx("tx-still-pending", "0xabc")]; // Only one tx still in mempool
@@ -85,9 +100,15 @@ describe("onPendingTxs Function", () => {
       mockAztecTxs
     );
 
-    // Verify: Only the missing pending transaction is marked as suspected_dropped
+    // Verify: Only the old missing transaction is marked as suspected_dropped (beyond grace period)
     expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ txHash: "tx-missing" }),
+      expect.objectContaining({ txHash: "tx-missing-old" }),
+      "suspected_dropped",
+    );
+
+    // Verify: Recent missing transaction is NOT marked as suspected_dropped (within grace period)
+    expect(mockTxsController.storeOrUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ txHash: "tx-missing-new" }),
       "suspected_dropped",
     );
 
@@ -99,10 +120,11 @@ describe("onPendingTxs Function", () => {
   });
 
   it("should handle mixed scenario: new txs and suspected dropped txs", async () => {
-    // Setup: Some txs in DB, some new txs in mempool, some missing
+    // Setup: Some txs in DB, some new txs in mempool, some missing beyond grace period
     const storedTxs = [
       createMockDbTx("existing-tx", "pending"),
-      createMockDbTx("missing-tx", "pending"),
+      createMockDbTxWithAge("missing-tx-old", "pending", MEMPOOL_SYNC_GRACE_PERIOD_MS + 10000), // 40 seconds old - beyond grace period
+      createMockDbTxWithAge("missing-tx-new", "pending", 10000), // 10 seconds old - within grace period
     ];
 
     const mockAztecTxs = [
@@ -126,9 +148,15 @@ describe("onPendingTxs Function", () => {
       "pending",
     );
 
-    // Verify: Missing tx marked as suspected_dropped
+    // Verify: Only old missing tx marked as suspected_dropped (beyond grace period)
     expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ txHash: "missing-tx" }),
+      expect.objectContaining({ txHash: "missing-tx-old" }),
+      "suspected_dropped",
+    );
+
+    // Verify: Recent missing tx is NOT marked as suspected_dropped (within grace period)
+    expect(mockTxsController.storeOrUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ txHash: "missing-tx-new" }),
       "suspected_dropped",
     );
 
@@ -144,11 +172,11 @@ describe("onPendingTxs Function", () => {
     );
   });
 
-  it("should handle empty mempool gracefully", async () => {
-    // Setup: Transactions in DB, but empty mempool
+  it("should handle empty mempool gracefully with grace period", async () => {
+    // Setup: Transactions in DB with different ages, but empty mempool
     const storedTxs = [
-      createMockDbTx("pending-tx-1", "pending"),
-      createMockDbTx("pending-tx-2", "pending"),
+      createMockDbTxWithAge("pending-tx-old", "pending", MEMPOOL_SYNC_GRACE_PERIOD_MS + 5000), // 35 seconds old - beyond grace period
+      createMockDbTxWithAge("pending-tx-new", "pending", 15000), // 15 seconds old - within grace period
     ];
 
     mockTxsController.getTxs.mockResolvedValue(storedTxs);
@@ -157,18 +185,51 @@ describe("onPendingTxs Function", () => {
     // Execute with empty mempool
     await onPendingTxs([]);
 
-    // Verify: All pending transactions marked as suspected_dropped
+    // Verify: Only old transaction marked as suspected_dropped (beyond grace period)
     expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ txHash: "pending-tx-1" }),
+      expect.objectContaining({ txHash: "pending-tx-old" }),
       "suspected_dropped",
     );
-    expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ txHash: "pending-tx-2" }),
+
+    // Verify: Recent transaction is NOT marked as suspected_dropped (within grace period)
+    expect(mockTxsController.storeOrUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ txHash: "pending-tx-new" }),
       "suspected_dropped",
     );
 
     // Verify: No PENDING_TXS_EVENT published (no new txs)
     expect(mockMessageBus.publishMessage).not.toHaveBeenCalled();
+  });
+
+  it("should handle grace period boundary correctly", async () => {
+    // Setup: Transactions exactly at grace period boundary
+    const storedTxs = [
+      createMockDbTxWithAge("tx-exactly-at-boundary", "pending", MEMPOOL_SYNC_GRACE_PERIOD_MS), // Exactly 30 seconds old
+      createMockDbTxWithAge("tx-just-beyond-boundary", "pending", MEMPOOL_SYNC_GRACE_PERIOD_MS + 100), // Just beyond boundary
+      createMockDbTxWithAge("tx-just-within-boundary", "pending", MEMPOOL_SYNC_GRACE_PERIOD_MS - 100), // Just within boundary
+    ];
+
+    mockTxsController.getTxs.mockResolvedValue(storedTxs);
+    mockTxsController.storeOrUpdate.mockResolvedValue(undefined);
+
+    // Execute with empty mempool (all transactions missing)
+    await onPendingTxs([]);
+
+    // Verify: Transactions at or beyond grace period are marked as suspected_dropped
+    expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ txHash: "tx-exactly-at-boundary" }),
+      "suspected_dropped",
+    );
+    expect(mockTxsController.storeOrUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ txHash: "tx-just-beyond-boundary" }),
+      "suspected_dropped",
+    );
+
+    // Verify: Transaction just within boundary is NOT marked as suspected_dropped
+    expect(mockTxsController.storeOrUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ txHash: "tx-just-within-boundary" }),
+      "suspected_dropped",
+    );
   });
 
   it("should handle errors gracefully", async () => {
