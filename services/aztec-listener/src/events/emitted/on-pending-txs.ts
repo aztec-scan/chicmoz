@@ -22,6 +22,18 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
         !storedTxs.some((storedTx) => storedTx.txHash === currentTx.txHash),
     );
 
+    // Handle resubmitted transactions (dropped or suspected_dropped → pending)
+    const resubmittedTxs = currentPendingTxs.filter((currentTx) => {
+      const existingTx = storedTxs.find(
+        (storedTx) => storedTx.txHash === currentTx.txHash,
+      );
+      return (
+        existingTx &&
+        (existingTx.txState === "dropped" ||
+          existingTx.txState === "suspected_dropped")
+      );
+    });
+
     const now = new Date();
     const newSuspectedDroppedTxs = storedTxs.filter((storedTx) => {
       const missingFromMempool = !currentPendingTxs.find(
@@ -30,6 +42,13 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
       const beyondGracePeriod = ageMs >= MEMPOOL_SYNC_GRACE_PERIOD_MS;
 
+      if (
+        missingFromMempool &&
+        storedTx.txState === "pending" &&
+        beyondGracePeriod
+      ) {
+        logger.info(`🤔 new suspectedDroppedTx ${storedTx.txHash}`);
+      }
       return (
         missingFromMempool &&
         storedTx.txState === "pending" &&
@@ -51,12 +70,14 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
     });
 
     logger.info(
-      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, new suspected dropped txs: ${newSuspectedDroppedTxs.length}, txs in grace period: ${txsInGracePeriod.length}`,
+      `🕐 total txs in DB: ${storedTxs.length} total txs in "polled array": ${currentPendingTxs.length}, new txs: ${newTxs.length}, resubmitted txs: ${resubmittedTxs.length}, new suspected dropped txs: ${newSuspectedDroppedTxs.length}, txs in grace period: ${txsInGracePeriod.length}`,
     );
 
     if (txsInGracePeriod.length > 0) {
-      logger.debug(
-        `⏳ ${txsInGracePeriod.length} txs missing from mempool but still in grace period (${MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000}s)`,
+      txsInGracePeriod.forEach((tx) =>
+        logger.debug(
+          `⏳ ${tx.txHash} tx missing from mempool but still in grace period (${MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000}s)`,
+        ),
       );
     }
 
@@ -73,16 +94,43 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       );
     }
 
+    // Process resubmitted transactions
+    if (resubmittedTxs.length > 0) {
+      for (const resubmittedTx of resubmittedTxs) {
+        const existingTx = storedTxs.find(
+          (storedTx) => storedTx.txHash === resubmittedTx.txHash,
+        );
+        if (existingTx) {
+          // Update with fresh timestamp and pending state
+          const updatedTx = {
+            ...resubmittedTx,
+            birthTimestamp: new Date(), // Fresh start timestamp
+          };
+          await txsController.storeOrUpdate(updatedTx, "pending");
+          logger.info(
+            `🔄 Transaction ${resubmittedTx.txHash} resubmitted: ${existingTx.txState} → pending (fresh timestamp)`,
+          );
+        }
+      }
+
+      await publishMessage("PENDING_TXS_EVENT", {
+        txs: resubmittedTxs,
+      });
+      logger.info(
+        `📤 Published PENDING_TXS_EVENT for ${resubmittedTxs.length} resubmitted txs`,
+      );
+    }
+
     if (newSuspectedDroppedTxs.length > 0) {
       for (const suspectedDroppedTx of newSuspectedDroppedTxs) {
         await txsController.storeOrUpdate(
           suspectedDroppedTx,
           "suspected_dropped",
         );
+        logger.info(
+          `🚧 Marked ${suspectedDroppedTx.txHash} tx as suspected_dropped (missing from mempool)`,
+        );
       }
-      logger.info(
-        `⚠️ Marked ${newSuspectedDroppedTxs.length} txs as suspected_dropped (missing from mempool)`,
-      );
     }
   } catch (error) {
     logger.error("Error handling pending txs:", error);
