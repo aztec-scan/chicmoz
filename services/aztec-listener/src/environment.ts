@@ -54,11 +54,11 @@ export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
 
 export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
   .number()
-  .default(300000) // 5 minutes
+  .default(1000 * 60 * 60 * 5) // 5 minutes
   .parse(process.env.DROPPED_TX_VERIFICATION_INTERVAL_MS);
 export const DROPPED_TX_AGE_THRESHOLD_MS = z.coerce
   .number()
-  .default(300000) // 5 minutes
+  .default(1000 * 60 * 60 * 5) // 5 minutes
   .parse(process.env.DROPPED_TX_AGE_THRESHOLD_MS);
 export const DROPPED_TX_BLOCK_LOOKBACK = z.coerce
   .number()
@@ -66,7 +66,7 @@ export const DROPPED_TX_BLOCK_LOOKBACK = z.coerce
   .parse(process.env.DROPPED_TX_BLOCK_LOOKBACK);
 export const MEMPOOL_SYNC_GRACE_PERIOD_MS = z.coerce
   .number()
-  .default(30000) // 30 seconds
+  .default(30_000) // 30 seconds
   .parse(process.env.MEMPOOL_SYNC_GRACE_PERIOD_MS);
 
 export const IGNORE_PROCESSED_HEIGHT =
