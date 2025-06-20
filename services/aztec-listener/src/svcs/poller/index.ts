@@ -51,7 +51,7 @@ export const startPoller = async () => {
   });
   if (AZTEC_LISTEN_FOR_PENDING_TXS) {
     pendingTxsPoller.startPolling();
-    droppedTxVerifier.startPolling();
+    droppedTxVerifier.start();
   }
   if (AZTEC_LISTEN_FOR_CHAIN_INFO) {
     chainInfoPoller.startPolling();
@@ -71,6 +71,6 @@ export const pollerService: MicroserviceBaseSvc = {
     pendingTxsPoller.stopPolling();
     blockPoller.stopPolling();
     chainInfoPoller.stopPolling();
-    droppedTxVerifier.stopPolling();
+    droppedTxVerifier.stop();
   },
 };

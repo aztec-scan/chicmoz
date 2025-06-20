@@ -10,7 +10,7 @@ import { getBlock, getLatestProvenHeight } from "../network-client/index.js";
 
 let pollInterval: NodeJS.Timeout;
 
-export const startPolling = () => {
+export const start = () => {
   logger.info(
     `🔍 Starting dropped transaction verifier (interval: ${DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000}s)`,
   );
@@ -19,7 +19,7 @@ export const startPolling = () => {
   }, DROPPED_TX_VERIFICATION_INTERVAL_MS);
 };
 
-export const stopPolling = () => {
+export const stop = () => {
   if (pollInterval) {
     clearInterval(pollInterval);
     logger.info("🔍 Stopped dropped transaction verifier");
@@ -116,4 +116,3 @@ const verifyDroppedTransactions = async () => {
     logger.error("🔍 Error verifying dropped transactions:", error);
   }
 };
-
