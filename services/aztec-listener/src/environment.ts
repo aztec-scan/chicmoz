@@ -117,6 +117,12 @@ AZTEC_LISTEN_FOR_PENDING_TXS:                              ${
 TX_POLL_INTERVAL_MS:                                       ${
   TX_POLL_INTERVAL_MS / 1000
 }s
+DROPPED_TX_VERIFICATION_INTERVAL_MS:                      ${
+  DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000
+}s
+DROPPED_TX_AGE_THRESHOLD_MS:                              ${
+  DROPPED_TX_AGE_THRESHOLD_MS / 1000
+}s
 MEMPOOL_SYNC_GRACE_PERIOD_MS:                              ${
   MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000
 }s
