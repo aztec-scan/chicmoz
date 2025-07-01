@@ -32,7 +32,8 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-n": "15.0.0 || 16.0.0 ",
     "eslint-plugin-promise": "6.0.0",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "prebuild": "rm -rf build; mkdir build",
@@ -43,6 +44,10 @@
     "start": "yarn node build/src/index.js",
     "generate": "yarn build && L2_NETWORK_ID=SANDBOX drizzle-kit generate",
     "migrate": "yarn node build/scripts/migrate.js",
+    "test": "vitest run",
+    "test-once": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "yarn run lint-base --ext .ts .",
     "lint-base": "yarn run g:lint"
   },

@@ -98,5 +98,11 @@
     /* Language and Environment */
     "target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
   },
-  "include": ["src/**/*", "drizzle.config.js", "scripts/**/*"]
+  "include": [
+    "src/**/*",
+    "drizzle.config.js",
+    "scripts/**/*",
+    "tests/**/*",
+    "vitest.config.ts"
+  ]
 }

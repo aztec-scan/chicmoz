@@ -52,6 +52,23 @@ export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
   .default(false)
   .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
 
+export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
+  .number()
+  .default(1000 * 60 * 60 * 5) // 5 minutes
+  .parse(process.env.DROPPED_TX_VERIFICATION_INTERVAL_MS);
+export const DROPPED_TX_AGE_THRESHOLD_MS = z.coerce
+  .number()
+  .default(1000 * 60 * 60 * 5) // 5 minutes
+  .parse(process.env.DROPPED_TX_AGE_THRESHOLD_MS);
+export const DROPPED_TX_BLOCK_LOOKBACK = z.coerce
+  .number()
+  .default(10)
+  .parse(process.env.DROPPED_TX_BLOCK_LOOKBACK);
+export const MEMPOOL_SYNC_GRACE_PERIOD_MS = z.coerce
+  .number()
+  .default(30_000) // 30 seconds
+  .parse(process.env.MEMPOOL_SYNC_GRACE_PERIOD_MS);
+
 export const IGNORE_PROCESSED_HEIGHT =
   process.env.IGNORE_PROCESSED_HEIGHT === "true";
 
@@ -99,6 +116,15 @@ AZTEC_LISTEN_FOR_PENDING_TXS:                              ${
 }
 TX_POLL_INTERVAL_MS:                                       ${
   TX_POLL_INTERVAL_MS / 1000
+}s
+DROPPED_TX_VERIFICATION_INTERVAL_MS:                      ${
+  DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000
+}s
+DROPPED_TX_AGE_THRESHOLD_MS:                              ${
+  DROPPED_TX_AGE_THRESHOLD_MS / 1000
+}s
+MEMPOOL_SYNC_GRACE_PERIOD_MS:                              ${
+  MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000
 }s
 AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${
   AZTEC_LISTEN_FOR_CHAIN_INFO ? "✅" : "❌"

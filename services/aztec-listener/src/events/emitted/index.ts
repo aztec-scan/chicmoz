@@ -36,34 +36,26 @@ export const onBlock = async (
     finalizationStatus,
     blockNumber: height,
   });
-  const previouslyDroppedTransactions = await txsController.getTxs(["dropped"]);
-  const conclusivlyDroppedTxs = [];
-  for (const prevDroppedTx of previouslyDroppedTransactions) {
-    const txIsDropped = !block.body.txEffects.some(
-      (effect) => effect.txHash.toString() === prevDroppedTx.txHash,
-    );
-    if (txIsDropped) {
-      conclusivlyDroppedTxs.push(prevDroppedTx);
-    } else {
-      await txsController.storeOrUpdate(
-        prevDroppedTx,
+  const potentiallyIncludedTxs = await txsController.getTxs([
+    "pending",
+    "suspected_dropped",
+  ]);
+  const blockTxHashes = block.body.txEffects.map((effect) =>
+    effect.txHash.toString(),
+  );
+
+  for (const potentialTx of potentiallyIncludedTxs) {
+    const txFoundInBlock = blockTxHashes.includes(potentialTx.txHash);
+    if (txFoundInBlock) {
+      const newState =
         finalizationStatus ===
-          ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
+        ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
           ? "proposed"
-          : "proven",
+          : "proven";
+      await txsController.storeOrUpdate(potentialTx, newState);
+      logger.info(
+        `✅ Transaction ${potentialTx.txHash} found in block ${height}, updated to ${newState}`,
       );
-    }
-  }
-  if (conclusivlyDroppedTxs.length > 0) {
-    await publishMessage("DROPPED_TXS_EVENT", {
-      txs: conclusivlyDroppedTxs.map((tx) => ({
-        txHash: tx.txHash,
-        createdAsPendingAt: tx.birthTimestamp,
-        droppedAt: new Date(),
-      })),
-    });
-    for (const droppedTx of conclusivlyDroppedTxs) {
-      await txsController.deleteTx(droppedTx.txHash);
     }
   }
 };

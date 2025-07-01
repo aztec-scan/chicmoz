@@ -24,7 +24,13 @@ export const storeOrUpdate = async (
 };
 
 export const getTxs = async (
-  statesWhitelist: TxState[] = ["pending", "dropped", "proposed", "proven"],
+  statesWhitelist: TxState[] = [
+    "pending",
+    "suspected_dropped",
+    "dropped",
+    "proposed",
+    "proven",
+  ],
 ) => {
   return await db()
     .select()
@@ -46,6 +52,6 @@ export const deleteTx = async (txHash: HexString, txState?: TxState) => {
       .returning();
   }
   logger.info(
-    `🗑️ Published DROPPED_TXS_EVENT for ${res.length} txs with hash ${txHash} and state ${txState}`,
+    `🗑️ Deleted ${res.length} txs with hash ${txHash} and state ${txState}`,
   );
 };
