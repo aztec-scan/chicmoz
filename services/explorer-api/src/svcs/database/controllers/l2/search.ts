@@ -10,9 +10,11 @@ import {
 import { eq, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
+  droppedTx,
   l2Block,
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
+  l2Tx,
   txEffect,
 } from "../../schema/index.js";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
@@ -58,6 +60,38 @@ const matchTxEffect = async (
     })
     .from(txEffect)
     .where(or(eq(txEffect.txHash, hash), eq(txEffect.txHash, hash)))
+    .execute();
+  if (res.length === 0) {
+    return [];
+  }
+  return [{ txHash: res[0].hash }];
+};
+
+const matchPendingTx = async (
+  hash: HexString,
+): Promise<ChicmozSearchResults["results"]["pendingTx"]> => {
+  const res = await db()
+    .select({
+      hash: l2Tx.txHash,
+    })
+    .from(l2Tx)
+    .where(or(eq(l2Tx.txHash, hash), eq(l2Tx.txHash, hash)))
+    .execute();
+  if (res.length === 0) {
+    return [];
+  }
+  return [{ txHash: res[0].hash }];
+};
+
+const matchDroppedTx = async (
+  hash: HexString,
+): Promise<ChicmozSearchResults["results"]["pendingTx"]> => {
+  const res = await db()
+    .select({
+      hash: droppedTx.txHash,
+    })
+    .from(droppedTx)
+    .where(or(eq(droppedTx.txHash, hash), eq(droppedTx.txHash, hash)))
     .execute();
   if (res.length === 0) {
     return [];
@@ -161,6 +195,8 @@ export const search = async (
       results: {
         blocks: await getBlockHashByHeight(query),
         txEffects: [],
+        droppedTx: [],
+        pendingTx: [],
         registeredContractClasses: [],
         contractInstances: [],
         validators: [],
@@ -170,12 +206,16 @@ export const search = async (
   const [
     blocks,
     txEffects,
+    pendingTx,
+    droppedTx,
     registeredContractClasses,
     contractInstances,
     validators,
   ] = await Promise.all([
     matchBlock(query),
     matchTxEffect(query),
+    matchPendingTx(query),
+    matchDroppedTx(query),
     matchContractClass(query),
     matchContractInstance(query),
     matchValidator(query),
@@ -186,6 +226,8 @@ export const search = async (
     results: {
       blocks,
       txEffects,
+      pendingTx,
+      droppedTx,
       registeredContractClasses,
       contractInstances,
       validators,

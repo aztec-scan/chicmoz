@@ -83,6 +83,8 @@ export const Header = () => {
     if (data) {
       const [block] = data.results.blocks;
       const [txEffect] = data.results.txEffects;
+      const [pendingTx] = data.results.pendingTx;
+      const [droppedTx] = data.results.droppedTx;
       const [instance] = data.results.contractInstances;
       const [contractClass] = data.results.registeredContractClasses;
       const [validators] = data.results.validators;
@@ -90,8 +92,9 @@ export const Header = () => {
       if (block) {
         void navigate({ to: `/blocks/${block.hash}` });
         setIsMenuOpen(false);
-      } else if (txEffect) {
-        void navigate({ to: `/tx-effects/${txEffect.txHash}` });
+      } else if (txEffect || pendingTx || droppedTx) {
+        const hash = txEffect || pendingTx || droppedTx;
+        void navigate({ to: `/tx-effects/${hash.txHash}` });
         setIsMenuOpen(false);
       } else if (instance) {
         void navigate({ to: `/contracts/instances/${instance.address}` });

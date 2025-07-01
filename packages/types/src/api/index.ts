@@ -40,6 +40,16 @@ export const chicmozSearchResultsSchema = z.lazy(() =>
           partOfBlockWithHash: chicmozL2BlockSchema.shape.hash.optional(),
         }),
       ),
+      droppedTx: z.array(
+        z.object({
+          txHash: chicmozL2TxEffectSchema.shape.txHash,
+        }),
+      ),
+      pendingTx: z.array(
+        z.object({
+          txHash: chicmozL2TxEffectSchema.shape.txHash,
+        }),
+      ),
       registeredContractClasses: z.array(
         z.object({
           contractClassId:
