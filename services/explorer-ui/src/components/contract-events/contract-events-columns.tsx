@@ -6,10 +6,10 @@ import { EtherscanAddressLink } from "../etherscan-address-link";
 import { type ContractEventTableSchema } from "./contract-events-schema";
 
 const text = {
-  eventName: "EVENT NAME",
-  contractAddress: "CONTRACT ADDRESS",
-  blockNumber: "BLOCK NUMBER",
-  transactionHash: "TRANSACTION HASH",
+  eventName: "L1 EVENT NAME",
+  contractAddress: "L1 CONTRACT ADDRESS",
+  blockNumber: "L1 BLOCK NUMBER",
+  transactionHash: "L1 TRANSACTION HASH",
   args: "ARGS",
 };
 
