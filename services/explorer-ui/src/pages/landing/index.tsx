@@ -201,23 +201,6 @@ export const Landing: FC = () => {
             </div>
             <div className="flex flex-col gap-4 w-full md:w-1/2">
               <div className="bg-white rounded-lg shadow-lg">
-                <TxEffectsTable
-                  txEffects={latestTxEffectsData}
-                  isLoading={isLoadingTxEffects}
-                  title="Latest Transactions"
-                  error={txEffectsError}
-                  disableSizeSelector={true}
-                  disablePagination={true}
-                  maxEntries={8}
-                />
-                <Link
-                  to={routes.txEffects.route}
-                  className="text-primary dark:text-white underline text-center block p-4"
-                >
-                  View all Transactions
-                </Link>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg">
                 <PendingTxsTable
                   title="Pending Transactions"
                   pendingTxEffects={pendingTxsData}
@@ -232,6 +215,23 @@ export const Landing: FC = () => {
                   className="text-primary dark:text-white underline text-center block p-4"
                 >
                   View all Pending Transactions
+                </Link>
+              </div>
+              <div className="bg-white rounded-lg shadow-lg">
+                <TxEffectsTable
+                  txEffects={latestTxEffectsData}
+                  isLoading={isLoadingTxEffects}
+                  title="Latest Transactions"
+                  error={txEffectsError}
+                  disableSizeSelector={true}
+                  disablePagination={true}
+                  maxEntries={8}
+                />
+                <Link
+                  to={routes.txEffects.route}
+                  className="text-primary dark:text-white underline text-center block p-4"
+                >
+                  View all Transactions
                 </Link>
               </div>
             </div>
