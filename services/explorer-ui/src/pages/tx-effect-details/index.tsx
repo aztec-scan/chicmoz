@@ -11,6 +11,7 @@ import {
   usePendingTxsByHash,
   useSubTitle,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { TabsSection } from "./tabs-section";
 import { getDroppedTxEffectData, getTxEffectData } from "./utils";
 import { PendingTxDetails } from "./pending-tx-details";
@@ -52,7 +53,7 @@ export const TxEffectDetails: FC = () => {
   // Dropped transaction - display dropped banner with details
   if (droppedTx) {
     return (
-      <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+      <BaseLayout>
         <div>
           <div className="flex flex-wrap m-3">
             <h3 className="text-primary md:hidden">Tx Details</h3>
@@ -67,7 +68,7 @@ export const TxEffectDetails: FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </BaseLayout>
     );
   }
 
@@ -90,7 +91,7 @@ export const TxEffectDetails: FC = () => {
 
   // Success state - data is available
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-3">
           <h3 className="text-primary md:hidden">Transactions Details</h3>
@@ -108,6 +109,6 @@ export const TxEffectDetails: FC = () => {
           <TabsSection txEffects={txEffects} />
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

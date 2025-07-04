@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useSubTitle } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 
 export const SubmitStandardContract: FC = () => {
   const { id, version } = useParams({
@@ -95,7 +96,7 @@ export const SubmitStandardContract: FC = () => {
     !selectedVersion || !selectedContractType || isSubmitting;
 
   return (
-    <div className="mx-auto px-[70px] max-w-[1440px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-3">
         <h3 className="mt-2 text-primary md:hidden">
           Submit Standard Contract
@@ -191,6 +192,6 @@ export const SubmitStandardContract: FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };
