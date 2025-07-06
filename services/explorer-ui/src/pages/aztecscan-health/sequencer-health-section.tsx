@@ -17,7 +17,7 @@ export const SequencerHealthSection: FC = () => {
     error: errorsError,
   } = useChainErrors();
 
-  const sequencers = allSequencers?.sort((a, b) => {
+  const sequencers = (allSequencers ?? []).sort((a, b) => {
     return new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime();
   }).reduce((acc, sequencer) => {
     if (acc.some((s) => s.rpcUrl === sequencer.rpcUrl)) {
