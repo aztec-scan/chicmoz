@@ -6,7 +6,7 @@ import { SequencerHealthCard } from "./sequencer-health-card";
 
 export const SequencerHealthSection: FC = () => {
   const {
-    data: sequencers,
+    data: allSequencers,
     isLoading: sequencersLoading,
     error: sequencersError,
   } = useSequencers();
@@ -16,6 +16,15 @@ export const SequencerHealthSection: FC = () => {
     isLoading: errorsLoading,
     error: errorsError,
   } = useChainErrors();
+
+  const sequencers = allSequencers?.sort((a, b) => {
+    return new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime();
+  }).reduce((acc, sequencer) => {
+    if (acc.some((s) => s.rpcUrl === sequencer.rpcUrl)) {
+      return acc;
+    }
+    return [...acc, sequencer];
+  }, [] as typeof allSequencers);
 
   // Function to get errors for a specific sequencer
   const getSequencerErrors = (

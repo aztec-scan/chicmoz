@@ -22,16 +22,6 @@ const LastSeenTime: FC<{ timestamp: Date }> = ({ timestamp }) => {
   return <span>{timeString} ago</span>;
 };
 
-function simpleShortHashStr(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return (hash >>> 0).toString(16).padStart(8, "0");
-}
-
 export const SequencerHealthCard: FC<Props> = ({
   sequencer,
   sequencerErrors,
@@ -47,14 +37,7 @@ export const SequencerHealthCard: FC<Props> = ({
           <h3 className="text-lg font-medium mb-4 text-primary dark:text-white">
             {sequencerName}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">ENR Hash:</span>
-              <DeterministicStatusBadge
-                text={simpleShortHashStr(sequencer.enr)}
-                tooltipContent={`ENR Hash: ${sequencer.enr}`}
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div>
               <span className="font-medium">Last Seen:</span>{" "}
               <LastSeenTime timestamp={new Date(sequencer.lastSeenAt)} />
