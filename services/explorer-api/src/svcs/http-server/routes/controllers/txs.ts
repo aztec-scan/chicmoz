@@ -50,3 +50,56 @@ export const GET_PENDING_TX_BY_HASH = asyncHandler(async (req, res) => {
   );
   res.status(200).json(JSON.parse(txsData));
 });
+
+export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH: OpenAPIObject["paths"] =
+  {
+    "/l2/txs/{hash}/public-call-requests": {
+      get: {
+        tags: ["L2", "pending-txs", "public-call-requests"],
+        summary: "Get public call requests by tx hash",
+        parameters: [
+          {
+            name: "hash",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              pattern: "^0x[a-fA-F0-9]+$",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "Public call requests for the transaction",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      msgSender: { type: "string" },
+                      contractAddress: { type: "string" },
+                      isStaticCall: { type: "boolean" },
+                      calldataHash: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+export const GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH = asyncHandler(
+  async (req, res) => {
+    const { txEffectHash } = getTxEffectsByTxHashSchema.parse(req).params;
+    const publicCallRequests = await dbWrapper.getLatest(
+      ["l2", "txs", txEffectHash, "public-call-requests"],
+      () => db.l2Tx.getPublicCallRequestsByTxHash(txEffectHash),
+    );
+    res.status(200).json(JSON.parse(publicCallRequests));
+  },
+);

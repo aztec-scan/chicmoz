@@ -41,6 +41,7 @@ export const paths = {
 
   txs: "/l2/txs",
   txByHash: `/l2/txs/:${txEffectHash}`,
+  txPublicData: `/l2/txs/:${txEffectHash}/public-call-requests`,
 
   droppedTxByHash: `/l2/dropped-txs/:${txEffectHash}`,
 

@@ -153,6 +153,10 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.txs, controller.GET_PENDING_TXS);
   router.get(paths.txByHash, controller.GET_PENDING_TX_BY_HASH);
+  router.get(
+    paths.txPublicData,
+    controller.GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  );
   router.get(paths.droppedTxByHash, controller.GET_DROPPED_TX_BY_HASH);
 
   router.get(paths.contractClass, controller.GET_L2_REGISTERED_CONTRACT_CLASS);
