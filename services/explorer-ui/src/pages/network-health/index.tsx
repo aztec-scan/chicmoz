@@ -4,6 +4,7 @@ import { InfoBadge } from "~/components/info-badge";
 import { useGetLatestTxEffects, useSubTitle } from "~/hooks";
 import { useBlocksByFinalizationStatus, useReorgs } from "~/hooks/api/blocks";
 import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { BaseLayout } from "~/layout/base-layout";
 import { BlockProductionSection } from "./block-production-section";
 import { FinalizationStatusSection } from "./finalization-status-section";
 import { OrphanedBlocksSection } from "./orphaned-blocks-section";
@@ -117,7 +118,7 @@ export const NetworkHealth: FC = () => {
   }, [blocksByFinalizationStatus]);
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap justify-center my-14 md:my-20">
         <h1 className="text-primary dark:text-white">Network Health</h1>
       </div>
@@ -155,6 +156,6 @@ export const NetworkHealth: FC = () => {
       <FinalizationStatusSection />
       <ReorgSection />
       <OrphanedBlocksSection />
-    </div>
+    </BaseLayout>
   );
 };

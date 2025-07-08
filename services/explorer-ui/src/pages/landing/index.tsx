@@ -5,6 +5,7 @@ import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
 import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
+import { BaseLayout } from "~/layout/base-layout";
 import {
   HealthStatus,
   useAvarageBlockTime,
@@ -106,7 +107,7 @@ export const Landing: FC = () => {
   const showBlockCountdownProgress =
     !loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime;
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       {isConclusivlyDown && (
         <div className="flex flex-col bg-white w-full h-96 justify-between rounded-lg shadow-md mt-20">
           <div className="flex flex-col items-center justify-center h-full">
@@ -238,6 +239,6 @@ export const Landing: FC = () => {
           </div>
         </>
       )}
-    </div>
+    </BaseLayout>
   );
 };

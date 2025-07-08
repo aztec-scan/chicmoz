@@ -3,6 +3,7 @@ import { lazy } from "react";
 import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 import { TailwindIndicator } from "~/components/ui/tailwind-indicator";
+import { BaseLayout } from "~/layout/base-layout";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "development"
@@ -169,10 +170,10 @@ export const routes = {
 
 function notFoundComponent() {
   return (
-    <div className="mx-auto px-[70px] max-w-[1440px]">
+    <BaseLayout>
       <h1 className="mt-16">{text.title}</h1>
       <h3 className="text-purple-dark">{text.description}</h3>
-    </div>
+    </BaseLayout>
   );
 }
 

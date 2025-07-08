@@ -10,6 +10,7 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
 export const TxEffects: FC = () => {
@@ -38,7 +39,7 @@ export const TxEffects: FC = () => {
   } = usePendingTxs();
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="mt-2 text-primary dark:text-white md:hidden">
           All Transactions
@@ -88,6 +89,6 @@ export const TxEffects: FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

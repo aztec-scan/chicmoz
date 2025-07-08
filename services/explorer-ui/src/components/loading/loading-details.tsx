@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+import { BaseLayout } from "~/layout/base-layout";
 
 interface LoadingDetailsProps {
   title: string;
@@ -12,7 +13,7 @@ export const LoadingDetails: FC<LoadingDetailsProps> = ({
   emptyData,
 }) => {
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-3">
           <h3 className="text-primary md:hidden">{title}</h3>
@@ -25,6 +26,6 @@ export const LoadingDetails: FC<LoadingDetailsProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

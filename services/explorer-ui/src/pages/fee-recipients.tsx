@@ -3,6 +3,7 @@ import { FeeReceipientsTable } from "~/components/fee-recipient/fee-recipient-ta
 import { InfoBadge } from "~/components/info-badge";
 import { useSubTitle } from "~/hooks";
 import { useFeeRecipients } from "~/hooks/api/fee-recipient";
+import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
 export const FeeRecipientPage: FC = () => {
@@ -15,7 +16,7 @@ export const FeeRecipientPage: FC = () => {
       }, 0)
     : 0;
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="text-primary dark:text-white mt-2 md:hidden">
           Fee Recipients
@@ -41,6 +42,6 @@ export const FeeRecipientPage: FC = () => {
       <div className="rounded-lg shadow-lg">
         <FeeReceipientsTable feeRecipients={data} isLoading={isLoading} />
       </div>
-    </div>
+    </BaseLayout>
   );
 };
