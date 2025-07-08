@@ -3,14 +3,11 @@ import {
   HexString,
   chicmozL2PendingTxSchema,
   type ChicmozL2PendingTx,
-  type PublicCallRequest,
 } from "@chicmoz-pkg/types";
 import { desc, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
-import {
-  l2Tx,
-  l2TxPublicCallRequest,
-} from "../../../database/schema/l2tx/index.js";
+import { l2Tx } from "../../../database/schema/l2tx/index.js";
+import { getPublicCallRequestsByTxHash } from "../l2Public-call/get.js";
 
 export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
   const res = await db()
@@ -30,22 +27,6 @@ export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
       birthTimestamp: tx.birthTimestamp.getTime(),
     })),
   );
-};
-
-export const getPublicCallRequestsByTxHash = async (
-  txHash: HexString,
-): Promise<PublicCallRequest[]> => {
-  const res = await db()
-    .select({
-      msgSender: l2TxPublicCallRequest.msgSender,
-      contractAddress: l2TxPublicCallRequest.contractAddress,
-      isStaticCall: l2TxPublicCallRequest.isStaticCall,
-      calldataHash: l2TxPublicCallRequest.calldataHash,
-    })
-    .from(l2TxPublicCallRequest)
-    .where(eq(l2TxPublicCallRequest.txHash, txHash));
-
-  return res;
 };
 
 export const getTxByHash = async (

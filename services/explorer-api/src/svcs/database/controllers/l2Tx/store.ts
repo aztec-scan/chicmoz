@@ -1,12 +1,8 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import {
-  HexString,
-  type ChicmozL2PendingTx,
-  type PublicCallRequest,
-} from "@chicmoz-pkg/types";
-import { eq } from "drizzle-orm";
+import { type ChicmozL2PendingTx } from "@chicmoz-pkg/types";
 import { logger } from "../../../../logger.js";
-import { l2Tx, l2TxPublicCallRequest } from "../../schema/l2tx/index.js";
+import { l2Tx } from "../../schema/l2tx/index.js";
+import { storePublicCallRequests } from "../l2Public-call/store.js";
 
 export const storeL2Tx = async (tx: ChicmozL2PendingTx): Promise<void> => {
   const res = await db()
@@ -17,34 +13,6 @@ export const storeL2Tx = async (tx: ChicmozL2PendingTx): Promise<void> => {
   if (res.length > 0) {
     logger.info(`🕐 New pending tx: ${tx.txHash} stored successfully`);
   }
-};
-
-export const storePublicCallRequests = async (
-  txHash: HexString,
-  publicCallRequests: PublicCallRequest[],
-): Promise<void> => {
-  if (publicCallRequests.length === 0) {return;}
-
-  // Delete existing public call requests for this txHash
-  await db()
-    .delete(l2TxPublicCallRequest)
-    .where(eq(l2TxPublicCallRequest.txHash, txHash));
-
-  // Insert new public call requests
-  const values = publicCallRequests.map((request, index) => ({
-    id: `${txHash}-${index}`,
-    txHash,
-    msgSender: request.msgSender,
-    contractAddress: request.contractAddress,
-    isStaticCall: request.isStaticCall,
-    calldataHash: request.calldataHash,
-  }));
-
-  await db().insert(l2TxPublicCallRequest).values(values);
-
-  logger.info(
-    `📋 Stored ${publicCallRequests.length} public call requests for tx: ${txHash}`,
-  );
 };
 
 export const storeOrUpdateL2Tx = async (
