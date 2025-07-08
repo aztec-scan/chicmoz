@@ -14,7 +14,10 @@ export async function getL2ChainInfo(
     .select()
     .from(l2ChainInfoTable)
     .where(eq(l2ChainInfoTable.l2NetworkId, l2NetworkId))
-    .orderBy(desc(l2ChainInfoTable.updatedAt))
+    .orderBy(
+      desc(l2ChainInfoTable.updatedAt),
+      desc(l2ChainInfoTable.rollupVersion),
+    )
     .limit(1);
 
   if (result.length === 0) {
@@ -30,4 +33,20 @@ export async function getL2ChainInfo(
     l1ContractAddresses: chainInfo.l1ContractAddresses,
     protocolContractAddresses: chainInfo.protocolContractAddresses,
   });
+}
+
+export async function getLatestRollupVersion(): Promise<
+  ChicmozChainInfo["rollupVersion"] | null
+> {
+  const result = await db()
+    .select({ rollupVersion: l2ChainInfoTable.rollupVersion })
+    .from(l2ChainInfoTable)
+    .orderBy(desc(l2ChainInfoTable.rollupVersion))
+    .limit(1);
+
+  if (result.length === 0) {
+    return null;
+  }
+
+  return result[0].rollupVersion;
 }
