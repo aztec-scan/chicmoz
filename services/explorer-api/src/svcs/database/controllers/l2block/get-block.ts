@@ -70,7 +70,7 @@ export interface BlockQueryOptions {
    * @default false
    */
   includeOrphaned?: boolean;
-  rollupVersion?: bigint;
+  rollupVersion?: number;
 }
 
 export const getBlocks = async (
@@ -275,12 +275,13 @@ const _getBlocks = async (
         // Get specific height
         whereQuery = joinQuery
           .where(
-            includeOrphaned
-              ? eq(l2Block.height, args.height)
-              : and(
-                  eq(l2Block.height, args.height),
-                  isNull(l2Block.orphan_timestamp),
-                ),
+            and(
+              eq(l2Block.height, args.height),
+              includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
+              options.rollupVersion
+                ? eq(globalVariables.version, options.rollupVersion)
+                : undefined,
+            ),
           )
           .orderBy(desc(globalVariables.version))
           .limit(1);
