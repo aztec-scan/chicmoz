@@ -1,8 +1,8 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { HexString, type PublicCallRequest } from "@chicmoz-pkg/types";
-import { eq } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import { l2TxPublicCallRequest } from "../../schema/l2public-call/index.js";
+import { deletePublicCall } from "./delete.js";
 
 export const storePublicCallRequests = async (
   txHash: HexString,
@@ -12,10 +12,7 @@ export const storePublicCallRequests = async (
     return;
   }
 
-  // Delete existing public call requests for this txHash
-  await db()
-    .delete(l2TxPublicCallRequest)
-    .where(eq(l2TxPublicCallRequest.txHash, txHash));
+  await deletePublicCall(txHash);
 
   // Insert new public call requests
   const values = publicCallRequests.map((request, index) => ({
