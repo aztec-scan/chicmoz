@@ -10,7 +10,9 @@ export const detectReorg = async (
   parsedBlock: ChicmozL2Block,
 ): Promise<boolean> => {
   // Check if a block with the same height but different hash already exists
-  const existingBlock = await getBlock(parsedBlock.height);
+  const existingBlock = await getBlock(parsedBlock.height, {
+    rollupVersion: parsedBlock.header.globalVariables.version,
+  });
   return !!(existingBlock && existingBlock.hash !== parsedBlock.hash);
 };
 
