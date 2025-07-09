@@ -74,12 +74,12 @@ const onBlock = async ({
     return;
   }
 
+  await storeBlock(parsedBlock);
   onRollupVersion(
     chicmozChainInfoSchema.shape.rollupVersion.parse(
       parsedBlock.header.globalVariables.version,
     ),
   );
-  await storeBlock(parsedBlock);
   await storeContracts(b, parsedBlock.hash);
   await pendingTxsHook(parsedBlock.body.txEffects);
 };

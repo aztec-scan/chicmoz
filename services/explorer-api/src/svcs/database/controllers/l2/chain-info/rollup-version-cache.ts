@@ -1,5 +1,6 @@
 import { ChicmozChainInfo } from "@chicmoz-pkg/types";
 import { logger } from "../../../../../logger.js";
+import { getLatestRollupVersion as getLatestRollupVersionDb } from "./get.js";
 
 // TODO: This should maybe use Redis for caching instead of in-memory.
 
@@ -20,7 +21,7 @@ export async function getLatestRollupVersion(): Promise<
   ChicmozChainInfo["rollupVersion"]
 > {
   if (highestRollupVersion === null) {
-    const latestDbVersion = await getLatestRollupVersion();
+    const latestDbVersion = await getLatestRollupVersionDb();
     if (latestDbVersion === null) {
       throw new Error("No rollup version found in the database");
     }
