@@ -16,9 +16,9 @@
     "test-once": "yarn run vitest run"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.87.8",
-    "@aztec/noir-contracts.js": "0.87.8",
-    "@aztec/stdlib": "0.87.8",
+    "@aztec/aztec.js": "1.0.0-staging.6",
+    "@aztec/noir-contracts.js": "1.0.0-staging.6",
+    "@aztec/stdlib": "1.0.0-staging.6",
     "@chicmoz-pkg/types": "workspace:^",
     "zod": "^3.23.8"
   },

@@ -4,6 +4,7 @@ import {
   EthAddress,
   Fr,
   L1TokenPortalManager,
+  SiblingPath,
   createLogger,
   retryUntil,
   waitForPXE,
@@ -283,11 +284,13 @@ export const run = async () => {
       l1TokenBalance - bridgeAmount,
   );
 
-  const [l2ToL1MessageIndex, siblingPath] =
-    await aztecNode.getL2ToL1MessageMembershipWitness(
+  const l2ToL1MessageWitness =
+    await aztecNode.getL1ToL2MessageMembershipWitness(
       l2TxReceipt.blockNumber!,
       l2ToL1Message,
     );
+  assert(l2ToL1MessageWitness !== undefined);
+  const [l2ToL1MessageIndex, siblingPath] = l2ToL1MessageWitness;
 
   const wait = 10000;
   logger.info(
@@ -302,7 +305,7 @@ export const run = async () => {
     ethAccount,
     BigInt(l2TxReceipt.blockNumber!),
     l2ToL1MessageIndex,
-    siblingPath,
+    siblingPath as SiblingPath<number>,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===

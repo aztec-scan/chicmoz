@@ -196,7 +196,7 @@ export const queryStakingStateAndEmitUpdates = async ({
     const attesterInfo = await getPublicHttpClient().readContract({
       address: contracts.rollup.address,
       abi: RollupAbi,
-      functionName: "getInfo",
+      functionName: "getAttesterView",
       args: [attester],
     });
     if (attesterInfo === undefined) {
