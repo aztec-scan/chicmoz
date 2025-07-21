@@ -5,6 +5,7 @@ import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyContractInstanceData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { useChainInfo, useContractInstance, useSubTitle } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { TabsSection } from "./tabs-section";
 import { getContractData } from "./util";
 
@@ -63,7 +64,7 @@ export const ContractInstanceDetails: FC = () => {
     : "Contract instance details";
 
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-col gap-4 mt-8">
         <div className="flex flex-wrap m-3">
           <h3 className="mt-2 text-primary md:hidden">{titleStr}</h3>
@@ -89,6 +90,6 @@ export const ContractInstanceDetails: FC = () => {
       <div className="mt-5">
         <TabsSection contractInstanceDetails={contractInstanceDetails} />
       </div>
-    </div>
+    </BaseLayout>
   );
 };

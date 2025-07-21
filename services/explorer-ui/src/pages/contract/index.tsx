@@ -9,6 +9,7 @@ import {
   useTotalContracts,
   useTotalContractsLast24h,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 import { mapContractClasses, mapContractInstances } from "./util";
 
@@ -35,7 +36,7 @@ export const Contracts: FC = () => {
     error: errorAmountContracts24h,
   } = useTotalContractsLast24h();
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="mt-2 text-primary dark:text-white md:hidden">
           All Contracts
@@ -79,6 +80,6 @@ export const Contracts: FC = () => {
           />
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

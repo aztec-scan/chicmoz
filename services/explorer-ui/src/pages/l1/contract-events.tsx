@@ -2,6 +2,7 @@ import { type FC } from "react";
 import { ContractEventsTable } from "~/components/contract-events/contract-events-table";
 import { useSubTitle } from "~/hooks";
 import { useContractEvents } from "~/hooks/api/l1/contract-events";
+import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
 export const ContractEventsPage: FC = () => {
@@ -13,7 +14,7 @@ export const ContractEventsPage: FC = () => {
   );
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="mt-2 text-primary dark:text-white md:hidden">
           L1 Contract Events
@@ -31,6 +32,6 @@ export const ContractEventsPage: FC = () => {
           error={error}
         />
       </div>
-    </div>
+    </BaseLayout>
   );
 };

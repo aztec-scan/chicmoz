@@ -3,6 +3,7 @@ import { type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OrphanedBanner } from "~/components/orphaned-banner";
+import { BaseLayout } from "~/layout/base-layout";
 import {
   useAmountContractClassInstances,
   useContractClass,
@@ -58,7 +59,7 @@ export const ContractClassDetails: FC = () => {
   }`;
 
   return (
-    <div className="mx-auto px-[70px] max-w-[1440px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-3">
         <h3 className="mt-2 text-primary md:hidden">{headerStr}</h3>
         <h2 className="hidden md:block md:mt-6 md:text-primary">{headerStr}</h2>
@@ -93,6 +94,6 @@ export const ContractClassDetails: FC = () => {
         />
       </div>
       <Outlet />
-    </div>
+    </BaseLayout>
   );
 };

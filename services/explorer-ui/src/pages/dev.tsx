@@ -8,6 +8,7 @@ import {
   useSequencers,
   useSubTitle,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { formatTimeSince } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import {
@@ -52,91 +53,92 @@ export const DevPage: FC = () => {
   );
 
   return (
-    <div className="flex flex-col items-center">
-      <h1>Dev Page</h1>
-      {generateCard(
-        "NOTE",
-        <p>
-          This page is for allowing access to data that is not yet available or
-          refined. If you see anything here that you think can be useful
-          someplace else on the site, please create an issue on our Github (see
-          footer for link).
-          <br />
-          <br />
-          This page will not be linked to from anywhere once mainnet is
-          launched.
-        </p>,
-      )}
-      {generateCard(
-        "Misc",
-        <pre>
-          <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>
-          <p>{`Explorer version           ${VERSION_STRING}`}</p>
-          <p>{`API URL                    ${API_URL}`}</p>
-          <p>{`WS URL                     ${WS_URL}`}</p>
-          <p>{`Indexing Aztec network     ${L2_NETWORK_ID}`}</p>
-        </pre>,
-      )}
-      {generateCard(
-        "links",
-        <>
-          <h3>Internal</h3>
+    <BaseLayout>
+      <div className="flex flex-col items-center">
+        <h1>Dev Page</h1>
+        {generateCard(
+          "NOTE",
           <p>
-            <Link
-              to={routes.feeRecipients.route}
-              className="text-purple-light hover:font-bold"
-            >
-              {routes.feeRecipients.title}
-            </Link>
-          </p>
-          <h3>External</h3>
-          <ul>
-            {CHICMOZ_ALL_UI_URLS.map((ui) => (
-              <li key={ui.name}>
-                <a
-                  href={ui.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-purple-light hover:font-bold"
-                >
-                  {ui.name} ({ui.url})
-                </a>
-              </li>
-            ))}
-          </ul>
-        </>,
-      )}
-      {generateCard(
-        "Chain Info",
-        <>
-          {isChainInfoLoading && <p>Loading...</p>}
-          {chainInfoError && <p>Error: {chainInfoError.message}</p>}
-          {chainInfo && (
-            <pre>
-              {JSON.stringify(
-                {
-                  ...chainInfo,
-                  rollupVersion: chainInfo.rollupVersion.toString(),
-                },
-                null,
-                2,
-              )}
-            </pre>
-          )}
-        </>,
-      )}
-      {generateCard(
-        "Chain Errors",
-        <>
-          {isChainErrorsLoading && <p>Loading...</p>}
-          {chainErrorsError && <p>Error: {chainErrorsError.message}</p>}
-          {chainErrors && (
-            <div>
-              {chainErrors?.map((error) => (
-                <pre key={error.name}>
-                  <hr />
-                  <h3>{error.name}</h3>
-                  {`
+            This page is for allowing access to data that is not yet available
+            or refined. If you see anything here that you think can be useful
+            someplace else on the site, please create an issue on our Github
+            (see footer for link).
+            <br />
+            <br />
+            This page will not be linked to from anywhere once mainnet is
+            launched.
+          </p>,
+        )}
+        {generateCard(
+          "Misc",
+          <pre>
+            <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>
+            <p>{`Explorer version           ${VERSION_STRING}`}</p>
+            <p>{`API URL                    ${API_URL}`}</p>
+            <p>{`WS URL                     ${WS_URL}`}</p>
+            <p>{`Indexing Aztec network     ${L2_NETWORK_ID}`}</p>
+          </pre>,
+        )}
+        {generateCard(
+          "links",
+          <>
+            <h3>Internal</h3>
+            <p>
+              <Link
+                to={routes.feeRecipients.route}
+                className="text-purple-light hover:font-bold"
+              >
+                {routes.feeRecipients.title}
+              </Link>
+            </p>
+            <h3>External</h3>
+            <ul>
+              {CHICMOZ_ALL_UI_URLS.map((ui) => (
+                <li key={ui.name}>
+                  <a
+                    href={ui.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-purple-light hover:font-bold"
+                  >
+                    {ui.name} ({ui.url})
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>,
+        )}
+        {generateCard(
+          "Chain Info",
+          <>
+            {isChainInfoLoading && <p>Loading...</p>}
+            {chainInfoError && <p>Error: {chainInfoError.message}</p>}
+            {chainInfo && (
+              <pre>
+                {JSON.stringify(
+                  {
+                    ...chainInfo,
+                    rollupVersion: chainInfo.rollupVersion.toString(),
+                  },
+                  null,
+                  2,
+                )}
+              </pre>
+            )}
+          </>,
+        )}
+        {generateCard(
+          "Chain Errors",
+          <>
+            {isChainErrorsLoading && <p>Loading...</p>}
+            {chainErrorsError && <p>Error: {chainErrorsError.message}</p>}
+            {chainErrors && (
+              <div>
+                {chainErrors?.map((error) => (
+                  <pre key={error.name}>
+                    <hr />
+                    <h3>{error.name}</h3>
+                    {`
 rpcNodeName:    ${error.rpcNodeName}
 count:          ${error.count}
 cause:          ${error.cause}
@@ -147,61 +149,62 @@ data:           ${JSON.stringify(error.data)}
 message:        ${error.message}
 stack:          ${error.stack}
 `}
-                </pre>
-              ))}
-            </div>
-          )}
-        </>,
-      )}
-      {generateCard(
-        "Sequencers",
-        <>
-          {isSequencersLoading && <p>Loading...</p>}
-          {sequencersError && <p>Error: {sequencersError.message}</p>}
-          {sequencers && (
-            <pre>
-              {JSON.stringify(
-                sequencers.map((s) => ({
-                  ...s,
-                  rollupVersion: s.rollupVersion.toString(),
-                })),
-                null,
-                2,
-              )}
-            </pre>
-          )}
-        </>,
-      )}
-      {generateCard(
-        "Instances with balance",
-        <>
-          {isContractInstancesWithBalanceLoading && <p>Loading...</p>}
-          {contractInstancesWithBalanceError && (
-            <p>Error: {contractInstancesWithBalanceError.message}</p>
-          )}
-          {contractInstancesWithBalance && (
-            <div>
-              <p>
-                Found {contractInstancesWithBalance.length} contract instances
-                with balance
-              </p>
-              {contractInstancesWithBalance.length > 0 && (
-                <pre>
-                  {JSON.stringify(
-                    contractInstancesWithBalance.map((instance) => ({
-                      contractAddress: instance.contractAddress,
-                      balance: Number(instance.balance),
-                      timestamp: instance.timestamp,
-                    })),
-                    null,
-                    2,
-                  )}
-                </pre>
-              )}
-            </div>
-          )}
-        </>,
-      )}
-    </div>
+                  </pre>
+                ))}
+              </div>
+            )}
+          </>,
+        )}
+        {generateCard(
+          "Sequencers",
+          <>
+            {isSequencersLoading && <p>Loading...</p>}
+            {sequencersError && <p>Error: {sequencersError.message}</p>}
+            {sequencers && (
+              <pre>
+                {JSON.stringify(
+                  sequencers.map((s) => ({
+                    ...s,
+                    rollupVersion: s.rollupVersion.toString(),
+                  })),
+                  null,
+                  2,
+                )}
+              </pre>
+            )}
+          </>,
+        )}
+        {generateCard(
+          "Instances with balance",
+          <>
+            {isContractInstancesWithBalanceLoading && <p>Loading...</p>}
+            {contractInstancesWithBalanceError && (
+              <p>Error: {contractInstancesWithBalanceError.message}</p>
+            )}
+            {contractInstancesWithBalance && (
+              <div>
+                <p>
+                  Found {contractInstancesWithBalance.length} contract instances
+                  with balance
+                </p>
+                {contractInstancesWithBalance.length > 0 && (
+                  <pre>
+                    {JSON.stringify(
+                      contractInstancesWithBalance.map((instance) => ({
+                        contractAddress: instance.contractAddress,
+                        balance: Number(instance.balance),
+                        timestamp: instance.timestamp,
+                      })),
+                      null,
+                      2,
+                    )}
+                  </pre>
+                )}
+              </div>
+            )}
+          </>,
+        )}
+      </div>
+    </BaseLayout>
   );
 };
