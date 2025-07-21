@@ -1,6 +1,7 @@
 import { type FC, useState, useEffect } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table.tsx";
 import { InfoBadge } from "~/components/info-badge";
+import { BaseLayout } from "~/layout/base-layout";
 import {
   useAvarageBlockTime,
   useAvarageFees,
@@ -74,7 +75,7 @@ export const Blocks: FC = () => {
   );
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="text-primary dark:text-white mt-2 md:hidden">
           Blocks overview
@@ -108,6 +109,6 @@ export const Blocks: FC = () => {
           onRangeChange={handleRangeChange}
         />
       </div>
-    </div>
+    </BaseLayout>
   );
 };

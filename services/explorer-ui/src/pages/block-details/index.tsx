@@ -13,6 +13,7 @@ import {
   useGetTableTxEffectsByBlockHeight,
   useSubTitle,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails } from "./util";
@@ -86,7 +87,7 @@ export const BlockDetails: FC = () => {
     );
   }
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-5">
           <h3 className="text-primary md:hidden">Block Details</h3>
@@ -125,6 +126,6 @@ export const BlockDetails: FC = () => {
           {renderTabContent()}
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

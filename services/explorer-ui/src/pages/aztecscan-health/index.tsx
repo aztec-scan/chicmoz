@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import { useSubTitle, useSystemHealth } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { SequencerHealthSection } from "./sequencer-health-section";
 import { SystemHealthOverview } from "./system-health-overview";
 
@@ -9,7 +10,7 @@ export const AztecscanHealth: FC = () => {
   useSubTitle(`Aztecscan: ${systemHealth.systemHealth.health}`);
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       {/* Main Header */}
       <div className="flex flex-wrap justify-center my-14 md:my-20">
         <h1 className="text-primary dark:text-white">
@@ -22,6 +23,6 @@ export const AztecscanHealth: FC = () => {
 
       {/* Sequencer Health Section */}
       <SequencerHealthSection />
-    </div>
+    </BaseLayout>
   );
 };

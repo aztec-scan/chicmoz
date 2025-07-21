@@ -4,6 +4,7 @@ import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { useAvarageBlockTime, useLatestTableBlocks } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 
 interface PendingTxDetailsProps {
   pendingTxDetails: ChicmozL2PendingTx;
@@ -28,7 +29,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
   const isStaleTransaction = blocksCreatedSinceTx >= 2;
 
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-3">
           <h3 className="text-primary md:hidden">Transactions Details</h3>
@@ -68,6 +69,6 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };
