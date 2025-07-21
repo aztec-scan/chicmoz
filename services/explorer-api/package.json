@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@anatine/zod-openapi": "2.2.6",
-    "@aztec/aztec.js": "1.0.0",
+    "@aztec/aztec.js": "1.1.0",
     "@aztec/protocol-contracts": "1.1.0",
     "@aztec/stdlib": "1.1.0",
     "@chicmoz-pkg/backend-utils": "workspace:^",
