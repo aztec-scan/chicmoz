@@ -199,13 +199,14 @@ export const queryStakingStateAndEmitUpdates = async ({
       functionName: "getAttesterView",
       args: [attester],
     });
+
     if (attesterInfo === undefined) {
       logger.warn(`Attester ${attester} not found`);
       continue;
     }
     attesterInfos.push(
       chicmozL1L2ValidatorSchema.parse({
-        ...attesterInfo,
+        proposer: attesterInfo.config.withdrawer,
         rollupAddress: contracts.rollup.address,
         attester,
       }),
