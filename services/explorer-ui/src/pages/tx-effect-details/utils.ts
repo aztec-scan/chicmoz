@@ -47,7 +47,7 @@ export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => {
       value: data.txBirthTimestamp
         ? data.txBirthTimestamp.toString()
         : "unknown",
-      timestamp: data.txBirthTimestamp,
+      timestamp: data.txBirthTimestamp / 1000,
     },
     {
       label: "RAW DATA",

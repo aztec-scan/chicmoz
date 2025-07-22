@@ -67,7 +67,8 @@ export const getBlockDetails = (
     {
       label: "Proposed on L1",
       value: "Not yet proposed",
-      timestamp: proposedOnL1Date?.getTime() ?? undefined,
+      timestamp:
+        Math.floor((proposedOnL1Date?.getTime() ?? 0) / 1000) ?? undefined,
     },
     // NOTE: not all blocks have this
     //{
