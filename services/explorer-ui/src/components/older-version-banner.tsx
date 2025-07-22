@@ -18,7 +18,7 @@ export const OlderVersionBanner: React.FC<OlderVersionBannerProps> = ({
         </h3>
       </div>
       <p className="mt-2 text-sm text-amber-700">
-        This block is valid but from an older version of the chain. Block
+        This block is valid but from a different version of the chain. Block
         version: {blockVersion}, current chain version:{" "}
         {chainVersion.toString()}.
       </p>
