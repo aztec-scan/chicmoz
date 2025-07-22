@@ -173,6 +173,7 @@ export const getTxEffectForUiTable = async (
     })
     .from(l2Block)
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
     .innerJoin(txEffect, eq(txEffect.bodyId, body.id));
 
