@@ -11,7 +11,7 @@ export function onRollupVersion(
   rollupVersion: ChicmozChainInfo["rollupVersion"],
 ): void {
   // Only update if it's the current expected version
-  if (rollupVersion === parseInt(CURRENT_ROLLUP_VERSION)) {
+  if (rollupVersion === BigInt(CURRENT_ROLLUP_VERSION)) {
     currentRollupVersion = rollupVersion;
   }
 }
@@ -21,7 +21,7 @@ export async function getLatestRollupVersion(): Promise<
   ChicmozChainInfo["rollupVersion"]
 > {
   // Always return the current rollup version since version numbers don't increase numerically
-  return parseInt(CURRENT_ROLLUP_VERSION);
+  return BigInt(CURRENT_ROLLUP_VERSION);
 }
 
 export async function initializeRollupVersionCache(): Promise<void> {

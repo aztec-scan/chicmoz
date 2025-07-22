@@ -17,7 +17,7 @@ export async function getL2ChainInfo(
     .where(
       and(
         eq(l2ChainInfoTable.l2NetworkId, l2NetworkId),
-        eq(l2ChainInfoTable.rollupVersion, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2ChainInfoTable.rollupVersion, BigInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .orderBy(desc(l2ChainInfoTable.updatedAt))
@@ -44,5 +44,5 @@ export async function getLatestRollupVersion(): Promise<
 > {
   // Return the current rollup version instead of querying for the highest one
   // since version numbers don't necessarily increase with upgrades
-  return parseInt(CURRENT_ROLLUP_VERSION);
+  return BigInt(CURRENT_ROLLUP_VERSION);
 }
