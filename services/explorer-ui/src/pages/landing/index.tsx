@@ -168,7 +168,7 @@ export const Landing: FC = () => {
               error={errorAvarageBlockTime}
               data={
                 avarageBlockTime
-                  ? formatDuration(Number(avarageBlockTime) / 1000, true)
+                  ? formatDuration(Number(avarageBlockTime), true)
                   : "calculating..."
               }
             />
