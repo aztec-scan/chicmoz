@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export const useReactiveTime = (intervalMs: number = 1000) => {
+export const useReactiveTime = (intervalMs = 1000) => {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {

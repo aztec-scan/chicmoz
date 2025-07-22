@@ -26,7 +26,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     const latestBlock = latestBlocks[0];
-    const blockTimestamp = new Date(latestBlock.timestamp).getTime();
+    const blockTimestamp = latestBlock.timestamp * 1000;
     const now = Date.now();
 
     const calculatedDelay = now - blockTimestamp;
@@ -45,8 +45,8 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
       return;
     }
 
-    const avgBlockTimeMs = Number(averageBlockTime);
-    const latestBlockTimestamp = new Date(latestBlock.timestamp).getTime();
+    const avgBlockTimeMs = Number(averageBlockTime) * 1000;
+    const latestBlockTimestamp = latestBlock.timestamp * 1000;
     const nextBlockTime = latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
 
     const intervalId = setInterval(() => {
@@ -107,7 +107,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     if (isOverdue) {
-      return `should have arrived ${formatDuration(timeLeft / 1000, true)} ago`;
+      return `should have arrived ${formatDuration(timeLeft, true)} ago`;
     }
 
     return `in ${formatDuration(timeLeft / 1000, true)}`;

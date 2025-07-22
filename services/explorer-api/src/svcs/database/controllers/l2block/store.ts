@@ -73,7 +73,6 @@ export const store = async (
     await dbTx.insert(contentCommitment).values({
       id: contentCommitmentId,
       headerId: headerId,
-      numTxs: block.header.contentCommitment.numTxs,
       blobsHash: block.header.contentCommitment.blobsHash,
       inHash: block.header.contentCommitment.inHash,
       outHash: block.header.contentCommitment.outHash,

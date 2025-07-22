@@ -2,7 +2,12 @@ import { z } from "zod";
 import { aztecAddressSchema } from "../general.js";
 import { chicmozL2BlockSchema } from "./l2Block.js";
 import { aztecScanNoteSchema } from "./special.js";
-import { bufferSchema, concatFrPointSchema, frSchema } from "./utils.js";
+import {
+  bufferSchema,
+  concatFrPointSchema,
+  frSchema,
+  frTimestampSchema,
+} from "./utils.js";
 
 export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   address: aztecAddressSchema,
@@ -30,7 +35,7 @@ export const chicmozL2ContractInstanceUpdatedEventSchema = z.object({
   address: aztecAddressSchema,
   prevContractClassId: frSchema,
   newContractClassId: frSchema,
-  blockOfChange: chicmozL2BlockSchema.shape.height,
+  timestampOfChange: frTimestampSchema,
   blockHash: chicmozL2BlockSchema.shape.hash,
 });
 

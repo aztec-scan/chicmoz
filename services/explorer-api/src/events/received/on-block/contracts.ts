@@ -185,7 +185,7 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
     parseObjs(blockHash, contractInstanceUpdated, (contractInstance) =>
       chicmozL2ContractInstanceUpdatedEventSchema.parse({
         ...contractInstance,
-        blockOfChange: z.bigint().parse(contractInstance.blockOfChange),
+        timestampOfChange: z.number().parse(contractInstance.timestampOfChange),
         blockHash,
         address: contractInstance.address.toString(),
         prevContractClassId: contractInstance.prevContractClassId.toString(),

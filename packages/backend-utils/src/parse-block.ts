@@ -56,6 +56,12 @@ export const parseBlock = async (
       totalFees: blockWithTxEffectsHashesAdded.header.totalFees.toBigInt(),
       contentCommitment: {
         ...blockWithTxEffectsHashesAdded.header.contentCommitment,
+        blobsHash:
+          blockWithTxEffectsHashesAdded.header.contentCommitment.blobsHash.toString(),
+        inHash:
+          blockWithTxEffectsHashesAdded.header.contentCommitment.inHash.toString(),
+        outHash:
+          blockWithTxEffectsHashesAdded.header.contentCommitment.outHash.toString(),
       },
       globalVariables: {
         ...blockWithTxEffectsHashesAdded.header.globalVariables,
