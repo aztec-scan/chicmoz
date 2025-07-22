@@ -62,7 +62,6 @@ export const chicmozL2BlockSchema = z.object({
       nextAvailableLeafIndex: z.number(),
     }),
     contentCommitment: z.object({
-      numTxs: frNumberSchema,
       blobsHash: bufferSchema,
       inHash: bufferSchema,
       outHash: bufferSchema,
