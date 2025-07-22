@@ -1,8 +1,11 @@
 import { ChicmozChainInfo } from "@chicmoz-pkg/types";
-import { logger } from "../../../../../logger.js";
 import { CURRENT_ROLLUP_VERSION } from "../../../../../constants/versions.js";
+import { logger } from "../../../../../logger.js";
 
 // TODO: This should maybe use Redis for caching instead of in-memory.
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let currentRollupVersion: ChicmozChainInfo["rollupVersion"] | null = null;
 
 export function onRollupVersion(
   rollupVersion: ChicmozChainInfo["rollupVersion"],
