@@ -26,6 +26,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 type GetBlocksByRange = {
   from: bigint | undefined;
@@ -50,7 +51,13 @@ export const getBlocksForUiTable = async ({
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
-    .where(and(whereRange, isNull(l2Block.orphan_timestamp)))
+    .where(
+      and(
+        whereRange,
+        isNull(l2Block.orphan_timestamp),
+        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .orderBy(desc(l2Block.height))
     .limit(DB_MAX_BLOCKS)
     .execute();
@@ -85,7 +92,9 @@ export const getBlocksForUiTable = async ({
       l2BlockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
     })
     .from(l2BlockFinalizationStatusTable)
-    .where(inArray(l2BlockFinalizationStatusTable.l2BlockHash, blockHashes))
+    .where(
+      and(inArray(l2BlockFinalizationStatusTable.l2BlockHash, blockHashes)),
+    )
     .execute();
 
   // Group statuses by block hash
@@ -177,19 +186,30 @@ export const getTxEffectForUiTable = async (
             and(
               getBlocksWhereRange({ from: args.from, to: args.to }),
               isNull(l2Block.orphan_timestamp),
+              eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
           .limit(DB_MAX_TX_EFFECTS);
       } else {
         whereQuery = joinQuery
-          .where(isNull(l2Block.orphan_timestamp))
+          .where(
+            and(
+              isNull(l2Block.orphan_timestamp),
+              eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+            ),
+          )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
           .limit(DB_MAX_TX_EFFECTS);
       }
       break;
     case GetTypes.BlockHeight:
-      whereQuery = joinQuery.where(and(eq(l2Block.height, args.blockHeight)));
+      whereQuery = joinQuery.where(
+        and(
+          eq(l2Block.height, args.blockHeight),
+          eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        ),
+      );
       break;
   }
 
