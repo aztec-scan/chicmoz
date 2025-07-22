@@ -18,8 +18,8 @@ export const OlderVersionBanner: React.FC<OlderVersionBannerProps> = ({
         </h3>
       </div>
       <p className="mt-2 text-sm text-amber-700">
-        This block is valid but from an older version of the chain. Block
-        version: {blockVersion}, current chain version:{" "}
+        This block was created with an earlier version of the rollup protocol. Block
+        rollup version: {blockVersion}, current protocol version:{" "}
         {chainVersion.toString()}.
       </p>
     </div>

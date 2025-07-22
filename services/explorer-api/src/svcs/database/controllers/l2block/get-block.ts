@@ -17,6 +17,7 @@ import {
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import {
   archive,
   body,
@@ -266,10 +267,16 @@ const _getBlocks = async (
         // Get latest block
         whereQuery = joinQuery;
         if (!includeOrphaned) {
-          whereQuery = whereQuery.where(isNull(l2Block.orphan_timestamp));
+          whereQuery = whereQuery.where(
+            and(
+              isNull(l2Block.orphan_timestamp), eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+            ),
+          );
+        } else {
+          whereQuery = whereQuery.where(eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)));
         }
         whereQuery = whereQuery
-          .orderBy(desc(l2Block.height), desc(globalVariables.version))
+          .orderBy(desc(l2Block.height))
           .limit(1);
       } else {
         // Get specific height
@@ -278,12 +285,9 @@ const _getBlocks = async (
             and(
               eq(l2Block.height, args.height),
               includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
-              options.rollupVersion
-                ? eq(globalVariables.version, options.rollupVersion)
-                : undefined,
+              eq(globalVariables.version, options.rollupVersion ?? parseInt(CURRENT_ROLLUP_VERSION)),
             ),
           )
-          .orderBy(desc(globalVariables.version))
           .limit(1);
       }
       break;
@@ -295,11 +299,14 @@ const _getBlocks = async (
     case GetTypes.Range:
       whereQuery = joinQuery
         .where(
-          includeOrphaned
-            ? whereRange
-            : and(whereRange, isNull(l2Block.orphan_timestamp)),
+          and(
+            includeOrphaned
+              ? whereRange
+              : and(whereRange, isNull(l2Block.orphan_timestamp)),
+            eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+          ),
         )
-        .orderBy(desc(l2Block.height), desc(globalVariables.version))
+        .orderBy(desc(l2Block.height))
         .limit(DB_MAX_BLOCKS);
       break;
   }
