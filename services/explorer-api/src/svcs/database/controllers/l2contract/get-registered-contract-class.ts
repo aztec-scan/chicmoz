@@ -3,9 +3,10 @@ import {
   chicmozL2ContractClassRegisteredEventSchema,
   type ChicmozL2ContractClassRegisteredEvent,
 } from "@chicmoz-pkg/types";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
-import { l2Block } from "../../schema/index.js";
+import { globalVariables, header, l2Block } from "../../schema/index.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
 import {z} from "zod";
@@ -70,6 +71,14 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
     })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+    .where(
+      and(
+        isNull(l2Block.orphan_timestamp),
+        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height))
     .limit(DB_MAX_CONTRACTS);
 
