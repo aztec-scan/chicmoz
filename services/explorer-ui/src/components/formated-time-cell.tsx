@@ -9,7 +9,6 @@ interface TimeAgoCellProps {
 export const TimeAgoCell = ({ timestamp }: TimeAgoCellProps) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tick = useTimeTick();
-
   const dateString = new Date(timestamp).toLocaleString();
 
   const formattedTime = formatTimeSince(timestamp);

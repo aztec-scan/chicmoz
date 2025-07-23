@@ -92,7 +92,7 @@ export const formatTimeSince = (
     return "no timestamp";
   }
   const now = Math.floor(Date.now());
-  const secondsSince = Math.round(now - unixTimestamp);
+  const secondsSince = Math.round(now - unixTimestamp) / 1000;
   const duration = formatDuration(secondsSince, short);
   if (duration === "just now") {
     return duration;
