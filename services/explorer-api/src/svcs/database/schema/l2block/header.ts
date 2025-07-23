@@ -119,6 +119,7 @@ export const globalVariables = pgTable(
   },
   (t) => ({
     headerIdIdx: index("global_variables_header_id_idx").on(t.headerId),
+    versionIdx: index("global_variables_version_idx").on(t.version),
   }),
 );
 

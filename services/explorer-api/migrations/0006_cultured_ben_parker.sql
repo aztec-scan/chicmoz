@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "global_variables_version_idx" ON "global_variables" USING btree ("version");
