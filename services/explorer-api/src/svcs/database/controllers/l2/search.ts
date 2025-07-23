@@ -7,16 +7,19 @@ import {
   chicmozSearchResultsSchema,
   type ChicmozSearchResults,
 } from "@chicmoz-pkg/types";
-import { eq, or, sql } from "drizzle-orm";
+import { and, eq, or, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
 import {
   droppedTx,
+  globalVariables,
+  header,
   l2Block,
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
   l2Tx,
   txEffect,
 } from "../../schema/index.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
 
 const getBlockHashByHeight = async (
@@ -27,7 +30,15 @@ const getBlockHashByHeight = async (
       hash: l2Block.hash,
     })
     .from(l2Block)
-    .where(eq(l2Block.height, height))
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+    .where(
+      and(
+        eq(l2Block.height, height),
+        isNull(l2Block.orphan_timestamp),
+        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .execute();
   if (res.length === 0) {
     return [];
