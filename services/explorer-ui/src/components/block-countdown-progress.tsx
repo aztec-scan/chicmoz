@@ -26,7 +26,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     const latestBlock = latestBlocks[0];
-    const blockTimestamp = latestBlock.timestamp * 1000;
+    const blockTimestamp = latestBlock.timestamp;
     const now = Date.now();
 
     const calculatedDelay = now - blockTimestamp;
@@ -45,8 +45,8 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
       return;
     }
 
-    const avgBlockTimeMs = Number(averageBlockTime) * 1000;
-    const latestBlockTimestamp = latestBlock.timestamp * 1000;
+    const avgBlockTimeMs = Number(averageBlockTime);
+    const latestBlockTimestamp = latestBlock.timestamp;
     const nextBlockTime = latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
 
     const intervalId = setInterval(() => {

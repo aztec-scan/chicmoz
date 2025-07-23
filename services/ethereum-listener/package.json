@@ -17,6 +17,7 @@
     "@chicmoz-pkg/microservice-base": "workspace:^",
     "@chicmoz-pkg/postgres-helper": "workspace:^",
     "@chicmoz-pkg/types": "workspace:^",
+    "@chicmoz-pkg/backend-utils": "workspace:^",
     "drizzle-orm": "0.33.0",
     "exponential-backoff": "3.1.1",
     "pg": "8.11.3",
