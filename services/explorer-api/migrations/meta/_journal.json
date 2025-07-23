@@ -50,6 +50,13 @@
       "when": 1753272424964,
       "tag": "0006_cultured_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1753279578369,
+      "tag": "0007_lush_exodus",
+      "breakpoints": true
     }
   ]
 }
