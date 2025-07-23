@@ -12,7 +12,7 @@ export const getBlockDetails = (
 ): DetailItem[] => {
   const l2BlockTimestamp = latestBlock.header.globalVariables.timestamp;
 
-  const proposedOnL1Date: Date | undefined | null =
+  const proposedOnL1Date: Number | undefined | null =
     latestBlock?.proposedOnL1?.l1BlockTimestamp;
 
   return [
