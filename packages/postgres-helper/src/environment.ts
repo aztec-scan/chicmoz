@@ -14,7 +14,7 @@ export const dbCredentials = {
 };
 
 export const getConfigStr = () => {
-  if (!POSTGRES_DB_NAME) throw new Error("POSTGRES_DB_NAME is not set");
+  if (!POSTGRES_DB_NAME) {throw new Error("POSTGRES_DB_NAME is not set");}
   return `POSTGRES
 POSTGRES_IP        ${POSTGRES_IP}
 POSTGRES_PORT      ${POSTGRES_PORT}

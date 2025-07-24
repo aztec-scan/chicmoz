@@ -14,11 +14,10 @@ export const getAverageFees = async (): Promise<string> => {
     })
     .from(header)
     .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();
@@ -38,7 +37,7 @@ export const getAverageBlockTime = async (): Promise<string> => {
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();

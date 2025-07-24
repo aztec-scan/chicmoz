@@ -6,7 +6,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
-import { globalVariables, header, l2Block } from "../../schema/index.js";
+import { l2Block } from "../../schema/index.js";
 import { l2ContractInstanceDeployed } from "../../schema/l2contract/index.js";
 import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
@@ -45,13 +45,11 @@ export const getCotractInstacesWithBalance = async (): Promise<
       ),
     )
     .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
-    .innerJoin(header, eq(l2Block.hash, header.blockHash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
         gt(contractInstanceBalance.balance, "0"),
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .orderBy(
