@@ -13,12 +13,10 @@ export const getTotalContracts = async (): Promise<number> => {
     .select({ count: count() })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
-    .innerJoin(header, eq(header.blockHash, l2Block.hash))
-    .innerJoin(globalVariables, eq(globalVariables.headerId, header.id))
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();
@@ -39,7 +37,7 @@ export const getTotalContractsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();

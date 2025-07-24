@@ -155,13 +155,11 @@ export const getL2DeployedContractInstances = async ({
       ),
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
-    .innerJoin(header, eq(l2Block.hash, header.blockHash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
         whereRange,
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .orderBy(DEFAULT_SORT)

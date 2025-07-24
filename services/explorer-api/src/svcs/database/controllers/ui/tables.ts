@@ -55,7 +55,7 @@ export const getBlocksForUiTable = async ({
       and(
         whereRange,
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .orderBy(desc(l2Block.height))
@@ -187,7 +187,7 @@ export const getTxEffectForUiTable = async (
             and(
               getBlocksWhereRange({ from: args.from, to: args.to }),
               isNull(l2Block.orphan_timestamp),
-              eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
@@ -197,7 +197,7 @@ export const getTxEffectForUiTable = async (
           .where(
             and(
               isNull(l2Block.orphan_timestamp),
-              eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
@@ -208,7 +208,7 @@ export const getTxEffectForUiTable = async (
       whereQuery = joinQuery.where(
         and(
           eq(l2Block.height, args.blockHeight),
-          eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+          eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
         ),
       );
       break;
