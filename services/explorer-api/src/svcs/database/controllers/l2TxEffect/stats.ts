@@ -15,12 +15,10 @@ export const getTotalTxEffects = async (): Promise<number> => {
     .from(txEffect)
     .innerJoin(body, eq(body.id, txEffect.bodyId))
     .innerJoin(l2Block, eq(l2Block.hash, body.blockHash))
-    .innerJoin(header, eq(l2Block.hash, header.blockHash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();
@@ -41,7 +39,7 @@ export const getTotalTxEffectsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();

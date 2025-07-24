@@ -11,8 +11,6 @@ import { and, eq, or, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
 import {
   droppedTx,
-  globalVariables,
-  header,
   l2Block,
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -30,13 +28,11 @@ const getBlockHashByHeight = async (
       hash: l2Block.hash,
     })
     .from(l2Block)
-    .innerJoin(header, eq(l2Block.hash, header.blockHash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
         eq(l2Block.height, height),
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();

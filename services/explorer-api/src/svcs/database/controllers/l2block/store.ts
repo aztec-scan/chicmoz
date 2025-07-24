@@ -39,6 +39,7 @@ export const store = async (
     await dbTx.insert(l2Block).values({
       hash: block.hash,
       height: BigInt(block.header.globalVariables.blockNumber),
+      version: block.header.globalVariables.version,
       orphan_timestamp: block.orphan?.timestamp ?? null,
       orphan_hasOrphanedParent: block.orphan?.hasOrphanedParent ?? false,
     });

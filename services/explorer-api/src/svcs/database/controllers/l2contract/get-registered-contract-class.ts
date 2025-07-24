@@ -5,11 +5,11 @@ import {
 } from "@chicmoz-pkg/types";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
-import { globalVariables, header, l2Block } from "../../schema/index.js";
+import { l2Block } from "../../schema/index.js";
 import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
-import {z} from "zod";
+import { z } from "zod";
 
 export const getL2RegisteredContractClass = async (
   contractClassId: ChicmozL2ContractClassRegisteredEvent["contractClassId"],
@@ -41,9 +41,9 @@ export const getL2RegisteredContractClasses = async ({
   }
   const whereQuery = version
     ? and(
-      eq(l2ContractClassRegistered.contractClassId, contractClassId),
-      eq(l2ContractClassRegistered.version, version)
-    )
+        eq(l2ContractClassRegistered.contractClassId, contractClassId),
+        eq(l2ContractClassRegistered.version, version),
+      )
     : eq(l2ContractClassRegistered.contractClassId, contractClassId);
   const limit = version ? 1 : DB_MAX_CONTRACTS;
 
@@ -71,12 +71,10 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
     })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
-    .innerJoin(header, eq(l2Block.hash, header.blockHash))
-    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height))

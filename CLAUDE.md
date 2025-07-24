@@ -28,6 +28,12 @@ yarn lint
 
 # Lint only shared packages
 yarn lint:packages
+
+# Run tests for a specific service
+cd services/{service} && yarn test
+
+# Run tests in watch mode
+cd services/{service} && yarn test:watch
 ```
 
 ### Local Development Setup
@@ -110,6 +116,18 @@ The project uses **yarn workspaces** with shared packages in `/packages/@chicmoz
 - **backend-utils**: Shared backend utility functions
 
 **Important**: Always run `yarn build:packages` before building services, as services depend on these shared packages.
+
+## Code Style Guidelines
+
+- **Imports**: Use named imports, no default exports (`import/no-default-export` rule)
+- **Types**: Use TypeScript with strict type checking, prefer `type` over `interface`
+- **Naming**: Use camelCase for variables/functions, PascalCase for types/classes
+- **Error Handling**: Use structured error handling with proper logging
+- **Formatting**: Prettier with organize-imports plugin, no semicolons preference
+- **ESLint Rules**: No console.log (`no-console`), curly braces required, no param reassignment
+- **File Extensions**: Use `.js` imports in TypeScript files (ES modules)
+- **Database**: Use Drizzle ORM with type-safe queries
+- **Testing**: Vitest for unit tests with globals enabled
 
 ## Database Patterns
 

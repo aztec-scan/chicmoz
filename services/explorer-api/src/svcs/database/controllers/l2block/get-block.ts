@@ -269,15 +269,16 @@ const _getBlocks = async (
         if (!includeOrphaned) {
           whereQuery = whereQuery.where(
             and(
-              isNull(l2Block.orphan_timestamp), eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+              isNull(l2Block.orphan_timestamp),
+              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
             ),
           );
         } else {
-          whereQuery = whereQuery.where(eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)));
+          whereQuery = whereQuery.where(
+            eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+          );
         }
-        whereQuery = whereQuery
-          .orderBy(desc(l2Block.height))
-          .limit(1);
+        whereQuery = whereQuery.orderBy(desc(l2Block.height)).limit(1);
       } else {
         // Get specific height
         whereQuery = joinQuery
@@ -285,7 +286,10 @@ const _getBlocks = async (
             and(
               eq(l2Block.height, args.height),
               includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
-              eq(globalVariables.version, options.rollupVersion ?? parseInt(CURRENT_ROLLUP_VERSION)),
+              eq(
+                l2Block.version,
+                options.rollupVersion ?? parseInt(CURRENT_ROLLUP_VERSION),
+              ),
             ),
           )
           .limit(1);
@@ -303,7 +307,7 @@ const _getBlocks = async (
             includeOrphaned
               ? whereRange
               : and(whereRange, isNull(l2Block.orphan_timestamp)),
-            eq(globalVariables.version, parseInt(CURRENT_ROLLUP_VERSION)),
+            eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
           ),
         )
         .orderBy(desc(l2Block.height))

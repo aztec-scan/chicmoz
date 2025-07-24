@@ -1,5 +1,5 @@
 {
-  "id": "4f70d7f9-797f-4f69-8a78-6c6dad0af461",
+  "id": "cf93a0de-e746-423f-af1b-f9396a5065c6",
   "prevId": "04483ec8-95a2-4392-824a-2656758f008a",
   "version": "7",
   "dialect": "postgresql",
@@ -1117,7 +1117,7 @@
         },
         "l1_block_timestamp": {
           "name": "l1_block_timestamp",
-          "type": "bigint",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
@@ -1175,7 +1175,7 @@
         },
         "l1_block_timestamp": {
           "name": "l1_block_timestamp",
-          "type": "bigint",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
@@ -1264,6 +1264,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "version": {
+          "name": "version",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
         "orphan_timestamp": {
           "name": "orphan_timestamp",
           "type": "timestamp",
@@ -1283,6 +1289,42 @@
           "columns": [
             {
               "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "l2block_version_idx": {
+          "name": "l2block_version_idx",
+          "columns": [
+            {
+              "expression": "version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "l2block_height_version_idx": {
+          "name": "l2block_height_version_idx",
+          "columns": [
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "version",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1993,7 +2035,7 @@
         },
         "l1_block_timestamp": {
           "name": "l1_block_timestamp",
-          "type": "bigint",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
