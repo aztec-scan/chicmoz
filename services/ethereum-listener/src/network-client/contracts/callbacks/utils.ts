@@ -1,10 +1,12 @@
+import { parseTimeStamp } from "@chicmoz-pkg/backend-utils";
+
 // NOTE: all comments here is to test if this issue is resolved: https://github.com/AztecProtocol/aztec-packages/issues/8339
 export const getEventL1Timestamp = (
   log: { blockTimestamp: `0x${string}` }
   //id: string
 ) => {
   const timestampStr = log.blockTimestamp;
-  const l1BlockTimestamp = new Date(Number.parseInt(timestampStr, 16) * 1000);
+  const l1BlockTimestamp = new Date(parseTimeStamp(Number.parseInt(timestampStr, 16)));
   //logger.info(`${id} | TS date: ${l1BlockTimestamp.toLocaleString()}`);
   //logger.info(`${id} | TS  nbr: ${l1BlockTimestamp.getTime()}`);
   //const now = Date.now();

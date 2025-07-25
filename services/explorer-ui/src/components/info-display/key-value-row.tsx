@@ -141,7 +141,7 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
           {(() => {
             const timeSince = formatTimeSince(timestamp);
             return `${new Date(
-              timestamp * 1000,
+              timestamp,
             ).toLocaleString()} (${timeSince} ago)`;
           })()}
         </span>

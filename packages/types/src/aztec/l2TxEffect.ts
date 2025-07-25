@@ -25,7 +25,7 @@ export const chicmozL2TxEffectSchema = z.object({
     z.object({ code: z.number() }),
   ),
   txHash: hexStringSchema,
-  txBirthTimestamp: z.coerce.date().optional(),
+  txBirthTimestamp: z.coerce.number().optional(),
   transactionFee: frNumberSchema,
   noteHashes: z.array(frSchema),
   nullifiers: z.array(frSchema),

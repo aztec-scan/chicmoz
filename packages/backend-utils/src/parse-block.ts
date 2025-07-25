@@ -5,6 +5,7 @@ import {
   ChicmozL2BlockFinalizationStatus,
   chicmozL2BlockSchema,
 } from "@chicmoz-pkg/types";
+import { parseTimeStamp } from "./time.js";
 
 const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
   return txEffects.map((txEffect) => {
@@ -65,6 +66,7 @@ export const parseBlock = async (
       },
       globalVariables: {
         ...blockWithTxEffectsHashesAdded.header.globalVariables,
+        timestamp: parseTimeStamp(Number(blockWithTxEffectsHashesAdded.header.globalVariables.timestamp.toString())),
         coinbase:
           blockWithTxEffectsHashesAdded.header.globalVariables.coinbase.toString(),
       },

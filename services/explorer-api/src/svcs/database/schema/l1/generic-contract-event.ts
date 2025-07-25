@@ -3,11 +3,10 @@ import {
   boolean,
   jsonb,
   pgTable,
-  timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { generateEthAddressColumn } from "../utils.js";
+import { generateEthAddressColumn, generateFrNumberColumn } from "../utils.js";
 
 export const l1GenericContractEventTable = pgTable(
   "l1_generic_contract_event",
@@ -15,7 +14,7 @@ export const l1GenericContractEventTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     l1BlockHash: varchar("l1_block_hash").notNull(),
     l1BlockNumber: bigint("l1_block_number", { mode: "bigint" }).notNull(),
-    l1BlockTimestamp: timestamp("l1_block_timestamp").notNull(),
+    l1BlockTimestamp: generateFrNumberColumn("l1_block_timestamp").notNull(),
     l1ContractAddress: generateEthAddressColumn(
       "l1_contract_address"
     ).notNull(),

@@ -49,7 +49,7 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
     ),
     cell: ({ row }) => {
       const timestamp = Number(row.getValue("timestamp"));
-      const unixTimestamp = Math.floor(timestamp / 1000);
+      const unixTimestamp = Math.floor(timestamp);
       return <TimeAgoCell timestamp={unixTimestamp} />;
     },
     enableSorting: true,
