@@ -37,7 +37,7 @@ import {
   getSequencerFromNodeInfo,
 } from "./utils.js";
 
-const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway", "Connection Timeout"];
+const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway"];
 
 const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
