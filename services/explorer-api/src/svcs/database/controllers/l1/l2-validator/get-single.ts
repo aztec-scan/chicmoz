@@ -156,10 +156,10 @@ export async function getL1L2Validator(
     const row = result[0];
     const latestSeenChangeAt = new Date(
       Math.max(
-        row.stakeTimestamp?.getTime() ?? 0,
-        row.statusTimestamp?.getTime() ?? 0,
-        row.withdrawerTimestamp?.getTime() ?? 0,
-        row.proposerTimestamp?.getTime() ?? 0,
+        row.stakeTimestamp ?? 0,
+        row.statusTimestamp ?? 0,
+        row.withdrawerTimestamp ?? 0,
+        row.proposerTimestamp ?? 0,
       ),
     );
 

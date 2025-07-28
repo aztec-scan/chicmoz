@@ -5,6 +5,7 @@ import {
   bufferType,
   generateEthAddressColumn,
   generateFrNumberColumn,
+  generateTimestampColumn,
   generateTreeTable,
 } from "../utils.js";
 import { l2Block } from "./root.js";
@@ -113,7 +114,7 @@ export const globalVariables = pgTable(
     version: generateFrNumberColumn("version").notNull(),
     blockNumber: generateFrNumberColumn("block_number").notNull(),
     slotNumber: generateFrNumberColumn("slot_number").notNull(),
-    timestamp: generateFrNumberColumn("timestamp").notNull(),
+    timestamp: generateTimestampColumn("timestamp").notNull(),
     coinbase: generateEthAddressColumn("coinbase").notNull(),
     feeRecipient: generateAztecAddressColumn("fee_recipient").notNull(),
   },

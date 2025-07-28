@@ -176,7 +176,7 @@ const _getTxEffects = async (
 
     return {
       ...txEffect,
-      txBirthTimestamp: txEffect.txBirthTimestamp.valueOf(),
+      txBirthTimestamp: txEffect.txBirthTimestamp,
       publicDataWrites,
       revertCode: { code: txEffect.revertCode },
       noteHashes: Array.isArray(txEffect.noteHashes)
@@ -249,7 +249,7 @@ export const getTxEffectDynamicWhere = async (
 
   const toParse: ChicmozL2TxEffectDeluxe = {
     ...dbRes[0],
-    txBirthTimestamp: dbRes[0].txBirthTimestamp.valueOf(),
+    txBirthTimestamp: dbRes[0].txBirthTimestamp,
     publicDataWrites,
     revertCode: { code: dbRes[0].revertCode },
     noteHashes: (Array.isArray(dbRes[0].noteHashes)

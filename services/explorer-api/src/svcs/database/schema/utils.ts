@@ -24,7 +24,7 @@ export const generateUint256Column = (name: string) =>
   numeric(name, { precision: 77, scale: 0 });
 
 export const generateTimestampColumn = (name: string) =>
-  numeric(name, { precision: 14, scale: 0 });
+  bigint(name, { mode: "number" });
 
 // NOTE: remove this function and replace with generateFrColumn. Beware of summarizing operations etc!
 export const generateFrNumberColumn = (name: string) =>

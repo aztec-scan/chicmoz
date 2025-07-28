@@ -1,10 +1,14 @@
-import { relations } from "drizzle-orm";
-import { pgTable, primaryKey, smallint, timestamp } from "drizzle-orm/pg-core";
-import { generateEthAddressColumn, generateUint256Column } from "../utils.js";
+import { relations, sql } from "drizzle-orm";
+import { pgTable, primaryKey, smallint } from "drizzle-orm/pg-core";
+import {
+  generateEthAddressColumn,
+  generateUint256Column,
+  generateTimestampColumn,
+} from "../utils.js";
 
 export const l1L2ValidatorTable = pgTable("l1_l2_validator", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
-  firstSeenAt: timestamp("first_seen_at").notNull(),
+  firstSeenAt: generateTimestampColumn("first_seen_at").notNull(),
 });
 
 export const l1L2ValidatorRollupAddress = pgTable(
@@ -14,7 +18,9 @@ export const l1L2ValidatorRollupAddress = pgTable(
       .notNull()
       .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
     rollupAddress: generateEthAddressColumn("rollup_address").notNull(),
-    timestamp: timestamp("timestamp").defaultNow().notNull(),
+    timestamp: generateTimestampColumn("timestamp")
+      .notNull()
+      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
@@ -28,7 +34,9 @@ export const l1L2ValidatorStakeTable = pgTable(
       .notNull()
       .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
     stake: generateUint256Column("stake").notNull(),
-    timestamp: timestamp("timestamp").defaultNow().notNull(),
+    timestamp: generateTimestampColumn("timestamp")
+      .notNull()
+      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
@@ -42,7 +50,9 @@ export const l1L2ValidatorStatusTable = pgTable(
       .notNull()
       .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
     status: smallint("status").notNull(),
-    timestamp: timestamp("timestamp").defaultNow().notNull(),
+    timestamp: generateTimestampColumn("timestamp")
+      .notNull()
+      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
@@ -56,7 +66,9 @@ export const l1L2ValidatorWithdrawerTable = pgTable(
       .notNull()
       .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
     withdrawer: generateEthAddressColumn("withdrawer").notNull(),
-    timestamp: timestamp("timestamp").defaultNow().notNull(),
+    timestamp: generateTimestampColumn("timestamp")
+      .notNull()
+      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
@@ -70,7 +82,9 @@ export const l1L2ValidatorProposerTable = pgTable(
       .notNull()
       .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
     proposer: generateEthAddressColumn("proposer").notNull(),
-    timestamp: timestamp("timestamp").defaultNow().notNull(),
+    timestamp: generateTimestampColumn("timestamp")
+      .notNull()
+      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),

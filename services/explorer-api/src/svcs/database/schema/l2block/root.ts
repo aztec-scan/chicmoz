@@ -1,15 +1,12 @@
 import { HexString } from "@chicmoz-pkg/types";
-import {
-  bigint,
-  boolean,
-  index,
-  pgTable,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { bigint, boolean, index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-import { generateTreeTable, generateFrNumberColumn } from "../utils.js";
+import {
+  generateTreeTable,
+  generateFrNumberColumn,
+  generateTimestampColumn,
+} from "../utils.js";
 
 export const l2Block = pgTable(
   "l2Block",
@@ -17,7 +14,7 @@ export const l2Block = pgTable(
     hash: varchar("hash").primaryKey().notNull().$type<HexString>(),
     height: bigint("height", { mode: "bigint" }).notNull(),
     version: generateFrNumberColumn("version").notNull(),
-    orphan_timestamp: timestamp("orphan_timestamp"),
+    orphan_timestamp: generateTimestampColumn("orphan_timestamp"),
     orphan_hasOrphanedParent: boolean("orphan_hasOrphanedParent"),
   },
   (t) => ({

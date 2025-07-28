@@ -1,5 +1,5 @@
 {
-  "id": "185deb4e-b6f2-49d3-8b91-734f97286ae6",
+  "id": "40c0147f-071a-4809-af9d-42362fbdf326",
   "prevId": "cf93a0de-e746-423f-af1b-f9396a5065c6",
   "version": "7",
   "dialect": "postgresql",
@@ -113,10 +113,9 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -141,13 +140,13 @@
         },
         "created_as_pending_at": {
           "name": "created_as_pending_at",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
         "dropped_at": {
           "name": "dropped_at",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         }
@@ -327,10 +326,10 @@
         },
         "tx_time_of_birth": {
           "name": "tx_time_of_birth",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": 1753712910451
         },
         "index": {
           "name": "index",
@@ -1272,7 +1271,7 @@
         },
         "orphan_timestamp": {
           "name": "orphan_timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": false
         },
@@ -2000,7 +1999,7 @@
         },
         "birth_timestamp": {
           "name": "birth_timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         }
@@ -2094,10 +2093,9 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2138,10 +2136,9 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2182,10 +2179,9 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2226,10 +2222,9 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2264,7 +2259,7 @@
         },
         "first_seen_at": {
           "name": "first_seen_at",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         }
@@ -2292,10 +2287,9 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2578,10 +2572,10 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": 1753712910453
         }
       },
       "indexes": {
