@@ -39,7 +39,7 @@ const verifyDroppedTransactions = async () => {
 
     const now = new Date();
     const oldSuspectedTxs = suspectedDroppedTxs.filter((tx) => {
-      const ageMs = now.getTime() - tx.birthTimestamp.getTime();
+      const ageMs = now.getTime() - tx.birthTimestamp;
       return ageMs >= DROPPED_TX_AGE_THRESHOLD_MS;
     });
 
@@ -98,7 +98,7 @@ const verifyDroppedTransactions = async () => {
         txs: definitivelyDroppedTxs.map((tx) => ({
           txHash: tx.txHash,
           createdAsPendingAt: tx.birthTimestamp,
-          droppedAt: new Date(),
+          droppedAt: new Date().valueOf(),
         })),
       });
 

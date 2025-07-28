@@ -22,6 +22,13 @@
       "when": 1749116197761,
       "tag": "0002_flowery_oracle",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1753714930792,
+      "tag": "0003_youthful_black_widow",
+      "breakpoints": true
     }
   ]
 }
