@@ -52,7 +52,7 @@ export const Landing: FC = () => {
     error: errorAmountContracts24h,
   } = useTotalContractsLast24h();
   const {
-    data: avarageBlockTime,
+    data: avarageBlockTimeMs,
     isLoading: loadingAvarageBlockTime,
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
@@ -89,7 +89,7 @@ export const Landing: FC = () => {
     !!avarageFees ||
     !!totalAmountOfContracts ||
     !!totalAmountOfContracts24h ||
-    !!avarageBlockTime;
+    !!avarageBlockTimeMs;
   const isConclusivlyDown =
     systemHealth.health === HealthStatus.DOWN &&
     !isAnyComponentLoading &&
@@ -105,7 +105,10 @@ export const Landing: FC = () => {
   useSubTitle(title);
 
   const showBlockCountdownProgress =
-    !loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime;
+    !loadingAvarageBlockTime &&
+    !isLoading &&
+    latestBlocks &&
+    avarageBlockTimeMs;
   return (
     <BaseLayout>
       {isConclusivlyDown && (
@@ -167,8 +170,8 @@ export const Landing: FC = () => {
               isLoading={loadingAvarageBlockTime}
               error={errorAvarageBlockTime}
               data={
-                avarageBlockTime
-                  ? formatDuration(Number(avarageBlockTime), true)
+                avarageBlockTimeMs
+                  ? formatDuration(Number(avarageBlockTimeMs) / 1000, true)
                   : "calculating..."
               }
             />
@@ -177,7 +180,7 @@ export const Landing: FC = () => {
             <div>
               <BlockCountdownProgress
                 latestBlocks={latestBlocks}
-                averageBlockTime={avarageBlockTime}
+                averageBlockTimeMs={avarageBlockTimeMs}
               />
             </div>
           )}
