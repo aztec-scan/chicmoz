@@ -16,7 +16,6 @@ import { TabsSection } from "./tabs-section";
 import { getDroppedTxEffectData, getTxEffectData } from "./utils";
 import { PendingTxDetails } from "./pending-tx-details";
 import { useTimeTick } from "~/hooks/useTimeTick";
-import { title } from "node:process";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({

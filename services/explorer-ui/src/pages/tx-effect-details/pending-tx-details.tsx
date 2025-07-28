@@ -53,7 +53,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
               </p>
               <BlockCountdownProgress
                 latestBlocks={latestBlocks}
-                averageBlockTimeMs={avarageBlockTime}
+                averageBlockTimeMs={avarageBlockTime!}
               />
             </div>
           )}
