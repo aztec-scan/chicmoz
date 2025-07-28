@@ -1,4 +1,4 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 requires:
-  - path: ./explorer-api/skaffold.testnet.yaml
+  - path: ./explorer-api/skaffold.sandbox.yaml
