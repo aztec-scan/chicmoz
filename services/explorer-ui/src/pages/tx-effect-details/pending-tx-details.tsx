@@ -20,7 +20,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
     if (!latestBlocks || latestBlocks.length === 0) return 0;
 
     const blocksAfterTx = latestBlocks.filter(
-      (block) => block.timestamp > pendingTxDetails.birthTimestamp.getTime(),
+      (block) => block.timestamp > pendingTxDetails.birthTimestamp,
     );
 
     return blocksAfterTx.length;
@@ -62,7 +62,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
                 {
                   label: "Timestamp",
                   value: pendingTxDetails.birthTimestamp.toString(),
-                  timestamp: pendingTxDetails.birthTimestamp.getTime(),
+                  timestamp: pendingTxDetails.birthTimestamp,
                 },
               ]}
             />
