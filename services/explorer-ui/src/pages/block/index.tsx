@@ -71,7 +71,7 @@ export const Blocks: FC = () => {
   } = useAvarageBlockTime();
 
   const averageBlockTimeFormatted = formatDuration(
-    Number(avarageBlockTime),
+    Number(avarageBlockTime) / 1000,
   );
 
   return (
