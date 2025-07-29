@@ -2,10 +2,18 @@ import { z } from "zod";
 import { aztecAddressSchema, hexStringSchema } from "../general.js";
 import { frNumberSchema, frSchema } from "./utils.js";
 
+export const publicCallRequestSchema = z.object({
+  msgSender: aztecAddressSchema,
+  contractAddress: aztecAddressSchema,
+  isStaticCall: z.boolean(),
+  calldataHash: hexStringSchema,
+});
+
 export const chicmozL2PendingTxSchema = z.object({
   txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
   feePayer: aztecAddressSchema,
   birthTimestamp: z.coerce.date().default(() => new Date()),
+  publicCallRequests: z.array(publicCallRequestSchema).optional(),
 });
 
 export const chicmozL2DroppedTxSchema = z.object({
@@ -53,6 +61,7 @@ export const chicmozL2TxEffectSchema = z.object({
   ),
 });
 
+export type PublicCallRequest = z.infer<typeof publicCallRequestSchema>;
 export type ChicmozL2PendingTx = z.infer<typeof chicmozL2PendingTxSchema>;
 export type ChicmozL2TxEffect = z.infer<typeof chicmozL2TxEffectSchema>;
 export type ChicmozL2DroppedTx = z.infer<typeof chicmozL2DroppedTxSchema>;

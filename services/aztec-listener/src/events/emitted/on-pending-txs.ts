@@ -1,20 +1,56 @@
 import { Tx } from "@aztec/aztec.js";
-import { ChicmozL2PendingTx } from "@chicmoz-pkg/types";
+import { ChicmozL2PendingTx, PublicCallRequest } from "@chicmoz-pkg/types";
 import { MEMPOOL_SYNC_GRACE_PERIOD_MS } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
 import { publishMessage } from "../../svcs/message-bus/index.js";
+
+const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
+  const publicCallRequests: PublicCallRequest[] = [];
+  const nullAddress =
+    "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+  if (tx.data.forPublic) {
+    const allRequests = [
+      ...tx.data.forPublic.nonRevertibleAccumulatedData.publicCallRequests,
+      ...tx.data.forPublic.revertibleAccumulatedData.publicCallRequests,
+    ];
+
+    allRequests.forEach((request) => {
+      if (
+        request.msgSender.toString() !== nullAddress &&
+        request.contractAddress.toString() !== nullAddress &&
+        request.calldataHash.toString() !== nullAddress
+      ) {
+        publicCallRequests.push({
+          msgSender: request.msgSender.toString(),
+          contractAddress: request.contractAddress.toString(),
+          isStaticCall: request.isStaticCall,
+          calldataHash: request.calldataHash.toString(),
+        });
+      }
+    });
+  }
+
+  return publicCallRequests;
+};
 
 export const onPendingTxs = async (pendingTxs: Tx[]) => {
   try {
     const storedTxs = await txsController.getTxs();
 
     const currentPendingTxs: ChicmozL2PendingTx[] = await Promise.all(
-      pendingTxs.map(async (tx) => ({
-        txHash: (await tx.getTxHash()).toString(),
-        feePayer: tx.data.feePayer.toString(),
-        birthTimestamp: new Date(),
-      })),
+      pendingTxs.map(async (tx) => {
+        const publicCallRequests = extractPublicCallRequests(tx);
+
+        return {
+          txHash: (await tx.getTxHash()).toString(),
+          feePayer: tx.data.feePayer.toString(),
+          birthTimestamp: new Date(),
+          publicCallRequests:
+            publicCallRequests.length > 0 ? publicCallRequests : undefined,
+        };
+      }),
     );
 
     const newTxs = currentPendingTxs.filter(
