@@ -98,7 +98,7 @@ const verifyDroppedTransactions = async () => {
         txs: definitivelyDroppedTxs.map((tx) => ({
           txHash: tx.txHash,
           createdAsPendingAt: tx.birthTimestamp,
-          droppedAt: new Date().valueOf(),
+          droppedAt: new Date().getTime(),
         })),
       });
 

@@ -49,7 +49,7 @@ export const handleProvenTransactions = async (block: L2Block) => {
         await publishMessage("CONTRACT_INSTANCE_BALANCE_EVENT", {
           contractAddress: provenTx.feePayer,
           balance: balance.toBigInt().toString(),
-          timestamp: new Date().valueOf(),
+          timestamp: new Date().getTime(),
         });
 
         await txsController.storeOrUpdate(provenTx, "proven");

@@ -73,7 +73,7 @@ export const handleReorgOrphaning = async (
   originalBlockHash: HexString,
   targetHeight: bigint,
 ): Promise<number> => {
-  const now = new Date().valueOf();
+  const now = new Date().getTime();
 
   return await db().transaction(async (dbTx) => {
     logger.info(

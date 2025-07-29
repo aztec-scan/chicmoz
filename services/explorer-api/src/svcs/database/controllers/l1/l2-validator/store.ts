@@ -37,7 +37,7 @@ export async function updateValidatorsState(
       await _store(
         {
           ...dbValidator,
-          latestSeenChangeAt: new Date().valueOf(),
+          latestSeenChangeAt: new Date().getTime(),
           status: L1L2ValidatorStatus.EXITING,
           stake: 0n,
         },

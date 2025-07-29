@@ -5,13 +5,13 @@ import { frNumberSchema, frSchema } from "./utils.js";
 export const chicmozL2PendingTxSchema = z.object({
   txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
   feePayer: aztecAddressSchema,
-  birthTimestamp: z.coerce.number().default(() => new Date().valueOf()),
+  birthTimestamp: z.coerce.number().default(() => new Date().getTime()),
 });
 
 export const chicmozL2DroppedTxSchema = z.object({
   txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
   createdAsPendingAt: z.coerce.number(),
-  droppedAt: z.coerce.number().default(() => new Date().valueOf()),
+  droppedAt: z.coerce.number().default(() => new Date().getTime()),
 });
 
 export const chicmozL2TxEffectSchema = z.object({

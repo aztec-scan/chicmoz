@@ -13,7 +13,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       pendingTxs.map(async (tx) => ({
         txHash: (await tx.getTxHash()).toString(),
         feePayer: tx.data.feePayer.toString(),
-        birthTimestamp: new Date().valueOf(),
+        birthTimestamp: new Date().getTime(),
       })),
     );
 
@@ -72,7 +72,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
           // Update with fresh timestamp and pending state
           const updatedTx = {
             ...resubmittedTx,
-            birthTimestamp: new Date().valueOf(), // Fresh start timestamp
+            birthTimestamp: new Date().getTime(), // Fresh start timestamp
           };
           await txsController.storeOrUpdate(updatedTx, "pending");
         }
