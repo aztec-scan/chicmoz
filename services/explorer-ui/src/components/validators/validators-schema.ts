@@ -6,6 +6,6 @@ export interface ValidatorTableSchema {
   proposer: string;
   stake: bigint;
   status: L1L2ValidatorStatus;
-  firstSeenAt: Date;
-  latestSeenChangeAt: Date;
+  firstSeenAt: number;
+  latestSeenChangeAt: number;
 }

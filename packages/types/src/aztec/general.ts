@@ -91,7 +91,7 @@ export type ChicmozL2Sequencer = z.infer<typeof chicmozL2SequencerSchema>;
 export const chicmozContractInstanceBalanceSchema = z.object({
   contractAddress: aztecAddressSchema,
   balance: z.coerce.bigint().nonnegative(),
-  timestamp: z.coerce.date().default(() => new Date()),
+  timestamp: z.coerce.number().default(() => new Date().getTime()),
 });
 
 export type ChicmozContractInstanceBalance = z.infer<

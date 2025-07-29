@@ -17,7 +17,7 @@ import {
   bufferType,
   generateConcatFrPointColumn,
   generateFrColumn,
-  generateFrNumberColumn,
+  generateTimestampColumn,
 } from "../utils.js";
 
 export const l2ContractInstanceDeployed = pgTable(
@@ -70,7 +70,7 @@ export const l2ContractInstanceUpdate = pgTable("l2_contract_instance_update", {
   address: generateAztecAddressColumn("address").notNull().unique(),
   prevContractClassId: generateFrColumn("prev_contract_class_id").notNull(),
   newContractClassId: generateFrColumn("new_contract_class_id").notNull(),
-  timestampOfChange: generateFrNumberColumn("timestamp").notNull(),
+  timestampOfChange: generateTimestampColumn("timestamp").notNull(),
   blockHash: varchar("block_hash")
     .notNull()
     .$type<HexString>()

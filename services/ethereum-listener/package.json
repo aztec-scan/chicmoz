@@ -11,6 +11,7 @@
   "dependencies": {
     "@aztec/aztec.js": "1.1.2",
     "@aztec/l1-artifacts": "1.1.2",
+    "@chicmoz-pkg/backend-utils": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",
     "@chicmoz-pkg/message-registry": "workspace:^",

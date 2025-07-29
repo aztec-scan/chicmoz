@@ -6,6 +6,6 @@ export interface ContractEventTableSchema {
   isFinalized: boolean;
   l1TransactionHash?: string | null;
   eventArgs?: Record<string, unknown>;
-  l1BlockTimestamp?: Date | null;
+  l1BlockTimestamp?: number | null;
   id?: string;
 }

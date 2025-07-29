@@ -28,7 +28,7 @@ export const ValidatorsPage: FC = () => {
     if (stakeDiff !== 0) {
       return stakeDiff;
     }
-    return b.latestSeenChangeAt.getTime() - a.latestSeenChangeAt.getTime();
+    return b.latestSeenChangeAt - a.latestSeenChangeAt;
   });
 
   return (

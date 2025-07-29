@@ -134,8 +134,8 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const date = row.getValue("firstSeenAt") as Date;
-      return <TimeAgoCell timestamp={date.getTime()} />;
+      const date = Number(row.getValue("firstSeenAt"));
+      return <TimeAgoCell timestamp={date} />;
     },
     enableSorting: true,
     enableHiding: true,
@@ -150,8 +150,8 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const date = row.getValue("latestSeenChangeAt") as Date;
-      return <TimeAgoCell timestamp={date.getTime()} />;
+      const date = Number(row.getValue("latestSeenChangeAt"));
+      return <TimeAgoCell timestamp={date} />;
     },
     enableSorting: true,
     enableHiding: true,

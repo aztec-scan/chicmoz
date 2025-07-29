@@ -5,15 +5,19 @@ import {
   jsonb,
   pgTable,
   smallint,
-  timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { generateFrColumn, generateFrNumberColumn } from "../utils.js";
+import { sql } from "drizzle-orm";
+import {
+  generateFrColumn,
+  generateFrNumberColumn,
+  generateTimestampColumn,
+} from "../utils.js";
 import { l2Block } from "./root.js";
 
 export const body = pgTable(
-  "body", 
+  "body",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     blockHash: varchar("block_hash")
@@ -23,7 +27,7 @@ export const body = pgTable(
   },
   (t) => ({
     blockHashIdx: index("body_block_hash_idx").on(t.blockHash),
-  })
+  }),
 );
 
 export const txEffect = pgTable(
@@ -33,7 +37,9 @@ export const txEffect = pgTable(
     bodyId: uuid("body_id")
       .notNull()
       .references(() => body.id, { onDelete: "cascade" }),
-    txBirthTimestamp: timestamp("tx_time_of_birth").notNull().defaultNow(),
+    txBirthTimestamp: generateTimestampColumn("tx_time_of_birth")
+      .notNull()
+      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
     index: integer("index").notNull(),
     revertCode: smallint("revert_code").notNull(),
     transactionFee: generateFrNumberColumn("transaction_fee").notNull(),
@@ -49,12 +55,15 @@ export const txEffect = pgTable(
     txHashIndex: index("tx_hash_index").on(table.txHash),
     bodyIdIndex: index("tx_effect_body_id_idx").on(table.bodyId),
     indexIndex: index("tx_effect_index_idx").on(table.index),
-    bodyIdIndexIndex: index("tx_effect_body_id_index_idx").on(table.bodyId, table.index),
-  })
+    bodyIdIndexIndex: index("tx_effect_body_id_index_idx").on(
+      table.bodyId,
+      table.index,
+    ),
+  }),
 );
 
 export const publicDataWrite = pgTable(
-  "public_data_write", 
+  "public_data_write",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     txEffectHash: varchar("tx_effect_hash")
@@ -65,8 +74,12 @@ export const publicDataWrite = pgTable(
     value: generateFrColumn("value").notNull(),
   },
   (t) => ({
-    txEffectHashIdx: index("public_data_write_tx_effect_hash_idx").on(t.txEffectHash),
+    txEffectHashIdx: index("public_data_write_tx_effect_hash_idx").on(
+      t.txEffectHash,
+    ),
     indexIdx: index("public_data_write_index_idx").on(t.index),
-    txEffectHashIndexIdx: index("public_data_write_tx_effect_hash_index_idx").on(t.txEffectHash, t.index),
-  })
+    txEffectHashIndexIdx: index(
+      "public_data_write_tx_effect_hash_index_idx",
+    ).on(t.txEffectHash, t.index),
+  }),
 );

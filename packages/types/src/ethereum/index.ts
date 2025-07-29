@@ -27,8 +27,8 @@ export const chicmozL1L2ValidatorSchema = z.object({
   proposer: ethAddressSchema,
   status: z.nativeEnum(L1L2ValidatorStatus),
   // NOTE: we could use createdAt and updatedAt, but I want to emphasize that this is the first time we saw this validator. It can be way off from the actual creation time (on chain).
-  firstSeenAt: timestampSchema.default(() => new Date()),
-  latestSeenChangeAt: timestampSchema.default(() => new Date()),
+  firstSeenAt: z.number(),
+  latestSeenChangeAt: z.number(),
 });
 
 export type ChicmozL1L2Validator = z.infer<typeof chicmozL1L2ValidatorSchema>;
@@ -44,7 +44,7 @@ export type ChicmozL1L2ValidatorHistoryEntry = z.infer<
 >;
 
 export const chicmozL1L2ValidatorHistorySchema = z.array(
-  chicmozL1L2ValidatorHistoryEntrySchema
+  chicmozL1L2ValidatorHistoryEntrySchema,
 );
 
 export type ChicmozL1L2ValidatorHistory = z.infer<

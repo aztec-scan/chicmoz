@@ -45,7 +45,7 @@ export const getAverageBlockTime = async (): Promise<string> => {
   if (dbRes[0].count < 2) {
     return "0";
   }
-  const averageBlockTime =
+  const averageBlockTimeMs =
     (dbRes[0].lastTimestamp - dbRes[0].firstTimestamp) / (dbRes[0].count - 1);
-  return Math.round(averageBlockTime).toString();
+  return Math.round(averageBlockTimeMs).toString();
 };

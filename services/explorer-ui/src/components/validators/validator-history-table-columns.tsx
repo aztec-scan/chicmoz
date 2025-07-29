@@ -66,11 +66,8 @@ export const ValidatorHistoryTableColumns: ColumnDef<ProcessedHistoryEntry>[] =
         />
       ),
       cell: ({ row }) => {
-        const timestamp = row.getValue("timestamp");
-        if (!(timestamp instanceof Date)) {
-          return null;
-        }
-        return <TimeAgoCell timestamp={timestamp.getTime()} />;
+        const timestamp = Number(row.getValue("timestamp"));
+        return <TimeAgoCell timestamp={timestamp} />;
       },
       enableSorting: true,
       enableHiding: false,

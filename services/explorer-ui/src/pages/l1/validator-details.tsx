@@ -61,12 +61,12 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
     {
       label: "FIRST SEEN",
       value: validator.firstSeenAt.toString(),
-      timestamp: validator.firstSeenAt.getTime(),
+      timestamp: validator.firstSeenAt,
     },
     {
       label: "LATEST CHANGE",
       value: validator.latestSeenChangeAt.toString(),
-      timestamp: validator.latestSeenChangeAt.getTime(),
+      timestamp: validator.latestSeenChangeAt,
     },
     {
       label: "RAW DATA",

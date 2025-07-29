@@ -15,6 +15,7 @@ import { BaseLayout } from "~/layout/base-layout";
 import { TabsSection } from "./tabs-section";
 import { getDroppedTxEffectData, getTxEffectData } from "./utils";
 import { PendingTxDetails } from "./pending-tx-details";
+import { useTimeTick } from "~/hooks/useTimeTick";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -26,6 +27,7 @@ export const TxEffectDetails: FC = () => {
     isLoading: isTxEffectsLoading,
     error: txEffectsError,
   } = useGetTxEffectByHash(hash);
+  const tick = useTimeTick();
 
   const { data: pendingTx, isLoading: isPendingTxLoading } =
     usePendingTxsByHash(hash);
@@ -104,7 +106,7 @@ export const TxEffectDetails: FC = () => {
             <OrphanedBanner type="tx-effect" />
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay data={getTxEffectData(txEffects)} />
+            <KeyValueDisplay key={tick} data={getTxEffectData(txEffects)} />
           </div>
           <TabsSection txEffects={txEffects} />
         </div>

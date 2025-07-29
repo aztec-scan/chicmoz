@@ -124,9 +124,7 @@ export const updatePendingTxs = (
           (tx, index, self) =>
             self.findIndex((t) => t.txHash === tx.txHash) === index,
         )
-        .sort(
-          (a, b) => b.birthTimestamp.getTime() - a.birthTimestamp.getTime(),
-        );
+        .sort((a, b) => b.birthTimestamp - a.birthTimestamp);
     },
   );
 };

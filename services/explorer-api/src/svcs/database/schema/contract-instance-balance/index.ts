@@ -1,13 +1,13 @@
 import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
-import { pgTable, primaryKey, timestamp } from "drizzle-orm/pg-core";
-import { generateUint256Column } from "../utils.js";
+import { pgTable, primaryKey } from "drizzle-orm/pg-core";
+import { generateUint256Column, generateTimestampColumn } from "../utils.js";
 
 export const contractInstanceBalance = pgTable(
   "contract_instance_balance",
   {
     contractAddress: generateAztecAddressColumn("contract_address").notNull(),
     balance: generateUint256Column("balance").notNull(),
-    timestamp: timestamp("timestamp").notNull().defaultNow(),
+    timestamp: generateTimestampColumn("timestamp").notNull(),
   },
   (t) => ({
     pk: primaryKey({
