@@ -73,7 +73,8 @@ const intervals = [
   { label: "second", seconds: 1, shortLabel: "sec" },
 ];
 
-export const formatDuration = (durationSeconds: number, short?: boolean) => {
+export const formatDuration = (durationMilliseconds: number, short?: boolean) => {
+  const durationSeconds = durationMilliseconds / 1000
   for (const interval of intervals) {
     const count = Math.floor(durationSeconds / interval.seconds);
     if (count >= 1) {
