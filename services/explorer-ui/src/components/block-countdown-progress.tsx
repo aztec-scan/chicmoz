@@ -107,10 +107,10 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     if (isOverdue) {
-      return `should have arrived ${formatDuration(timeLeft / 1000, true)} ago`;
+      return `should have arrived ${formatDuration(timeLeft, true)} ago`;
     }
 
-    return `in ${formatDuration(timeLeft / 1000, true)}`;
+    return `in ${formatDuration(timeLeft, true)}`;
   };
 
   return (

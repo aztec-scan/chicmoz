@@ -48,7 +48,7 @@ const evaluateHealth = ({
   const evaluations: ComponentHealth[] = [];
   const reasonableTimeStamp = Date.now() - REASONABLE_API_LIVENESS_TIME;
   const reasonableTimeString = formatDuration(
-    REASONABLE_API_LIVENESS_TIME / 1000
+    REASONABLE_API_LIVENESS_TIME
   );
 
   const isApiConnectionHealthy = !!lastSuccessfulRequest;
