@@ -1,5 +1,5 @@
 import { type DeploySentTx, waitForPXE } from "@aztec/aztec.js";
-import { TokenContract } from "@defi-wonderland/aztec-standards/historical/0.0.0-73e84dcc/artifacts/artifacts/Token.js";
+import { TokenContract } from "@defi-wonderland/aztec-standards/historical/0.0.0-83476cda/artifacts/artifacts/Token.js";
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
 import {
