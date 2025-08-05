@@ -52,7 +52,7 @@ export function DataTable<TData, TValue>({
   useReactQueryPagination = false,
   currentPage = 0,
   onPageChange,
-  onPageSizeChange,
+  onPageSizeChange: _onPageSizeChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
