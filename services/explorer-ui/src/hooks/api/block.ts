@@ -66,3 +66,33 @@ export const useBlocksByRange = (
     queryFn: () => BlockAPI.getBlocksByHeightRange(start, end),
   });
 };
+
+export const usePaginatedTableBlocks = (
+  page = 0,
+  pageSize = 20, // API limit is 20 blocks per request
+): UseQueryResult<UiBlockTable[], Error> => {
+  return useQuery<UiBlockTable[], Error>({
+    queryKey: queryKeyGenerator.paginatedTableBlocks(page, pageSize),
+    queryFn: async () => {
+      // Get latest block height to calculate the range for this page
+      const latestHeight = await BlockAPI.getLatestHeight();
+
+      // Calculate the range based on page and pageSize
+      // Page 0 shows the latest blocks, page 1 shows older blocks, etc.
+      const endHeight = latestHeight - page * pageSize;
+      const startHeight = Math.max(1, endHeight - pageSize + 1);
+
+      // Ensure we don't go below block 1
+      if (endHeight < 1) {
+        return [];
+      }
+
+      return BlockAPI.getLatestTableBlocksByHeightRange(
+        startHeight,
+        endHeight + 1,
+      );
+    },
+    placeholderData: (previousData) => previousData, // Keep previous data while loading
+    staleTime: 30000, // Consider data fresh for 30 seconds
+  });
+};

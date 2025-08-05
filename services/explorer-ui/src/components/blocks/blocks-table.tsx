@@ -16,6 +16,10 @@ interface Props {
   endBlock?: number;
   onRangeChange?: (start: number, end: number) => void;
   maxEntries?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  useReactQueryPagination?: boolean;
 }
 
 export const BlocksTable: FC<Props> = ({
@@ -30,6 +34,10 @@ export const BlocksTable: FC<Props> = ({
   endBlock,
   onRangeChange,
   maxEntries = 10,
+  currentPage,
+  onPageChange,
+  onPageSizeChange,
+  useReactQueryPagination = false,
 }) => {
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
@@ -57,6 +65,10 @@ export const BlocksTable: FC<Props> = ({
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}
+          useReactQueryPagination={useReactQueryPagination}
+          currentPage={currentPage}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
         />
       </div>
     </section>
