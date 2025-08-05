@@ -53,12 +53,12 @@ export const ValidatorHistoryTable: FC<Props> = ({
         <p className="text-sm text-gray-500">
           Psst!{" "}
           <a
-            href={`https://aztec.starfrich.me/?tab=nodeStats&validator_address=${attesterAddress}`}
+            href={`https://aztec.0xph.site/?tab=performance&address=${attesterAddress}`}
             target="_blank"
             rel="noreferrer"
             className="hover:font-bold hover:text-purple-light"
           >
-            Check out Starfrich's dashboard for even more detailed stats.
+            Check out 0xpH's dashboard for even more detailed stats.
           </a>
         </p>
 
