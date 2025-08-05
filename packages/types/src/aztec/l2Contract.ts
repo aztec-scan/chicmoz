@@ -118,6 +118,7 @@ export type ChicmozL2UtilityFunctionBroadcastedEvent = z.infer<
 >;
 
 export const CONTRACT_STANDARDS = {
+  "0.0.0-73e84dcc": ["token", "dripper"],
   "0.0.0-83476cda": ["token", "dripper"],
 };
 
