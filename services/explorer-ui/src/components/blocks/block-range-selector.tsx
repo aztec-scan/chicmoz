@@ -14,6 +14,7 @@ export const RangeSelector: FC<RangeSelectorProps> = ({
   const [startInput, setStartInput] = useState(startBlock?.toString() ?? "");
   const [endInput, setEndInput] = useState(endBlock?.toString() ?? "");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [, setLastChangedField] = useState<"start" | "end" | null>(null);
 
   // Update input fields when props change
   useEffect(() => {
@@ -24,6 +25,30 @@ export const RangeSelector: FC<RangeSelectorProps> = ({
       setEndInput(String(endBlock));
     }
   }, [startBlock, endBlock]);
+
+  const handleStartChange = (value: string) => {
+    setStartInput(value);
+    setLastChangedField("start");
+
+    const startNum = parseInt(value, 10);
+    if (!isNaN(startNum) && startNum > 0) {
+      // Calculate end block to maintain a 10-block range (start to start+9)
+      const calculatedEnd = startNum + 9;
+      setEndInput(calculatedEnd.toString());
+    }
+  };
+
+  const handleEndChange = (value: string) => {
+    setEndInput(value);
+    setLastChangedField("end");
+
+    const endNum = parseInt(value, 10);
+    if (!isNaN(endNum) && endNum > 0) {
+      // Calculate start block to maintain a 10-block range (end-9 to end)
+      const calculatedStart = Math.max(1, endNum - 9);
+      setStartInput(calculatedStart.toString());
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,35 +84,41 @@ export const RangeSelector: FC<RangeSelectorProps> = ({
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center">
-            <label htmlFor="block-range-start" className="text-sm font-medium text-gray-700 mr-1">
+            <label
+              htmlFor="block-range-start"
+              className="text-sm font-medium text-gray-700 mr-1"
+            >
               From:
             </label>
             <input
               id="block-range-start"
               type="number"
               value={startInput}
-              onChange={(e) => setStartInput(e.target.value)}
+              onChange={(e) => handleStartChange(e.target.value)}
               className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               placeholder="Start"
               min="0"
             />
           </div>
-          
+
           <div className="flex items-center">
-            <label htmlFor="block-range-end" className="text-sm font-medium text-gray-700 mr-1">
+            <label
+              htmlFor="block-range-end"
+              className="text-sm font-medium text-gray-700 mr-1"
+            >
               To:
             </label>
             <input
               id="block-range-end"
               type="number"
               value={endInput}
-              onChange={(e) => setEndInput(e.target.value)}
+              onChange={(e) => handleEndChange(e.target.value)}
               className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               placeholder="End"
               min="0"
             />
           </div>
-          
+
           <button
             type="submit"
             className="px-3 py-1 text-sm text-white bg-primary rounded hover:bg-opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
@@ -95,18 +126,16 @@ export const RangeSelector: FC<RangeSelectorProps> = ({
             Apply
           </button>
         </div>
-        
+
         <div className="flex items-center">
           <span className="text-xs text-gray-500 italic">
-            Note: Maximum range is 20 blocks (e.g., 100-119)
+            Note: Auto-calculates 10-block range. Maximum range is 20 blocks.
           </span>
         </div>
       </div>
-      
+
       {validationError && (
-        <p className="text-red-500 text-xs mt-1 md:mt-0">
-          {validationError}
-        </p>
+        <p className="text-red-500 text-xs mt-1 md:mt-0">{validationError}</p>
       )}
     </form>
   );

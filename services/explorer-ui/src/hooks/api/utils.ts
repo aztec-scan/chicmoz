@@ -53,8 +53,14 @@ export const queryKeyGenerator = {
     classId,
   ],
   contractInstance: (address: string) => ["contractInstance", address],
-  contractInstanceBalance: (address: string) => ["contractInstanceBalance", address],
-  contractInstanceBalanceHistory: (address: string) => ["contractInstanceBalanceHistory", address],
+  contractInstanceBalance: (address: string) => [
+    "contractInstanceBalance",
+    address,
+  ],
+  contractInstanceBalanceHistory: (address: string) => [
+    "contractInstanceBalanceHistory",
+    address,
+  ],
   latestContractInstances: ["latestContractInstances"],
   contractInstancesWithAztecScanNotes: ["contractInstancesWithAztecScanNotes"],
   contractInstancesWithBalance: ["contractInstancesWithBalance"],
@@ -79,5 +85,10 @@ export const queryKeyGenerator = {
   amountContractClassInstances: (classId: string) => [
     "amountOfInstances",
     classId,
+  ],
+  paginatedTableBlocks: (page: number, pageSize: number) => [
+    "paginatedTableBlocks",
+    page,
+    pageSize,
   ],
 };

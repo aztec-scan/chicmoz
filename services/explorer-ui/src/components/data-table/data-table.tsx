@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-table";
 import { Fragment, useMemo, useState } from "react";
 import { DataTablePagination } from "~/components/data-table/data-table-pagination.tsx";
+import { ReactQueryPagination } from "~/components/data-table/react-query-pagination.tsx";
 import {
   Table,
   TableBody,
@@ -36,6 +37,10 @@ interface DataTableProps<TData, TValue> {
   disableSizeSelector?: boolean;
   disablePagination?: boolean;
   maxEntries?: number;
+  useReactQueryPagination?: boolean;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
 }
 export function DataTable<TData, TValue>({
   isLoading,
@@ -44,6 +49,10 @@ export function DataTable<TData, TValue>({
   disableSizeSelector = false,
   disablePagination = false,
   maxEntries = 10,
+  useReactQueryPagination = false,
+  currentPage = 0,
+  onPageChange,
+  onPageSizeChange: _onPageSizeChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -100,12 +109,21 @@ export function DataTable<TData, TValue>({
         )}
       </div>
 
-      <DataTablePagination
-        table={table}
-        disableSizeSelector={disableSizeSelector}
-        disablePagination={disablePagination}
-        maxEntries={maxEntries}
-      />
+      {useReactQueryPagination && onPageChange ? (
+        <ReactQueryPagination
+          currentPage={currentPage}
+          onPageChange={onPageChange}
+          hasNextPage={true}
+          hasPreviousPage={currentPage > 0}
+        />
+      ) : (
+        <DataTablePagination
+          table={table}
+          disableSizeSelector={disableSizeSelector}
+          disablePagination={disablePagination}
+          maxEntries={maxEntries}
+        />
+      )}
     </>
   );
 }
