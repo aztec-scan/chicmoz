@@ -8,8 +8,9 @@ import {
   chicmozL1L2ValidatorSchema,
   chicmozL2BlockLightSchema,
   chicmozL2ContractClassRegisteredEventSchema,
-  chicmozL2ContractInstanceDeluxeSchema,
+  chicmozL2ContractInstanceDeployedEventSchema,
   chicmozL2ContractInstanceDeployerMetadataSchema,
+  chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema,
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2RpcNodeErrorSchema,
@@ -29,11 +30,13 @@ import { logger } from "../../../../../logger.js";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
   let schema = {};
-  //logger.info(`Generating schema for ${name}`);
+  // logger.info(`Generating schema for ${name}`);
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     schema = generateSchema(zodSchema);
-    //logger.info(`Generated schema for ${name}: ${JSON.stringify(schema, null, 2)}`);
+    // logger.info(
+    //   `Generated schema for ${name}: ${JSON.stringify(schema, null, 2)}`,
+    // );
   } catch (e) {
     // NOTE: this catch never happens
     logger.error(
@@ -124,21 +127,15 @@ export const contractClassUtilityFunctionResponseArray = getResponse(
   "contractClassUtilityFunctionArray",
 );
 
-// For lazy schemas, we need to create a modified version differently
-// We'll use a transform to convert BigInt to string at runtime
-const cleanedContractInstanceDeluxeSchema = z.lazy(() => {
-  // Start with the original schema
-  return chicmozL2ContractInstanceDeluxeSchema.transform((data) => {
-    // Create a new object with all the original properties
-    const result = { ...data };
-
-    // Convert the blockHeight to string if it exists
-    if (result.blockHeight !== undefined) {
-      result.blockHeight = result.blockHeight.toString() as unknown as bigint;
-    }
-
-    return result;
-  });
+// For lazy schemas, we need to create a non-lazy version for OpenAPI generation
+const cleanedContractInstanceDeluxeSchema = z.object({
+  ...chicmozL2ContractInstanceDeployedEventSchema.shape,
+  ...chicmozL2ContractClassRegisteredEventSchema.shape,
+  blockHeight: z.string().optional(), // Convert BigInt to string
+  isOrphaned: z.boolean(),
+  deployerMetadata: chicmozL2ContractInstanceDeployerMetadataSchema.optional(),
+  verifiedDeploymentArguments:
+    chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema.optional(),
 });
 
 export const contractInstanceResponse = getResponse(
