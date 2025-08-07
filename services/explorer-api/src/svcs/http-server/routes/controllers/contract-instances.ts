@@ -401,20 +401,38 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       throw new Error("For some reason artifactString is undefined");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const verificationPayload: VerifyInstanceDeploymentPayload =
-      generateVerifyInstancePayload({
+    let verificationPayload: VerifyInstanceDeploymentPayload;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      verificationPayload = generateVerifyInstancePayload({
         publicKeysString,
         deployer,
         salt,
         constructorArgs,
       });
-    const isVerifiedDeploymentPayload = await verifyInstanceDeploymentPayload({
-      ...verificationPayload,
-      stringifiedArtifactJson: artifactString,
-      instanceAddress: address,
-      contractClassId: dbContractInstance.currentContractClassId,
-    });
+    } catch (error) {
+      logger.error(
+        `Failed to generate verification payload for contract instance ${address}: ${(error as Error).message}`,
+      );
+      res.status(400).send((error as Error).message);
+      return;
+    }
+
+    let isVerifiedDeploymentPayload: boolean;
+    try {
+      isVerifiedDeploymentPayload = await verifyInstanceDeploymentPayload({
+        ...verificationPayload,
+        stringifiedArtifactJson: artifactString,
+        instanceAddress: address,
+        contractClassId: dbContractInstance.currentContractClassId,
+      });
+    } catch (error) {
+      logger.error(
+        `Failed to verify instance deployment payload for contract instance ${address}: ${(error as Error).message}`,
+      );
+      res.status(400).send((error as Error).message);
+      return;
+    }
 
     if (!isVerifiedDeploymentPayload) {
       res
