@@ -39,8 +39,8 @@ export const TabsSection: FC<PillSectionProps> = ({
     verifiedDeployment: !!verifiedDeploymentArguments,
     contactDetails: !!deployerMetadata,
     aztecScanNotes: !!aztecScanNotes,
-    contractClassArtifect: !!selectedVersionWithArtifactRes.data?.artifactJson,
-    contractClassArtifectExplorer:
+    contractClassArtifact: !!selectedVersionWithArtifactRes.data?.artifactJson,
+    contractClassArtifactExplorer:
       !!selectedVersionWithArtifactRes.data?.artifactJson,
     feeJuiceBalance:
       !!balanceHistoryRes.data && balanceHistoryRes.data.length > 0,
@@ -63,7 +63,7 @@ export const TabsSection: FC<PillSectionProps> = ({
         return <KeyValueDisplay data={verifiedDeploymentArguments ?? []} />;
       case "aztecScanNotes":
         return <KeyValueDisplay data={aztecScanNotes ?? []} />;
-      case "contractClassArtifect":
+      case "contractClassArtifact":
         return selectedVersionWithArtifactRes.isLoading ? (
           <Loader amount={1} />
         ) : (
@@ -78,7 +78,7 @@ export const TabsSection: FC<PillSectionProps> = ({
             }
           />
         );
-      case "contractClassArtifectExplorer":
+      case "contractClassArtifactExplorer":
         return selectedVersionWithArtifactRes.isLoading ? (
           <Loader amount={1} />
         ) : (
