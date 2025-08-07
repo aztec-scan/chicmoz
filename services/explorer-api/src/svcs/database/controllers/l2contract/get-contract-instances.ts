@@ -274,6 +274,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
         ),
       ),
     )
+    .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
       and(
