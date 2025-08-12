@@ -3,7 +3,6 @@ import { lazy } from "react";
 import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 import { TailwindIndicator } from "~/components/ui/tailwind-indicator";
-import { ValidatorSurveyBanner } from "~/components/validator-survey-banner";
 import { BaseLayout } from "~/layout/base-layout";
 
 const TanStackRouterDevtools =
@@ -20,7 +19,6 @@ export const Route = createRootRoute({
     <div className="flex flex-col overflow-auto min-h-screen flex-grow">
       <div className="flex-grow">
         <Header />
-        <ValidatorSurveyBanner />
         <Outlet />
       </div>
       <Footer />
