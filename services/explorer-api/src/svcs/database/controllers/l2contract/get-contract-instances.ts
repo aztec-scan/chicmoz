@@ -2,16 +2,16 @@ import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
 import {
   and,
+  count,
   desc,
   eq,
-  count,
   getTableColumns,
   isNotNull,
   isNull,
 } from "drizzle-orm";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { globalVariables, header, l2Block } from "../../schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceAztecScanNotes,
@@ -321,9 +321,29 @@ export const getL2TotalAmountDeployedContractInstancesByCurrentContractClassId =
         count: count(),
       })
       .from(l2ContractInstanceDeployed)
+      .innerJoin(
+        l2Block,
+        eq(l2Block.hash, l2ContractInstanceDeployed.blockHash),
+      )
       .where(
         eq(l2ContractInstanceDeployed.currentContractClassId, contractClassId),
       );
+
+    return Number(result[0].count);
+  };
+
+export const getL2TotalAmountDeployedContractInstances =
+  async (): Promise<number> => {
+    const result = await db()
+      .select({
+        count: count(),
+      })
+      .from(l2ContractInstanceDeployed)
+      .innerJoin(
+        l2Block,
+        eq(l2Block.hash, l2ContractInstanceDeployed.blockHash),
+      )
+      .where(isNull(l2Block.orphan_timestamp));
 
     return Number(result[0].count);
   };

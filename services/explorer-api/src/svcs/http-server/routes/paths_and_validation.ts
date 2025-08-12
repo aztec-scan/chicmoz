@@ -74,6 +74,7 @@ export const paths = {
   statsTotalTxEffects: "/l2/stats/total-tx-effects",
   statsTotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
   statsTotalContracts: "/l2/stats/total-contracts",
+  statsTotalContractInstances: "/l2/stats/total-contract-instances",
   statsTotalContractInstancesByContractClassId: `/l2/stats/total-contract-instances/:${contractClassId}`,
   statsTotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
   statsAverageFees: "/l2/stats/average-fees",

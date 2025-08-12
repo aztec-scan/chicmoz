@@ -80,6 +80,10 @@ const otherPaths = [
     controller: controller.GET_STATS_TOTAL_CONTRACTS,
   },
   {
+    path: paths.statsTotalContractInstances,
+    controller: controller.GET_STATS_TOTAL_CONTRACT_INSTANCES,
+  },
+  {
     path: paths.statsTotalContractsLast24h,
     controller: controller.GET_STATS_TOTAL_CONTRACTS_LAST_24H,
   },
