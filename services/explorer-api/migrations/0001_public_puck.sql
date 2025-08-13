@@ -1,0 +1,1 @@
+ALTER TABLE "l2_contract_class_registered" ADD COLUMN "contract_version" varchar;

@@ -1,6 +1,6 @@
 {
-  "id": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "728dceda-6877-41f9-97f7-ece6baf286c0",
+  "prevId": "f53f13ca-1a05-4531-be18-92192b3acad2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -95,6 +95,40 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.contract_instance_balance": {
+      "name": "contract_instance_balance",
+      "schema": "",
+      "columns": {
+        "contract_address": {
+          "name": "contract_address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance": {
+          "name": "balance",
+          "type": "numeric(77, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "contract_instance_balance_pk": {
+          "name": "contract_instance_balance_pk",
+          "columns": ["contract_address", "timestamp"]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "public.dropped_tx": {
       "name": "dropped_tx",
       "schema": "",
@@ -105,8 +139,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "created_as_pending_at": {
+          "name": "created_as_pending_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -1350,6 +1384,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "contract_version": {
+          "name": "contract_version",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "source_code_url": {
           "name": "source_code_url",
           "type": "varchar",
@@ -1901,12 +1941,17 @@
           "primaryKey": true,
           "notNull": true
         },
+        "fee_payer": {
+          "name": "fee_payer",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "birth_timestamp": {
           "name": "birth_timestamp",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2024,6 +2069,50 @@
       },
       "uniqueConstraints": {}
     },
+    "public.l1_l2_validator_rollup_address": {
+      "name": "l1_l2_validator_rollup_address",
+      "schema": "",
+      "columns": {
+        "attester_address": {
+          "name": "attester_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rollup_address": {
+          "name": "rollup_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "l1_l2_validator_rollup_address_attester_address_l1_l2_validator_attester_fk": {
+          "name": "l1_l2_validator_rollup_address_attester_address_l1_l2_validator_attester_fk",
+          "tableFrom": "l1_l2_validator_rollup_address",
+          "tableTo": "l1_l2_validator",
+          "columnsFrom": ["attester_address"],
+          "columnsTo": ["attester"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "l1_l2_validator_rollup_address_attester_address_timestamp_pk": {
+          "name": "l1_l2_validator_rollup_address_attester_address_timestamp_pk",
+          "columns": ["attester_address", "timestamp"]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "public.l1_l2_validator_stake": {
       "name": "l1_l2_validator_stake",
       "schema": "",
@@ -2120,12 +2209,6 @@
           "name": "attester",
           "type": "varchar(42)",
           "primaryKey": true,
-          "notNull": true
-        },
-        "rollup_address": {
-          "name": "rollup_address",
-          "type": "varchar(42)",
-          "primaryKey": false,
           "notNull": true
         },
         "first_seen_at": {

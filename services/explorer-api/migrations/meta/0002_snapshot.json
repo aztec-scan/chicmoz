@@ -1,6 +1,6 @@
 {
-  "id": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "f53f13ca-1a05-4531-be18-92192b3acad2",
+  "prevId": "957ea187-a3a0-480b-a9f4-77f35163aaf6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -95,6 +95,40 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.contract_instance_balance": {
+      "name": "contract_instance_balance",
+      "schema": "",
+      "columns": {
+        "contract_address": {
+          "name": "contract_address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance": {
+          "name": "balance",
+          "type": "numeric(77, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "contract_instance_balance_pk": {
+          "name": "contract_instance_balance_pk",
+          "columns": ["contract_address", "timestamp"]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "public.dropped_tx": {
       "name": "dropped_tx",
       "schema": "",
@@ -105,8 +139,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "created_as_pending_at": {
+          "name": "created_as_pending_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -1350,6 +1384,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "contract_version": {
+          "name": "contract_version",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "source_code_url": {
           "name": "source_code_url",
           "type": "varchar",
@@ -1901,12 +1941,17 @@
           "primaryKey": true,
           "notNull": true
         },
+        "fee_payer": {
+          "name": "fee_payer",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "birth_timestamp": {
           "name": "birth_timestamp",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
