@@ -15,8 +15,7 @@ export const storePublicCallRequests = async (
   await deletePublicCall(txHash);
 
   // Insert new public call requests
-  const values = publicCallRequests.map((request, index) => ({
-    id: `${txHash}-${index}`,
+  const values = publicCallRequests.map((request) => ({
     txHash,
     msgSender: request.msgSender,
     contractAddress: request.contractAddress,

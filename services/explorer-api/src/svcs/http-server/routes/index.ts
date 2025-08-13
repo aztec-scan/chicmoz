@@ -165,11 +165,11 @@ export const init = ({ router }: { router: Router }) => {
   );
   router.get(
     paths.publicDataSender,
-    controller.GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS,
+    controller.GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS,
   );
   router.get(
     paths.publicDataContract,
-    controller.GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS,
+    controller.GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS,
   );
   router.get(paths.droppedTxByHash, controller.GET_DROPPED_TX_BY_HASH);
 

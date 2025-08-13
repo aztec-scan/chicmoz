@@ -8,6 +8,7 @@ export const getPublicCallRequestsByTxHash = async (
 ): Promise<PublicCallRequest[]> => {
   const res = await db()
     .select({
+      txHash: l2TxPublicCallRequest.txHash,
       msgSender: l2TxPublicCallRequest.msgSender,
       contractAddress: l2TxPublicCallRequest.contractAddress,
       isStaticCall: l2TxPublicCallRequest.isStaticCall,
@@ -24,6 +25,7 @@ export const getPublicCallRequestsByContractAddress = async (
 ): Promise<PublicCallRequest[]> => {
   const res = await db()
     .select({
+      txHash: l2TxPublicCallRequest.txHash,
       msgSender: l2TxPublicCallRequest.msgSender,
       contractAddress: l2TxPublicCallRequest.contractAddress,
       isStaticCall: l2TxPublicCallRequest.isStaticCall,
@@ -41,6 +43,7 @@ export const getPublicCallRequestsBySenderAddress = async (
 ): Promise<PublicCallRequest[]> => {
   const res = await db()
     .select({
+      txHash: l2TxPublicCallRequest.txHash,
       msgSender: l2TxPublicCallRequest.msgSender,
       contractAddress: l2TxPublicCallRequest.contractAddress,
       isStaticCall: l2TxPublicCallRequest.isStaticCall,

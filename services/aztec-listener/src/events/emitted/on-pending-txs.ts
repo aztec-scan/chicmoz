@@ -31,7 +31,6 @@ const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
       }
     });
   }
-
   return publicCallRequests;
 };
 
