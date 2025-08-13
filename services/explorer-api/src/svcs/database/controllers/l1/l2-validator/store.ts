@@ -37,7 +37,7 @@ export async function updateValidatorsState(
       await _store(
         {
           ...dbValidator,
-          latestSeenChangeAt: new Date(),
+          latestSeenChangeAt: new Date().getTime(),
           status: L1L2ValidatorStatus.EXITING,
           stake: 0n,
         },
@@ -52,7 +52,13 @@ export async function updateValidatorsState(
     const currentValues = found
       ? found
       : await getL1L2Validator(validator.attester, validator.rollupAddress);
-    await _store(validator, currentValues);
+    try {
+      await _store(validator, currentValues);
+    } catch (error) {
+      logger.error(
+        `Error storing L1L2 validator ${validator.attester}: ${(error as Error).message}`,
+      );
+    }
   }
 }
 
@@ -73,7 +79,10 @@ async function _store(
 
   await db().transaction(async (tx) => {
     if (!currentDbValues) {
-      await tx.insert(l1L2ValidatorTable).values({ attester, firstSeenAt });
+      await tx
+        .insert(l1L2ValidatorTable)
+        .values({ attester, firstSeenAt })
+        .onConflictDoNothing();
     }
 
     if (

@@ -1,6 +1,10 @@
 import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
-import { integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { bigint, integer, pgTable, varchar } from "drizzle-orm/pg-core";
+
+export const generateTimestampColumn = (name: string) =>
+  bigint(name, { mode: "number" });
 
 export const heightsTable = pgTable("heights", {
   networkId: varchar("networkId").primaryKey().notNull(),
@@ -24,6 +28,8 @@ export type TxState = (typeof txStateValues)[number];
 export const txsTable = pgTable("txs_table", {
   txHash: varchar("tx_hash").notNull().$type<HexString>().primaryKey(),
   feePayer: generateAztecAddressColumn("fee_payer").notNull(),
-  birthTimestamp: timestamp("birth_timestamp").notNull().defaultNow(),
+  birthTimestamp: generateTimestampColumn("birth_timestamp")
+    .notNull()
+    .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   txState: varchar("tx_state").notNull().$type<TxState>(),
 });

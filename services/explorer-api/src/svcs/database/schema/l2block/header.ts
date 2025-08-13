@@ -5,6 +5,7 @@ import {
   bufferType,
   generateEthAddressColumn,
   generateFrNumberColumn,
+  generateTimestampColumn,
   generateTreeTable,
 } from "../utils.js";
 import { l2Block } from "./root.js";
@@ -39,7 +40,6 @@ export const contentCommitment = pgTable(
     headerId: uuid("header_id")
       .notNull()
       .references(() => header.id, { onDelete: "cascade" }),
-    numTxs: generateFrNumberColumn("num_txs").notNull(),
     blobsHash: bufferType("blobs_hash").notNull(),
     inHash: bufferType("in_hash").notNull(),
     outHash: bufferType("out_hash").notNull(),
@@ -114,12 +114,13 @@ export const globalVariables = pgTable(
     version: generateFrNumberColumn("version").notNull(),
     blockNumber: generateFrNumberColumn("block_number").notNull(),
     slotNumber: generateFrNumberColumn("slot_number").notNull(),
-    timestamp: generateFrNumberColumn("timestamp").notNull(),
+    timestamp: generateTimestampColumn("timestamp").notNull(),
     coinbase: generateEthAddressColumn("coinbase").notNull(),
     feeRecipient: generateAztecAddressColumn("fee_recipient").notNull(),
   },
   (t) => ({
     headerIdIdx: index("global_variables_header_id_idx").on(t.headerId),
+    versionIdx: index("global_variables_version_idx").on(t.version),
   }),
 );
 

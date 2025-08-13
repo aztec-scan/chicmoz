@@ -2,14 +2,19 @@ import { L2Block } from "@aztec/aztec.js";
 import { blockFromString, parseBlock } from "@chicmoz-pkg/backend-utils";
 import { EventHandler } from "@chicmoz-pkg/message-bus";
 import {
-  NewBlockEvent,
   generateL2TopicName,
   getConsumerGroupId,
+  NewBlockEvent,
 } from "@chicmoz-pkg/message-registry";
-import { ChicmozL2Block, ChicmozL2TxEffect } from "@chicmoz-pkg/types";
+import {
+  chicmozChainInfoSchema,
+  ChicmozL2Block,
+  ChicmozL2TxEffect,
+} from "@chicmoz-pkg/types";
 import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
+import { onRollupVersion } from "../../../svcs/database/controllers/l2/chain-info/rollup-version-cache.js";
 import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
 import { ensureFinalizationStatusStored } from "../../../svcs/database/controllers/l2block/store.js";
 import { controllers } from "../../../svcs/database/index.js";
@@ -70,6 +75,11 @@ const onBlock = async ({
   }
 
   await storeBlock(parsedBlock);
+  onRollupVersion(
+    chicmozChainInfoSchema.shape.rollupVersion.parse(
+      parsedBlock.header.globalVariables.version,
+    ),
+  );
   await storeContracts(b, parsedBlock.hash);
   await pendingTxsHook(parsedBlock.body.txEffects);
 };

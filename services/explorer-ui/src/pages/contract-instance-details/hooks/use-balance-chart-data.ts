@@ -15,8 +15,7 @@ export const useBalanceChartData = (
   return useMemo(() => {
     // Sort data by timestamp to ensure chronological order
     const sortedData = [...historyData].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a, b) => a.timestamp - b.timestamp,
     );
 
     // Filter data based on date range
@@ -42,7 +41,7 @@ export const useBalanceChartData = (
 
     // Prepare data for chart
     const chartData: ChartDataPoint[] = filteredData.map((item) => ({
-      timestamp: new Date(item.timestamp).getTime(),
+      timestamp: item.timestamp,
       balance: Number(item.balance),
       formattedTime: new Date(item.timestamp).toLocaleString(),
     }));
@@ -140,4 +139,3 @@ export const useBalanceChartData = (
     };
   }, [historyData, startDate, endDate]);
 };
-

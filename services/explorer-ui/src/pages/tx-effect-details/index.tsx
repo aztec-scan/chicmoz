@@ -11,9 +11,11 @@ import {
   usePendingTxsByHash,
   useSubTitle,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { TabsSection } from "./tabs-section";
 import { getDroppedTxEffectData, getTxEffectData } from "./utils";
 import { PendingTxDetails } from "./pending-tx-details";
+import { useTimeTick } from "~/hooks/useTimeTick";
 
 export const TxEffectDetails: FC = () => {
   const { hash } = useParams({
@@ -25,6 +27,7 @@ export const TxEffectDetails: FC = () => {
     isLoading: isTxEffectsLoading,
     error: txEffectsError,
   } = useGetTxEffectByHash(hash);
+  const tick = useTimeTick();
 
   const { data: pendingTx, isLoading: isPendingTxLoading } =
     usePendingTxsByHash(hash);
@@ -52,7 +55,7 @@ export const TxEffectDetails: FC = () => {
   // Dropped transaction - display dropped banner with details
   if (droppedTx) {
     return (
-      <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+      <BaseLayout>
         <div>
           <div className="flex flex-wrap m-3">
             <h3 className="text-primary md:hidden">Tx Details</h3>
@@ -67,7 +70,7 @@ export const TxEffectDetails: FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </BaseLayout>
     );
   }
 
@@ -90,7 +93,7 @@ export const TxEffectDetails: FC = () => {
 
   // Success state - data is available
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-3">
           <h3 className="text-primary md:hidden">Transactions Details</h3>
@@ -103,11 +106,11 @@ export const TxEffectDetails: FC = () => {
             <OrphanedBanner type="tx-effect" />
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay data={getTxEffectData(txEffects)} />
+            <KeyValueDisplay key={tick} data={getTxEffectData(txEffects)} />
           </div>
           <TabsSection txEffects={txEffects} />
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

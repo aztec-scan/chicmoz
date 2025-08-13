@@ -37,6 +37,13 @@ import {
   dbWrapper,
 } from "./utils/index.js";
 
+const verifyContractRequestBody = generateSchema(
+  z.object({
+    ...postVerifiedContractInstanceSchema.schema.shape.body.shape,
+    verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema.schema,
+  }),
+);
+
 export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
     get: {
@@ -60,6 +67,44 @@ export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
         },
       ],
       responses: contractInstanceResponse,
+    },
+    post: {
+      description:
+        "Please check out our SDK for how to verify contract instance deployment",
+      tags: ["L2", "contract-instances"],
+      summary: "Verify contract instance deployment",
+      parameters: [
+        {
+          name: "address",
+          in: "path",
+          required: true,
+          schema: {
+            type: "string",
+            pattern: "^0x[a-fA-F0-9]+$",
+          },
+        },
+      ],
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: verifyContractRequestBody,
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "Contract instance verification successful",
+        },
+        "400": {
+          description: "Bad request or verification failed",
+        },
+        "404": {
+          description: "Contract instance not found",
+        },
+        "500": {
+          description: "Internal server error",
+        },
+      },
     },
   },
 };
@@ -224,57 +269,6 @@ export const GET_L2_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID = asyncHandler(
   },
 );
 
-const verifyContractRequestBody = generateSchema(
-  z.object({
-    ...postVerifiedContractInstanceSchema.schema.shape.body.shape,
-    verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema.schema,
-  }),
-);
-
-export const openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT: OpenAPIObject["paths"] =
-  {
-    "/l2/contract-instances/{address}": {
-      post: {
-        description:
-          "Please check out our SDK for how to verify contract instance deployment",
-        tags: ["L2", "contract-instances"],
-        summary: "Verify contract instance deployment",
-        parameters: [
-          {
-            name: "address",
-            in: "path",
-            required: true,
-            schema: {
-              type: "string",
-              pattern: "^0x[a-fA-F0-9]+$",
-            },
-          },
-        ],
-        requestBody: {
-          content: {
-            "application/json": {
-              schema: verifyContractRequestBody,
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "Contract instance verification successful",
-          },
-          "400": {
-            description: "Bad request or verification failed",
-          },
-          "404": {
-            description: "Contract instance not found",
-          },
-          "500": {
-            description: "Internal server error",
-          },
-        },
-      },
-    },
-  };
-
 export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
   async (req, res) => {
     const {
@@ -407,20 +401,38 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       throw new Error("For some reason artifactString is undefined");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const verificationPayload: VerifyInstanceDeploymentPayload =
-      generateVerifyInstancePayload({
+    let verificationPayload: VerifyInstanceDeploymentPayload;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      verificationPayload = generateVerifyInstancePayload({
         publicKeysString,
         deployer,
         salt,
         constructorArgs,
       });
-    const isVerifiedDeploymentPayload = await verifyInstanceDeploymentPayload({
-      ...verificationPayload,
-      stringifiedArtifactJson: artifactString,
-      instanceAddress: address,
-      contractClassId: dbContractInstance.currentContractClassId,
-    });
+    } catch (error) {
+      logger.error(
+        `Failed to generate verification payload for contract instance ${address}: ${(error as Error).message}`,
+      );
+      res.status(400).send((error as Error).message);
+      return;
+    }
+
+    let isVerifiedDeploymentPayload: boolean;
+    try {
+      isVerifiedDeploymentPayload = await verifyInstanceDeploymentPayload({
+        ...verificationPayload,
+        stringifiedArtifactJson: artifactString,
+        instanceAddress: address,
+        contractClassId: dbContractInstance.currentContractClassId,
+      });
+    } catch (error) {
+      logger.error(
+        `Failed to verify instance deployment payload for contract instance ${address}: ${(error as Error).message}`,
+      );
+      res.status(400).send((error as Error).message);
+      return;
+    }
 
     if (!isVerifiedDeploymentPayload) {
       res

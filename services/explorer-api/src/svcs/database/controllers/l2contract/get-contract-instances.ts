@@ -1,8 +1,17 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
-import { and, desc, eq, count, getTableColumns, isNotNull } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  isNotNull,
+  isNull,
+} from "drizzle-orm";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
-import { l2Block } from "../../schema/index.js";
+import { globalVariables, header, l2Block } from "../../schema/index.js";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceAztecScanNotes,
@@ -41,6 +50,8 @@ export const getL2DeployedContractInstancesWithAztecScanNotes = async (
       ),
     )
     .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(
       l2ContractClassRegistered,
       and(
@@ -144,7 +155,13 @@ export const getL2DeployedContractInstances = async ({
       ),
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
-    .where(whereRange)
+    .where(
+      and(
+        whereRange,
+        isNull(l2Block.orphan_timestamp),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .orderBy(DEFAULT_SORT)
     .limit(DB_MAX_CONTRACTS);
 
@@ -257,7 +274,7 @@ export const getL2DeployedContractInstancesByCurrentContractClassId = async (
         ),
       ),
     )
-    .leftJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
+    .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
     .leftJoin(
       l2ContractInstanceVerifiedDeploymentArguments,
       and(
@@ -304,9 +321,29 @@ export const getL2TotalAmountDeployedContractInstancesByCurrentContractClassId =
         count: count(),
       })
       .from(l2ContractInstanceDeployed)
+      .innerJoin(
+        l2Block,
+        eq(l2Block.hash, l2ContractInstanceDeployed.blockHash),
+      )
       .where(
         eq(l2ContractInstanceDeployed.currentContractClassId, contractClassId),
       );
+
+    return Number(result[0].count);
+  };
+
+export const getL2TotalAmountDeployedContractInstances =
+  async (): Promise<number> => {
+    const result = await db()
+      .select({
+        count: count(),
+      })
+      .from(l2ContractInstanceDeployed)
+      .innerJoin(
+        l2Block,
+        eq(l2Block.hash, l2ContractInstanceDeployed.blockHash),
+      )
+      .where(isNull(l2Block.orphan_timestamp));
 
     return Number(result[0].count);
   };

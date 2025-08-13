@@ -285,18 +285,21 @@ const getValidatorStateAndEmitUpdates = async ({
   const attesterInfo = await getPublicHttpClient().readContract({
     address: rollup.address,
     abi: rollup.abi,
-    functionName: "getInfo",
+    functionName: "getAttesterView",
     blockNumber,
     args: [attester],
   });
   logger.info(`=🤖=🤖= attester info: ${JSON.stringify(attesterInfo, null, 2)}
   `);
-  await emit.l1Validator( // NOTE: once we can query state at a certain block, we should refactor to send single validator updates
-    z.array(chicmozL1L2ValidatorSchema).parse([{
-      ...attesterInfo,
-      rollupAddress: rollup.address,
-      attester,
-    }]),
+  await emit.l1Validator(
+    // NOTE: once we can query state at a certain block, we should refactor to send single validator updates
+    z.array(chicmozL1L2ValidatorSchema).parse([
+      {
+        ...attesterInfo,
+        rollupAddress: rollup.address,
+        attester,
+      },
+    ]),
   );
 };
 

@@ -14,7 +14,7 @@ import { storeDroppedTx } from "../../controllers/dropped-tx/store.js";
  */
 export const markBlockAsOrphaned = async (
   blockHash: HexString,
-  timestamp: Date,
+  timestamp: number,
   hasOrphanedParent: boolean,
 ): Promise<void> => {
   logger.info(
@@ -36,7 +36,7 @@ export const markBlockAsOrphaned = async (
  */
 export const markHigherBlocksAsOrphaned = async (
   targetHeight: bigint,
-  timestamp: Date,
+  timestamp: number,
 ): Promise<number> => {
   logger.info(
     `Marking all blocks with height > ${targetHeight} as orphaned with parent`,
@@ -73,7 +73,7 @@ export const handleReorgOrphaning = async (
   originalBlockHash: HexString,
   targetHeight: bigint,
 ): Promise<number> => {
-  const now = new Date();
+  const now = new Date().getTime();
 
   return await db().transaction(async (dbTx) => {
     logger.info(
@@ -137,7 +137,7 @@ type DBTransactionFunctionCallbackParameter =
 const storeOrphanedTxEffectsAsDropped = async (
   dbTx: DBTransactionFunctionCallbackParameter,
   blockHash: HexString,
-  timestamp: Date,
+  timestamp: number,
 ): Promise<void> => {
   // Find the body ID for this block
   const blockBody = await dbTx

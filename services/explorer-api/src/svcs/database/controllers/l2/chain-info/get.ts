@@ -4,7 +4,8 @@ import {
   L2NetworkId,
   chicmozChainInfoSchema,
 } from "@chicmoz-pkg/types";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
+import { CURRENT_ROLLUP_VERSION } from "../../../../../constants/versions.js";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
 
 export async function getL2ChainInfo(
@@ -13,7 +14,12 @@ export async function getL2ChainInfo(
   const result = await db()
     .select()
     .from(l2ChainInfoTable)
-    .where(eq(l2ChainInfoTable.l2NetworkId, l2NetworkId))
+    .where(
+      and(
+        eq(l2ChainInfoTable.l2NetworkId, l2NetworkId),
+        eq(l2ChainInfoTable.rollupVersion, BigInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .orderBy(desc(l2ChainInfoTable.updatedAt))
     .limit(1);
 
@@ -30,4 +36,13 @@ export async function getL2ChainInfo(
     l1ContractAddresses: chainInfo.l1ContractAddresses,
     protocolContractAddresses: chainInfo.protocolContractAddresses,
   });
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function getLatestRollupVersion(): Promise<
+  ChicmozChainInfo["rollupVersion"] | null
+> {
+  // Return the current rollup version instead of querying for the highest one
+  // since version numbers don't necessarily increase with upgrades
+  return BigInt(CURRENT_ROLLUP_VERSION);
 }

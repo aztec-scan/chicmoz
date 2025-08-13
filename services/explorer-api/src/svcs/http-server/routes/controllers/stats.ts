@@ -27,6 +27,13 @@ export const GET_STATS_TOTAL_CONTRACTS = asyncHandler(async (_req, res) => {
   res.status(200).json(JSON.parse(total));
 });
 
+export const GET_STATS_TOTAL_CONTRACT_INSTANCES = asyncHandler(async (_req, res) => {
+  const total = await dbWrapper.getLatest(["stats", "totalContractInstances"], () =>
+    db.l2Contract.getL2TotalAmountDeployedContractInstances(),
+  );
+  res.status(200).json(JSON.parse(total));
+});
+
 export const GET_STATS_TOTAL_CONTRACTS_LAST_24H = asyncHandler(
   async (_req, res) => {
     const total = await dbWrapper.getLatest(

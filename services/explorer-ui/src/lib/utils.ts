@@ -73,7 +73,11 @@ const intervals = [
   { label: "second", seconds: 1, shortLabel: "sec" },
 ];
 
-export const formatDuration = (durationSeconds: number, short?: boolean) => {
+export const formatDuration = (
+  durationMilliseconds: number,
+  short?: boolean,
+) => {
+  const durationSeconds = durationMilliseconds / 1000;
   for (const interval of intervals) {
     const count = Math.floor(durationSeconds / interval.seconds);
     if (count >= 1) {
@@ -91,9 +95,9 @@ export const formatTimeSince = (
   if (!unixTimestamp) {
     return "no timestamp";
   }
-  const now = new Date().getTime();
-  const secondsSince = Math.round((now - unixTimestamp) / 1000);
-  const duration = formatDuration(secondsSince, short);
+  const now = Math.floor(Date.now());
+  const milisecondsSince = Math.round(now - unixTimestamp);
+  const duration = formatDuration(milisecondsSince, short);
   if (duration === "just now") {
     return duration;
   }

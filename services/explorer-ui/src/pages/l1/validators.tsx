@@ -4,6 +4,7 @@ import { InfoBadge } from "~/components/info-badge";
 import { ValidatorsTable } from "~/components/validators/validators-table";
 import { useSubTitle } from "~/hooks";
 import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
 export const ValidatorsPage: FC = () => {
@@ -27,11 +28,11 @@ export const ValidatorsPage: FC = () => {
     if (stakeDiff !== 0) {
       return stakeDiff;
     }
-    return b.latestSeenChangeAt.getTime() - a.latestSeenChangeAt.getTime();
+    return b.latestSeenChangeAt - a.latestSeenChangeAt;
   });
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="mt-2 text-primary dark:text-white md:hidden">
           Validators
@@ -64,6 +65,6 @@ export const ValidatorsPage: FC = () => {
           error={error}
         />
       </div>
-    </div>
+    </BaseLayout>
   );
 };

@@ -6,13 +6,19 @@ import {
   l2Block,
   l2ContractClassRegistered,
 } from "../../../database/schema/index.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 export const getTotalContracts = async (): Promise<number> => {
   const dbRes = await db()
     .select({ count: count() })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
-    .where(isNull(l2Block.orphan_timestamp))
+    .where(
+      and(
+        isNull(l2Block.orphan_timestamp),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .execute();
   return dbRes[0].count;
 };
@@ -31,6 +37,7 @@ export const getTotalContractsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();

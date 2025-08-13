@@ -4,6 +4,8 @@ import { BlockCountdownProgress } from "~/components/block-countdown-progress";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { useAvarageBlockTime, useLatestTableBlocks } from "~/hooks";
+import { useTimeTick } from "~/hooks/useTimeTick";
+import { BaseLayout } from "~/layout/base-layout";
 
 interface PendingTxDetailsProps {
   pendingTxDetails: ChicmozL2PendingTx;
@@ -13,13 +15,14 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
 }) => {
   const { data: avarageBlockTime } = useAvarageBlockTime();
 
+  const tick = useTimeTick();
   const { data: latestBlocks } = useLatestTableBlocks();
 
   const blocksCreatedSinceTx = useMemo(() => {
     if (!latestBlocks || latestBlocks.length === 0) return 0;
 
     const blocksAfterTx = latestBlocks.filter(
-      (block) => block.timestamp > pendingTxDetails.birthTimestamp.getTime(),
+      (block) => block.timestamp > pendingTxDetails.birthTimestamp,
     );
 
     return blocksAfterTx.length;
@@ -28,7 +31,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
   const isStaleTransaction = blocksCreatedSinceTx >= 2;
 
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-3">
           <h3 className="text-primary md:hidden">Transactions Details</h3>
@@ -50,24 +53,25 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
               </p>
               <BlockCountdownProgress
                 latestBlocks={latestBlocks}
-                averageBlockTime={avarageBlockTime}
+                averageBlockTimeMs={avarageBlockTime!}
               />
             </div>
           )}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay
+              key={tick}
               data={[
                 { label: "Hash", value: pendingTxDetails.txHash },
                 {
                   label: "Timestamp",
                   value: pendingTxDetails.birthTimestamp.toString(),
-                  timestamp: pendingTxDetails.birthTimestamp.getTime(),
+                  timestamp: pendingTxDetails.birthTimestamp,
                 },
               ]}
             />
           </div>
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

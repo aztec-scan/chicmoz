@@ -6,12 +6,12 @@ import { formatDuration } from "~/lib/utils";
 
 interface BlockCountdownProgressProps {
   latestBlocks: UiBlockTable[] | undefined;
-  averageBlockTime: string | number | undefined | null;
+  averageBlockTimeMs: string | number | null;
 }
 
 export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   latestBlocks,
-  averageBlockTime,
+  averageBlockTimeMs,
 }) => {
   const isTabActive = useTabVisibility();
   const wsConnectionState = useWebSocketConnection();
@@ -26,7 +26,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     const latestBlock = latestBlocks[0];
-    const blockTimestamp = new Date(latestBlock.timestamp).getTime();
+    const blockTimestamp = latestBlock.timestamp;
     const now = Date.now();
 
     const calculatedDelay = now - blockTimestamp;
@@ -36,7 +36,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
   }, [latestBlocks]);
 
   useEffect(() => {
-    if (!averageBlockTime || !latestBlocks?.length) {
+    if (!averageBlockTimeMs || !latestBlocks?.length) {
       return;
     }
 
@@ -45,8 +45,8 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
       return;
     }
 
-    const avgBlockTimeMs = Number(averageBlockTime);
-    const latestBlockTimestamp = new Date(latestBlock.timestamp).getTime();
+    const avgBlockTimeMs = Number(averageBlockTimeMs);
+    const latestBlockTimestamp = latestBlock.timestamp;
     const nextBlockTime = latestBlockTimestamp + avgBlockTimeMs + uiDelayOffset;
 
     const intervalId = setInterval(() => {
@@ -70,7 +70,7 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }, 100);
 
     return () => clearInterval(intervalId);
-  }, [averageBlockTime, latestBlocks, uiDelayOffset]);
+  }, [averageBlockTimeMs, latestBlocks, uiDelayOffset]);
 
   // Get the appropriate fill color class based on progress
   const getFillColorClass = () => {
@@ -107,10 +107,10 @@ export const BlockCountdownProgress: FC<BlockCountdownProgressProps> = ({
     }
 
     if (isOverdue) {
-      return `should have arrived ${formatDuration(timeLeft / 1000, true)} ago`;
+      return `should have arrived ${formatDuration(timeLeft, true)} ago`;
     }
 
-    return `in ${formatDuration(timeLeft / 1000, true)}`;
+    return `in ${formatDuration(timeLeft, true)}`;
   };
 
   return (

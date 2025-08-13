@@ -8,6 +8,34 @@
       "when": 1751996393915,
       "tag": "0000_nifty_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1753129069287,
+      "tag": "0005_conscious_wild_child",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1753272424964,
+      "tag": "0006_cultured_ben_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1753361200978,
+      "tag": "0007_yellow_tenebrous",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1753712910508,
+      "tag": "0008_mysterious_sinister_six",
+      "breakpoints": true
     }
   ]
 }

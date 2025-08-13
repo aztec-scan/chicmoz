@@ -2,7 +2,7 @@ import { z } from "zod";
 import { aztecAddressSchema } from "../index.js";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
-export const CHICMOZ_TYPES_AZTEC_VERSION = "0.87.8";
+export const CHICMOZ_TYPES_AZTEC_VERSION = "1.1.2";
 
 export const L1ContractAddressesSchema = z.object({
   rollupAddress: z.string().startsWith("0x"),
@@ -91,7 +91,7 @@ export type ChicmozL2Sequencer = z.infer<typeof chicmozL2SequencerSchema>;
 export const chicmozContractInstanceBalanceSchema = z.object({
   contractAddress: aztecAddressSchema,
   balance: z.coerce.bigint().nonnegative(),
-  timestamp: z.coerce.date().default(() => new Date()),
+  timestamp: z.coerce.number().default(() => new Date().getTime()),
 });
 
 export type ChicmozContractInstanceBalance = z.infer<

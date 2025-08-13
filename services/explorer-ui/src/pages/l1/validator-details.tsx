@@ -13,6 +13,7 @@ import {
   useL1L2Validator,
   useL1L2ValidatorHistory,
 } from "~/hooks/api/l1-l2-validator";
+import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
@@ -60,12 +61,12 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
     {
       label: "FIRST SEEN",
       value: validator.firstSeenAt.toString(),
-      timestamp: validator.firstSeenAt.getTime(),
+      timestamp: validator.firstSeenAt,
     },
     {
       label: "LATEST CHANGE",
       value: validator.latestSeenChangeAt.toString(),
-      timestamp: validator.latestSeenChangeAt.getTime(),
+      timestamp: validator.latestSeenChangeAt,
     },
     {
       label: "RAW DATA",
@@ -90,7 +91,7 @@ export const ValidatorDetailsPage: FC = () => {
   } = useL1L2ValidatorHistory(attesterAddress);
 
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-3">
           <h3 className="text-primary md:hidden">Validator Details</h3>
@@ -121,6 +122,6 @@ export const ValidatorDetailsPage: FC = () => {
           />
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

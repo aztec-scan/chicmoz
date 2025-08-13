@@ -28,7 +28,7 @@ export type DroppedTxsEvent = {
 export type ContractInstanceBalanceEvent = {
   contractAddress: ChicmozL2ContractInstanceDeployedEvent["address"];
   balance: string;
-  timestamp: Date;
+  timestamp: number;
 };
 
 export type CatchupBlockEvent = NewBlockEvent;

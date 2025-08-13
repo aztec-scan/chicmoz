@@ -46,7 +46,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
         return {
           txHash: (await tx.getTxHash()).toString(),
           feePayer: tx.data.feePayer.toString(),
-          birthTimestamp: new Date(),
+          birthTimestamp: new Date().getTime(),
           publicCallRequests:
             publicCallRequests.length > 0 ? publicCallRequests : undefined,
         };
@@ -75,7 +75,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
       const missingFromMempool = !currentPendingTxs.find(
         (currentTx) => currentTx.txHash === storedTx.txHash,
       );
-      const ageMs = now.getTime() - storedTx.birthTimestamp.getTime();
+      const ageMs = now.getTime() - storedTx.birthTimestamp;
       const beyondGracePeriod = ageMs >= MEMPOOL_SYNC_GRACE_PERIOD_MS;
 
       return (
@@ -108,7 +108,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
           // Update with fresh timestamp and pending state
           const updatedTx = {
             ...resubmittedTx,
-            birthTimestamp: new Date(), // Fresh start timestamp
+            birthTimestamp: new Date().getTime(), // Fresh start timestamp
           };
           await txsController.storeOrUpdate(updatedTx, "pending");
         }

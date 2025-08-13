@@ -48,7 +48,7 @@ export const chicmozL2BlockSchema = z.object({
   ),
   orphan: z
     .object({
-      timestamp: z.coerce.date(),
+      timestamp: z.coerce.number(),
       hasOrphanedParent: z.boolean(),
     })
     .optional(),
@@ -62,7 +62,6 @@ export const chicmozL2BlockSchema = z.object({
       nextAvailableLeafIndex: z.number(),
     }),
     contentCommitment: z.object({
-      numTxs: frNumberSchema,
       blobsHash: bufferSchema,
       inHash: bufferSchema,
       outHash: bufferSchema,

@@ -17,6 +17,7 @@ import {
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import {
   archive,
   body,
@@ -70,6 +71,7 @@ export interface BlockQueryOptions {
    * @default false
    */
   includeOrphaned?: boolean;
+  rollupVersion?: number;
 }
 
 export const getBlocks = async (
@@ -143,7 +145,7 @@ export const getBlocksByFinalizationStatus = async (
       );
 
     const latestBlockForStatus = await query
-      .orderBy(desc(l2BlockFinalizationStatusTable.l2BlockNumber))
+      .orderBy(desc(l2BlockFinalizationStatusTable.timestamp))
       .limit(1); // Only get one block per status
 
     if (latestBlockForStatus.length > 0) {
@@ -265,19 +267,30 @@ const _getBlocks = async (
         // Get latest block
         whereQuery = joinQuery;
         if (!includeOrphaned) {
-          whereQuery = whereQuery.where(isNull(l2Block.orphan_timestamp));
+          whereQuery = whereQuery.where(
+            and(
+              isNull(l2Block.orphan_timestamp),
+              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+            ),
+          );
+        } else {
+          whereQuery = whereQuery.where(
+            eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+          );
         }
         whereQuery = whereQuery.orderBy(desc(l2Block.height)).limit(1);
       } else {
         // Get specific height
         whereQuery = joinQuery
           .where(
-            includeOrphaned
-              ? eq(l2Block.height, args.height)
-              : and(
-                  eq(l2Block.height, args.height),
-                  isNull(l2Block.orphan_timestamp),
-                ),
+            and(
+              eq(l2Block.height, args.height),
+              includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
+              eq(
+                l2Block.version,
+                options.rollupVersion ?? parseInt(CURRENT_ROLLUP_VERSION),
+              ),
+            ),
           )
           .limit(1);
       }
@@ -290,9 +303,12 @@ const _getBlocks = async (
     case GetTypes.Range:
       whereQuery = joinQuery
         .where(
-          includeOrphaned
-            ? whereRange
-            : and(whereRange, isNull(l2Block.orphan_timestamp)),
+          and(
+            includeOrphaned
+              ? whereRange
+              : and(whereRange, isNull(l2Block.orphan_timestamp)),
+            eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+          ),
         )
         .orderBy(desc(l2Block.height))
         .limit(DB_MAX_BLOCKS);

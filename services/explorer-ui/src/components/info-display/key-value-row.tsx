@@ -140,7 +140,9 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
         <span className={commonTextClasses}>
           {(() => {
             const timeSince = formatTimeSince(timestamp);
-            return `${new Date(timestamp).toLocaleString()} (${timeSince} ago)`;
+            return `${new Date(
+              timestamp,
+            ).toLocaleString()} (${timeSince} ago)`;
           })()}
         </span>
       )}

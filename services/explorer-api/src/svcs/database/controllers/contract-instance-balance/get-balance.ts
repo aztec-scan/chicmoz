@@ -4,8 +4,11 @@ import {
   chicmozContractInstanceBalanceSchema,
   HexString,
 } from "@chicmoz-pkg/types";
-import { desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
+import { l2Block } from "../../schema/index.js";
+import { l2ContractInstanceDeployed } from "../../schema/l2contract/index.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 export const getLatestContractInstanceBalance = async (
   contractAddress: HexString,
@@ -28,13 +31,31 @@ export const getCotractInstacesWithBalance = async (): Promise<
   ChicmozContractInstanceBalance[]
 > => {
   const result = await db()
-    .selectDistinctOn([contractInstanceBalance.contractAddress])
+    .selectDistinctOn([contractInstanceBalance.contractAddress], {
+      contractAddress: contractInstanceBalance.contractAddress,
+      balance: contractInstanceBalance.balance,
+      timestamp: contractInstanceBalance.timestamp,
+    })
     .from(contractInstanceBalance)
+    .innerJoin(
+      l2ContractInstanceDeployed,
+      eq(
+        contractInstanceBalance.contractAddress,
+        l2ContractInstanceDeployed.address,
+      ),
+    )
+    .innerJoin(l2Block, eq(l2ContractInstanceDeployed.blockHash, l2Block.hash))
+    .where(
+      and(
+        gt(contractInstanceBalance.balance, "0"),
+        isNull(l2Block.orphan_timestamp),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .orderBy(
       contractInstanceBalance.contractAddress,
       desc(contractInstanceBalance.timestamp),
-    )
-    .where(gt(contractInstanceBalance.balance, "0"));
+    );
 
   return result.map((row) => chicmozContractInstanceBalanceSchema.parse(row));
 };

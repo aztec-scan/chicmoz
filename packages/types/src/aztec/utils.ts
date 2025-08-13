@@ -30,7 +30,7 @@ export const frSchema = z.preprocess(
   z
     .string()
     .length(66)
-    .regex(/^0x[0-9a-fA-F]+$/)
+    .regex(/^0x[0-9a-fA-F]+$/),
 );
 
 export const concatFrPointSchema = z.preprocess(
@@ -38,7 +38,7 @@ export const concatFrPointSchema = z.preprocess(
   z
     .string()
     .length(130)
-    .regex(/^0x[0-9a-fA-F]+$/)
+    .regex(/^0x[0-9a-fA-F]+$/),
 );
 
 export const frNumberSchema = z.preprocess((val) => {
@@ -82,6 +82,6 @@ export const bufferSchema = z.preprocess(
     (value) => {
       return value instanceof Buffer;
     },
-    { message: "Expected a Buffer" }
-  )
+    { message: "Expected a Buffer" },
+  ),
 );

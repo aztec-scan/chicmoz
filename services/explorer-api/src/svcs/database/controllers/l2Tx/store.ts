@@ -32,7 +32,7 @@ export const storeOrUpdateL2Tx = async (
 
   if (res.length > 0) {
     logger.info(
-      `🔄 Pending tx: ${tx.txHash} stored/updated successfully (timestamp: ${tx.birthTimestamp.toISOString()})`,
+      `🔄 Pending tx: ${tx.txHash} stored/updated successfully (timestamp: ${tx.birthTimestamp.toString()})`,
     );
   }
 

@@ -1,8 +1,10 @@
 import { useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
+import { CURRENT_ROLLUP_VERSION } from "~/constants/versions";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyBlockData } from "~/components/loading/util";
+import { OlderVersionBanner } from "~/components/older-version-banner";
 import { OptionButtons } from "~/components/option-buttons";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
@@ -11,6 +13,7 @@ import {
   useGetTableTxEffectsByBlockHeight,
   useSubTitle,
 } from "~/hooks";
+import { BaseLayout } from "~/layout/base-layout";
 import { AdjecentBlockButtons } from "./adjacent-block-buttons";
 import { blockDetailsTabs, type TabId } from "./constants";
 import { getBlockDetails } from "./util";
@@ -82,7 +85,7 @@ export const BlockDetails: FC = () => {
     );
   }
   return (
-    <div className="mx-auto px-7 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div>
         <div className="flex flex-wrap m-5">
           <h3 className="text-primary md:hidden">Block Details</h3>
@@ -92,6 +95,14 @@ export const BlockDetails: FC = () => {
         </div>
         <div className="flex flex-col gap-4 mt-8 pb-4">
           {block.orphan ? <OrphanedBanner type="block" /> : null}
+          {!block.orphan &&
+          block?.header.globalVariables.version &&
+          block.header.globalVariables.version !== CURRENT_ROLLUP_VERSION ? (
+            <OlderVersionBanner
+              blockVersion={block.header.globalVariables.version}
+              chainVersion={BigInt(CURRENT_ROLLUP_VERSION)}
+            />
+          ) : null}
           {!block.orphan && block.height > 0n && (
             <AdjecentBlockButtons blockNumber={Number(block.height)} />
           )}
@@ -112,6 +123,6 @@ export const BlockDetails: FC = () => {
           {renderTabContent()}
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };

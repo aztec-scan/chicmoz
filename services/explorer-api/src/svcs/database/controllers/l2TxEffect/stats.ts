@@ -7,6 +7,7 @@ import {
   l2Block,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
+import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 export const getTotalTxEffects = async (): Promise<number> => {
   const dbRes = await db()
@@ -14,7 +15,12 @@ export const getTotalTxEffects = async (): Promise<number> => {
     .from(txEffect)
     .innerJoin(body, eq(body.id, txEffect.bodyId))
     .innerJoin(l2Block, eq(l2Block.hash, body.blockHash))
-    .where(isNull(l2Block.orphan_timestamp))
+    .where(
+      and(
+        isNull(l2Block.orphan_timestamp),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+      ),
+    )
     .execute();
   return dbRes[0].count;
 };
@@ -33,6 +39,7 @@ export const getTotalTxEffectsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
+        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
       ),
     )
     .execute();

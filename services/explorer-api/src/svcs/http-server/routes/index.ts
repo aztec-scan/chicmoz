@@ -51,7 +51,6 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_WITH_BALANCE,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
-  ...controller.openapi_POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT,
 
   ...controller.openapi_L2_SEARCH,
 
@@ -82,6 +81,10 @@ const otherPaths = [
   {
     path: paths.statsTotalContracts,
     controller: controller.GET_STATS_TOTAL_CONTRACTS,
+  },
+  {
+    path: paths.statsTotalContractInstances,
+    controller: controller.GET_STATS_TOTAL_CONTRACT_INSTANCES,
   },
   {
     path: paths.statsTotalContractsLast24h,

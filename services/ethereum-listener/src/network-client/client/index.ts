@@ -193,21 +193,25 @@ export const queryStakingStateAndEmitUpdates = async ({
   );
   const attesterInfos: ChicmozL1L2Validator[] = [];
   for (const attester of attesters) {
-    const attesterInfo = await getPublicHttpClient().readContract({
+    const attesterView = await getPublicHttpClient().readContract({
       address: contracts.rollup.address,
       abi: RollupAbi,
-      functionName: "getInfo",
+      functionName: "getAttesterView",
       args: [attester],
     });
-    if (attesterInfo === undefined) {
+
+    if (attesterView === undefined) {
       logger.warn(`Attester ${attester} not found`);
       continue;
     }
     attesterInfos.push(
       chicmozL1L2ValidatorSchema.parse({
-        ...attesterInfo,
         rollupAddress: contracts.rollup.address,
-        attester,
+        attester: attester,
+        stake: attesterView.effectiveBalance,
+        withdrawer: attesterView.config.withdrawer,
+        proposer: attesterView.config.withdrawer, // Note: proposer appears to be the same as withdrawer in the new structure
+        status: attesterView.status,
       }),
     );
   }

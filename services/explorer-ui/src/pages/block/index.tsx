@@ -1,10 +1,12 @@
 import { type FC, useState, useEffect } from "react";
 import { BlocksTable } from "~/components/blocks/blocks-table.tsx";
 import { InfoBadge } from "~/components/info-badge";
+import { BaseLayout } from "~/layout/base-layout";
 import {
   useAvarageBlockTime,
   useAvarageFees,
   useSubTitle,
+  usePaginatedTableBlocks,
   useLatestTableBlocks,
   useLatestTableBlocksByHeightRange,
 } from "~/hooks";
@@ -16,9 +18,14 @@ export const Blocks: FC = () => {
 
   const { data: latestBlocksData } = useLatestTableBlocks();
 
-  // State for block range
+  // State for block range (for range selector)
   const [startBlock, setStartBlock] = useState<number | undefined>(undefined);
   const [endBlock, setEndBlock] = useState<number | undefined>(undefined);
+
+  // State for React Query pagination
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [useRangeMode, setUseRangeMode] = useState<boolean>(false);
 
   // Set initial range based on latest blocks
   useEffect(() => {
@@ -30,33 +37,56 @@ export const Blocks: FC = () => {
     ) {
       const latestHeight = Number(latestBlocksData[0].height);
       setEndBlock(latestHeight);
-      setStartBlock(Math.max(1, latestHeight - 9)); // Show 10 blocks by default
+      setStartBlock(Math.max(1, latestHeight - 19)); // Show 20 blocks by default
     }
   }, [latestBlocksData, startBlock, endBlock]);
 
-  // Use range-based query once we have a range
-  // Add 1 to end value because backend uses exclusive upper bound [from, to)
+  // Use range-based query when range selector is used
   const {
     data: rangeBlocks,
-    isLoading,
-    error,
-    refetch,
+    isLoading: rangeLoading,
+    error: rangeError,
+    refetch: rangeRefetch,
   } = useLatestTableBlocksByHeightRange(
     startBlock ?? 1,
-    endBlock !== undefined ? endBlock + 1 : startBlock ? startBlock + 10 : 11,
+    endBlock !== undefined ? endBlock + 1 : startBlock ? startBlock + 20 : 21,
   );
+
+  // Use paginated query for React Query pagination
+  const {
+    data: paginatedBlocks,
+    isLoading: paginatedLoading,
+    error: paginatedError,
+  } = usePaginatedTableBlocks(currentPage, pageSize);
 
   // Refetch when range changes
   useEffect(() => {
     if (startBlock !== undefined && endBlock !== undefined) {
-      void refetch();
+      void rangeRefetch();
     }
-  }, [startBlock, endBlock, refetch]);
+  }, [startBlock, endBlock, rangeRefetch]);
 
   const handleRangeChange = (start: number, end: number) => {
     setStartBlock(start);
     setEndBlock(end);
+    setUseRangeMode(true);
   };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setUseRangeMode(false); // Switch to pagination mode
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(0); // Reset to first page
+    setUseRangeMode(false); // Switch to pagination mode
+  };
+
+  // Choose which data to display
+  const blocks = useRangeMode ? rangeBlocks : paginatedBlocks;
+  const isLoading = useRangeMode ? rangeLoading : paginatedLoading;
+  const error = useRangeMode ? rangeError : paginatedError;
 
   const {
     data: avarageFees,
@@ -69,12 +99,10 @@ export const Blocks: FC = () => {
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
 
-  const averageBlockTimeFormatted = formatDuration(
-    Number(avarageBlockTime) / 1000,
-  );
+  const averageBlockTimeFormatted = formatDuration(Number(avarageBlockTime));
 
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       <div className="flex flex-wrap m-5">
         <h2 className="text-primary dark:text-white mt-2 md:hidden">
           Blocks overview
@@ -99,15 +127,21 @@ export const Blocks: FC = () => {
       </div>
       <div className="rounded-lg shadow-lg">
         <BlocksTable
-          blocks={rangeBlocks}
+          blocks={blocks}
           isLoading={isLoading}
           error={error}
           showRangeSelector={true}
           startBlock={startBlock}
           endBlock={endBlock}
           onRangeChange={handleRangeChange}
+          disablePagination={useRangeMode}
+          maxEntries={pageSize}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          useReactQueryPagination={!useRangeMode}
         />
-      </div>
-    </div>
+      </div>{" "}
+    </BaseLayout>
   );
 };

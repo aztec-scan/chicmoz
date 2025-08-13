@@ -12,7 +12,7 @@ export const getBlockDetails = (
 ): DetailItem[] => {
   const l2BlockTimestamp = latestBlock.header.globalVariables.timestamp;
 
-  const proposedOnL1Date: Date | undefined | null =
+  const proposedOnL1Date: number | undefined | null =
     latestBlock?.proposedOnL1?.l1BlockTimestamp;
 
   return [
@@ -67,7 +67,8 @@ export const getBlockDetails = (
     {
       label: "Proposed on L1",
       value: "Not yet proposed",
-      timestamp: proposedOnL1Date?.getTime() ?? undefined,
+      timestamp:
+        Math.floor((proposedOnL1Date?? 0)) ?? undefined,
     },
     // NOTE: not all blocks have this
     //{

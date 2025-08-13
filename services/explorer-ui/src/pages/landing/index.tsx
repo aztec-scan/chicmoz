@@ -5,6 +5,7 @@ import { BlocksTable } from "~/components/blocks/blocks-table";
 import { InfoBadge } from "~/components/info-badge";
 import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
+import { BaseLayout } from "~/layout/base-layout";
 import {
   HealthStatus,
   useAvarageBlockTime,
@@ -51,7 +52,7 @@ export const Landing: FC = () => {
     error: errorAmountContracts24h,
   } = useTotalContractsLast24h();
   const {
-    data: avarageBlockTime,
+    data: avarageBlockTimeMs,
     isLoading: loadingAvarageBlockTime,
     error: errorAvarageBlockTime,
   } = useAvarageBlockTime();
@@ -88,7 +89,7 @@ export const Landing: FC = () => {
     !!avarageFees ||
     !!totalAmountOfContracts ||
     !!totalAmountOfContracts24h ||
-    !!avarageBlockTime;
+    !!avarageBlockTimeMs;
   const isConclusivlyDown =
     systemHealth.health === HealthStatus.DOWN &&
     !isAnyComponentLoading &&
@@ -104,9 +105,12 @@ export const Landing: FC = () => {
   useSubTitle(title);
 
   const showBlockCountdownProgress =
-    !loadingAvarageBlockTime && !isLoading && latestBlocks && avarageBlockTime;
+    !loadingAvarageBlockTime &&
+    !isLoading &&
+    latestBlocks &&
+    avarageBlockTimeMs;
   return (
-    <div className="mx-auto px-5 max-w-[1440px] md:px-[70px]">
+    <BaseLayout>
       {isConclusivlyDown && (
         <div className="flex flex-col bg-white w-full h-96 justify-between rounded-lg shadow-md mt-20">
           <div className="flex flex-col items-center justify-center h-full">
@@ -166,8 +170,8 @@ export const Landing: FC = () => {
               isLoading={loadingAvarageBlockTime}
               error={errorAvarageBlockTime}
               data={
-                avarageBlockTime
-                  ? formatDuration(Number(avarageBlockTime) / 1000, true)
+                avarageBlockTimeMs
+                  ? formatDuration(Number(avarageBlockTimeMs), true)
                   : "calculating..."
               }
             />
@@ -176,7 +180,7 @@ export const Landing: FC = () => {
             <div>
               <BlockCountdownProgress
                 latestBlocks={latestBlocks}
-                averageBlockTime={avarageBlockTime}
+                averageBlockTimeMs={avarageBlockTimeMs}
               />
             </div>
           )}
@@ -238,6 +242,6 @@ export const Landing: FC = () => {
           </div>
         </>
       )}
-    </div>
+    </BaseLayout>
   );
 };

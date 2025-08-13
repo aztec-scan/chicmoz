@@ -24,7 +24,7 @@ export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
   return z.array(chicmozL2PendingTxSchema).parse(
     res.map((tx) => ({
       ...tx,
-      birthTimestamp: tx.birthTimestamp.getTime(),
+      birthTimestamp: tx.birthTimestamp,
     })),
   );
 };

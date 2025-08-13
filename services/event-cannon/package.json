@@ -9,15 +9,15 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/accounts": "0.87.8",
-    "@aztec/aztec.js": "0.87.8",
-    "@aztec/ethereum": "0.87.8",
-    "@aztec/l1-artifacts": "0.87.8",
-    "@aztec/noir-contracts.js": "0.87.8",
+    "@aztec/accounts": "1.2.1",
+    "@aztec/aztec.js": "1.2.1",
+    "@aztec/ethereum": "1.2.1",
+    "@aztec/l1-artifacts": "1.2.1",
+    "@aztec/noir-contracts.js": "1.2.1",
     "@chicmoz-pkg/contract-verification": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/types": "workspace:^",
-    "@defi-wonderland/aztec-standards": "0.0.0-73e84dcc",
+    "@defi-wonderland/aztec-standards": "0.0.0-83476cda",
     "viem": "2.20.0"
   },
   "devDependencies": {
