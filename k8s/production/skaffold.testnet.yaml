@@ -4,9 +4,9 @@ metadata:
   name: chicmoz-prod-sp
 requires:
   - path: ./common/skaffold.manifests.yaml
-  - path: ./explorer-ui/skaffold.testnet.yaml
-  - path: ./explorer-api/skaffold.testnet.yaml
-  - path: ./auth/skaffold.yaml
-  - path: ./aztec-listener/skaffold.testnet.yaml
+  # - path: ./explorer-ui/skaffold.testnet.yaml
+  # - path: ./explorer-api/skaffold.testnet.yaml
+  # - path: ./auth/skaffold.yaml
+  # - path: ./aztec-listener/skaffold.testnet.yaml
   - path: ./ethereum-listener/skaffold.testnet.yaml
-  - path: ./websocket-event-publisher/skaffold.testnet.yaml
+  # - path: ./websocket-event-publisher/skaffold.testnet.yaml

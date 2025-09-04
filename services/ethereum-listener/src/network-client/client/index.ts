@@ -15,6 +15,7 @@ import {
 } from "viem";
 import { foundry, mainnet, sepolia } from "viem/chains";
 import {
+  ETHEREUM_ALCHEMY_HTTP_URL,
   ETHEREUM_HTTP_RPC_URL,
   ETHEREUM_WS_RPC_URL,
   L2_NETWORK_ID,
@@ -28,6 +29,7 @@ export { startContractWatchers as watchContractsEvents } from "../contracts/inde
 
 let publicWsClient: PublicClient | undefined = undefined;
 let publicHttpClient: PublicClient | undefined = undefined;
+let publicHttpBackupClient: PublicClient | undefined = undefined;
 
 export const getPublicWsClient = () => {
   if (!publicWsClient) {
@@ -42,6 +44,8 @@ export const getPublicHttpClient = () => {
   }
   return publicHttpClient;
 };
+
+export const getPublicHttpBackupClient = () => publicHttpBackupClient;
 
 export const initClient = () => {
   let chainConf;
@@ -69,6 +73,12 @@ export const initClient = () => {
     transport: webSocket(),
   });
   publicHttpClient = createPublicClient({ chain, transport: http() });
+  if (ETHEREUM_ALCHEMY_HTTP_URL) {
+    publicHttpBackupClient = createPublicClient({
+      chain,
+      transport: http(ETHEREUM_ALCHEMY_HTTP_URL),
+    });
+  }
 };
 
 export const getLatestFinalizedHeight = async () => {
@@ -182,7 +192,8 @@ export const queryStakingStateAndEmitUpdates = async ({
     blockNumber: latestHeight,
     functionName: "getActiveAttesterCount",
   });
-  const attesters = await getPublicHttpClient().readContract({
+  const client = getPublicHttpBackupClient() ?? getPublicHttpClient(); // NOTE: workaround for selfhosted-node not having enough state.
+  const attesters = await client.readContract({
     address: contracts.rollup.address,
     abi: RollupAbi,
     functionName: "getAttesters",

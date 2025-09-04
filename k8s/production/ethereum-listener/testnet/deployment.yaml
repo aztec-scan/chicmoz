@@ -63,4 +63,9 @@ spec:
                 secretKeyRef:
                   name: global
                   key: TESTNET_AZTEC_L1_WS
+            - name: ETHEREUM_ALCHEMY_HTTP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL
 status: {}

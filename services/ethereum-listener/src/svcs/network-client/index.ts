@@ -1,6 +1,7 @@
 import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
 import { getL1NetworkId } from "@chicmoz-pkg/types";
 import {
+  ETHEREUM_ALCHEMY_HTTP_URL,
   ETHEREUM_HTTP_RPC_URL,
   ETHEREUM_WS_RPC_URL,
   L2_NETWORK_ID,
@@ -18,7 +19,8 @@ export const ethereumNetworkClientService: MicroserviceBaseSvc = {
   },
   getConfigStr: () =>
     `Ethereum Network Client
-ETHEREUM_HTTP_RPC_URL: ${ETHEREUM_HTTP_RPC_URL}
-ETHEREUM_WS_RPC_URL:   ${ETHEREUM_WS_RPC_URL}
-L1_ID:                 ${getL1NetworkId(L2_NETWORK_ID)}`,
+ETHEREUM_HTTP_RPC_URL:      ${ETHEREUM_HTTP_RPC_URL}
+ETHEREUM_WS_RPC_URL:        ${ETHEREUM_WS_RPC_URL}
+ETHEREUM_ALCHEMY_HTTP_URL:  ${ETHEREUM_ALCHEMY_HTTP_URL}
+L1_ID:                      ${getL1NetworkId(L2_NETWORK_ID)}`,
 };

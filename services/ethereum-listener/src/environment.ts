@@ -14,6 +14,8 @@ export const ETHEREUM_HTTP_RPC_URL =
 export const ETHEREUM_WS_RPC_URL =
   process.env.ETHEREUM_WS_RPC_URL ?? "ws://anvil-ethereum-node:8545";
 
+export const ETHEREUM_ALCHEMY_HTTP_URL = process.env.ETHEREUM_ALCHEMY_HTTP_URL;
+
 export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID
 );
