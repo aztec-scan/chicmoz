@@ -1295,6 +1295,58 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@chicmoz/validator-metrics@workspace:services/validator-metrics":
+  version: 0.0.0-use.local
+  resolution: "@chicmoz/validator-metrics@workspace:services/validator-metrics"
+  dependencies:
+    "@anatine/zod-openapi": "npm:2.2.6"
+    "@aztec/aztec.js": "npm:1.2.1"
+    "@aztec/protocol-contracts": "npm:1.2.1"
+    "@aztec/stdlib": "npm:1.2.1"
+    "@chicmoz-pkg/backend-utils": "workspace:^"
+    "@chicmoz-pkg/error-middleware": "workspace:^"
+    "@chicmoz-pkg/logger-server": "workspace:^"
+    "@chicmoz-pkg/message-bus": "workspace:^"
+    "@chicmoz-pkg/message-registry": "workspace:^"
+    "@chicmoz-pkg/microservice-base": "workspace:^"
+    "@chicmoz-pkg/postgres-helper": "workspace:^"
+    "@chicmoz-pkg/types": "workspace:^"
+    "@defi-wonderland/aztec-standards": "npm:0.0.0-83476cda"
+    "@types/auto-bind": "npm:2.1.0"
+    "@types/body-parser": "npm:1.19.5"
+    "@types/cors": "npm:2.8.13"
+    "@types/express": "npm:4.17.17"
+    "@types/express-http-proxy": "npm:1.6.6"
+    "@types/morgan": "npm:1.9.4"
+    "@types/node": "npm:20.5.0"
+    "@types/supertest": "npm:6.0.2"
+    "@types/uuid": "npm:10.0.0"
+    "@typescript-eslint/eslint-plugin": "npm:6.11.0"
+    "@typescript-eslint/parser": "npm:6.11.0"
+    body-parser: "npm:1.20.2"
+    cors: "npm:2.8.5"
+    drizzle-kit: "npm:0.24.2"
+    drizzle-orm: "npm:0.33.0"
+    eslint: "npm:8.53.0"
+    eslint-config-prettier: "npm:9.0.0"
+    eslint-config-standard-with-typescript: "npm:37.0.0"
+    eslint-plugin-import: "npm:2.29.0"
+    eslint-plugin-n: "npm:15.0.0 || 16.0.0 "
+    eslint-plugin-promise: "npm:6.0.0"
+    exponential-backoff: "npm:3.1.1"
+    express: "npm:4.18.2"
+    express-async-handler: "npm:1.2.0"
+    express-http-proxy: "npm:2.0.0"
+    helmet: "npm:7.0.0"
+    morgan: "npm:1.10.0"
+    pg: "npm:8.11.3"
+    supertest: "npm:6.3.3"
+    typescript: "npm:5.8.3"
+    uuid: "npm:10.0.0"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
 "@chicmoz/websocket-event-publisher@workspace:services/websocket-event-publisher":
   version: 0.0.0-use.local
   resolution: "@chicmoz/websocket-event-publisher@workspace:services/websocket-event-publisher"
