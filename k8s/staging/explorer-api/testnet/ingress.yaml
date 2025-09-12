@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-explorer-api-testnet
+  namespace: chicmoz-staging
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://staging-docs.aztecscan.xyz,https://staging-testnet.aztecscan.xyz,https://staging.aztecscan.xyz"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/auth-url: http://auth-service.chicmoz-staging.svc.cluster.local
+    nginx.ingress.kubernetes.io/auth-response-headers: x-api-key
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    cert-manager.io/cluster-issuer: "aztecscan-issuer-staging"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: aztecscan-api-tls-testnet
+      hosts:
+        - staging-api.aztecscan.xyz
+        - staging-api.testnet.aztecscan.xyz
+  rules:
+    - host: staging-api.aztecscan.xyz
+      http:
+        paths:
+          - path: /v1/([^/]+)/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: explorer-api-testnet-service
+                port:
+                  name: http-app
+    - host: staging-api.testnet.aztecscan.xyz
+      http:
+        paths:
+          - path: /v1/([^/]+)/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: explorer-api-testnet-service
+                port:
+                  name: http-app
+status:
+  loadBalancer: {}

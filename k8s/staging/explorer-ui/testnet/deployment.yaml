@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-ui-testnet-label
+  name: explorer-ui-testnet-deployment
+  namespace: chicmoz-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-ui-testnet-label
+  template:
+    metadata:
+      labels:
+        app: explorer-ui-testnet-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      containers:
+        - image: localhost:5000/aztlan-containers/explorer-ui-testnet:latest
+          name: explorer-ui-testnet
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 200m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP

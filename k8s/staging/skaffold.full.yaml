@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: full-staging
+requires:
+  - path: ./common/skaffold.manifests.yaml
+  - path: ./common/skaffold.infra.yaml
+  - path: ./common/skaffold.certs.yaml
+  - path: ./skaffold.light.yaml
+  - path: ./common/skaffold.do_workaround.yaml
+  - path: ./skaffold.only_grafana.yaml
+  - path: ./skaffold.only_swagger.yaml
