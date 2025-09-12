@@ -33,7 +33,7 @@ spec:
             - name: TOTAL_DB_RESET
               value: "false"
       containers:
-        - image: localhost:5000/aztlan-containers/aztec-listener:latest
+        - image: localhost:30500/aztlan-containers/aztec-listener:latest
           name: aztec-listener
           resources:
             limits:
