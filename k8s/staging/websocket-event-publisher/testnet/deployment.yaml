@@ -17,7 +17,7 @@ spec:
         app: websocket-event-publisher-testnet-label
     spec:
       containers:
-        - image: localhost:5000/aztlan-containers/websocket-event-publisher:latest
+        - image: localhost:30500/aztlan-containers/websocket-event-publisher:latest
           name: websocket-event-publisher
           resources:
             limits:

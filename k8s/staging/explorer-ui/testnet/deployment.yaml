@@ -18,7 +18,7 @@ spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
       containers:
-        - image: localhost:5000/aztlan-containers/explorer-ui-testnet:latest
+        - image: localhost:30500/aztlan-containers/explorer-ui-testnet:latest
           name: explorer-ui-testnet
           resources:
             limits:

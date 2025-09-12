@@ -4,12 +4,12 @@ requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
-    - image: localhost:5000/aztlan-containers/auth
+    - image: localhost:30500/aztlan-containers/auth
       context: ../../../services/auth
       docker:
         dockerfile: Dockerfile
       requires:
-        - image: localhost:5000/aztlan-containers/chicmoz-base
+        - image: localhost:30500/aztlan-containers/chicmoz-base
           alias: BASE
 deploy:
   kubectl:

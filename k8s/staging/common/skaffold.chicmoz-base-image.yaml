@@ -2,7 +2,7 @@ apiVersion: skaffold/v4beta6
 kind: Config
 build:
   artifacts:
-    - image: localhost:5000/aztlan-containers/chicmoz-base
+    - image: localhost:30500/aztlan-containers/chicmoz-base
       context: ../../../
       docker:
         dockerfile: Dockerfile

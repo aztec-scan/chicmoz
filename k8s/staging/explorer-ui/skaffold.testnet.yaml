@@ -4,7 +4,7 @@ requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
-    - image: localhost:5000/aztlan-containers/explorer-ui-testnet
+    - image: localhost:30500/aztlan-containers/explorer-ui-testnet
       context: ../../../services/explorer-ui
       docker:
         dockerfile: Dockerfile
@@ -19,7 +19,7 @@ build:
           VITE_GITHUB_URL: "https://github.com/aztec-scan/chicmoz"
           VITE_VERSION_STRING: "{{.VERSION_STRING}}"
       requires:
-        - image: localhost:5000/aztlan-containers/chicmoz-base
+        - image: localhost:30500/aztlan-containers/chicmoz-base
           alias: BASE
 deploy:
   kubectl:

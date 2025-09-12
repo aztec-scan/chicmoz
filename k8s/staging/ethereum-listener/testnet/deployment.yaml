@@ -20,7 +20,7 @@ spec:
         - name: registry-aztlan-containers
       initContainers:
         - name: run-migrations
-          image: localhost:5000/aztlan-containers/ethereum-listener:latest
+          image: localhost:30500/aztlan-containers/ethereum-listener:latest
           command: ["yarn", run, "migrate"]
           envFrom:
             - configMapRef:
@@ -31,7 +31,7 @@ spec:
             - name: TOTAL_DB_RESET
               value: "false"
       containers:
-        - image: localhost:5000/aztlan-containers/ethereum-listener:latest
+        - image: localhost:30500/aztlan-containers/ethereum-listener:latest
           name: ethereum-listener
           resources:
             limits:
