@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-ethereum-listener-testnet
+  namespace: chicmoz-staging
+data:
+  POSTGRES_DB_NAME: "ethereum_listener_testnet"

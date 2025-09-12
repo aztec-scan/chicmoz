@@ -1,0 +1,9 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ../cert-manager/ingress_nginx_svc_aztecscan.xyz.yaml
