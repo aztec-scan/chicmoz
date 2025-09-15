@@ -16,10 +16,10 @@ spec:
   tls:
     - secretName: aztecscan-api-tls-testnet
       hosts:
-        - staging-api.aztecscan.xyz
-        - staging-api.testnet.aztecscan.xyz
+        - api.staging.aztecscan.xyz
+        - api.testnet.staging.aztecscan.xyz
   rules:
-    - host: staging-api.aztecscan.xyz
+    - host: api.staging.aztecscan.xyz
       http:
         paths:
           - path: /v1/([^/]+)/(.*)
@@ -29,7 +29,7 @@ spec:
                 name: explorer-api-testnet-service
                 port:
                   name: http-app
-    - host: staging-api.testnet.aztecscan.xyz
+    - host: api.testnet.staging.aztecscan.xyz
       http:
         paths:
           - path: /v1/([^/]+)/(.*)

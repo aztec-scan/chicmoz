@@ -10,9 +10,9 @@ spec:
   tls:
     - secretName: aztecscan-swagger-tls
       hosts:
-        - staging-docs.aztecscan.xyz
+        - docs.staging.aztecscan.xyz
   rules:
-    - host: staging-docs.aztecscan.xyz
+    - host: docs.staging.aztecscan.xyz
       http:
         paths:
           - path: /
