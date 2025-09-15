@@ -23,18 +23,17 @@ export class Controller {
   }
 
   GET_EXISTS: RequestHandler = async (req, res) => {
-    const originalRoute = req.headers["x-auth-request-redirect"];
+	  const originalRoute = req.headers["x-auth-request-redirect"] ||
+  `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}${req.headers["x-forwarded-uri"]}`;
 
-    if (!originalRoute) {
-      throw new Error("x-auth-request-redirect not set by nginx");
-    }
-    if (Array.isArray(originalRoute)) {
-      throw new Error(
-        `x-auth-request-redirect array; not single string: ${originalRoute.join(
-          ", "
-        )}`
-      );
-    }
+if (!originalRoute) {
+  throw new Error("x-auth-request-redirect not set by nginx");
+}
+if (Array.isArray(originalRoute)) {
+  throw new Error(
+    `x-auth-request-redirect array; not single string: ${originalRoute.join(", ")}`
+  );
+}
 
     const [found, apiKey] = this.core.extractApiKey(originalRoute);
     if (!found) {
@@ -72,13 +71,13 @@ export class Controller {
       return;
     }
 
-    const xOriginalUrl = req.get("x-original-url");
+    //const xOriginalUrl = req.get("x-original-url");
 
-    if (!xOriginalUrl) {
-      this.logger.info("Invalid original URL");
-      res.status(404).send("Invalid original URL");
-      return;
-    }
+    //if (!xOriginalUrl) {
+     // this.logger.info("Invalid original URL");
+     // res.status(404).send("Invalid original URL");
+     // return;
+    //}
 
     const overrideLimitsForNow = true;
 
