@@ -4,7 +4,7 @@ import {
 } from "@chicmoz-pkg/types";
 
 export const BLOCK_POLL_INTERVAL_MS =
-  Number(process.env.BLOCK_POLL_INTERVAL_MS) || 500;
+  Number(process.env.BLOCK_INTERVAL_MS) || 5000;
 export const LISTEN_FOR_BLOCKS = process.env.LISTEN_FOR_BLOCKS === "true";
 export const GENESIS_CATCHUP = process.env.GENESIS_CATCHUP === "true";
 export const LISTENER_DISABLED = process.env.LISTENER_DISABLED === "true";
