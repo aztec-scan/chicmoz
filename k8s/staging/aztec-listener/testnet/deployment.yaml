@@ -19,7 +19,7 @@ spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
       initContainers:
-        - image: localhost:5000/aztlan-containers/aztec-listener:latest
+        - image: localhost:30500/aztlan-containers/aztec-listener:latest
           name: run-migrations
           command: ["yarn", run, "migrate"]
           envFrom:
@@ -33,7 +33,7 @@ spec:
             - name: TOTAL_DB_RESET
               value: "false"
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/aztec-listener:latest
+        - image: localhost:30500/aztlan-containers/aztec-listener:latest
           name: aztec-listener
           resources:
             limits:

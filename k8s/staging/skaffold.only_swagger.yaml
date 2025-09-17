@@ -10,4 +10,4 @@ manifests:
   rawYaml:
     - ./swagger/deployment.yaml
     - ./swagger/service.yaml
-    - ./swagger/ingress.yaml
+    - ./swagger/nodeport.yaml

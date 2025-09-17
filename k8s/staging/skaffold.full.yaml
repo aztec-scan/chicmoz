@@ -5,7 +5,6 @@ metadata:
 requires:
   - path: ./common/skaffold.manifests.yaml
   - path: ./common/skaffold.infra.yaml
-  - path: ./common/skaffold.certs.yaml
   - path: ./skaffold.light.yaml
   - path: ./common/skaffold.do_workaround.yaml
   - path: ./skaffold.only_grafana.yaml
