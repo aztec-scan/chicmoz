@@ -80,11 +80,11 @@ type WithdrawInitiatedEventParameters = {
 };
 
 type WithdrawFinalisedGetEventsResult = Awaited<
-  ReturnType<RollupContract["getEvents"]["WithdrawFinalised"]>
+  ReturnType<RollupContract["getEvents"]["WithdrawFinalized"]>
 >;
 
 type WithdrawFinalisedWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["WithdrawFinalised"]
+  RollupContract["watchEvent"]["WithdrawFinalized"]
 >[1];
 
 type WithdrawFinalisedEventParameters = {

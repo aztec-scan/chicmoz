@@ -192,39 +192,66 @@ export const queryStakingStateAndEmitUpdates = async ({
     blockNumber: latestHeight,
     functionName: "getActiveAttesterCount",
   });
-  const client = getPublicHttpBackupClient() ?? getPublicHttpClient(); // NOTE: workaround for selfhosted-node not having enough state.
-  const attesters = await client.readContract({
-    address: contracts.rollup.address,
-    abi: RollupAbi,
-    functionName: "getAttesters",
-    args: [],
-  });
-  logger.info(
-    `Active attester count: ${attesterCount.toString()} (${attesters.length})`,
-  );
-  const attesterInfos: ChicmozL1L2Validator[] = [];
-  for (const attester of attesters) {
-    const attesterView = await getPublicHttpClient().readContract({
-      address: contracts.rollup.address,
-      abi: RollupAbi,
-      functionName: "getAttesterView",
-      args: [attester],
-    });
+  logger.info(`Active attester count: ${attesterCount.toString()}`);
 
-    if (attesterView === undefined) {
-      logger.warn(`Attester ${attester} not found`);
-      continue;
+  const client = getPublicHttpBackupClient() ?? getPublicHttpClient();
+  const attesterInfos: ChicmozL1L2Validator[] = [];
+
+  // Batch size for memory efficiency - adjust based on network performance
+  const BATCH_SIZE = 10;
+  const totalCount = Number(attesterCount);
+
+  for (let batchStart = 0; batchStart < totalCount; batchStart += BATCH_SIZE) {
+    const batchEnd = Math.min(batchStart + BATCH_SIZE, totalCount);
+
+    // Batch 1: Get attester addresses by index
+    const attesterAddressPromises = [];
+    for (let i = batchStart; i < batchEnd; i++) {
+      attesterAddressPromises.push(
+        client.readContract({
+          address: contracts.rollup.address,
+          abi: RollupAbi,
+          functionName: "getAttesterAtIndex",
+          args: [BigInt(i)],
+        }),
+      );
     }
-    attesterInfos.push(
-      chicmozL1L2ValidatorSchema.parse({
-        rollupAddress: contracts.rollup.address,
-        attester: attester,
-        stake: attesterView.effectiveBalance,
-        withdrawer: attesterView.config.withdrawer,
-        proposer: attesterView.config.withdrawer, // Note: proposer appears to be the same as withdrawer in the new structure
-        status: attesterView.status,
+
+    const attesterAddresses = await Promise.all(attesterAddressPromises);
+
+    // Batch 2: Get attester views using the addresses
+    const attesterViewPromises = attesterAddresses.map((attesterAddress) =>
+      getPublicHttpClient().readContract({
+        address: contracts.rollup.address,
+        abi: RollupAbi,
+        functionName: "getAttesterView",
+        args: [attesterAddress],
       }),
     );
+
+    const attesterViews = await Promise.all(attesterViewPromises);
+
+    // Process the batch results
+    for (let i = 0; i < attesterAddresses.length; i++) {
+      const attesterAddress = attesterAddresses[i];
+      const attesterView = attesterViews[i];
+
+      if (attesterView === undefined) {
+        logger.warn(`Attester ${attesterAddress} not found`);
+        continue;
+      }
+
+      attesterInfos.push(
+        chicmozL1L2ValidatorSchema.parse({
+          rollupAddress: contracts.rollup.address,
+          attester: attesterAddress,
+          stake: attesterView.effectiveBalance,
+          withdrawer: attesterView.config.withdrawer,
+          proposer: attesterView.config.withdrawer,
+          status: attesterView.status,
+        }),
+      );
+    }
   }
   await emit.l1Validator(attesterInfos);
   latestPublishedHeight = latestHeight;
