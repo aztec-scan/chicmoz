@@ -29,7 +29,7 @@ spec:
                 name: postgres-config-ethereum-listener-testnet
           env:
             - name: TOTAL_DB_RESET
-              value: "false"
+              value: "true"
       containers:
         - image: registry.digitalocean.com/aztlan-containers/ethereum-listener:latest
           name: ethereum-listener

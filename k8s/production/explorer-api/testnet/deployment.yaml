@@ -31,7 +31,7 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: TOTAL_DB_RESET
-              value: "false"
+              value: "true"
       containers:
         - image: registry.digitalocean.com/aztlan-containers/explorer-api:latest
           name: explorer-api

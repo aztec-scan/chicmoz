@@ -1,5 +1,5 @@
 import { NoirCompiledContract } from "@aztec/aztec.js";
-import votingContractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" with { type: "json" };
+import votingContractArtifactJson from "@aztec/noir-contracts.js/artifacts/private_voting_contract-PrivateVoting" with { type: "json" };
 import { ChicmozL2ContractClassRegisteredEvent } from "@chicmoz-pkg/types";
 import { VerifyArtifactPayload } from "types.js";
 import { beforeAll, describe, expect, test } from "vitest";

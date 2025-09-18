@@ -55,6 +55,7 @@ export const run = async () => {
 
   const underlyingERC20Address = await l1Deployer.deploy(
     {
+      name: "TestERC20",
       contractAbi: TestERC20Abi,
       contractBytecode: TestERC20Bytecode,
     },
@@ -69,6 +70,7 @@ export const run = async () => {
   logger.info("🐰 Deploying TokenPortal contract...");
   const tokenPortalAddress = await l1Deployer.deploy(
     {
+      name: "tokenPortal",
       contractAbi: TokenPortalAbi,
       contractBytecode: TokenPortalBytecode,
     },
@@ -94,7 +96,7 @@ export const run = async () => {
         TOKEN_NAME,
         TOKEN_SYMBOL,
         18,
-      ).send();
+      ).send({ from: wallet.getAddress() });
     },
     node: getAztecNodeClient(),
   });
@@ -150,7 +152,7 @@ export const run = async () => {
         wallet,
         token.address,
         tokenPortalAddress,
-      ).send();
+      ).send({ from: wallet.getAddress() });
     },
     node: getAztecNodeClient(),
   });
@@ -208,23 +210,35 @@ export const run = async () => {
     );
   });
 
-  if ((await token.methods.get_admin().simulate()) !== owner.toBigInt()) {
+  if (
+    (await token.methods
+      .get_admin()
+      .simulate({ from: wallet.getAddress() })) !== owner.toBigInt()
+  ) {
     throw new Error(`Token admin is not ${owner.toString()}`);
   }
 
   if (
     !(
-      (await bridge.methods.get_config().simulate()) as { token: AztecAddress }
+      (await bridge.methods
+        .get_config()
+        .simulate({ from: wallet.getAddress() })) as { token: AztecAddress }
     ).token.equals(token.address)
   ) {
     throw new Error(`Bridge token is not ${token.address.toString()}`);
   }
 
   await logAndWaitForTx(
-    token.methods.set_minter(bridge.address, true).send(),
+    token.methods
+      .set_minter(bridge.address, true)
+      .send({ from: wallet.getAddress() }),
     "setting minter",
   );
-  if ((await token.methods.is_minter(bridge.address).simulate()) === 1n) {
+  if (
+    (await token.methods
+      .is_minter(bridge.address)
+      .simulate({ from: wallet.getAddress() })) === 1n
+  ) {
     throw new Error(`Bridge is not a minter`);
   }
 
@@ -283,11 +297,15 @@ export const run = async () => {
   );
 
   await logAndWaitForTx(
-    l2Token.methods.mint_to_public(ownerAddress, 0n).send(),
+    l2Token.methods
+      .mint_to_public(ownerAddress, 0n)
+      .send({ from: wallet.getAddress() }),
     "minting public tokens A",
   );
   await logAndWaitForTx(
-    l2Token.methods.mint_to_public(ownerAddress, 0n).send(),
+    l2Token.methods
+      .mint_to_public(ownerAddress, 0n)
+      .send({ from: wallet.getAddress() }),
     "minting public tokens B",
   );
 
@@ -306,13 +324,13 @@ export const run = async () => {
   await logAndWaitForTx(
     l2Bridge.methods
       .claim_private(ownerAddress, claimAmount, claimSecret, messageLeafIndex)
-      .send(),
+      .send({ from: wallet.getAddress() }),
     "claiming private tokens",
   );
 
   const l2TokenBalance = (await l2Token.methods
     .balance_of_private(ownerAddress)
-    .simulate()) as bigint;
+    .simulate({ from: wallet.getAddress() })) as bigint;
   assert(l2TokenBalance === bridgeAmount);
 
   logger.info("🐰 4. withdrawing funds from L2");
@@ -341,12 +359,14 @@ export const run = async () => {
         EthAddress.ZERO,
         nonce,
       )
-      .send(),
+      .send({ from: wallet.getAddress() }),
     "exiting to L1",
   );
 
   assert(
-    (await l2Token.methods.balance_of_private(ownerAddress).simulate()) ===
+    (await l2Token.methods
+      .balance_of_private(ownerAddress)
+      .simulate({ from: wallet.getAddress() })) ===
       bridgeAmount - withdrawAmount,
   );
   assert(

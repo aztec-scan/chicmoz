@@ -214,7 +214,7 @@ const getWithdrawInitiatedLogs = async ({
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getWithdrawFinalisedLogs = async ({
+const getWithdrawFinalizedLogs = async ({
   client,
   contracts,
   toBlock,
@@ -249,7 +249,7 @@ const getWithdrawFinalisedLogs = async ({
   const withdrawFinalisedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
-    eventName: "WithdrawFinalised",
+    eventName: "WithdrawFinalized",
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });

@@ -27,7 +27,7 @@ spec:
                 name: postgres-config-aztec-listener-testnet
           env:
             - name: TOTAL_DB_RESET
-              value: "false"
+              value: "true"
       containers:
         - image: aztec-listener:latest
           resources:

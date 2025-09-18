@@ -48,6 +48,7 @@ manifests:
           global.postgresql.auth.username: "admin"
           global.postgresql.auth.password: "secret-local-password"
           image.debug: true
+          image.repository: bitnamilegacy/postgresql
           primary.persistence.size: 100Gi
         namespace: chicmoz-staging
         createNamespace: false
@@ -75,6 +76,7 @@ manifests:
             maxmemory-policy volatile-ttl
             lazyfree-lazy-eviction yes
           persistence.enabled: false
+          image.repository: bitnamilegacy/redis
       - name: kafka
         version: 26.4.2
         remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka
@@ -97,6 +99,7 @@ manifests:
             log.retention.bytes=1073741824
             log.segment.bytes=536870912
             log.cleanup.policy=delete
+          image.repository: bitnamilegacy/kafka
         createNamespace: false
         recreatePods: true
         skipBuildDependencies: false

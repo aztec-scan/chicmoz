@@ -5,8 +5,8 @@ import {
   deployContract,
   registerContractClassArtifact,
 } from "./utils/index.js";
-import { EasyPrivateVotingContract } from "@aztec/noir-contracts.js/EasyPrivateVoting";
-import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" with { type: "json" };
+import { PrivateVotingContract } from "@aztec/noir-contracts.js/PrivateVoting";
+import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/private_voting_contract-PrivateVoting" with { type: "json" };
 
 export async function run() {
   logger.info("===== SIMPLE DEPLOY CONTRACT =====");
@@ -17,28 +17,30 @@ export async function run() {
   const deployerWallet = namedWallets.alice;
   const votingAdmin = namedWallets.alice.getAddress();
 
-  const sentTx = EasyPrivateVotingContract.deploy(
-    deployerWallet,
-    votingAdmin
-  ).send();
+  const sentTx = PrivateVotingContract.deploy(deployerWallet, votingAdmin).send(
+    { from: deployerWallet.getAddress() },
+  );
 
   const contractLoggingName = "Voting Contract";
 
   const contract = await deployContract({
     contractLoggingName,
-    deployFn: (): DeploySentTx<EasyPrivateVotingContract> => sentTx,
+    deployFn: (): DeploySentTx<PrivateVotingContract> => sentTx,
     node: getAztecNodeClient(),
   });
 
-  logger.info(`conract currentContractClassId ${contract.instance.currentContractClassId.toString()}`);
-  logger.info(`conract originalContractClassId ${contract.instance.originalContractClassId.toString()}`);
-
+  logger.info(
+    `conract currentContractClassId ${contract.instance.currentContractClassId.toString()}`,
+  );
+  logger.info(
+    `conract originalContractClassId ${contract.instance.originalContractClassId.toString()}`,
+  );
 
   registerContractClassArtifact(
     contractLoggingName,
     contractArtifactJson,
     contract.instance.currentContractClassId.toString(),
-    contract.instance.version
+    contract.instance.version,
   ).catch((err) => {
     logger.error(err);
   });
