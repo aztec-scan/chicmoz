@@ -20,9 +20,9 @@ export const L1ContractAddressesSchema = z.object({
 });
 
 export const ProtocolContractAddressesSchema = z.object({
-  classRegisterer: z.string().startsWith("0x"),
+  classRegistry: z.string().startsWith("0x"),
   feeJuice: z.string().startsWith("0x"),
-  instanceDeployer: z.string().startsWith("0x"),
+  instanceRegistry: z.string().startsWith("0x"),
   multiCallEntrypoint: z.string().startsWith("0x"),
 });
 
