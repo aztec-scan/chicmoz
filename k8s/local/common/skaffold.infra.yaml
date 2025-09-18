@@ -33,6 +33,7 @@ manifests:
           global.postgresql.auth.username: "admin"
           global.postgresql.auth.password: "secret-local-password"
           image.debug: true
+          image.repository: bitnamilegacy/postgresql
           primary.replicaCount: 1
         namespace: chicmoz
         createNamespace: false
@@ -53,6 +54,7 @@ manifests:
           architecture: standalone
           replica.replicaCount: 0
           auth.enabled: false
+          image.repository: bitnamilegacy/redis
           master.configuration: |
             maxmemory 100mb
             maxmemory-policy volatile-ttl
@@ -80,6 +82,7 @@ manifests:
             - test
           extraConfig: |
             message.max.bytes=10000000
+          image.repository: bitnamilegacy/kafka
         createNamespace: false
         recreatePods: true
         skipBuildDependencies: false
