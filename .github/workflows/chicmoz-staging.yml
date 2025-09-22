@@ -1,0 +1,54 @@
+name: CI/CD Chicmoz Staging
+
+on:
+  push:
+    branches:
+      - staging
+  pull_request:
+    branches:
+      - staging
+    types:
+      - closed
+
+jobs:
+  deploy-staging:
+    runs-on: [self-hosted, staging-runner]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy to cluster with Skaffold
+        env:
+          TESTNET_OBSCURA_L2_RPC_1: ${{ vars.TESTNET_OBSCURA_L2_RPC_1 }}
+          TESTNET_OBSCURA_L2_RPC_2: ${{ vars.TESTNET_OBSCURA_L2_RPC_2 }}
+          TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.TESTNET_AZTEC_L2_BOOTNODE_RPC }}
+          TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
+          TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
+          AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_TESTNET }}
+        run: |
+          MAX_RETRIES=3
+          RETRY_DELAY=10
+
+          kubectl create secret generic global \
+            --from-literal=TESTNET_OBSCURA_L2_RPC_1=$TESTNET_OBSCURA_L2_RPC_1 \
+            --from-literal=TESTNET_OBSCURA_L2_RPC_2=$TESTNET_OBSCURA_L2_RPC_2 \
+            --from-literal=TESTNET_AZTEC_L2_BOOTNODE_RPC=$TESTNET_AZTEC_L2_BOOTNODE_RPC \
+            --from-literal=TESTNET_AZTEC_L1_HTTP=$TESTNET_AZTEC_L1_HTTP \
+            --from-literal=TESTNET_AZTEC_L1_WS=$TESTNET_AZTEC_L1_WS \
+            --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_TESTNET \
+            -n chicmoz-staging --dry-run=client -o yaml | kubectl apply -f -
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            if bash -x scripts/staging/deploy.sh; then
+              echo "Deployment successful"
+              exit 0
+            fi
+            echo "Attempt $i failed. Retrying in $RETRY_DELAY seconds..."
+            sleep $RETRY_DELAY
+          done
+
+          echo "Deployment failed after $MAX_RETRIES attempts"
+          exit 1

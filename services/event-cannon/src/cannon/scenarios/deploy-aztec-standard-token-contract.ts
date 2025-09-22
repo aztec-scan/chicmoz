@@ -28,7 +28,7 @@ export async function run() {
         1000000n,
         deployerWallet.getAddress(),
         deployerWallet.getAddress(),
-      ).send(),
+      ).send({ from: deployerWallet.getAddress() }),
     node: getAztecNodeClient(),
   });
 

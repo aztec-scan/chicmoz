@@ -1,0 +1,22 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+requires:
+  - path: ../common/skaffold.chicmoz-base-image.yaml
+build:
+  artifacts:
+    - image: localhost:30500/aztlan-containers/auth
+      context: ../../../services/auth
+      docker:
+        dockerfile: Dockerfile
+      requires:
+        - image: localhost:30500/aztlan-containers/chicmoz-base
+          alias: BASE
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./postgres-config.yaml
+    - ./service.yaml
+    - ./deployment.yaml

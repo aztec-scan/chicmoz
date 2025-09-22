@@ -3,7 +3,7 @@ import {
   getContractClassFromArtifact,
   loadContractArtifact,
 } from "@aztec/aztec.js";
-import contractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" with { type: "json" };
+import contractArtifactJson from "@aztec/noir-contracts.js/artifacts/private_voting_contract-PrivateVoting" with { type: "json" };
 import { beforeAll, describe, expect, test } from "vitest";
 import { VerifyInstanceDeploymentPayload } from "../types.js";
 import { generateVerifyInstancePayload } from "./generate-payload.js";

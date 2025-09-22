@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-api-testnet-label
+  name: explorer-api-testnet-deployment
+  namespace: chicmoz-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-api-testnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: explorer-api-testnet-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - image: localhost:30500/aztlan-containers/explorer-api:latest
+          name: run-migrations
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-testnet
+          env:
+            - name: NODE_ENV
+              value: "staging"
+            - name: TOTAL_DB_RESET
+              value: "true"
+      containers:
+        - image: localhost:30500/aztlan-containers/explorer-api:latest
+          name: explorer-api
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-testnet
+          env:
+            - name: NODE_ENV
+              value: "staging"
+            - name: INSTANCE_NAME
+              value: "testnet_explorer-api"
+            - name: L2_NETWORK_ID
+              value: "TESTNET"
+            - name: PUBLIC_API_KEY
+              value: "temporary-api-key"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

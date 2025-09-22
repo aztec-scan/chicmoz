@@ -4,9 +4,7 @@ import {
 } from "@aztec/accounts/schnorr";
 import {
   AztecNode,
-  BatchCall,
   Contract,
-  ContractFunctionInteraction,
   DeploySentTx,
   Fr,
   FunctionSelector,
@@ -19,10 +17,8 @@ import {
 import {
   broadcastPrivateFunction,
   broadcastUtilityFunction,
-  deployInstance,
-  registerContractClass,
 } from "@aztec/aztec.js/deployment";
-import { ContractClassRegisteredEvent } from "@aztec/protocol-contracts/class-registerer";
+import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
 import { deriveSigningKey } from "@aztec/stdlib/keys";
 import {
   generateVerifyArtifactPayload,
@@ -128,9 +124,9 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
   const contractClasses = await Promise.all(
     contractClassLogs
       .filter((log) =>
-        ContractClassRegisteredEvent.isContractClassRegisteredEvent(log),
+        ContractClassPublishedEvent.isContractClassPublishedEvent(log),
       )
-      .map((log) => ContractClassRegisteredEvent.fromLog(log))
+      .map((log) => ContractClassPublishedEvent.fromLog(log))
       .map((e) => e.toContractClassPublic()),
   );
 
@@ -193,7 +189,7 @@ export const broadcastFunctions = async ({
       await logAndWaitForTx(
         (
           await broadcastPrivateFunction(wallet, contract.artifact, selector)
-        ).send(),
+        ).send({ from: wallet.getAddress() }),
         `Broadcasting private function ${fn.name}`,
       );
     }
@@ -205,7 +201,7 @@ export const broadcastFunctions = async ({
       await logAndWaitForTx(
         (
           await broadcastUtilityFunction(wallet, contract.artifact, selector)
-        ).send(),
+        ).send({ from: wallet.getAddress() }),
         `Broadcasting utility function ${fn.name}`,
       );
     }
@@ -224,29 +220,27 @@ export const publicDeployAccounts = async (
       return contractMetadata;
     }),
   ).then((results) =>
-    results.filter((result) => !result.isContractPubliclyDeployed),
+    results.filter((result) => !result.isContractInitialized),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
   }
-  const deployCalls: ContractFunctionInteraction[] = [
-    await registerContractClass(sender, SchnorrAccountContractArtifact),
-    ...(
-      await Promise.all(
-        notPubliclyDeployedAccounts.map(async (contractMetadata) => {
-          if (!contractMetadata.contractInstance) {
-            logger.warn(
-              `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
-            );
-            return undefined;
-          }
-          return deployInstance(sender, contractMetadata.contractInstance);
-        }),
-      )
-    ).filter((call) => call !== undefined),
-  ];
-  const batch = new BatchCall(sender, deployCalls);
-  await batch.send().wait();
+
+  // Register contract class first
+  await sender.registerContractClass(SchnorrAccountContractArtifact);
+
+  // Register each contract instance individually
+  for (const contractMetadata of notPubliclyDeployedAccounts) {
+    if (!contractMetadata.contractInstance) {
+      logger.warn(
+        `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
+      );
+      continue;
+    }
+    await sender.registerContract({
+      instance: contractMetadata.contractInstance,
+    });
+  }
 };
 
 export const registerContractClassArtifact = async (
@@ -287,7 +281,7 @@ export const registerStandardContractArtifact = async (
     postData,
     method: "POST",
   });
-}
+};
 
 export const verifyContractInstanceDeployment = async ({
   contractLoggingName,

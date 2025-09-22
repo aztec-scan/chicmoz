@@ -23,8 +23,20 @@ export class Core {
   async init() {}
 
   extractApiKey(url: string): [true, string] | [false, undefined] {
+	// Handle both full URLs and paths
+    let pathToCheck = url;
+
+    // If it's a full URL, extract just the path
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      try {
+        const urlObj = new URL(url);
+        pathToCheck = urlObj.pathname;
+      } catch (e) {
+        return [false, undefined];
+      }
+    }
     const re = RegExp("^/(v1|api)/(.+?)(/|$)");
-    const apiUrl = re.exec(url);
+    const apiUrl = re.exec(pathToCheck);
     if (!apiUrl || apiUrl.length < 3) {
       return [false, undefined];
     }

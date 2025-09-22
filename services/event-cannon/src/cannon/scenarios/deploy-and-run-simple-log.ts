@@ -26,7 +26,9 @@ export async function run() {
   const contract = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<SimpleLoggingContract> =>
-      SimpleLoggingContract.deploy(deployerWallet).send(),
+      SimpleLoggingContract.deploy(deployerWallet).send({
+        from: deployerWallet.getAddress(),
+      }),
     node: getAztecNodeClient(),
   });
 
@@ -34,13 +36,15 @@ export async function run() {
     contractLoggingName,
     artifactJson as unknown as NoirCompiledContract,
     contract.instance.currentContractClassId.toString(),
-    contract.instance.version
+    contract.instance.version,
   ).catch((err) => {
     logger.error(err);
   });
 
   await logAndWaitForTx(
-    contract.methods.increase_counter_public(1).send(),
-    "Increase counter public"
+    contract.methods
+      .increase_counter_public(1)
+      .send({ from: deployerWallet.getAddress() }),
+    "Increase counter public",
   );
 }

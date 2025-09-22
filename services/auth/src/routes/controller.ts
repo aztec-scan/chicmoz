@@ -23,7 +23,10 @@ export class Controller {
   }
 
   GET_EXISTS: RequestHandler = async (req, res) => {
-    const originalRoute = req.headers["x-auth-request-redirect"];
+    const originalRoute =
+      req.headers["x-auth-request-redirect"] ??
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}${req.headers["x-forwarded-uri"]}`;
 
     if (!originalRoute) {
       throw new Error("x-auth-request-redirect not set by nginx");
@@ -31,8 +34,8 @@ export class Controller {
     if (Array.isArray(originalRoute)) {
       throw new Error(
         `x-auth-request-redirect array; not single string: ${originalRoute.join(
-          ", "
-        )}`
+          ", ",
+        )}`,
       );
     }
 
@@ -72,19 +75,19 @@ export class Controller {
       return;
     }
 
-    const xOriginalUrl = req.get("x-original-url");
+    //const xOriginalUrl = req.get("x-original-url");
 
-    if (!xOriginalUrl) {
-      this.logger.info("Invalid original URL");
-      res.status(404).send("Invalid original URL");
-      return;
-    }
+    //if (!xOriginalUrl) {
+    // this.logger.info("Invalid original URL");
+    // res.status(404).send("Invalid original URL");
+    // return;
+    //}
 
     const overrideLimitsForNow = true;
 
     const isSecLimitReached = await this.core.checkRequestLimitReached(
       "seconds",
-      apiKey
+      apiKey,
     );
     if (isSecLimitReached && !overrideLimitsForNow) {
       this.logger.info("Reached request limit per second");
@@ -94,7 +97,7 @@ export class Controller {
 
     const isMonthLimitReached = await this.core.checkRequestLimitReached(
       "month",
-      apiKey
+      apiKey,
     );
     if (isMonthLimitReached && !overrideLimitsForNow) {
       this.logger.info("Reached request limit per month");

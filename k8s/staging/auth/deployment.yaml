@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: auth-label
+  name: auth-deployment
+  namespace: chicmoz-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: auth-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      containers:
+        - image: localhost:30500/aztlan-containers/auth:latest
+          resources:
+            limits:
+              memory: 400Mi
+              cpu: 300m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
+          name: auth
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+          env:
+            - name: PORT
+              value: "80"
+            - name: POSTGRES_DB_NAME
+              value: "auth"
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: NODE_ENV
+              value: "staging"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10
+status: {}

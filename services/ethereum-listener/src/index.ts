@@ -8,7 +8,7 @@ import { start } from "./start.js";
 import { services } from "./svcs/index.js";
 
 const formatConfigLog = () => {
-  return `TODO: is this needed if each service logs?`;
+  return `TODO : is this needed if each service logs?`;
 };
 
 const main = () => {
