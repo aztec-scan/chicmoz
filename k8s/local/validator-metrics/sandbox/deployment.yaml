@@ -31,7 +31,7 @@ spec:
         - image: validator-metrics:latest
           resources:
             limits:
-              memory: 600Mi
+              memory: 1000Mi
               cpu: 500m
           ports:
             - name: http-app-port
