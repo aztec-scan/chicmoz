@@ -1,5 +1,5 @@
-import { relations, sql } from "drizzle-orm";
-import { pgTable, integer, pgEnum, primaryKey, bigint, decimal, check } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { pgTable, integer, pgEnum, primaryKey, bigint } from "drizzle-orm/pg-core";
 import {
   generateEthAddressColumn,
   generateTimestampColumn,
@@ -11,9 +11,9 @@ export const slotStatusColumn = pgEnum("slot_status", slotStatusEnumSchema.optio
 
 export const SentinelValidatorTable = pgTable("sentinel_validator", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
-  lastSeenAt: generateTimestampColumn("last_seen_at").default(0),
-  lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }).default(0n), // Maybe just use this and do a slot > timestamp call
-  totalSlots: integer("total_slots").default(0)
+  lastSeenAt: generateTimestampColumn("last_seen_at"),
+  lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
+  totalSlots: integer("total_slots").default(0),
 });
 
 export const SentinelHistoryTable = pgTable("sentinel_validator_history", {
@@ -32,11 +32,12 @@ export const SentinelHistoryTable = pgTable("sentinel_validator_history", {
   }),
 );
 
-export const SentinelMissedBlockTable = pgTable("sentinel_validator_missed_blocks", {
+export const SentinelBlockTable = pgTable("sentinel_validator_missed_blocks", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
-  count: integer("count").notNull(),
-  currentStreak: integer("current_streak").notNull(),
-  rate: decimal("rate", { precision: 6, scale: 4 }).notNull()
+  lastSeenAt: generateTimestampColumn("last_seen_at"),
+  lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
+  total: integer("total").notNull(),
+  missed: integer("missed").notNull(),
 },
   (table) => ({
     fk_attester: {
@@ -45,16 +46,15 @@ export const SentinelMissedBlockTable = pgTable("sentinel_validator_missed_block
       onDelete: "cascade",
       onUpdate: "cascade",
     },
-    chk_nonneg: check("ma_nonneg", sql`${table.count} >= 0 AND ${table.currentStreak} >= 0`),
-    chk_rate: check("ma_rate_0_1", sql`${table.rate} >= 0 AND ${table.rate} <= 1`),
   }),
 );
 
-export const SentinelMissedAttestationTable = pgTable("sentinel_validator_missed_attestations", {
+export const SentinelAttestationTable = pgTable("sentinel_validator_missed_attestations", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
-  count: integer("count").notNull(),
-  currentStreak: integer("current_streak").notNull(),
-  rate: decimal("rate", { precision: 6, scale: 4 }).notNull()
+  lastSeenAt: generateTimestampColumn("last_seen_at"),
+  lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
+  total: integer("total").notNull(),
+  missed: integer("missed").notNull(),
 },
   (table) => ({
     fk_attester: {
@@ -62,9 +62,7 @@ export const SentinelMissedAttestationTable = pgTable("sentinel_validator_missed
       foreignColumns: [SentinelValidatorTable.attester],
       onDelete: "cascade",
       onUpdate: "cascade",
-    },
-    chk_nonneg: check("ma_nonneg", sql`${table.count} >= 0 AND ${table.currentStreak} >= 0`),
-    chk_rate: check("ma_rate_0_1", sql`${table.rate} IS NULL OR (${table.rate} >= 0 AND ${table.rate} <= 1)`),
+    }
   }),
 );
 
@@ -76,21 +74,23 @@ export const SentinelValidatorRelations = relations(
 );
 
 export const SentinelValidatorMissedBlockRelations = relations(
-  SentinelMissedBlockTable,
+  SentinelBlockTable,
   ({ one }) => ({
     attester: one(SentinelValidatorTable ,{
-      fields: [SentinelMissedBlockTable.attester],
+      fields: [SentinelBlockTable.attester],
       references: [SentinelValidatorTable.attester],
     }),
   }),
 );
 
 export const SentinelMissedAttestationTableRelations = relations(
-  SentinelMissedAttestationTable,
+  SentinelAttestationTable,
   ({ one }) => ({
     attester: one(SentinelValidatorTable ,{
-      fields: [SentinelMissedAttestationTable.attester],
+      fields: [SentinelAttestationTable.attester],
       references: [SentinelValidatorTable.attester],
     }),
   }),
 );
+
+export type CounterTable = typeof SentinelBlockTable | typeof SentinelAttestationTable
