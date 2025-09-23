@@ -26,7 +26,7 @@ spec:
                 name: postgres-config-explorer-api-testnet
           env:
             - name: TOTAL_DB_RESET
-              value: "true"
+              value: "false"
       containers:
         - image: explorer-api:latest
           resources:

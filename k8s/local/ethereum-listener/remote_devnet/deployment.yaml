@@ -27,7 +27,7 @@ spec:
                 name: postgres-config-ethereum-listener-remote-devnet
           env:
             - name: TOTAL_DB_RESET
-              value: "true"
+              value: "false"
       containers:
         - image: ethereum-listener:latest
           resources:
