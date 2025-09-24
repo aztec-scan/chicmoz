@@ -64,6 +64,13 @@
       "when": 1753712910508,
       "tag": "0008_mysterious_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1755085817298,
+      "tag": "0009_huge_spot",
+      "breakpoints": true
     }
   ]
 }
