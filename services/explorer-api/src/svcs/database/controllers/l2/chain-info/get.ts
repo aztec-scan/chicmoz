@@ -3,9 +3,8 @@ import {
   ChicmozChainInfo,
   L2NetworkId,
   chicmozChainInfoSchema,
-} from "@chicmoz-pkg/types";
+ CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { and, desc, eq } from "drizzle-orm";
-import { CURRENT_ROLLUP_VERSION } from "../../../../../constants/versions.js";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
 
 export async function getL2ChainInfo(

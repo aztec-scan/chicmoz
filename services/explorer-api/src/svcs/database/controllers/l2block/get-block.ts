@@ -4,7 +4,7 @@ import {
   FIRST_FINALIZATION_STATUS,
   HexString,
   chicmozL2BlockLightSchema,
-} from "@chicmoz-pkg/types";
+ CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import {
   and,
   count,
@@ -17,7 +17,6 @@ import {
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import {
   archive,
   body,

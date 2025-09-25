@@ -5,7 +5,7 @@ import {
   header,
   l2Block,
 } from "../../../database/schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 
 export const getAverageFees = async (): Promise<string> => {
   const dbRes = await db()

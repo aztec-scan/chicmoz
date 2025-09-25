@@ -1,6 +1,6 @@
 import { useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
-import { CURRENT_ROLLUP_VERSION } from "~/constants/versions";
+import { CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyBlockData } from "~/components/loading/util";
