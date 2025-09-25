@@ -7,7 +7,7 @@ import {
 import { slotStatusEnumSchema } from "@chicmoz-pkg/types";
 
 
-export const slotStatusColumn = pgEnum("slot_status", slotStatusEnumSchema.options) // Share this stuff with the types
+export const slotStatusColumn = pgEnum("slot_status", slotStatusEnumSchema.options)
 
 export const SentinelValidatorTable = pgTable("sentinel_validator", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
@@ -76,7 +76,7 @@ export const SentinelValidatorRelations = relations(
 export const SentinelValidatorMissedBlockRelations = relations(
   SentinelBlockTable,
   ({ one }) => ({
-    attester: one(SentinelValidatorTable ,{
+    attester: one(SentinelValidatorTable, {
       fields: [SentinelBlockTable.attester],
       references: [SentinelValidatorTable.attester],
     }),
@@ -86,7 +86,7 @@ export const SentinelValidatorMissedBlockRelations = relations(
 export const SentinelMissedAttestationTableRelations = relations(
   SentinelAttestationTable,
   ({ one }) => ({
-    attester: one(SentinelValidatorTable ,{
+    attester: one(SentinelValidatorTable, {
       fields: [SentinelAttestationTable.attester],
       references: [SentinelValidatorTable.attester],
     }),
