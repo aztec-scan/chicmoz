@@ -4,7 +4,7 @@ import {
   generateEthAddressColumn,
   generateTimestampColumn,
 } from "../utils.js";
-import { slotStatusEnumSchema } from "@chicmoz-pkg/types"
+import { slotStatusEnumSchema } from "@chicmoz-pkg/types";
 
 
 export const slotStatusColumn = pgEnum("slot_status", slotStatusEnumSchema.options) // Share this stuff with the types
