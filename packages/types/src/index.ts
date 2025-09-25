@@ -5,6 +5,7 @@ export * from "./ethereum/index.js";
 export * from "./events.js";
 export * from "./general.js";
 export * from "./network-ids.js";
+export * from "./versions.js";
 
 // TODO: move this to some appropriate place
 export const jsonStringify = (param: unknown): string => {

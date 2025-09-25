@@ -7,7 +7,7 @@ import {
   l2Block,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 
 export const getTotalTxEffects = async (): Promise<number> => {
   const dbRes = await db()

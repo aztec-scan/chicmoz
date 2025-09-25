@@ -17,7 +17,7 @@ import {
   l2Tx,
   txEffect,
 } from "../../schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
 
 const getBlockHashByHeight = async (

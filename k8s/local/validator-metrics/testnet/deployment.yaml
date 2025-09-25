@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: validator-metrics-testnet-label
+  name: validator-metrics-testnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validator-metrics-testnet-label
+  template:
+    metadata:
+      labels:
+        app: validator-metrics-testnet-label
+    spec:
+      initContainers:
+        - name: run-migrations
+          image: validator-metrics:latest
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-validator-metrics-testnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: validator-metrics:latest
+          resources:
+            limits:
+              memory: 600Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
+          name: validator-metrics
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-validator-metrics-testnet
+          env:
+            - name: INSTANCE_NAME
+              value: "testnet_validator-metrics"
+            - name: L2_NETWORK_ID
+              value: "TESTNET"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

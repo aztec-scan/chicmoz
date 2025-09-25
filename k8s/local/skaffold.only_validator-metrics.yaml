@@ -1,0 +1,4 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+requires:
+  - path: ./validator-metrics/skaffold.sandbox.yaml

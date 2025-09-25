@@ -1,8 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import { ChicmozL2BlockLight , CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { l2Block } from "../../../database/schema/l2block/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { BlockQueryOptions, getBlock } from "./get-block.js";
 
 export const getLatestBlock = async (
