@@ -1,4 +1,4 @@
-import { Table, getTableColumns} from "drizzle-orm";
+import { Table, getTableColumns } from "drizzle-orm";
 import { ZodError } from "zod";
 import { logger } from "../../../logger.js";
 
