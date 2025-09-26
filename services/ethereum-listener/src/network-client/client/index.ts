@@ -1,10 +1,5 @@
 import { RollupAbi } from "@aztec/l1-artifacts";
-import {
-  ChicmozL1L2Validator,
-  L2NetworkId,
-  chicmozL1L2ValidatorSchema,
-  getL1NetworkId,
-} from "@chicmoz-pkg/types";
+import { L2NetworkId, getL1NetworkId } from "@chicmoz-pkg/types";
 import {
   PublicClient,
   createPublicClient,
@@ -20,10 +15,8 @@ import {
   ETHEREUM_WS_RPC_URL,
   L2_NETWORK_ID,
 } from "../../environment.js";
-import { emit } from "../../events/index.js";
 import { logger } from "../../logger.js";
 import { getL1Contracts } from "../contracts/index.js";
-import { AztecContracts } from "../contracts/utils.js";
 import { getCachedBlockTimestamp } from "./cached-block-timestamps.js";
 export { startContractWatchers as watchContractsEvents } from "../contracts/index.js";
 
@@ -169,150 +162,4 @@ const hardcodedRollupGenesisBlocks = (
     return 8125387n;
   }
   return 0n;
-};
-
-let latestPublishedHeight = 0n;
-
-export const queryStakingStateAndEmitUpdates = async ({
-  contracts,
-  latestHeight,
-}: {
-  contracts: AztecContracts;
-  latestHeight: bigint;
-}) => {
-  if (latestHeight <= latestPublishedHeight) {
-    logger.info(
-      `Latest height ${latestHeight} <= latest published height ${latestPublishedHeight}`,
-    );
-    return;
-  }
-  const attesterCount = await getPublicHttpClient().readContract({
-    address: contracts.rollup.address,
-    abi: RollupAbi,
-    blockNumber: latestHeight,
-    functionName: "getActiveAttesterCount",
-  });
-  logger.info(`Active attester count: ${attesterCount.toString()}`);
-
-  const client = getPublicHttpBackupClient() ?? getPublicHttpClient();
-  const attesterInfos: ChicmozL1L2Validator[] = [];
-
-  // Batch size for memory efficiency - adjust based on network performance
-  const BATCH_SIZE = 10;
-  const totalCount = Number(attesterCount);
-
-  logger.info(
-    `Processing ${totalCount} attesters with batch size ${BATCH_SIZE}`,
-  );
-
-  if (totalCount === 0) {
-    logger.info("No attesters found");
-    await emit.l1Validator(attesterInfos);
-    latestPublishedHeight = latestHeight;
-    return;
-  }
-
-  // Try to determine if the contract uses 0-based or 1-based indexing
-  // by testing index 0 first
-  let indexOffset = 0;
-  try {
-    await client.readContract({
-      address: contracts.rollup.address,
-      abi: RollupAbi,
-      functionName: "getAttesterAtIndex",
-      args: [BigInt(0)],
-    });
-    logger.info("Contract uses 0-based indexing");
-    indexOffset = 0;
-  } catch (error) {
-    logger.info("Index 0 failed, trying 1-based indexing");
-    try {
-      await client.readContract({
-        address: contracts.rollup.address,
-        abi: RollupAbi,
-        functionName: "getAttesterAtIndex",
-        args: [BigInt(1)],
-      });
-      logger.info("Contract uses 1-based indexing");
-      indexOffset = 1;
-    } catch (error2) {
-      logger.warn(
-        "Both index 0 and 1 failed, contract might have no attesters or different indexing",
-      );
-    }
-  }
-
-  for (let batchStart = 0; batchStart < totalCount; batchStart += BATCH_SIZE) {
-    const batchEnd = Math.min(batchStart + BATCH_SIZE, totalCount);
-
-    // Batch 1: Get attester addresses by index
-    logger.info(
-      `Processing batch ${batchStart} to ${batchEnd - 1} (contract indices: ${batchStart + indexOffset}-${batchEnd - 1 + indexOffset})`,
-    );
-    const attesterAddressPromises = [];
-    for (let i = batchStart; i < batchEnd; i++) {
-      const contractIndex = i + indexOffset;
-      logger.debug(
-        `Getting attester at contract index ${contractIndex} (logical index ${i})`,
-      );
-      attesterAddressPromises.push(
-        client
-          .readContract({
-            address: contracts.rollup.address,
-            abi: RollupAbi,
-            functionName: "getAttesterAtIndex",
-            args: [BigInt(contractIndex)],
-          })
-          .catch((error: unknown) => {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
-            logger.warn(
-              `Failed to get attester at contract index ${contractIndex} (logical index ${i}): ${errorMessage}`,
-            );
-            return null;
-          }),
-      );
-    }
-
-    const attesterAddressResults = await Promise.all(attesterAddressPromises);
-    const attesterAddresses = attesterAddressResults.filter(
-      (addr): addr is `0x${string}` => addr !== null,
-    );
-
-    // Batch 2: Get attester views using the addresses
-    const attesterViewPromises = attesterAddresses.map((attesterAddress) =>
-      getPublicHttpClient().readContract({
-        address: contracts.rollup.address,
-        abi: RollupAbi,
-        functionName: "getAttesterView",
-        args: [attesterAddress],
-      }),
-    );
-
-    const attesterViews = await Promise.all(attesterViewPromises);
-
-    // Process the batch results
-    for (let i = 0; i < attesterAddresses.length; i++) {
-      const attesterAddress = attesterAddresses[i];
-      const attesterView = attesterViews[i];
-
-      if (attesterView === undefined) {
-        logger.warn(`Attester ${attesterAddress} not found`);
-        continue;
-      }
-
-      attesterInfos.push(
-        chicmozL1L2ValidatorSchema.parse({
-          rollupAddress: contracts.rollup.address,
-          attester: attesterAddress,
-          stake: attesterView.effectiveBalance,
-          withdrawer: attesterView.config.withdrawer,
-          proposer: attesterView.config.withdrawer,
-          status: attesterView.status,
-        }),
-      );
-    }
-  }
-  await emit.l1Validator(attesterInfos);
-  latestPublishedHeight = latestHeight;
 };
