@@ -127,14 +127,14 @@ const fetchAllAttesters = async (
 ): Promise<ChicmozL1L2Validator[]> => {
   const attesters: ChicmozL1L2Validator[] = [];
   const totalBatches = Math.ceil(totalCount / BATCH_SIZE);
+  const startTime = Date.now();
 
   logger.info(
-    `Processing ${totalCount} attesters in ${totalBatches} batches with ${BATCH_DELAY_MS}ms delays`,
+    `🔍 Starting: ${totalCount} attesters in ${totalBatches} batches (${BATCH_DELAY_MS}ms delays)`,
   );
 
   for (let batchStart = 0; batchStart < totalCount; batchStart += BATCH_SIZE) {
     const batchNumber = Math.floor(batchStart / BATCH_SIZE) + 1;
-    logger.info(`Processing batch ${batchNumber}/${totalBatches}`);
 
     const batchAttesters = await processBatchWithRetry(
       rollupAddress,
@@ -144,12 +144,30 @@ const fetchAllAttesters = async (
     );
     attesters.push(...batchAttesters);
 
+    // Log progress every 100 batches or on completion
+    if (batchNumber % 100 === 0 || batchNumber === totalBatches) {
+      const totalProgress = ((batchNumber / totalBatches) * 100).toFixed(1);
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      const estimatedTotal = (elapsedTime * totalBatches) / batchNumber;
+      const estimatedRemaining = Math.max(0, estimatedTotal - elapsedTime);
+
+      logger.info(
+        `🔍 Batch ${batchNumber}/${totalBatches} (${totalProgress}%) | ` +
+          `Attesters: ${attesters.length}/${totalCount} | ` +
+          `ETA: ${Math.round(estimatedRemaining)}s`,
+      );
+    }
+
     // Add delay between batches (except for the last batch)
     if (batchStart + BATCH_SIZE < totalCount) {
-      logger.info(`Waiting ${BATCH_DELAY_MS}ms before next batch`);
       await sleep(BATCH_DELAY_MS);
     }
   }
+
+  const totalDuration = (Date.now() - startTime) / 1000;
+  logger.info(
+    `🔍 Completed: ${attesters.length}/${totalCount} attesters in ${Math.round(totalDuration)}s`,
+  );
 
   return attesters;
 };
