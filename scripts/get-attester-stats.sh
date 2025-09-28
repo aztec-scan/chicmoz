@@ -5,9 +5,10 @@
 
 set -e
 
-# Load environment from .chicmoz.env if exists
-if [ -f "../.chicmoz.env" ]; then
-  source "../.chicmoz.env"
+# Load environment from .chicmoz.env if exists (relative to script location)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/../.chicmoz.env" ]; then
+  source "$SCRIPT_DIR/../.chicmoz.env"
 fi
 
 RPC_URL=${TESTNET_AZTEC_L1_HTTP}
@@ -25,8 +26,8 @@ if [ -z "$ROLLUP_ADDRESS" ]; then
   exit 1
 fi
 
-echo "Using RPC: $RPC_URL"
-echo "Rollup contract: $ROLLUP_ADDRESS"
+#echo "Using RPC: $RPC_URL"
+#echo "Rollup contract: $ROLLUP_ADDRESS"
 echo
 
 # Check if cast is available
@@ -103,15 +104,15 @@ parse_attester_view() {
 
   # Convert status to text
   case $status in
-    0) status_text="Inactive" ;;
-    1) status_text="Active" ;;
-    2) status_text="Exiting" ;;
-    3) status_text="Exited" ;;
-    *) status_text="Unknown ($status)" ;;
+  0) status_text="Inactive" ;;
+  1) status_text="Active" ;;
+  2) status_text="Exiting" ;;
+  3) status_text="Exited" ;;
+  *) status_text="Unknown ($status)" ;;
   esac
 
   # Format output
-  cat << EOF
+  cat <<EOF
 Status: $status ($status_text)
 Effective Balance: $balance wei
 Exit:
@@ -190,4 +191,3 @@ for attester in "${attesters[@]}"; do
   echo "$attester"
   echo "---"
 done
-
