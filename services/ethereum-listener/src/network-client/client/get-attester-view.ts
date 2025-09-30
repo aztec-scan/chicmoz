@@ -154,7 +154,7 @@ const fetchAllAttesters = async (
     attesters.push(...batchAttesters);
 
     // Log progress every 100 batches or on completion
-    if (batchNumber % 2 === 0 || batchNumber === totalBatches) {
+    if (batchNumber % 100 === 0 || batchNumber === totalBatches) {
       const totalProgress = ((batchNumber / totalBatches) * 100).toFixed(1);
       const elapsedTime = (Date.now() - startTime) / 1000;
       const estimatedTotal = (elapsedTime * totalBatches) / batchNumber;
