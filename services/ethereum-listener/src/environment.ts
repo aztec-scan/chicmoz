@@ -17,7 +17,7 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
 );
 
 export const ATTESTER_POLL_INTERVAL_MS = parseInt(
-  process.env.ATTESTER_POLL_INTERVAL_MS ?? 15 * 60 * 1000 + "",
+  process.env.ATTESTER_POLL_INTERVAL_MS ?? String(15 * 60 * 1000),
   10,
 );
 export const BATCH_SIZE = parseInt(process.env.ATTESTER_BATCH_SIZE ?? "5", 10);
