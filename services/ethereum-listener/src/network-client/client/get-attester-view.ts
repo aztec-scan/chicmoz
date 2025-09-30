@@ -8,12 +8,12 @@ import { logger } from "../../logger.js";
 import { AztecContracts } from "../contracts/utils.js";
 import { getPublicHttpBackupClient, getPublicHttpClient } from "./index.js";
 import {
-  BATCH_DELAY_MS,
+  ATTESTER_BATCH_DELAY_MS,
   BATCH_SIZE,
-  CIRCUIT_BREAKER_THRESHOLD,
-  CIRCUIT_BREAKER_TIMEOUT_MS,
-  INITIAL_BACKOFF_MS,
-  MAX_RETRIES,
+  ATTESTER_CIRCUIT_BREAKER_THRESHOLD,
+  ATTESTER_CIRCUIT_BREAKER_TIMEOUT_MS,
+  ATTESTER_INITIAL_BACKOFF_MS,
+  ATTESTER_MAX_RETRIES,
 } from "../../environment.js";
 export { startContractWatchers as watchContractsEvents } from "../contracts/index.js";
 
@@ -120,6 +120,15 @@ const determineIndexOffset = async (
   }
 };
 
+const getETA = (estimatedTotal: number, elapsedTime: number): string => {
+  const estimatedRemainingSeconds = Math.max(0, estimatedTotal - elapsedTime);
+  if (estimatedRemainingSeconds > 60) {
+    return `~${Math.round(estimatedRemainingSeconds / 60)}m`;
+  } else {
+    return `~${Math.round(estimatedRemainingSeconds)}s`;
+  }
+};
+
 const fetchAllAttesters = async (
   rollupAddress: `0x${string}`,
   totalCount: number,
@@ -130,7 +139,7 @@ const fetchAllAttesters = async (
   const startTime = Date.now();
 
   logger.info(
-    `🔍 Starting: ${totalCount} attesters in ${totalBatches} batches (${BATCH_DELAY_MS}ms delays)`,
+    `🔍 Starting: ${totalCount} attesters in ${totalBatches} batches (${ATTESTER_BATCH_DELAY_MS}ms delays)`,
   );
 
   for (let batchStart = 0; batchStart < totalCount; batchStart += BATCH_SIZE) {
@@ -149,18 +158,17 @@ const fetchAllAttesters = async (
       const totalProgress = ((batchNumber / totalBatches) * 100).toFixed(1);
       const elapsedTime = (Date.now() - startTime) / 1000;
       const estimatedTotal = (elapsedTime * totalBatches) / batchNumber;
-      const estimatedRemaining = Math.max(0, estimatedTotal - elapsedTime);
 
       logger.info(
         `🔍 Batch ${batchNumber}/${totalBatches} (${totalProgress}%) | ` +
-          `Attesters: ${attesters.length}/${totalCount} | ` +
-          `ETA: ${Math.round(estimatedRemaining)}s`,
+        `Attesters: ${attesters.length}/${totalCount} | ` +
+        `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
       );
     }
 
     // Add delay between batches (except for the last batch)
     if (batchStart + BATCH_SIZE < totalCount) {
-      await sleep(BATCH_DELAY_MS);
+      await sleep(ATTESTER_BATCH_DELAY_MS);
     }
   }
 
@@ -180,9 +188,9 @@ const isCircuitBreakerOpen = (): boolean => {
 };
 
 const openCircuitBreaker = (): void => {
-  circuitBreakerOpenUntil = Date.now() + CIRCUIT_BREAKER_TIMEOUT_MS;
+  circuitBreakerOpenUntil = Date.now() + ATTESTER_CIRCUIT_BREAKER_TIMEOUT_MS;
   logger.warn(
-    `Circuit breaker opened for ${CIRCUIT_BREAKER_TIMEOUT_MS}ms after ${consecutiveFailures} consecutive failures`,
+    `Circuit breaker opened for ${ATTESTER_CIRCUIT_BREAKER_TIMEOUT_MS}ms after ${consecutiveFailures} consecutive failures`,
   );
 };
 
@@ -204,7 +212,7 @@ const processBatchWithRetry = async (
 
   let lastError: unknown;
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 1; attempt <= ATTESTER_MAX_RETRIES; attempt++) {
     try {
       const result = await processBatch(
         rollupAddress,
@@ -216,25 +224,26 @@ const processBatchWithRetry = async (
       return result;
     } catch (error) {
       lastError = error;
-      if (attempt === MAX_RETRIES) {
+      if (attempt === ATTESTER_MAX_RETRIES) {
         break;
       }
 
-      const backoffDelay = INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1);
+      const backoffDelay =
+        ATTESTER_INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1);
       logger.warn(
-        `Batch attempt ${attempt}/${MAX_RETRIES} failed, retrying in ${backoffDelay}ms: ${String(error)}`,
+        `Batch attempt ${attempt}/${ATTESTER_MAX_RETRIES} failed, retrying in ${backoffDelay}ms: ${String(error)}`,
       );
       await sleep(backoffDelay);
     }
   }
 
   consecutiveFailures++;
-  if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+  if (consecutiveFailures >= ATTESTER_CIRCUIT_BREAKER_THRESHOLD) {
     openCircuitBreaker();
   }
 
   logger.error(
-    `All ${MAX_RETRIES} attempts failed for batch ${batchStart}: ${String(lastError)}`,
+    `All ${ATTESTER_MAX_RETRIES} attempts failed for batch ${batchStart}: ${String(lastError)}`,
   );
   return [];
 };

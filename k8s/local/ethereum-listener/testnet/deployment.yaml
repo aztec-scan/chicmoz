@@ -47,8 +47,6 @@ spec:
               value: "TESTNET"
             - name: LISTENER_DISABLED
               value: "false"
-            - name: GENESIS_CATCHUP
-              value: "true"
             - name: LISTEN_FOR_BLOCKS
               value: "true"
             - name: ETHEREUM_HTTP_RPC_URL
