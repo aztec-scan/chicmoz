@@ -23,10 +23,9 @@ import {
   uiBlockTableSchema,
   UiTxEffectTable,
   uiTxEffectTableSchema,
-} from "@chicmoz-pkg/types";
+ CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 type GetBlocksByRange = {
   from: bigint | undefined;

@@ -3,12 +3,11 @@ import {
   ChicmozContractInstanceBalance,
   chicmozContractInstanceBalanceSchema,
   HexString,
-} from "@chicmoz-pkg/types";
+ CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractInstanceDeployed } from "../../schema/l2contract/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 export const getLatestContractInstanceBalance = async (
   contractAddress: HexString,

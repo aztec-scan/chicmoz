@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { ChicmozL2ContractInstanceDeluxe, HexString } from "@chicmoz-pkg/types";
+import { ChicmozL2ContractInstanceDeluxe, HexString , CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import {
   and,
   count,
@@ -9,7 +9,6 @@ import {
   isNotNull,
   isNull,
 } from "drizzle-orm";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { globalVariables, header, l2Block } from "../../schema/index.js";
 import {

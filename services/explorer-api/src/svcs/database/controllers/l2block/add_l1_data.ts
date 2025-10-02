@@ -5,7 +5,7 @@ import {
   ChicmozL1L2ProofVerified,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
-} from "@chicmoz-pkg/types";
+ CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { and, eq, isNull } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import {
@@ -15,7 +15,6 @@ import {
   l2Block,
 } from "../../schema/index.js";
 import { ensureFinalizationStatusStored } from "./store.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 
 export const addL1L2BlockProposed = async (
   proposedData: ChicmozL1L2BlockProposed,

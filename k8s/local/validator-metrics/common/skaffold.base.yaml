@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+requires:
+  - path: ../../common/skaffold.chicmoz-base-image.yaml
+build:
+  artifacts:
+    - image: validator-metrics
+      context: ../../../../services/validator-metrics
+      docker:
+        dockerfile: Dockerfile
+      requires:
+        - image: chicmoz-base
+          alias: BASE
