@@ -21,6 +21,10 @@ export const CHAIN_INFO_POLL_INTERVAL_MS = z.coerce
   .number()
   .default(30000)
   .parse(process.env.CHAIN_INFO_POLL_INTERVAL_MS);
+export const SENTINEL_POLL_INTERVAL_MS = z.coerce
+  .number()
+  .default(30000)
+  .parse(process.env.SENTINEL_POLL_INTERVAL_MS);
 export const MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS = z.coerce
   .number()
   .default(50)
@@ -131,6 +135,9 @@ AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${
 }
 CHAIN_INFO_POLL_INTERVAL_MS:                               ${
   CHAIN_INFO_POLL_INTERVAL_MS / 1000
+}s
+SENTINEL_POLL_INTERVAL_MS:                            ${
+  SENTINEL_POLL_INTERVAL_MS / 1000
 }s
 IGNORE_PROCESSED_HEIGHT:                                   ${
   IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"

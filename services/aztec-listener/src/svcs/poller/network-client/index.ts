@@ -218,3 +218,5 @@ export const getBalanceOf = async (
     slot,
   ]);
 };
+
+export const getSentinelInfo = async () => callNodeFunction("getValidatorsStats")

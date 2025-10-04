@@ -4,8 +4,8 @@ import {
 } from "@chicmoz-pkg/microservice-base";
 import { SERVICE_NAME } from "./constants.js";
 import { logger } from "./logger.js";
-import { start } from "./start.js";
 import { services } from "./svcs/index.js";
+import { start } from "./start.js";
 
 const formatConfigLog = () => {
   return `TODO: is this needed if each service logs?`;
