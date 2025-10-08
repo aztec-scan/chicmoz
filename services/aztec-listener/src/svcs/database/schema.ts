@@ -34,7 +34,7 @@ export const txsTable = pgTable("txs_table", {
   txState: varchar("tx_state").notNull().$type<TxState>(),
 });
 
-export const slotsTable = pgTable("heights", {
+export const slotsTable = pgTable("slots", {
   networkId: varchar("network_id").primaryKey().notNull(),
-  lastProcessedSlot: bigint("last_processed_slot", { mode: "bigint" }).notNull().default(0n),
+  lastProcessedSlot: bigint("last_processed_slot", { mode: "bigint" }).notNull(),
 });

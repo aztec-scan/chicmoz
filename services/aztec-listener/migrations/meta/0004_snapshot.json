@@ -1,0 +1,113 @@
+{
+  "id": "9301ce29-3a6d-41f3-ad62-d737eb52a9e7",
+  "prevId": "2e0f96ca-fe5d-4fb6-a59a-350d99a3e150",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.heights": {
+      "name": "heights",
+      "schema": "",
+      "columns": {
+        "networkId": {
+          "name": "networkId",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "processedProposedBlockHeight": {
+          "name": "processedProposedBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainProposedBlockHeight": {
+          "name": "chainProposedBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processedProvenBlockHeight": {
+          "name": "processedProvenBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainProvenBlockHeight": {
+          "name": "chainProvenBlockHeight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.slots": {
+      "name": "slots",
+      "schema": "",
+      "columns": {
+        "network_id": {
+          "name": "network_id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "last_processed_slot": {
+          "name": "last_processed_slot",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.txs_table": {
+      "name": "txs_table",
+      "schema": "",
+      "columns": {
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "fee_payer": {
+          "name": "fee_payer",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_timestamp": {
+          "name": "birth_timestamp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "EXTRACT(EPOCH FROM NOW()) * 1000"
+        },
+        "tx_state": {
+          "name": "tx_state",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
