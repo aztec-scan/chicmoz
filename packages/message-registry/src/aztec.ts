@@ -54,6 +54,7 @@ export type ChicmozSentinelEvent = {
 };
 
 export type ChicmozSentinelHistoryEvent = {
+  attester: string;
   sentinelHistoryEntry: SentinelHistory;
 };
 

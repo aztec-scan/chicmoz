@@ -13,20 +13,17 @@ import { sql } from "drizzle-orm";
 
 export type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
 
-async function _storeHistory (tx: Tx, attester: EthAddress, history: SentinelHistory[]) {
-  const txMap = history.map((element) => {
-    return tx
-        .insert(SentinelHistoryTable)
-        .values({ attester, slot: element.slot, status: element.status })
-        .onConflictDoUpdate({
-          target:[SentinelHistoryTable.attester, SentinelHistoryTable.slot],
-          set: {
-            status: element.status
-          }
-        })
-  })
 
-  await Promise.all(txMap)
+async function _storeHistoryEntry (tx: Tx, attester: EthAddress, history: SentinelHistory) {
+  return tx
+      .insert(SentinelHistoryTable)
+      .values({ attester, slot: history.slot, status: history.status })
+      .onConflictDoUpdate({
+        target:[SentinelHistoryTable.attester, SentinelHistoryTable.slot],
+        set: {
+          status: history.status
+        }
+      })
 }
 
 async function _insertOrUpdateCounterTable (tx: Tx, table: CounterTable, attester: EthAddress, values: SentinelActivity) {
@@ -90,7 +87,9 @@ async function _store(
     await _insertOrUpdateCounterTable(tx, SentinelAttestationTable, attester, attestations)
 
     if(history && history.length > 0){
-      await _storeHistory(tx, attester, history)
+      history.forEach(async entry => {
+        await _storeHistoryEntry(tx, attester, entry)
+      })
     }
   });
 }
@@ -99,4 +98,13 @@ export async function storeSentinelValidator(
   validator: SentinelValidatorStats,
 ): Promise<void> {
   await _store(validator);
+}
+
+export async function storeSentinelValidatorHistoryEntry(
+  attester: string,
+  entry: SentinelHistory
+): Promise<void> {
+  await db().transaction(async (tx) => {
+    await _storeHistoryEntry(tx, attester, entry);
+  });
 }
