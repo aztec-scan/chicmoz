@@ -87,10 +87,9 @@ async function _store(
     await _insertOrUpdateCounterTable(tx, SentinelAttestationTable, attester, attestations)
 
     if(history && history.length > 0){
-      history.forEach(async entry => {
-        await _storeHistoryEntry(tx, attester, entry)
-      })
+      await Promise.all(history.map(entry => _storeHistoryEntry(tx, attester, entry)))
     }
+
   });
 }
 
