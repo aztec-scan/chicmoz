@@ -93,7 +93,7 @@ export const stopPolling = () => {
 
 const publishSentinelValidatorStats = async (validatorStats: SentinelValidatorStats) => {
   // TODO: Maybe handle this better
-  await Promise.all(validatorStats.history.map((validatorHistoryEntry: SentinelHistory) => onL2SentinelHistory(validatorHistoryEntry)))
+  await Promise.all(validatorStats.history.map((validatorHistoryEntry: SentinelHistory) => onL2SentinelHistory(validatorStats.attester, validatorHistoryEntry)))
 
   validatorStats.history = [] //TODO: make this prettier, we dont need to dupe send the history so just make it empty for now
   await onL2SentinelInfo(validatorStats)
@@ -105,14 +105,13 @@ const fetchAndPublishSentinelInfo = async () => {
     const sentinelInfo = await getSentinelInfo();
     const lastProcessedSlot = await getLastProcessedSlot()
     if (sentinelInfo.lastProcessedSlot && sentinelInfo.lastProcessedSlot > lastProcessedSlot) {
+      //TODO: Handle this
       logger.warn("Error encountered a reorg in sentinel")
     } 
-
     const parsedSentinelStats = Object.values(sentinelInfo.stats).map((sentinelStats: ValidatorStats) => parseSentinelValidatorResponse(sentinelStats))
 
     if (lastProcessedSlot > 0n) {
       const filteredSentinelStats = filterSentinelStats(parsedSentinelStats, lastProcessedSlot)
-
       await Promise.all(filteredSentinelStats.map((validatorStats: SentinelValidatorStats) => publishSentinelValidatorStats(validatorStats)))
     } else {
       await Promise.all(parsedSentinelStats.map((validatorStats: SentinelValidatorStats) => publishSentinelValidatorStats(validatorStats)))
@@ -120,6 +119,6 @@ const fetchAndPublishSentinelInfo = async () => {
 
     await storeLastProcessedSlot(sentinelInfo.lastProcessedSlot!) // Can probably get away with ! here as it seems to always be returned
   } catch (error) {
-    logger.warn("Error fetching pending txs", error);
+    logger.warn("Error fetching sentinel info", error);
   }
 };
