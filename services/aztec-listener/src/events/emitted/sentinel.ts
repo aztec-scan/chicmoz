@@ -12,6 +12,6 @@ export const onL2SentinelInfo = async (validatorStats: SentinelValidatorStats) =
 
 export const onL2SentinelHistory = async (attester: string, sentinelHistoryEntry: SentinelHistory) => {
   const event = { sentinelHistoryEntry, attester };
-  logger.info(`🔍 publishing SENTINEL_INFO_EVENT ${jsonStringify(event)}`);
+  logger.info(`🔍 publishing SENTINEL_HISTORY_EVENT ${jsonStringify(event)}`);
   await publishMessage("SENTINEL_HISTORY_EVENT", event);
 };
