@@ -5,15 +5,18 @@ import {
   AZTEC_LISTEN_FOR_CHAIN_INFO,
   AZTEC_LISTEN_FOR_PENDING_TXS,
   AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
+  AZTEC_LISTEN_FOR_SENTINEL_INFO,
   getConfigStr,
 } from "../../environment.js";
 import { onL2RpcNodeError } from "../../events/emitted/index.js";
 import { ensureInitializedBlockHeights } from "../database/heights.controller.js";
+import { ensureInitializedSlots } from "../database/slots.controller.js";
 import { init as initNetworkClient } from "./network-client/index.js";
 import * as blockPoller from "./pollers/block_poller/index.js";
 import * as chainInfoPoller from "./pollers/chain-info-poller.js";
 import * as pendingTxsPoller from "./pollers/txs_poller.js";
 import * as droppedTxVerifier from "./pollers/dropped-tx-verifier.js";
+import * as sentinelPoller from "./pollers/sentinel-poller.js";
 
 let nodeInfo: NodeInfo;
 
@@ -28,6 +31,7 @@ export const init = async () => {
     });
   }
   await ensureInitializedBlockHeights();
+  await ensureInitializedSlots();
   const initResult = await initNetworkClient();
   // Initialize with chainInfo and use type assertions to satisfy TypeScript
   nodeInfo = {
@@ -56,6 +60,9 @@ export const startPoller = async () => {
   if (AZTEC_LISTEN_FOR_CHAIN_INFO) {
     chainInfoPoller.startPolling();
   }
+  if (AZTEC_LISTEN_FOR_SENTINEL_INFO) {
+    sentinelPoller.startPolling();
+  }
 };
 
 export const getNodeInfo = () => nodeInfo;
@@ -72,5 +79,6 @@ export const pollerService: MicroserviceBaseSvc = {
     blockPoller.stopPolling();
     chainInfoPoller.stopPolling();
     droppedTxVerifier.stop();
+    sentinelPoller.stopPolling();
   },
 };

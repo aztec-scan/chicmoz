@@ -9,6 +9,8 @@ import {
   ChicmozL2RpcNodeError,
   ChicmozL2Sequencer,
   L2NetworkId,
+  SentinelHistory,
+  SentinelValidatorStats,
 } from "@chicmoz-pkg/types";
 
 export type NewBlockEvent = {
@@ -47,6 +49,16 @@ export type ChicmozSequencerEvent = {
   sequencer: ChicmozL2Sequencer;
 };
 
+export type ChicmozSentinelEvent = {
+  validatorStats: SentinelValidatorStats;
+};
+
+export type ChicmozSentinelHistoryEvent = {
+  attester: string;
+  sentinelHistoryEntry: SentinelHistory;
+};
+
+
 export type ChicmozChainInfoEvent = {
   chainInfo: ChicmozChainInfo;
 };
@@ -72,6 +84,8 @@ export type L2_MESSAGES = {
   L2_RPC_NODE_ERROR_EVENT: ChicmozL2RpcNodeErrorEvent;
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
   SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;
+  SENTINEL_INFO_EVENT: ChicmozSentinelEvent;
+  SENTINEL_HISTORY_EVENT: ChicmozSentinelHistoryEvent;
   CHAIN_INFO_EVENT: ChicmozChainInfoEvent;
   L2_BLOCK_FINALIZATION_UPDATE_EVENT: ChicmozL2BlockFinalizationUpdateEvent;
 };

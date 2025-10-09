@@ -33,3 +33,8 @@ export const txsTable = pgTable("txs_table", {
     .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
   txState: varchar("tx_state").notNull().$type<TxState>(),
 });
+
+export const slotsTable = pgTable("slots", {
+  networkId: varchar("network_id").primaryKey().notNull(),
+  lastProcessedSlot: bigint("last_processed_slot", { mode: "bigint" }).notNull(),
+});

@@ -21,6 +21,10 @@ export const CHAIN_INFO_POLL_INTERVAL_MS = z.coerce
   .number()
   .default(30000)
   .parse(process.env.CHAIN_INFO_POLL_INTERVAL_MS);
+export const SENTINEL_POLL_INTERVAL_MS = z.coerce
+  .number()
+  .default(30000)
+  .parse(process.env.SENTINEL_POLL_INTERVAL_MS);
 export const MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS = z.coerce
   .number()
   .default(50)
@@ -46,6 +50,8 @@ export const AZTEC_LISTEN_FOR_PENDING_TXS =
   process.env.AZTEC_LISTEN_FOR_PENDING_TXS === "true";
 export const AZTEC_LISTEN_FOR_CHAIN_INFO =
   process.env.AZTEC_LISTEN_FOR_CHAIN_INFO === "true";
+export const AZTEC_LISTEN_FOR_SENTINEL_INFO =
+  process.env.AZTEC_LISTEN_FOR_SENTINEL_INFO === "true";
 export const AZTEC_DISABLED = process.env.AZTEC_DISABLED === "true";
 export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
   .boolean()
@@ -117,10 +123,10 @@ AZTEC_LISTEN_FOR_PENDING_TXS:                              ${
 TX_POLL_INTERVAL_MS:                                       ${
   TX_POLL_INTERVAL_MS / 1000
 }s
-DROPPED_TX_VERIFICATION_INTERVAL_MS:                      ${
+DROPPED_TX_VERIFICATION_INTERVAL_MS:                       ${
   DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000
 }s
-DROPPED_TX_AGE_THRESHOLD_MS:                              ${
+DROPPED_TX_AGE_THRESHOLD_MS:                               ${
   DROPPED_TX_AGE_THRESHOLD_MS / 1000
 }s
 MEMPOOL_SYNC_GRACE_PERIOD_MS:                              ${
@@ -131,6 +137,12 @@ AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${
 }
 CHAIN_INFO_POLL_INTERVAL_MS:                               ${
   CHAIN_INFO_POLL_INTERVAL_MS / 1000
+}s
+AZTEC_LISTEN_FOR_SENTINEL_INFO:                            ${
+  AZTEC_LISTEN_FOR_SENTINEL_INFO ? "✅" : "❌"
+}
+SENTINEL_POLL_INTERVAL_MS:                                 ${
+  SENTINEL_POLL_INTERVAL_MS / 1000
 }s
 IGNORE_PROCESSED_HEIGHT:                                   ${
   IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
