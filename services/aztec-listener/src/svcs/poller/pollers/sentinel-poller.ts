@@ -95,13 +95,13 @@ const publishSentinelValidatorStats = async (validatorStats: SentinelValidatorSt
   // TODO: Maybe handle this better
   await Promise.all(validatorStats.history.map((validatorHistoryEntry: SentinelHistory) => onL2SentinelHistory(validatorStats.attester, validatorHistoryEntry)))
 
-  validatorStats.history = [] //TODO: make this prettier, we dont need to dupe send the history so just make it empty for now
-  await onL2SentinelInfo(validatorStats)
+  const validatorStatsCopy: SentinelValidatorStats = { ...validatorStats, history: [] };
+  await onL2SentinelInfo(validatorStatsCopy)
 }
 
 const fetchAndPublishSentinelInfo = async () => {
   try {
-    // If this whole thing gets waaaay to big with tis 20-30k validators might need to look at a way to look at the l1 contract and only fetch those individually
+    // If this whole thing gets waaaay to big with this 20-30k validators might need to look at a way to look at the l1 contract and only fetch those individually
     const sentinelInfo = await getSentinelInfo();
     const lastProcessedSlot = await getLastProcessedSlot()
     if (sentinelInfo.lastProcessedSlot && sentinelInfo.lastProcessedSlot > lastProcessedSlot) {
@@ -110,12 +110,8 @@ const fetchAndPublishSentinelInfo = async () => {
     } 
     const parsedSentinelStats = Object.values(sentinelInfo.stats).map((sentinelStats: ValidatorStats) => parseSentinelValidatorResponse(sentinelStats))
 
-    if (lastProcessedSlot > 0n) {
-      const filteredSentinelStats = filterSentinelStats(parsedSentinelStats, lastProcessedSlot)
-      await Promise.all(filteredSentinelStats.map((validatorStats: SentinelValidatorStats) => publishSentinelValidatorStats(validatorStats)))
-    } else {
-      await Promise.all(parsedSentinelStats.map((validatorStats: SentinelValidatorStats) => publishSentinelValidatorStats(validatorStats)))
-    }
+    const filteredSentinelStats = filterSentinelStats(parsedSentinelStats, lastProcessedSlot)
+    await Promise.all(filteredSentinelStats.map((validatorStats: SentinelValidatorStats) => publishSentinelValidatorStats(validatorStats)))
 
     await storeLastProcessedSlot(sentinelInfo.lastProcessedSlot!) // Can probably get away with ! here as it seems to always be returned
   } catch (error) {
