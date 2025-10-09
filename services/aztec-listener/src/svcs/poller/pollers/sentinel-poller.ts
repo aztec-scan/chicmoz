@@ -92,11 +92,11 @@ export const stopPolling = () => {
 };
 
 const publishSentinelValidatorStats = async (validatorStats: SentinelValidatorStats) => {
-  // TODO: Maybe handle this better
-  await Promise.all(validatorStats.history.map((validatorHistoryEntry: SentinelHistory) => onL2SentinelHistory(validatorStats.attester, validatorHistoryEntry)))
-
   const validatorStatsCopy: SentinelValidatorStats = { ...validatorStats, history: [] };
   await onL2SentinelInfo(validatorStatsCopy)
+
+  // TODO: Maybe handle this better
+  await Promise.all(validatorStats.history.map((validatorHistoryEntry: SentinelHistory) => onL2SentinelHistory(validatorStats.attester, validatorHistoryEntry)))
 }
 
 const fetchAndPublishSentinelInfo = async () => {
