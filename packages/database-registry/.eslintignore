@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# production
+build/
+
+# test coverage
+coverage/
+
+# lint config *.js
+!.*.js
+!.*.mjs
+!.*.cjs
+
+# except for pnp
+.pnp.*
