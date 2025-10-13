@@ -1,13 +1,16 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { EthAddress, SentinelHistory, SentinelValidatorStats, sentinelValidatorStatsSchema } from "@chicmoz-pkg/types";
-
+import { eq, desc } from "drizzle-orm";
 import {
+  sentinelSchemas
+} from "@chicmoz-pkg/database-registry"
+
+const {
   SentinelHistoryTable,
   SentinelBlockTable,
   SentinelAttestationTable,
   SentinelValidatorTable,
-} from "../../schema/sentinel/index.js"
-import { eq, desc } from "drizzle-orm";
+} = sentinelSchemas
 
 export async function getSentinelValidatorStats(
   attesterAddress: EthAddress,

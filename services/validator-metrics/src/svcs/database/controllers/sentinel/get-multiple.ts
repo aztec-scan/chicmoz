@@ -1,12 +1,15 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
+import { eq, desc, asc } from "drizzle-orm";
 import { SentinelValidatorStats, sentinelValidatorStatsSchema, SentinelFilterEnum } from "@chicmoz-pkg/types";
-
 import {
+  sentinelSchemas
+} from "@chicmoz-pkg/database-registry"
+
+const {
   SentinelBlockTable,
   SentinelAttestationTable,
   SentinelValidatorTable,
-} from "../../schema/sentinel/index.js"
-import { eq, desc, asc } from "drizzle-orm";
+} = sentinelSchemas
 
 function pickFilter(filter?: SentinelFilterEnum){
   switch (filter) {

@@ -1,7 +1,11 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
+import { l2Schemas } from "@chicmoz-pkg/database-registry";
 import { ChicmozChainInfo } from "@chicmoz-pkg/types";
-import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
 import { onRollupVersion } from "./rollup-version-cache.js";
+
+const {
+  l2ChainInfoTable,
+} = l2Schemas
 
 export async function storeChainInfo(
   chainInfo: ChicmozChainInfo,

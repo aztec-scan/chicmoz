@@ -1,15 +1,19 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { EthAddress, SentinelActivity, SentinelHistory, SentinelValidatorStats } from "@chicmoz-pkg/types";
 
+import { sql } from "drizzle-orm";
+
 import {
+  sentinelSchemas,
+  CounterTable
+} from "@chicmoz-pkg/database-registry"
+
+const {
   SentinelHistoryTable,
   SentinelBlockTable,
   SentinelAttestationTable,
   SentinelValidatorTable,
-  CounterTable
-} from "../../schema/sentinel/index.js"
-
-import { sql } from "drizzle-orm";
+} = sentinelSchemas
 
 export type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
 

@@ -1,17 +1,19 @@
 import { L1L2ValidatorEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL1L2Validator, L1L2ValidatorStatus } from "@chicmoz-pkg/types";
+import { l1Schemas } from "@chicmoz-pkg/database-registry";
+
 import { logger } from "../../../../../logger.js";
-import {
-  l1L2ValidatorProposerTable,
-  l1L2ValidatorRollupAddress,
+import { getAllL1L2Validators } from "./get-multiple.js";
+import { getL1L2Validator } from "./get-single.js";
+import { sql } from "drizzle-orm";
+
+const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
-  l1L2ValidatorWithdrawerTable,
-} from "../../../schema/l1/l2-validator.js";
-import { getAllL1L2Validators } from "./get-multiple.js";
-import { getL1L2Validator } from "./get-single.js";
+} = l1Schemas
+
 
 export async function updateValidatorsState(
   event: L1L2ValidatorEvent,
@@ -78,23 +80,23 @@ async function _store(
   } = toStore;
 
   await db().transaction(async (tx) => {
-    if (!currentDbValues) {
-      await tx
-        .insert(l1L2ValidatorTable)
-        .values({ attester, firstSeenAt })
-        .onConflictDoNothing();
-    }
-
-    if (
-      !currentDbValues ||
-      (currentDbValues && currentDbValues.rollupAddress !== rollupAddress)
-    ) {
-      await tx.insert(l1L2ValidatorRollupAddress).values({
-        attesterAddress: attester,
-        rollupAddress,
-        timestamp: latestSeenChangeAt,
+    await tx
+      .insert(l1L2ValidatorTable)
+      .values({ attester, firstSeenAt, rollupAddress, withdrawer, proposer })
+      .onConflictDoUpdate({
+        target: l1L2ValidatorTable.attester,
+        set: {
+          firstSeenAt: sql`EXCLUDED.first_seen_at`,
+          rollupAddress: sql`EXCLUDED.rollup_address`,
+          withdrawer: sql`EXCLUDED.withdrawer`,
+          proposer: sql`EXCLUDED.proposer`,
+        },
+        where: sql`
+          ${l1L2ValidatorTable.firstSeenAt} IS DISTINCT FROM EXCLUDED.first_seen_at OR
+          ${l1L2ValidatorTable.withdrawer} IS DISTINCT FROM EXCLUDED.withdrawer OR
+          ${l1L2ValidatorTable.proposer} IS DISTINCT FROM EXCLUDED.proposer
+        `,
       });
-    }
 
     if (
       !currentDbValues ||
@@ -106,6 +108,7 @@ async function _store(
         timestamp: latestSeenChangeAt,
       });
     }
+
     if (
       !currentDbValues ||
       (currentDbValues && currentDbValues.status !== status)
@@ -113,26 +116,6 @@ async function _store(
       await tx.insert(l1L2ValidatorStatusTable).values({
         attesterAddress: attester,
         status,
-        timestamp: latestSeenChangeAt,
-      });
-    }
-    if (
-      !currentDbValues ||
-      (currentDbValues && currentDbValues.withdrawer !== withdrawer)
-    ) {
-      await tx.insert(l1L2ValidatorWithdrawerTable).values({
-        attesterAddress: attester,
-        withdrawer,
-        timestamp: latestSeenChangeAt,
-      });
-    }
-    if (
-      !currentDbValues ||
-      (currentDbValues && currentDbValues.proposer !== proposer)
-    ) {
-      await tx.insert(l1L2ValidatorProposerTable).values({
-        attesterAddress: attester,
-        proposer,
         timestamp: latestSeenChangeAt,
       });
     }

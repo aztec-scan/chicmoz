@@ -1,3 +1,4 @@
+import { l1Schemas } from "@chicmoz-pkg/database-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   ChicmozL2TxEffect,
@@ -18,7 +19,10 @@ import {
   txEffect,
 } from "../../schema/index.js";
 import { CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
-import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
+
+const { 
+  l1L2ValidatorTable
+} = l1Schemas
 
 const getBlockHashByHeight = async (
   height: bigint,
