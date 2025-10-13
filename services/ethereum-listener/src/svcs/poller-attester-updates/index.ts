@@ -1,15 +1,13 @@
 import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
 import { logger } from "../../logger.js";
 import { getAttestersView } from "../../network-client/contracts/index.js";
+import { ATTESTER_POLL_INTERVAL_MS } from "../../environment.js";
 
 let started = false;
 let timeoutId: NodeJS.Timeout | undefined;
 let isUpdating = false;
 let lastUpdateStartTime = 0;
 let lastUpdateDuration = 0;
-
-// Poll attesters every 15 minutes (900,000ms) instead of every minute
-const ATTESTER_POLL_INTERVAL_MS = 15 * 60 * 1000;
 
 // eslint-disable-next-line @typescript-eslint/require-await
 const init = async () => {
@@ -101,6 +99,8 @@ export const attesterPollerService: MicroserviceBaseSvc = {
     const lastDurationMin = lastUpdateDuration
       ? Math.round(lastUpdateDuration / 1000 / 60)
       : "N/A";
-    return `Interval: ${intervalMin}min, Status: ${status}, Last duration: ${lastDurationMin}min`;
+    return `intervalMin: ${intervalMin}
+status: ${status}
+lastDurationMin: ${lastDurationMin}min`;
   },
 };
