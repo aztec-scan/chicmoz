@@ -331,25 +331,19 @@ const fetchAttesterAddresses = async (
       results.push(addr);
     } catch (error) {
       const errorString = String(error);
-      if (errorString.includes("GSE__OutOfBounds")) {
-        // Extract the indices from the error message
-        const match = errorString.match(/GSE__OutOfBounds\((\d+),\s*(\d+)\)/);
-        if (match) {
-          const attemptedIndex = parseInt(match[1], 10);
-          const maxIndex = parseInt(match[2], 10);
-          outOfBoundsDetails = {
-            attemptedIndex,
-            newTotalCount: maxIndex + 1, // maxIndex is the last valid index, so total count is maxIndex + 1
-          };
-          logger.warn(
-            `Out of bounds detected at index ${contractIndex}: ${errorString}`,
-          );
-          break; // Stop fetching more addresses
-        }
-      }
       logger.warn(
         `Failed to get attester at index ${contractIndex} with public client: ${errorString}`,
       );
+      if (errorString.includes("GSE__OutOfBounds")) {
+        outOfBoundsDetails = {
+          attemptedIndex: contractIndex,
+          newTotalCount: Number.MAX_SAFE_INTEGER,
+        };
+        logger.warn(
+          `Out of bounds detected at index ${contractIndex}`
+        );
+        break; // Stop fetching more addresses
+      }
       const backup = getPublicHttpBackupClient();
       if (backup) {
         try {
