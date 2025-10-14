@@ -43,6 +43,7 @@ interface DataTableProps<TData, TValue> {
   onPageSizeChange?: (size: number) => void;
   hasNextPage?: boolean;
   hasPreviousPage?: boolean;
+  totalCount?: number;
 }
 export function DataTable<TData, TValue>({
   isLoading,
@@ -52,11 +53,12 @@ export function DataTable<TData, TValue>({
   disablePagination = false,
   maxEntries = 10,
   useReactQueryPagination = false,
-  currentPage = 0,
+  currentPage,
   onPageChange,
   onPageSizeChange: _onPageSizeChange,
-  hasNextPage = true,
-  hasPreviousPage = false,
+  hasNextPage,
+  hasPreviousPage,
+  totalCount,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -113,12 +115,14 @@ export function DataTable<TData, TValue>({
         )}
       </div>
 
-      {useReactQueryPagination && onPageChange ? (
+      {useReactQueryPagination && onPageChange && currentPage !== undefined ? (
         <ReactQueryPagination
           currentPage={currentPage}
           onPageChange={onPageChange}
           hasNextPage={hasNextPage}
           hasPreviousPage={hasPreviousPage}
+          pageSize={maxEntries}
+          totalCount={totalCount}
         />
       ) : (
         <DataTablePagination

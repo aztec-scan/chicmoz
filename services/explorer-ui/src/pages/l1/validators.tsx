@@ -29,6 +29,7 @@ export const ValidatorsPage: FC = () => {
 
   const validatingCount = totalsData?.validating ?? 0;
   const exitingCount = totalsData?.nonValidating ?? 0;
+  const totalCount = validatingCount + exitingCount;
 
   const validatorsData = data;
 
@@ -80,7 +81,7 @@ export const ValidatorsPage: FC = () => {
           title="All Validators"
           validators={sortedValidatorsData}
           isLoading={isLoading}
-          error={error}
+          error={error || undefined}
           maxEntries={pageSize}
           currentPage={currentPage}
           onPageChange={handlePageChange}
@@ -88,6 +89,7 @@ export const ValidatorsPage: FC = () => {
           useReactQueryPagination={true}
           hasNextPage={hasNextPage}
           hasPreviousPage={hasPreviousPage}
+          totalCount={totalCount}
         />
       </div>
     </BaseLayout>

@@ -39,7 +39,6 @@ type AttesterView = {
 
 type OutOfBoundsDetails = {
   attemptedIndex: number;
-  newTotalCount: number;
 };
 
 let latestPublishedHeight = 0n;
@@ -191,11 +190,10 @@ const fetchAllAttesters = async (
 
     if (outOfBoundsDetails) {
       const lessOrMore =
-        outOfBoundsDetails.newTotalCount < totalCount ? "less" : "more";
+        outOfBoundsDetails.attemptedIndex - 1 < totalCount ? "less" : "more";
       logger.warn(
         `Finished due to out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex}` +
-        `(new totalCount: ${outOfBoundsDetails.newTotalCount},` +
-        `${Math.abs(outOfBoundsDetails.newTotalCount - totalCount)} ${lessOrMore} than previous ${totalCount})`,
+          `(${Math.abs(outOfBoundsDetails.attemptedIndex - 1 - totalCount)} ${lessOrMore} than previous ${totalCount})`,
       );
       isFinished = true;
     }
@@ -212,8 +210,8 @@ const fetchAllAttesters = async (
 
       logger.info(
         `🔍 Batch ${batchNumber}/${estimatedTotalBatches} (${totalProgress}%) | ` +
-        `Attesters: ${attesters.length}/${totalCount} | ` +
-        `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
+          `Attesters: ${attesters.length}/${totalCount} | ` +
+          `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
       );
     }
     counter += BATCH_SIZE;
@@ -337,11 +335,8 @@ const fetchAttesterAddresses = async (
       if (errorString.includes("GSE__OutOfBounds")) {
         outOfBoundsDetails = {
           attemptedIndex: contractIndex,
-          newTotalCount: Number.MAX_SAFE_INTEGER,
         };
-        logger.warn(
-          `Out of bounds detected at index ${contractIndex}`
-        );
+        logger.warn(`Out of bounds detected at index ${contractIndex}`);
         break; // Stop fetching more addresses
       }
       const backup = getPublicHttpBackupClient();
@@ -362,10 +357,8 @@ const fetchAttesterAddresses = async (
             );
             if (match) {
               const attemptedIndex = parseInt(match[1], 10);
-              const maxIndex = parseInt(match[2], 10);
               outOfBoundsDetails = {
                 attemptedIndex,
-                newTotalCount: maxIndex + 1,
               };
               logger.warn(
                 `Out of bounds detected at index ${contractIndex} with backup client: ${backupErrorString}`,
