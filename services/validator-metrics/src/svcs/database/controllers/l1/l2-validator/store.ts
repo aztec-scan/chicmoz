@@ -63,6 +63,8 @@ export async function updateValidatorsState(
   }
 }
 
+
+// TODO: ensure this is data is sane and useful across multiple rollup_addresses, this might need a rework of the table itself too
 async function _store(
   toStore: ChicmozL1L2Validator,
   currentDbValues: ChicmozL1L2Validator | null,
