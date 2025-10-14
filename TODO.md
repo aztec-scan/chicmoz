@@ -177,6 +177,6 @@ Add pagination to the validators page, making it consistent with how blocks pagi
 - [x] UI API layer changes completed
 - [x] UI hooks changes completed
 - [x] UI page changes completed (added dynamic pagination state detection)
-- [x] UI table component changes completed (added Last page button, fixed data updating)
+- [x] UI table component changes completed (added Last page button, fixed data updating via proper caching)
 - [x] Testing completed (linting passed, code compiles, routing conflict fixed)
 - [ ] Documentation updated
