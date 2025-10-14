@@ -193,7 +193,7 @@ const fetchAllAttesters = async (
         outOfBoundsDetails.attemptedIndex - 1 < totalCount ? "less" : "more";
       logger.warn(
         `Finished due to out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex}` +
-          `(${Math.abs(outOfBoundsDetails.attemptedIndex - 1 - totalCount)} ${lessOrMore} than previous ${totalCount})`,
+          `(${Math.abs(outOfBoundsDetails.attemptedIndex - totalCount)} ${lessOrMore} than previous ${totalCount})`,
       );
       isFinished = true;
     }
