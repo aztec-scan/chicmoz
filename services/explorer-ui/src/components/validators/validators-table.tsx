@@ -11,6 +11,10 @@ interface Props {
   disableSizeSelector?: boolean;
   disablePagination?: boolean;
   maxEntries?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  useReactQueryPagination?: boolean;
 }
 
 export const ValidatorsTable: FC<Props> = ({
@@ -21,6 +25,10 @@ export const ValidatorsTable: FC<Props> = ({
   disableSizeSelector,
   disablePagination = false,
   maxEntries = 10,
+  currentPage,
+  onPageChange,
+  onPageSizeChange,
+  useReactQueryPagination = false,
 }) => {
   if (!validators) {
     return <div>No data</div>;
@@ -43,6 +51,10 @@ export const ValidatorsTable: FC<Props> = ({
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}
+          currentPage={currentPage}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          useReactQueryPagination={useReactQueryPagination}
         />
       </div>
     </section>

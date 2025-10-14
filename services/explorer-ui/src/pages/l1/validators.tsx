@@ -1,15 +1,23 @@
 import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
-import { type FC } from "react";
+import { type FC, useState } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { ValidatorsTable } from "~/components/validators/validators-table";
 import { useSubTitle } from "~/hooks";
-import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { usePaginatedValidators } from "~/hooks/api/l1-l2-validator";
 import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
 export const ValidatorsPage: FC = () => {
   useSubTitle(routes.validators.title);
-  const { data, isLoading, error } = useL1L2Validators();
+
+  // State for React Query pagination
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(20);
+
+  const { data, isLoading, error } = usePaginatedValidators(
+    currentPage,
+    pageSize,
+  );
 
   const validatingCount =
     data?.filter(
@@ -22,6 +30,15 @@ export const ValidatorsPage: FC = () => {
     ).length ?? 0;
 
   const validatorsData = data;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(0); // Reset to first page
+  };
 
   const sortedValidatorsData = validatorsData?.sort((a, b) => {
     const stakeDiff = Number(b.stake - a.stake);
@@ -63,6 +80,11 @@ export const ValidatorsPage: FC = () => {
           validators={sortedValidatorsData}
           isLoading={isLoading}
           error={error}
+          maxEntries={pageSize}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          useReactQueryPagination={true}
         />
       </div>
     </BaseLayout>

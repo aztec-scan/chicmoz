@@ -252,6 +252,13 @@ export const getL1L2ValidatorSchema = z.object({
   }),
 });
 
+export const getL1L2ValidatorsPaginatedSchema = z.object({
+  query: z.object({
+    limit: z.coerce.number().min(1).max(100).optional().default(20),
+    offset: z.coerce.number().min(0).optional().default(0),
+  }),
+});
+
 export const getSequencerSchema = z.object({
   params: z.object({
     enr: chicmozL2SequencerSchema.shape.enr,

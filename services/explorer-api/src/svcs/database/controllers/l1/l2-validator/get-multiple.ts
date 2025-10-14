@@ -18,6 +18,7 @@ import { getL2ChainInfo } from "../../l2/index.js";
 
 export async function getAllL1L2Validators(
   status?: ChicmozL1L2Validator["status"],
+  options?: { limit?: number; offset?: number },
 ): Promise<ChicmozL1L2Validator[] | null> {
   const chainInfo = await getL2ChainInfo(L2_NETWORK_ID);
 
@@ -132,7 +133,10 @@ export async function getAllL1L2Validators(
           latestRollupAddresses.rollupAddress,
           chainInfo.l1ContractAddresses.rollupAddress,
         ),
-      );
+      )
+      .orderBy(desc(latestStakes.stake), desc(l1L2ValidatorTable.firstSeenAt))
+      .limit(options?.limit ?? 1000)
+      .offset(options?.offset ?? 0);
 
     // Transform the result to match ChicmozL1L2Validator schema
     const validators = result

@@ -1,7 +1,10 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
-import { getL1L2ValidatorSchema } from "../paths_and_validation.js";
+import {
+  getL1L2ValidatorSchema,
+  getL1L2ValidatorsPaginatedSchema,
+} from "../paths_and_validation.js";
 import {
   dbWrapper,
   l1L2ValidatorHistoryResponse,
@@ -24,7 +27,9 @@ export const GET_L1_L2_VALIDATORS = asyncHandler(async (_req, res) => {
     ["l1", "l2-validators"],
     db.l1.getAllL1L2Validators,
   );
-  if (!validators) {throw new Error("Validators not found");}
+  if (!validators) {
+    throw new Error("Validators not found");
+  }
   res.status(200).json(JSON.parse(validators));
 });
 
@@ -86,4 +91,47 @@ export const GET_L1_L2_VALIDATOR_HISTORY = asyncHandler(async (req, res) => {
     () => db.l1.getL1L2ValidatorHistory(attesterAddress),
   );
   res.status(200).json(JSON.parse(history));
+});
+
+export const openapi_GET_L1_L2_VALIDATORS_PAGINATED: OpenAPIObject["paths"] = {
+  "/l1/l2-validators/paginated": {
+    get: {
+      tags: ["L1", "l2-validators"],
+      summary: "Get L1 and L2 validators with pagination",
+      parameters: [
+        {
+          name: "limit",
+          in: "query",
+          schema: {
+            type: "integer",
+            minimum: 1,
+            maximum: 100,
+            default: 20,
+          },
+        },
+        {
+          name: "offset",
+          in: "query",
+          schema: {
+            type: "integer",
+            minimum: 0,
+            default: 0,
+          },
+        },
+      ],
+      responses: l1L2ValidatorResponseArray,
+    },
+  },
+};
+
+export const GET_L1_L2_VALIDATORS_PAGINATED = asyncHandler(async (req, res) => {
+  const { limit, offset } = getL1L2ValidatorsPaginatedSchema.parse(req).query;
+  const validators = await dbWrapper.getLatest(
+    ["l1", "l2-validators", "paginated", limit, offset],
+    () => db.l1.getAllL1L2Validators(undefined, { limit, offset }),
+  );
+  if (!validators) {
+    throw new Error("Validators not found");
+  }
+  res.status(200).json(JSON.parse(validators));
 });

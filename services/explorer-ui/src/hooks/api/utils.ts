@@ -81,6 +81,13 @@ export const queryKeyGenerator = {
   l1L2Validators: ["l1L2Validators"],
   l1L2Validator: (address: string) => ["l1L2Validator", address],
   l1L2ValidatorHistory: (address: string) => ["l1L2ValidatorHistory", address],
+  paginatedValidators: (page: number, pageSize: number) => [
+    "l1",
+    "l2-validators",
+    "paginated",
+    page,
+    pageSize,
+  ],
   l1ContractEvents: ["l1ContractEvents"],
   amountContractClassInstances: (classId: string) => [
     "amountOfInstances",
