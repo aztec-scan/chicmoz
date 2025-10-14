@@ -163,11 +163,11 @@ Add pagination to the validators page, making it consistent with how blocks pagi
 
 ### 7. Additional Considerations
 
-- [ ] **Sorting**: Ensure consistent sorting (by stake desc, then latestSeenChangeAt desc) in database query
+- [x] **Sorting**: Consistent sorting implemented (by stake desc, then firstSeenAt desc) in database query
 - [ ] **Total Count**: Consider adding a separate endpoint to get total validator count for proper pagination UI
 - [ ] **Performance**: Test with large validator sets to ensure pagination performs well
 - [ ] **Testing**: Add tests for new paginated endpoints and hooks
-- [ ] **Migration**: Consider backward compatibility for existing `GET /l1/l2-validators` endpoint
+- [x] **Migration**: Maintained backward compatibility - existing `GET /l1/l2-validators` endpoint now accepts optional limit/offset query parameters
 
 ## Progress Tracking
 
@@ -178,5 +178,5 @@ Add pagination to the validators page, making it consistent with how blocks pagi
 - [x] UI hooks changes completed
 - [x] UI page changes completed
 - [x] UI table component changes completed
-- [x] Testing completed (linting passed, code compiles)
+- [x] Testing completed (linting passed, code compiles, routing conflict fixed)
 - [ ] Documentation updated
