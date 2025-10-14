@@ -39,7 +39,6 @@ type AttesterView = {
 
 type OutOfBoundsDetails = {
   attemptedIndex: number;
-  newTotalCount: number;
 };
 
 let latestPublishedHeight = 0n;
@@ -120,7 +119,7 @@ const determineIndexOffset = async (
         logger.info("Using 0-based indexing");
         return 0;
       } catch {
-        // Continue to try 1-based
+        logger.warn("Unable to determine indexing - trying 1-based next");
       }
     }
   }
@@ -148,12 +147,10 @@ const determineIndexOffset = async (
         logger.info("Using 1-based indexing");
         return 1;
       } catch {
-        // Unable to determine
+        logger.warn("Unable to determine indexing - assuming 0-based");
       }
     }
   }
-
-  logger.warn("Unable to determine indexing - assuming 0-based");
   return 0;
 };
 
@@ -193,11 +190,10 @@ const fetchAllAttesters = async (
 
     if (outOfBoundsDetails) {
       const lessOrMore =
-        outOfBoundsDetails.newTotalCount < totalCount ? "less" : "more";
+        outOfBoundsDetails.attemptedIndex - 1 < totalCount ? "less" : "more";
       logger.warn(
-        `Finished due to out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex} ` +
-        `(new totalCount: ${outOfBoundsDetails.newTotalCount}, ` +
-        `${Math.abs(outOfBoundsDetails.newTotalCount - totalCount)} ${lessOrMore} than previous ${totalCount})`,
+        `Finished due to out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex}` +
+          `(${Math.abs(outOfBoundsDetails.attemptedIndex - 1 - totalCount)} ${lessOrMore} than previous ${totalCount})`,
       );
       isFinished = true;
     }
@@ -214,8 +210,8 @@ const fetchAllAttesters = async (
 
       logger.info(
         `🔍 Batch ${batchNumber}/${estimatedTotalBatches} (${totalProgress}%) | ` +
-        `Attesters: ${attesters.length}/${totalCount} | ` +
-        `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
+          `Attesters: ${attesters.length}/${totalCount} | ` +
+          `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
       );
     }
     counter += BATCH_SIZE;
@@ -333,25 +329,16 @@ const fetchAttesterAddresses = async (
       results.push(addr);
     } catch (error) {
       const errorString = String(error);
-      if (errorString.includes("GSE__OutOfBounds")) {
-        // Extract the indices from the error message
-        const match = errorString.match(/GSE__OutOfBounds\((\d+),\s*(\d+)\)/);
-        if (match) {
-          const attemptedIndex = parseInt(match[1], 10);
-          const maxIndex = parseInt(match[2], 10);
-          outOfBoundsDetails = {
-            attemptedIndex,
-            newTotalCount: maxIndex + 1, // maxIndex is the last valid index, so total count is maxIndex + 1
-          };
-          logger.warn(
-            `Out of bounds detected at index ${contractIndex}: ${errorString}`,
-          );
-          break; // Stop fetching more addresses
-        }
-      }
       logger.warn(
         `Failed to get attester at index ${contractIndex} with public client: ${errorString}`,
       );
+      if (errorString.includes("GSE__OutOfBounds")) {
+        outOfBoundsDetails = {
+          attemptedIndex: contractIndex,
+        };
+        logger.warn(`Out of bounds detected at index ${contractIndex}`);
+        break; // Stop fetching more addresses
+      }
       const backup = getPublicHttpBackupClient();
       if (backup) {
         try {
@@ -370,10 +357,8 @@ const fetchAttesterAddresses = async (
             );
             if (match) {
               const attemptedIndex = parseInt(match[1], 10);
-              const maxIndex = parseInt(match[2], 10);
               outOfBoundsDetails = {
                 attemptedIndex,
-                newTotalCount: maxIndex + 1,
               };
               logger.warn(
                 `Out of bounds detected at index ${contractIndex} with backup client: ${backupErrorString}`,
