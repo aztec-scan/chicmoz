@@ -247,9 +247,9 @@ The badges currently show counts from the current page only, but they should sho
 - [x] UI page changes completed (added dynamic pagination state detection)
 - [x] UI table component changes completed (added Last page button, fixed data updating via proper caching)
 - [x] Testing completed (linting passed, code compiles, routing conflict fixed)
-- [ ] Validator badge counts fix - database layer
-- [ ] Validator badge counts fix - API controller
-- [ ] Validator badge counts fix - UI API layer
-- [ ] Validator badge counts fix - UI hooks
-- [ ] Validator badge counts fix - UI page update
+- [x] Validator badge counts fix - database layer
+- [x] Validator badge counts fix - API controller
+- [x] Validator badge counts fix - UI API layer
+- [x] Validator badge counts fix - UI hooks
+- [x] Validator badge counts fix - UI page update
 - [ ] Documentation updated
