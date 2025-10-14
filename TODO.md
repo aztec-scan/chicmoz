@@ -171,12 +171,12 @@ Add pagination to the validators page, making it consistent with how blocks pagi
 
 ## Progress Tracking
 
-- [ ] TODO.md created and committed
+- [x] TODO.md created and committed
 - [x] Database layer changes completed
 - [x] API controller changes completed
 - [x] UI API layer changes completed
 - [x] UI hooks changes completed
 - [x] UI page changes completed
 - [x] UI table component changes completed
-- [ ] Testing completed
+- [x] Testing completed (linting passed, code compiles)
 - [ ] Documentation updated
