@@ -41,6 +41,8 @@ interface DataTableProps<TData, TValue> {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
 }
 export function DataTable<TData, TValue>({
   isLoading,
@@ -53,6 +55,8 @@ export function DataTable<TData, TValue>({
   currentPage = 0,
   onPageChange,
   onPageSizeChange: _onPageSizeChange,
+  hasNextPage = true,
+  hasPreviousPage = false,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -113,8 +117,8 @@ export function DataTable<TData, TValue>({
         <ReactQueryPagination
           currentPage={currentPage}
           onPageChange={onPageChange}
-          hasNextPage={true}
-          hasPreviousPage={currentPage > 0}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
         />
       ) : (
         <DataTablePagination

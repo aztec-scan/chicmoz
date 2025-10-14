@@ -104,9 +104,19 @@ export function ReactQueryPagination({
             className="hidden h-8 w-8 p-0 lg:flex items-center justify-center"
             onClick={() => onPageChange(currentPage + 10)} // Go forward 10 pages
             disabled={!canGoNext}
-            aria-label="Go to later page"
+            aria-label="Go forward 10 pages"
           >
             <ArrowRightIcon className="h-4 w-4 text-purple-light" />
+          </Button>
+
+          <Button
+            variant="link"
+            className="hidden h-8 w-8 p-0 lg:flex items-center justify-center ml-2"
+            onClick={() => onPageChange(999)} // Go to last page (high number)
+            disabled={!canGoNext}
+            aria-label="Go to last page"
+          >
+            <span className="text-purple-light text-xs font-bold">Last</span>
           </Button>
         </div>
       </nav>

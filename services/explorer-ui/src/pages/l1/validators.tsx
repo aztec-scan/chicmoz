@@ -19,6 +19,10 @@ export const ValidatorsPage: FC = () => {
     pageSize,
   );
 
+  // Determine if there's a next page based on data length
+  const hasNextPage = data ? data.length === pageSize : true;
+  const hasPreviousPage = currentPage > 0;
+
   const validatingCount =
     data?.filter(
       (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
@@ -85,6 +89,8 @@ export const ValidatorsPage: FC = () => {
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
           useReactQueryPagination={true}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
         />
       </div>
     </BaseLayout>

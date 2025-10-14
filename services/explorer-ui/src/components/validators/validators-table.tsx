@@ -15,6 +15,8 @@ interface Props {
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
   useReactQueryPagination?: boolean;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
 }
 
 export const ValidatorsTable: FC<Props> = ({
@@ -29,6 +31,8 @@ export const ValidatorsTable: FC<Props> = ({
   onPageChange,
   onPageSizeChange,
   useReactQueryPagination = false,
+  hasNextPage = true,
+  hasPreviousPage = false,
 }) => {
   if (!validators) {
     return <div>No data</div>;
@@ -55,6 +59,8 @@ export const ValidatorsTable: FC<Props> = ({
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
           useReactQueryPagination={useReactQueryPagination}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
         />
       </div>
     </section>
