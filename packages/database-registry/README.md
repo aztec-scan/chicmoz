@@ -1,1 +1,1 @@
-# postgres-helper
+# database-registry

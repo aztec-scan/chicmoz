@@ -5,7 +5,7 @@ import { sql } from "drizzle-orm";
 
 import {
   sentinelSchemas,
-  CounterTable
+  SentinelCounterTable
 } from "@chicmoz-pkg/database-registry"
 
 const {
@@ -30,7 +30,7 @@ async function _storeHistoryEntry (tx: Tx, attester: EthAddress, history: Sentin
       })
 }
 
-async function _insertOrUpdateCounterTable (tx: Tx, table: CounterTable, attester: EthAddress, values: SentinelActivity) {
+async function _insertOrUpdateCounterTable (tx: Tx, table: SentinelCounterTable, attester: EthAddress, values: SentinelActivity) {
   const insertValues: SentinelActivity = {
     total: values.total,
     missed: values.missed,
