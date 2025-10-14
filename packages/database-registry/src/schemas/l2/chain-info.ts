@@ -5,7 +5,7 @@ import {
   pgTable,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { l2NetworkIdDbEnum } from "../utils.js";
+import { l2NetworkIdDbEnum } from "@chicmoz-pkg/postgres-helper";
 
 export const l2ChainInfoTable = pgTable("l2_chain_info", {
   l2NetworkId: l2NetworkIdDbEnum("l2_network_id").primaryKey().notNull(),

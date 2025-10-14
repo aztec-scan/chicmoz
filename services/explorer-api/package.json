@@ -11,6 +11,7 @@
     "@aztec/stdlib": "2.0.2",
     "@chicmoz-pkg/backend-utils": "workspace:^",
     "@chicmoz-pkg/contract-verification": "workspace:^",
+    "@chicmoz-pkg/database-registry": "workspace:^",
     "@chicmoz-pkg/error-middleware": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",

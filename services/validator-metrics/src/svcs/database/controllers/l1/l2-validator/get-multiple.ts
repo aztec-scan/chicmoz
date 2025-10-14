@@ -5,15 +5,14 @@ import {
 } from "@chicmoz-pkg/types";
 import { desc, eq } from "drizzle-orm";
 import { L2_NETWORK_ID } from "../../../../../environment.js";
+import { l1Schemas } from "@chicmoz-pkg/database-registry";
 import { logger } from "../../../../../logger.js";
-import {
-  l1L2ValidatorProposerTable,
-  l1L2ValidatorRollupAddress,
+const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
-  l1L2ValidatorWithdrawerTable,
-} from "../../../schema/l1/l2-validator.js";
+} = l1Schemas;
+
 import { getL2ChainInfo } from "../../l2/index.js";
 
 export async function getAllL1L2Validators(
@@ -27,18 +26,6 @@ export async function getAllL1L2Validators(
   }
 
   return db().transaction(async (dbTx) => {
-    const latestRollupAddresses = dbTx
-      .selectDistinctOn([l1L2ValidatorRollupAddress.attesterAddress], {
-        attesterAddress: l1L2ValidatorRollupAddress.attesterAddress,
-        rollupAddress: l1L2ValidatorRollupAddress.rollupAddress,
-        timestamp: l1L2ValidatorRollupAddress.timestamp,
-      })
-      .from(l1L2ValidatorRollupAddress)
-      .orderBy(
-        l1L2ValidatorRollupAddress.attesterAddress,
-        desc(l1L2ValidatorRollupAddress.timestamp),
-      )
-      .as("latest_rollup_addresses");
     const latestStakes = dbTx
       .selectDistinctOn([l1L2ValidatorStakeTable.attesterAddress], {
         attesterAddress: l1L2ValidatorStakeTable.attesterAddress,
@@ -65,52 +52,20 @@ export async function getAllL1L2Validators(
       )
       .as("latest_statuses");
 
-    const latestWithdrawers = dbTx
-      .selectDistinctOn([l1L2ValidatorWithdrawerTable.attesterAddress], {
-        attesterAddress: l1L2ValidatorWithdrawerTable.attesterAddress,
-        withdrawer: l1L2ValidatorWithdrawerTable.withdrawer,
-        timestamp: l1L2ValidatorWithdrawerTable.timestamp,
-      })
-      .from(l1L2ValidatorWithdrawerTable)
-      .orderBy(
-        l1L2ValidatorWithdrawerTable.attesterAddress,
-        desc(l1L2ValidatorWithdrawerTable.timestamp),
-      )
-      .as("latest_withdrawers");
-
-    const latestProposers = dbTx
-      .selectDistinctOn([l1L2ValidatorProposerTable.attesterAddress], {
-        attesterAddress: l1L2ValidatorProposerTable.attesterAddress,
-        proposer: l1L2ValidatorProposerTable.proposer,
-        timestamp: l1L2ValidatorProposerTable.timestamp,
-      })
-      .from(l1L2ValidatorProposerTable)
-      .orderBy(
-        l1L2ValidatorProposerTable.attesterAddress,
-        desc(l1L2ValidatorProposerTable.timestamp),
-      )
-      .as("latest_proposers");
-
     // Main query with joins
     const result = await dbTx
       .select({
         attester: l1L2ValidatorTable.attester,
-        rollupAddress: latestRollupAddresses.rollupAddress,
+        rollupAddress: l1L2ValidatorTable.rollupAddress,
         firstSeenAt: l1L2ValidatorTable.firstSeenAt,
         stake: latestStakes.stake,
         status: latestStatuses.status,
-        withdrawer: latestWithdrawers.withdrawer,
-        proposer: latestProposers.proposer,
+        withdrawer: l1L2ValidatorTable.withdrawer,
+        proposer: l1L2ValidatorTable.proposer,
         stakeTimestamp: latestStakes.timestamp,
         statusTimestamp: latestStatuses.timestamp,
-        withdrawerTimestamp: latestWithdrawers.timestamp,
-        proposerTimestamp: latestProposers.timestamp,
       })
       .from(l1L2ValidatorTable)
-      .leftJoin(
-        latestRollupAddresses,
-        eq(latestRollupAddresses.attesterAddress, l1L2ValidatorTable.attester),
-      )
       .leftJoin(
         latestStakes,
         eq(latestStakes.attesterAddress, l1L2ValidatorTable.attester),
@@ -119,17 +74,9 @@ export async function getAllL1L2Validators(
         latestStatuses,
         eq(latestStatuses.attesterAddress, l1L2ValidatorTable.attester),
       )
-      .leftJoin(
-        latestWithdrawers,
-        eq(latestWithdrawers.attesterAddress, l1L2ValidatorTable.attester),
-      )
-      .leftJoin(
-        latestProposers,
-        eq(latestProposers.attesterAddress, l1L2ValidatorTable.attester),
-      )
       .where(
         eq(
-          latestRollupAddresses.rollupAddress,
+          l1L2ValidatorTable.rollupAddress,
           chainInfo.l1ContractAddresses.rollupAddress,
         ),
       );
@@ -144,8 +91,6 @@ export async function getAllL1L2Validators(
         const latestSeenChangeAt = Math.max(
           row.stakeTimestamp ?? 0,
           row.statusTimestamp ?? 0,
-          row.withdrawerTimestamp ?? 0,
-          row.proposerTimestamp ?? 0,
         );
 
         const validator = {

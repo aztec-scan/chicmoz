@@ -1,4 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
+import { l1Schemas } from "@chicmoz-pkg/database-registry";
 import {
   ChicmozL1L2ValidatorHistoryEntry,
   EthAddress,
@@ -6,12 +7,11 @@ import {
   chicmozL1L2ValidatorHistoryEntrySchema,
 } from "@chicmoz-pkg/types";
 import { desc, eq, sql } from "drizzle-orm";
-import {
-  l1L2ValidatorProposerTable,
+
+const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
-  l1L2ValidatorWithdrawerTable,
-} from "../../../schema/l1/l2-validator.js";
+} = l1Schemas
 
 export async function getL1L2ValidatorHistory(
   attesterAddress: EthAddress
@@ -33,28 +33,6 @@ export async function getL1L2ValidatorHistory(
         })
         .from(l1L2ValidatorStatusTable)
         .where(eq(l1L2ValidatorStatusTable.attesterAddress, attesterAddress))
-    )
-    .union(
-      db()
-        .select({
-          timestamp: l1L2ValidatorWithdrawerTable.timestamp,
-          keyChanged: sql<string>`'withdrawer'`,
-          newValue: l1L2ValidatorWithdrawerTable.withdrawer,
-        })
-        .from(l1L2ValidatorWithdrawerTable)
-        .where(
-          eq(l1L2ValidatorWithdrawerTable.attesterAddress, attesterAddress)
-        )
-    )
-    .union(
-      db()
-        .select({
-          timestamp: l1L2ValidatorProposerTable.timestamp,
-          keyChanged: sql<string>`'proposer'`,
-          newValue: l1L2ValidatorProposerTable.proposer,
-        })
-        .from(l1L2ValidatorProposerTable)
-        .where(eq(l1L2ValidatorProposerTable.attesterAddress, attesterAddress))
     )
     .orderBy(desc(sql`timestamp`))
     .execute();

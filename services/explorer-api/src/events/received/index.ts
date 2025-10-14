@@ -3,7 +3,7 @@ import { blockHandler, catchupHandler } from "./on-block/index.js";
 import { chainInfoHandler } from "./on-chain-info.js";
 import { contractInstanceBalanceHandler } from "./on-contract-instance-balance.js";
 import { droppedTxHandler } from "./on-dropped-txs.js";
-import { l1L2ValidatorHandler } from "./on-l1-l2-validator.js";
+
 import {
   l1GenericContractEventHandler,
   l1L2BlockProposedHandler,
@@ -27,7 +27,6 @@ export const subscribeHandlers = async () => {
     startSubscribe(pendingTxHandler),
     startSubscribe(droppedTxHandler),
     startSubscribe(contractInstanceBalanceHandler),
-    startSubscribe(l1L2ValidatorHandler),
     startSubscribe(l1L2BlockProposedHandler),
     startSubscribe(l1L2ProofVerifiedHandler),
     startSubscribe(l1GenericContractEventHandler),

@@ -1,0 +1,40 @@
+{
+  "name": "@chicmoz-pkg/database-registry",
+  "private": true,
+  "packageManager": "yarn@4.0.1",
+  "type": "module",
+  "scripts": {
+    "prebuild": "rm -rf build; mkdir build",
+    "build": "yarn tsc",
+    "postbuild": "ln -s ../public build/public",
+    "predev": "yarn build",
+    "dev": "yarn node build/index.js",
+    "start": "yarn node build/index.js",
+    "lint": "yarn run lint-base --ext .ts .",
+    "lint-base": "yarn run g:lint"
+  },
+  "dependencies": {
+    "@chicmoz-pkg/microservice-base": "workspace:^",
+    "@chicmoz-pkg/postgres-helper": "workspace:^",
+    "@chicmoz-pkg/types": "workspace:^",
+    "drizzle-orm": "0.33.0",
+    "pg": "8.11.3"
+  },
+  "devDependencies": {
+    "@types/pg": "8.11.8",
+    "@typescript-eslint/eslint-plugin": "6.11.0",
+    "@typescript-eslint/parser": "6.11.0",
+    "eslint": "8.53.0",
+    "eslint-config-prettier": "9.0.0",
+    "eslint-plugin-import": "2.29.0",
+    "prettier": "3.1.0",
+    "prettier-plugin-organize-imports": "3.2.4",
+    "prettier-plugin-sort-json": "3.1.0",
+    "typescript": "5.8.3"
+  },
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ]
+}

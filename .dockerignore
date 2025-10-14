@@ -34,4 +34,5 @@
 !packages/microservice-base
 !packages/postgres-helper
 !packages/redis-helper
+!packages/database-registry
 !packages/contract-verification

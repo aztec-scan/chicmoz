@@ -10,6 +10,7 @@
     "@aztec/protocol-contracts": "2.0.3",
     "@aztec/stdlib": "2.0.3",
     "@chicmoz-pkg/backend-utils": "workspace:^",
+    "@chicmoz-pkg/database-registry": "workspace:^",
     "@chicmoz-pkg/error-middleware": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/message-bus": "workspace:^",

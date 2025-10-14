@@ -10,3 +10,4 @@ requires:
   - path: ./auth/skaffold.yaml
   - path: ./websocket-event-publisher/skaffold.testnet.yaml
   - path: ./aztec-listener/skaffold.testnet.yaml
+  - path: ./validator-metrics/skaffold.testnet.yaml

@@ -48,9 +48,3 @@ spec:
               value: "sandbox_validator-metrics"
             - name: L2_NETWORK_ID
               value: "SANDBOX"
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 80
-            initialDelaySeconds: 15
-            periodSeconds: 10
