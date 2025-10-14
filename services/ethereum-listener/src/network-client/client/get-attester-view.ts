@@ -120,7 +120,7 @@ const determineIndexOffset = async (
         logger.info("Using 0-based indexing");
         return 0;
       } catch {
-        // Continue to try 1-based
+        logger.warn("Unable to determine indexing - trying 1-based next");
       }
     }
   }
@@ -148,12 +148,10 @@ const determineIndexOffset = async (
         logger.info("Using 1-based indexing");
         return 1;
       } catch {
-        // Unable to determine
+        logger.warn("Unable to determine indexing - assuming 0-based");
       }
     }
   }
-
-  logger.warn("Unable to determine indexing - assuming 0-based");
   return 0;
 };
 

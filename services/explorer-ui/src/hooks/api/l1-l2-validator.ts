@@ -37,6 +37,16 @@ export const useL1L2ValidatorHistory = (
   });
 };
 
+export const useValidatorTotals = (): UseQueryResult<
+  { validating: number; nonValidating: number },
+  Error
+> => {
+  return useQuery<{ validating: number; nonValidating: number }, Error>({
+    queryKey: queryKeyGenerator.l1L2ValidatorTotals,
+    queryFn: () => L1L2ValidatorAPI.getValidatorTotals(),
+  });
+};
+
 export const usePaginatedValidators = (
   page = 0,
   pageSize = 20,

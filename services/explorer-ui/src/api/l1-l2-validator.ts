@@ -39,4 +39,17 @@ export const L1L2ValidatorAPI = {
     );
     return validateResponse(chicmozL1L2ValidatorHistorySchema, response.data);
   },
+  getValidatorTotals: async (): Promise<{
+    validating: number;
+    nonValidating: number;
+  }> => {
+    const response = await client.get(aztecExplorer.getL1L2ValidatorTotals);
+    return validateResponse(
+      z.object({
+        validating: z.number(),
+        nonValidating: z.number(),
+      }),
+      response.data,
+    );
+  },
 };

@@ -114,3 +114,35 @@ export const GET_L1_L2_VALIDATOR_HISTORY = asyncHandler(async (req, res) => {
   );
   res.status(200).json(JSON.parse(history));
 });
+
+export const openapi_GET_L1_L2_VALIDATOR_TOTALS: OpenAPIObject["paths"] = {
+  "/l1/l2-validators/totals": {
+    get: {
+      tags: ["L1", "l2-validators"],
+      summary: "Get validator totals by status",
+      responses: {
+        "200": {
+          description: "Validator totals",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  validating: { type: "integer" },
+                  nonValidating: { type: "integer" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const GET_L1_L2_VALIDATOR_TOTALS = asyncHandler(async (_req, res) => {
+  const totals = await dbWrapper.get(["l1", "l2-validators", "totals"], () =>
+    db.l1.getValidatorTotals(),
+  );
+  res.status(200).json(JSON.parse(totals));
+});

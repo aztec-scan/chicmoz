@@ -169,6 +169,74 @@ Add pagination to the validators page, making it consistent with how blocks pagi
 - [ ] **Testing**: Add tests for new paginated endpoints and hooks
 - [x] **Migration**: Maintained backward compatibility - existing `GET /l1/l2-validators` endpoint now accepts optional limit/offset query parameters
 
+## Fix Validator Badge Counts
+
+The badges currently show counts from the current page only, but they should show **total counts across all validators**.
+
+### **Proposed Solution: Separate Totals Endpoint**
+
+**Why this approach:**
+
+- ✅ Clean separation of concerns
+- ✅ No breaking changes to existing API
+- ✅ Efficient (single count query)
+- ✅ Consistent with how other totals are handled
+
+### **Implementation Plan**
+
+#### **1. Database Layer**
+
+**File: `services/explorer-api/src/svcs/database/controllers/l1/l2-validator/get-multiple.ts`**
+
+- [ ] Add new function `getValidatorTotals()`:
+  ```typescript
+  export async function getValidatorTotals(): Promise<{
+    validating: number;
+    nonValidating: number;
+  }> {
+    // Query that counts validators by status
+    // Returns { validating: X, nonValidating: Y }
+  }
+  ```
+
+#### **2. API Controller**
+
+**File: `services/explorer-api/src/svcs/http-server/routes/controllers/validators.ts`**
+
+- [ ] Add new endpoint `GET /l1/l2-validators/totals`
+- [ ] Add OpenAPI spec and controller function
+
+#### **3. UI API Layer**
+
+**File: `services/explorer-ui/src/api/l1-l2-validator.ts`**
+
+- [ ] Add `getValidatorTotals()` API method
+
+**File: `services/explorer-ui/src/service/constants.ts`**
+
+- [ ] Add `getL1L2ValidatorTotals` constant
+
+#### **4. UI Hooks**
+
+**File: `services/explorer-ui/src/hooks/api/l1-l2-validator.ts`**
+
+- [ ] Add `useValidatorTotals()` hook
+
+**File: `services/explorer-ui/src/hooks/api/utils.ts`**
+
+- [ ] Add `validatorTotals` query key
+
+#### **5. UI Page Update**
+
+**File: `services/explorer-ui/src/pages/l1/validators.tsx`**
+
+- [ ] Replace current count calculation with totals from API:
+  ```typescript
+  const { data: totalsData } = useValidatorTotals();
+  const validatingCount = totalsData?.validating ?? 0;
+  const exitingCount = totalsData?.nonValidating ?? 0;
+  ```
+
 ## Progress Tracking
 
 - [x] TODO.md created and committed
@@ -179,4 +247,9 @@ Add pagination to the validators page, making it consistent with how blocks pagi
 - [x] UI page changes completed (added dynamic pagination state detection)
 - [x] UI table component changes completed (added Last page button, fixed data updating via proper caching)
 - [x] Testing completed (linting passed, code compiles, routing conflict fixed)
+- [ ] Validator badge counts fix - database layer
+- [ ] Validator badge counts fix - API controller
+- [ ] Validator badge counts fix - UI API layer
+- [ ] Validator badge counts fix - UI hooks
+- [ ] Validator badge counts fix - UI page update
 - [ ] Documentation updated

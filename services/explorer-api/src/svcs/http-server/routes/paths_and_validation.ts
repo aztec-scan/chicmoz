@@ -81,6 +81,7 @@ export const paths = {
   statsAverageBlockTime: "/l2/stats/average-block-time",
 
   l1l2Validators: "/l1/l2-validators",
+  l1l2ValidatorTotals: "/l1/l2-validators/totals",
   l1l2Validator: "/l1/l2-validators/:attesterAddress",
   l1l2ValidatorHistory: "/l1/l2-validators/:attesterAddress/history",
   l1ContractEvents: "/l1/contract-events",

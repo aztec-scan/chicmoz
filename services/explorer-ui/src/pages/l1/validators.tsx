@@ -1,9 +1,11 @@
-import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { type FC, useState } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { ValidatorsTable } from "~/components/validators/validators-table";
 import { useSubTitle } from "~/hooks";
-import { usePaginatedValidators } from "~/hooks/api/l1-l2-validator";
+import {
+  usePaginatedValidators,
+  useValidatorTotals,
+} from "~/hooks/api/l1-l2-validator";
 import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
@@ -19,19 +21,14 @@ export const ValidatorsPage: FC = () => {
     pageSize,
   );
 
+  const { data: totalsData } = useValidatorTotals();
+
   // Determine if there's a next page based on data length
   const hasNextPage = data ? data.length === pageSize : true;
   const hasPreviousPage = currentPage > 0;
 
-  const validatingCount =
-    data?.filter(
-      (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
-    ).length ?? 0;
-
-  const exitingCount =
-    data?.filter(
-      (validator) => validator.status !== L1L2ValidatorStatus.VALIDATING,
-    ).length ?? 0;
+  const validatingCount = totalsData?.validating ?? 0;
+  const exitingCount = totalsData?.nonValidating ?? 0;
 
   const validatorsData = data;
 
