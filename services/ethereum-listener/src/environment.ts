@@ -20,9 +20,9 @@ export const ATTESTER_POLL_INTERVAL_MS = parseInt(
   process.env.ATTESTER_POLL_INTERVAL_MS ?? String(15 * 60 * 1000),
   10,
 );
-export const BATCH_SIZE = parseInt(process.env.ATTESTER_BATCH_SIZE ?? "5", 10);
+export const BATCH_SIZE = parseInt(process.env.ATTESTER_BATCH_SIZE ?? "10", 10);
 export const ATTESTER_BATCH_DELAY_MS = parseInt(
-  process.env.ATTESTER_BATCH_DELAY_MS ?? "1000",
+  process.env.ATTESTER_BATCH_DELAY_MS ?? "300",
   10,
 );
 export const ATTESTER_MAX_RETRIES = parseInt(
