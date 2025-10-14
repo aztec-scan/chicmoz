@@ -92,10 +92,9 @@ const getAttesterCount = async (
 const determineIndexOffset = async (
   rollupAddress: `0x${string}`,
 ): Promise<number> => {
-  const client = getPublicHttpBackupClient() ?? getPublicHttpClient();
-
+  // Try 0-based indexing with public client first
   try {
-    await client.readContract({
+    await getPublicHttpClient().readContract({
       address: rollupAddress,
       abi: RollupAbi,
       functionName: "getAttesterAtIndex",
@@ -104,20 +103,53 @@ const determineIndexOffset = async (
     logger.info("Using 0-based indexing");
     return 0;
   } catch {
-    try {
-      await client.readContract({
-        address: rollupAddress,
-        abi: RollupAbi,
-        functionName: "getAttesterAtIndex",
-        args: [1n],
-      });
-      logger.info("Using 1-based indexing");
-      return 1;
-    } catch {
-      logger.warn("Unable to determine indexing - assuming 0-based");
-      return 0;
+    const backup = getPublicHttpBackupClient();
+    if (backup) {
+      try {
+        await backup.readContract({
+          address: rollupAddress,
+          abi: RollupAbi,
+          functionName: "getAttesterAtIndex",
+          args: [0n],
+        });
+        logger.info("Using 0-based indexing");
+        return 0;
+      } catch {
+        // Continue to try 1-based
+      }
     }
   }
+
+  // Try 1-based indexing with public client first
+  try {
+    await getPublicHttpClient().readContract({
+      address: rollupAddress,
+      abi: RollupAbi,
+      functionName: "getAttesterAtIndex",
+      args: [1n],
+    });
+    logger.info("Using 1-based indexing");
+    return 1;
+  } catch {
+    const backup = getPublicHttpBackupClient();
+    if (backup) {
+      try {
+        await backup.readContract({
+          address: rollupAddress,
+          abi: RollupAbi,
+          functionName: "getAttesterAtIndex",
+          args: [1n],
+        });
+        logger.info("Using 1-based indexing");
+        return 1;
+      } catch {
+        // Unable to determine
+      }
+    }
+  }
+
+  logger.warn("Unable to determine indexing - assuming 0-based");
+  return 0;
 };
 
 const getETA = (estimatedTotal: number, elapsedTime: number): string => {
@@ -161,8 +193,8 @@ const fetchAllAttesters = async (
 
       logger.info(
         `🔍 Batch ${batchNumber}/${totalBatches} (${totalProgress}%) | ` +
-        `Attesters: ${attesters.length}/${totalCount} | ` +
-        `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
+          `Attesters: ${attesters.length}/${totalCount} | ` +
+          `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
       );
     }
 
@@ -273,29 +305,44 @@ const fetchAttesterAddresses = async (
   end: number,
   indexOffset: number,
 ): Promise<`0x${string}`[]> => {
-  const client = getPublicHttpBackupClient() ?? getPublicHttpClient();
-  const promises = [];
+  const results: (`0x${string}` | null)[] = [];
 
   for (let i = start; i < end; i++) {
     const contractIndex = i + indexOffset;
-    promises.push(
-      client
-        .readContract({
-          address: rollupAddress,
-          abi: RollupAbi,
-          functionName: "getAttesterAtIndex",
-          args: [BigInt(contractIndex)],
-        })
-        .catch((error: unknown) => {
+    try {
+      const addr = await getPublicHttpClient().readContract({
+        address: rollupAddress,
+        abi: RollupAbi,
+        functionName: "getAttesterAtIndex",
+        args: [BigInt(contractIndex)],
+      });
+      results.push(addr);
+    } catch (error) {
+      logger.warn(
+        `Failed to get attester at index ${contractIndex} with public client: ${String(error)}`,
+      );
+      const backup = getPublicHttpBackupClient();
+      if (backup) {
+        try {
+          const addr = await backup.readContract({
+            address: rollupAddress,
+            abi: RollupAbi,
+            functionName: "getAttesterAtIndex",
+            args: [BigInt(contractIndex)],
+          });
+          results.push(addr);
+        } catch (backupError) {
           logger.warn(
-            `Failed to get attester at index ${contractIndex}: ${String(error)}`,
+            `Failed to get attester at index ${contractIndex} with backup client: ${String(backupError)}`,
           );
-          return null;
-        }),
-    );
+          results.push(null);
+        }
+      } else {
+        results.push(null);
+      }
+    }
   }
 
-  const results = await Promise.all(promises);
   return results.filter((addr): addr is `0x${string}` => addr !== null);
 };
 
