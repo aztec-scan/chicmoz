@@ -45,7 +45,7 @@ export const openapi_GET_L1_L2_VALIDATORS: OpenAPIObject["paths"] = {
 
 export const GET_L1_L2_VALIDATORS = asyncHandler(async (req, res) => {
   const { limit, offset } = getL1L2ValidatorsPaginatedSchema.parse(req).query;
-  const validators = await dbWrapper.getLatest(
+  const validators = await dbWrapper.get(
     ["l1", "l2-validators", limit, offset],
     () => db.l1.getAllL1L2Validators(undefined, { limit, offset }),
   );

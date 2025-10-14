@@ -47,7 +47,6 @@ export const usePaginatedValidators = (
       const offset = page * pageSize;
       return L1L2ValidatorAPI.getValidators(pageSize, offset);
     },
-    placeholderData: (previousData) => previousData,
     staleTime: 0, // Always refetch when page changes
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });

@@ -63,6 +63,8 @@ spec:
               value: "300000"
             - name: ATTESTER_BATCH_DELAY_MS
               value: "200"
+            - name: ATTESTER_BATCH_SIZE
+              value: "20"
             - name: ATTESTER_MAX_RETRIES
               value: "1"
 status: {}
