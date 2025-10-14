@@ -45,7 +45,7 @@ export const usePaginatedValidators = (
     queryKey: queryKeyGenerator.paginatedValidators(page, pageSize),
     queryFn: () => {
       const offset = page * pageSize;
-      return L1L2ValidatorAPI.getValidatorsPaginated(pageSize, offset);
+      return L1L2ValidatorAPI.getValidators(pageSize, offset);
     },
     placeholderData: (previousData) => previousData,
   });
