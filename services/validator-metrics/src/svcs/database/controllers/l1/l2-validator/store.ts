@@ -2,18 +2,17 @@ import { L1L2ValidatorEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL1L2Validator, L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { l1Schemas } from "@chicmoz-pkg/database-registry";
+import { sql } from "drizzle-orm";
 
 import { logger } from "../../../../../logger.js";
 import { getAllL1L2Validators } from "./get-multiple.js";
 import { getL1L2Validator } from "./get-single.js";
-import { sql } from "drizzle-orm";
 
 const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
 } = l1Schemas
-
 
 export async function updateValidatorsState(
   event: L1L2ValidatorEvent,
