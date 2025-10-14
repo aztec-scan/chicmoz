@@ -1,12 +1,21 @@
 import { relations } from "drizzle-orm";
-import { pgTable, integer, pgEnum, primaryKey, bigint } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  integer,
+  pgEnum,
+  primaryKey,
+  bigint,
+} from "drizzle-orm/pg-core";
 import {
   generateEthAddressColumn,
   generateTimestampColumn,
 } from "@chicmoz-pkg/postgres-helper";
 import { slotStatusEnumSchema } from "@chicmoz-pkg/types";
 
-export const slotStatusColumn = pgEnum("slot_status", slotStatusEnumSchema.options)
+export const slotStatusColumn = pgEnum(
+  "slot_status",
+  slotStatusEnumSchema.options,
+);
 
 export const SentinelValidatorTable = pgTable("sentinel_validator", {
   attester: generateEthAddressColumn("attester").primaryKey().notNull(),
@@ -15,11 +24,13 @@ export const SentinelValidatorTable = pgTable("sentinel_validator", {
   totalSlots: integer("total_slots").default(0),
 });
 
-export const SentinelHistoryTable = pgTable("sentinel_validator_history", {
-  attester: generateEthAddressColumn("attester").notNull(),
-  slot: bigint("slot", { mode: "bigint" }).notNull(),
-  status: slotStatusColumn("status").notNull(),
-},
+export const SentinelHistoryTable = pgTable(
+  "sentinel_validator_history",
+  {
+    attester: generateEthAddressColumn("attester").notNull(),
+    slot: bigint("slot", { mode: "bigint" }).notNull(),
+    status: slotStatusColumn("status").notNull(),
+  },
   (table) => ({
     pk: primaryKey({ columns: [table.attester, table.slot] }),
     fk_attester: {
@@ -31,13 +42,15 @@ export const SentinelHistoryTable = pgTable("sentinel_validator_history", {
   }),
 );
 
-export const SentinelBlockTable = pgTable("sentinel_validator_missed_blocks", {
-  attester: generateEthAddressColumn("attester").primaryKey().notNull(),
-  lastSeenAt: generateTimestampColumn("last_seen_at"),
-  lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
-  total: integer("total").notNull(),
-  missed: integer("missed").notNull(),
-},
+export const SentinelBlockTable = pgTable(
+  "sentinel_validator_missed_blocks",
+  {
+    attester: generateEthAddressColumn("attester").primaryKey().notNull(),
+    lastSeenAt: generateTimestampColumn("last_seen_at"),
+    lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
+    total: integer("total").notNull(),
+    missed: integer("missed").notNull(),
+  },
   (table) => ({
     fk_attester: {
       columns: [table.attester],
@@ -48,20 +61,22 @@ export const SentinelBlockTable = pgTable("sentinel_validator_missed_blocks", {
   }),
 );
 
-export const SentinelAttestationTable = pgTable("sentinel_validator_missed_attestations", {
-  attester: generateEthAddressColumn("attester").primaryKey().notNull(),
-  lastSeenAt: generateTimestampColumn("last_seen_at"),
-  lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
-  total: integer("total").notNull(),
-  missed: integer("missed").notNull(),
-},
+export const SentinelAttestationTable = pgTable(
+  "sentinel_validator_missed_attestations",
+  {
+    attester: generateEthAddressColumn("attester").primaryKey().notNull(),
+    lastSeenAt: generateTimestampColumn("last_seen_at"),
+    lastSeenAtSlot: bigint("last_seen_at_slot", { mode: "bigint" }),
+    total: integer("total").notNull(),
+    missed: integer("missed").notNull(),
+  },
   (table) => ({
     fk_attester: {
       columns: [table.attester],
       foreignColumns: [SentinelValidatorTable.attester],
       onDelete: "cascade",
       onUpdate: "cascade",
-    }
+    },
   }),
 );
 

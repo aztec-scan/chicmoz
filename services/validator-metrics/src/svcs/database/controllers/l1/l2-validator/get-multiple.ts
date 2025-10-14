@@ -11,7 +11,7 @@ const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
-} = l1Schemas
+} = l1Schemas;
 
 import { getL2ChainInfo } from "../../l2/index.js";
 

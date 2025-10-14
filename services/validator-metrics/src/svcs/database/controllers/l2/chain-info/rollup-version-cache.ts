@@ -1,4 +1,4 @@
-import { ChicmozChainInfo , CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
+import { ChicmozChainInfo, CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
 import { logger } from "../../../../../logger.js";
 
 // TODO: This should maybe use Redis for caching instead of in-memory.

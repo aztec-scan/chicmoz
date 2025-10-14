@@ -3,10 +3,11 @@ import {
   ChicmozChainInfo,
   L2NetworkId,
   chicmozChainInfoSchema,
- CURRENT_ROLLUP_VERSION } from "@chicmoz-pkg/types";
+  CURRENT_ROLLUP_VERSION,
+} from "@chicmoz-pkg/types";
 import { and, desc, eq } from "drizzle-orm";
 import { l2Schemas } from "@chicmoz-pkg/database-registry";
-const { l2ChainInfoTable } = l2Schemas
+const { l2ChainInfoTable } = l2Schemas;
 
 export async function getL2ChainInfo(
   l2NetworkId: L2NetworkId,

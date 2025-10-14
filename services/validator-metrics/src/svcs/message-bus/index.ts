@@ -18,7 +18,7 @@ import { logger } from "../../logger.js";
 
 export const publishMessage = async (
   eventType: keyof L2_MESSAGES,
-  message: ChicmozMessageBusPayload
+  message: ChicmozMessageBusPayload,
 ) => {
   const topic = generateL2TopicName(L2_NETWORK_ID, eventType);
   logger.info(`Publishing message to topic ${topic}`);
@@ -36,5 +36,5 @@ export const startSubscribe = async (eventHandler: EventHandler) => {
 
 export const messageBusService: MicroserviceBaseSvc = generateSvc(
   INSTANCE_NAME,
-  logger
+  logger,
 );

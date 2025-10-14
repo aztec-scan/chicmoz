@@ -12,7 +12,7 @@ const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
-} = l1Schemas
+} = l1Schemas;
 
 export async function updateValidatorsState(
   event: L1L2ValidatorEvent,
@@ -62,7 +62,6 @@ export async function updateValidatorsState(
     }
   }
 }
-
 
 // TODO: ensure this is data is sane and useful across multiple rollup_addresses, this might need a rework of the table itself too
 async function _store(

@@ -15,7 +15,7 @@ const {
   l1L2ValidatorStakeTable,
   l1L2ValidatorStatusTable,
   l1L2ValidatorTable,
-} = l1Schemas
+} = l1Schemas;
 
 export async function getL1L2Validator(
   attesterAddress: EthAddress,

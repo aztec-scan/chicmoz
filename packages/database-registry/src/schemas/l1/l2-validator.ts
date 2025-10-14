@@ -14,7 +14,6 @@ export const l1L2ValidatorTable = pgTable("l1_l2_validator", {
   proposer: generateEthAddressColumn("proposer").notNull(),
 });
 
-
 export const l1L2ValidatorStakeTable = pgTable(
   "l1_l2_validator_stake",
   {

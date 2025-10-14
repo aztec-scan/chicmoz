@@ -1,33 +1,49 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { EthAddress, SentinelActivity, SentinelHistory, SentinelValidatorStats } from "@chicmoz-pkg/types";
+import {
+  EthAddress,
+  SentinelActivity,
+  SentinelHistory,
+  SentinelValidatorStats,
+} from "@chicmoz-pkg/types";
 import { sql } from "drizzle-orm";
 import {
   sentinelSchemas,
-  SentinelCounterTable
-} from "@chicmoz-pkg/database-registry"
+  SentinelCounterTable,
+} from "@chicmoz-pkg/database-registry";
 
 const {
   SentinelHistoryTable,
   SentinelBlockTable,
   SentinelAttestationTable,
   SentinelValidatorTable,
-} = sentinelSchemas
+} = sentinelSchemas;
 
-export type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
+export type Tx = Parameters<
+  Parameters<ReturnType<typeof db>["transaction"]>[0]
+>[0];
 
-async function _storeHistoryEntry (tx: Tx, attester: EthAddress, history: SentinelHistory) {
+async function _storeHistoryEntry(
+  tx: Tx,
+  attester: EthAddress,
+  history: SentinelHistory,
+) {
   return tx
-      .insert(SentinelHistoryTable)
-      .values({ attester, slot: history.slot, status: history.status })
-      .onConflictDoUpdate({
-        target:[SentinelHistoryTable.attester, SentinelHistoryTable.slot],
-        set: {
-          status: history.status
-        }
-      })
+    .insert(SentinelHistoryTable)
+    .values({ attester, slot: history.slot, status: history.status })
+    .onConflictDoUpdate({
+      target: [SentinelHistoryTable.attester, SentinelHistoryTable.slot],
+      set: {
+        status: history.status,
+      },
+    });
 }
 
-async function _insertOrUpdateCounterTable (tx: Tx, table: SentinelCounterTable, attester: EthAddress, values: SentinelActivity) {
+async function _insertOrUpdateCounterTable(
+  tx: Tx,
+  table: SentinelCounterTable,
+  attester: EthAddress,
+  values: SentinelActivity,
+) {
   const insertValues: SentinelActivity = {
     total: values.total,
     missed: values.missed,
@@ -39,20 +55,21 @@ async function _insertOrUpdateCounterTable (tx: Tx, table: SentinelCounterTable,
   if (values.lastSeenAtSlot !== undefined) {
     insertValues.lastSeenAtSlot = values.lastSeenAtSlot;
   }
-  
-  await tx.insert(table).values({
-    attester: attester,
-    ...insertValues
-  }).onConflictDoUpdate({
-    target: table.attester,
-    set: insertValues,
-    setWhere: sql`excluded.total IS DISTINCT FROM ${table.total}`
-  })
+
+  await tx
+    .insert(table)
+    .values({
+      attester: attester,
+      ...insertValues,
+    })
+    .onConflictDoUpdate({
+      target: table.attester,
+      set: insertValues,
+      setWhere: sql`excluded.total IS DISTINCT FROM ${table.total}`,
+    });
 }
 
-async function _store(
-  toStore: SentinelValidatorStats,
-): Promise<void> {
+async function _store(toStore: SentinelValidatorStats): Promise<void> {
   const {
     attester,
     history,
@@ -63,9 +80,11 @@ async function _store(
     totalSlots,
   } = toStore;
 
-
   await db().transaction(async (tx) => {
-    const insertValues: Omit<SentinelValidatorStats, "history" | "blocks" | "attestations" > = {
+    const insertValues: Omit<
+      SentinelValidatorStats,
+      "history" | "blocks" | "attestations"
+    > = {
       attester,
       totalSlots,
     };
@@ -76,21 +95,28 @@ async function _store(
     if (lastSeenAtSlot !== undefined) {
       insertValues.lastSeenAtSlot = lastSeenAtSlot;
     }
-    await tx.insert(SentinelValidatorTable)
-    .values(insertValues)
-    .onConflictDoUpdate({
-      target: SentinelValidatorTable.attester,
-      set: insertValues,
-      setWhere: sql`excluded.last_seen_at IS DISTINCT FROM ${SentinelValidatorTable.lastSeenAt}`
-    })
+    await tx
+      .insert(SentinelValidatorTable)
+      .values(insertValues)
+      .onConflictDoUpdate({
+        target: SentinelValidatorTable.attester,
+        set: insertValues,
+        setWhere: sql`excluded.last_seen_at IS DISTINCT FROM ${SentinelValidatorTable.lastSeenAt}`,
+      });
 
-    await _insertOrUpdateCounterTable(tx, SentinelBlockTable, attester, blocks)
-    await _insertOrUpdateCounterTable(tx, SentinelAttestationTable, attester, attestations)
+    await _insertOrUpdateCounterTable(tx, SentinelBlockTable, attester, blocks);
+    await _insertOrUpdateCounterTable(
+      tx,
+      SentinelAttestationTable,
+      attester,
+      attestations,
+    );
 
-    if(history && history.length > 0){
-      await Promise.all(history.map(entry => _storeHistoryEntry(tx, attester, entry)))
+    if (history && history.length > 0) {
+      await Promise.all(
+        history.map((entry) => _storeHistoryEntry(tx, attester, entry)),
+      );
     }
-
   });
 }
 
@@ -102,7 +128,7 @@ export async function storeSentinelValidator(
 
 export async function storeSentinelValidatorHistoryEntry(
   attester: string,
-  entry: SentinelHistory
+  entry: SentinelHistory,
 ): Promise<void> {
   await db().transaction(async (tx) => {
     await _storeHistoryEntry(tx, attester, entry);
