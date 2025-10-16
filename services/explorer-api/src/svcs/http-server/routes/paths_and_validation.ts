@@ -9,6 +9,7 @@ import {
   contractStandardSchema,
   ethAddressSchema,
   hexStringSchema,
+  sentinelFilterSchema,
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
@@ -250,6 +251,25 @@ export const getL1L2ValidatorSchema = z.object({
   params: z.object({
     attesterAddress: ethAddressSchema,
   }),
+  query: z
+    .object({
+      includeHistory: z.coerce.boolean().optional(),
+      historyLimit: z.coerce.number().int().min(1).max(500).optional(),
+      historyOffset: z.coerce.number().int().min(0).optional(),
+    })
+    .optional()
+    .default({}),
+});
+
+export const getL1L2ValidatorsSchema = z.object({
+  query: z
+    .object({
+      order: sentinelFilterSchema.optional(),
+      limit: z.coerce.number().int().min(1).max(500).optional(),
+      offset: z.coerce.number().int().min(0).optional(),
+    })
+    .optional()
+    .default({}),
 });
 
 export const getSequencerSchema = z.object({

@@ -5,7 +5,7 @@ import {
   chicmozFeeRecipientSchema,
   chicmozL1GenericContractEventSchema,
   chicmozL1L2ValidatorHistorySchema,
-  chicmozL1L2ValidatorSchema,
+  chicmozValidatorWithSentinelSchema,
   chicmozL2BlockLightSchema,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
@@ -20,6 +20,7 @@ import {
   chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozReorgSchema,
   chicmozSearchResultsSchema,
+  slotStatusEnumSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { logger } from "../../../../../logger.js";
@@ -181,8 +182,24 @@ export const searchResultResponse = getResponse(
   "searchResult",
 );
 
-const cleanedValidatorSchema = chicmozL1L2ValidatorSchema.extend({
+const sentinelActivityForDocs = z.object({
+  total: z.number(),
+  missed: z.number(),
+  lastSeenAt: z.number().optional(),
+  lastSeenAtSlot: z.string().optional(),
+});
+
+const sentinelHistoryEntryForDocs = z.object({
+  slot: z.string(),
+  status: slotStatusEnumSchema,
+});
+
+const cleanedValidatorSchema = chicmozValidatorWithSentinelSchema.extend({
   stake: z.string(),
+  lastSeenAtSlot: z.string().optional(),
+  blocks: sentinelActivityForDocs.optional(),
+  attestations: sentinelActivityForDocs.optional(),
+  history: z.array(sentinelHistoryEntryForDocs).optional(),
 });
 export const l1L2ValidatorResponse = getResponse(
   cleanedValidatorSchema,
