@@ -92,8 +92,8 @@ const mapRowToValidator = (
   return validator;
 };
 
-const buildLatestStatusSubquery = (dbTx: DbClient) =>
-  dbTx
+const buildLatestStatusSubquery = (dbTx: DbClient) => {
+  return dbTx
     .selectDistinctOn([l1L2ValidatorStatusTable.attesterAddress], {
       attesterAddress: l1L2ValidatorStatusTable.attesterAddress,
       status: l1L2ValidatorStatusTable.status,
@@ -105,6 +105,7 @@ const buildLatestStatusSubquery = (dbTx: DbClient) =>
       desc(l1L2ValidatorStatusTable.timestamp),
     )
     .as("latest_statuses");
+};
 
 const buildValidatorSelect = (
   dbTx: DbClient,
