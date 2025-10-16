@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ethAddressSchema } from "../general.js";
-import { ValidatorStatusInSlot } from "@aztec/stdlib/validators"
+import { ValidatorStatusInSlot } from "@aztec/stdlib/validators";
+import { chicmozL1L2ValidatorSchema } from "../index.js";
 
 const _statusMap: { [K in ValidatorStatusInSlot]: K } = {
   "block-mined": "block-mined",
@@ -10,9 +11,13 @@ const _statusMap: { [K in ValidatorStatusInSlot]: K } = {
   "attestation-missed": "attestation-missed",
 };
 
-const validatorStatusValues = Object.values(_statusMap) as unknown as readonly ValidatorStatusInSlot[];
+const validatorStatusValues = Object.values(
+  _statusMap,
+) as unknown as readonly ValidatorStatusInSlot[];
 
-export const slotStatusEnumSchema = z.enum(validatorStatusValues as [ValidatorStatusInSlot, ...ValidatorStatusInSlot[]])
+export const slotStatusEnumSchema = z.enum(
+  validatorStatusValues as [ValidatorStatusInSlot, ...ValidatorStatusInSlot[]],
+);
 
 const historyEntrySchema = z.object({
   slot: z.coerce.bigint().nonnegative(),
@@ -43,10 +48,34 @@ export const sentinelSlotObject = z.object({
   stats: z.record(ethAddressSchema, sentinelValidatorStatsSchema),
 });
 
-export const sentinelFilterSchema = z.enum(["desc-latest","asc-latest", "desc-slots", "asc-slots"])
+export const sentinelFilterSchema = z.enum([
+  "desc-latest",
+  "asc-latest",
+  "desc-slots",
+  "asc-slots",
+]);
 
+const sentinelStatsShape = sentinelValidatorStatsSchema.omit({
+  attester: true,
+}).shape;
 
-export type SentinelValidatorStats = z.infer<typeof sentinelValidatorStatsSchema>;
+export const chicmozValidatorWithSentinelSchema =
+  chicmozL1L2ValidatorSchema.extend({
+    history: sentinelStatsShape.history.optional(),
+    attestations: sentinelStatsShape.attestations.optional(),
+    blocks: sentinelStatsShape.blocks.optional(),
+    totalSlots: sentinelStatsShape.totalSlots.optional(),
+    lastSeenAtSlot: sentinelStatsShape.lastSeenAtSlot.optional(),
+    lastSeenAt: sentinelStatsShape.lastSeenAt.optional(),
+  });
+
+export type ChicmozValidatorWithSentinel = z.infer<
+  typeof chicmozValidatorWithSentinelSchema
+>;
+
+export type SentinelValidatorStats = z.infer<
+  typeof sentinelValidatorStatsSchema
+>;
 export type SentinelHistory = z.infer<typeof historyEntrySchema>;
 export type SentinelActivity = z.infer<typeof activityCounterSchema>;
 export type SentinelSlotResponse = z.infer<typeof sentinelSlotObject>;

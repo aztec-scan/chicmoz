@@ -15,7 +15,7 @@ export enum L1L2ValidatorStatus {
   EXITING,
 }
 
-const timestampSchema = z.coerce.date();
+const timestampSchema = z.coerce.number();
 const keyChangedSchema = z.coerce.string();
 const newValueSchema = z.coerce.string();
 
