@@ -81,6 +81,7 @@ export const paths = {
   statsAverageBlockTime: "/l2/stats/average-block-time",
 
   l1l2Validators: "/l1/l2-validators",
+  l1l2ValidatorTotals: "/l1/l2-validators/totals",
   l1l2Validator: "/l1/l2-validators/:attesterAddress",
   l1l2ValidatorHistory: "/l1/l2-validators/:attesterAddress/history",
   l1ContractEvents: "/l1/contract-events",
@@ -249,6 +250,13 @@ export const getSearchPublicLogsSchema = z.object({
 export const getL1L2ValidatorSchema = z.object({
   params: z.object({
     attesterAddress: ethAddressSchema,
+  }),
+});
+
+export const getL1L2ValidatorsPaginatedSchema = z.object({
+  query: z.object({
+    limit: z.coerce.number().min(1).max(100).optional().default(20),
+    offset: z.coerce.number().min(0).optional().default(0),
   }),
 });
 

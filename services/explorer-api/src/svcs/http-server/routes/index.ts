@@ -52,6 +52,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_L2_SEARCH,
 
   ...controller.openapi_GET_L1_L2_VALIDATORS,
+  ...controller.openapi_GET_L1_L2_VALIDATOR_TOTALS,
   ...controller.openapi_GET_L1_L2_VALIDATOR,
   ...controller.openapi_GET_L1_L2_VALIDATOR_HISTORY,
 
@@ -242,6 +243,7 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.searchPublicLogs, controller.L2_SEARCH_PUBLIC_LOGS);
 
   router.get(paths.l1l2Validators, controller.GET_L1_L2_VALIDATORS);
+  router.get(paths.l1l2ValidatorTotals, controller.GET_L1_L2_VALIDATOR_TOTALS);
   router.get(paths.l1l2Validator, controller.GET_L1_L2_VALIDATOR);
   router.get(
     paths.l1l2ValidatorHistory,
