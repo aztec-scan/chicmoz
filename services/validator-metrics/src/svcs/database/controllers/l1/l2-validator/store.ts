@@ -8,11 +8,7 @@ import { logger } from "../../../../../logger.js";
 import { getAllL1L2Validators } from "./get-multiple.js";
 import { getL1L2Validator } from "./get-single.js";
 
-const {
-  l1L2ValidatorStakeTable,
-  l1L2ValidatorStatusTable,
-  l1L2ValidatorTable,
-} = l1Schemas;
+const { l1L2ValidatorStatusTable, l1L2ValidatorTable } = l1Schemas;
 
 export async function updateValidatorsState(
   event: L1L2ValidatorEvent,
@@ -82,7 +78,14 @@ async function _store(
   await db().transaction(async (tx) => {
     await tx
       .insert(l1L2ValidatorTable)
-      .values({ attester, firstSeenAt, rollupAddress, withdrawer, proposer })
+      .values({
+        attester,
+        firstSeenAt,
+        rollupAddress,
+        withdrawer,
+        proposer,
+        stake,
+      })
       .onConflictDoUpdate({
         target: l1L2ValidatorTable.attester,
         set: {
@@ -90,24 +93,15 @@ async function _store(
           rollupAddress: sql`EXCLUDED.rollup_address`,
           withdrawer: sql`EXCLUDED.withdrawer`,
           proposer: sql`EXCLUDED.proposer`,
+          stake: sql`EXCLUDED.stake`,
         },
         where: sql`
           ${l1L2ValidatorTable.firstSeenAt} IS DISTINCT FROM EXCLUDED.first_seen_at OR
           ${l1L2ValidatorTable.withdrawer} IS DISTINCT FROM EXCLUDED.withdrawer OR
           ${l1L2ValidatorTable.proposer} IS DISTINCT FROM EXCLUDED.proposer
+          ${l1L2ValidatorTable.stake} IS DISTINCT FROM EXCLUDED.stake
         `,
       });
-
-    if (
-      !currentDbValues ||
-      (currentDbValues && currentDbValues.stake !== stake)
-    ) {
-      await tx.insert(l1L2ValidatorStakeTable).values({
-        attesterAddress: attester,
-        stake: stake.toString(),
-        timestamp: latestSeenChangeAt,
-      });
-    }
 
     if (
       !currentDbValues ||
