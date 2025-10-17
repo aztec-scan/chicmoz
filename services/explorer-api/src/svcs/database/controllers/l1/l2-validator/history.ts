@@ -8,44 +8,30 @@ import {
 } from "@chicmoz-pkg/types";
 import { desc, eq, sql } from "drizzle-orm";
 
-const {
-  l1L2ValidatorStakeTable,
-  l1L2ValidatorStatusTable,
-} = l1Schemas
+const { l1L2ValidatorStatusTable } = l1Schemas;
 
 export async function getL1L2ValidatorHistory(
-  attesterAddress: EthAddress
+  attesterAddress: EthAddress,
 ): Promise<ChicmozL1L2ValidatorHistoryEntry[]> {
   const result = await db()
     .select({
-      timestamp: l1L2ValidatorStakeTable.timestamp,
-      keyChanged: sql<string>`'stake'`,
-      newValue: sql<string>`CAST(${l1L2ValidatorStakeTable.stake} AS TEXT)`,
+      timestamp: l1L2ValidatorStatusTable.timestamp,
+      keyChanged: sql<string>`'status'`,
+      newValue: sql<string>`CAST(${l1L2ValidatorStatusTable.status} AS TEXT)`,
     })
-    .from(l1L2ValidatorStakeTable)
-    .where(eq(l1L2ValidatorStakeTable.attesterAddress, attesterAddress))
-    .union(
-      db()
-        .select({
-          timestamp: l1L2ValidatorStatusTable.timestamp,
-          keyChanged: sql<string>`'status'`,
-          newValue: sql<string>`CAST(${l1L2ValidatorStatusTable.status} AS TEXT)`,
-        })
-        .from(l1L2ValidatorStatusTable)
-        .where(eq(l1L2ValidatorStatusTable.attesterAddress, attesterAddress))
-    )
-    .orderBy(desc(sql`timestamp`))
-    .execute();
+    .from(l1L2ValidatorStatusTable)
+    .where(eq(l1L2ValidatorStatusTable.attesterAddress, attesterAddress))
+    .orderBy(desc(sql`timestamp`));
 
   return result.map(({ timestamp, keyChanged, newValue }) =>
     chicmozL1L2ValidatorHistoryEntrySchema.parse([
-      new Date(timestamp),
+      timestamp,
       keyChanged,
       keyChanged === "status"
         ? L1L2ValidatorStatus[
             newValue as keyof typeof L1L2ValidatorStatus
           ].toString()
         : newValue,
-    ])
+    ]),
   );
 }

@@ -1,8 +1,7 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, primaryKey, smallint } from "drizzle-orm/pg-core";
+import { bigint, pgTable, primaryKey, smallint } from "drizzle-orm/pg-core";
 import {
   generateEthAddressColumn,
-  generateUint256Column,
   generateTimestampColumn,
 } from "@chicmoz-pkg/postgres-helper";
 
@@ -12,23 +11,8 @@ export const l1L2ValidatorTable = pgTable("l1_l2_validator", {
   rollupAddress: generateEthAddressColumn("rollup_address").notNull(),
   withdrawer: generateEthAddressColumn("withdrawer").notNull(),
   proposer: generateEthAddressColumn("proposer").notNull(),
+  stake: bigint("stake", { mode: "bigint" }),
 });
-
-export const l1L2ValidatorStakeTable = pgTable(
-  "l1_l2_validator_stake",
-  {
-    attesterAddress: generateEthAddressColumn("attester_address")
-      .notNull()
-      .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
-    stake: generateUint256Column("stake").notNull(),
-    timestamp: generateTimestampColumn("timestamp")
-      .notNull()
-      .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.attesterAddress, table.timestamp] }),
-  }),
-);
 
 export const l1L2ValidatorStatusTable = pgTable(
   "l1_l2_validator_status",
@@ -49,18 +33,7 @@ export const l1L2ValidatorStatusTable = pgTable(
 export const l1l2ValidatorRelations = relations(
   l1L2ValidatorTable,
   ({ many }) => ({
-    stakes: many(l1L2ValidatorStakeTable),
     statuses: many(l1L2ValidatorStatusTable),
-  }),
-);
-
-export const l1L2ValidatorStakeRelations = relations(
-  l1L2ValidatorStakeTable,
-  ({ one }) => ({
-    attester: one(l1L2ValidatorTable, {
-      fields: [l1L2ValidatorStakeTable.attesterAddress],
-      references: [l1L2ValidatorTable.attester],
-    }),
   }),
 );
 

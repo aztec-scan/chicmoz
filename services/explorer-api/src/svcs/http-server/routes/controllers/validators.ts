@@ -3,7 +3,7 @@ import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
 import {
   getL1L2ValidatorSchema,
-  getL1L2ValidatorsPaginatedSchema,
+  getL1L2ValidatorsSchema,
 } from "../paths_and_validation.js";
 import {
   dbWrapper,
@@ -16,25 +16,35 @@ export const openapi_GET_L1_L2_VALIDATORS: OpenAPIObject["paths"] = {
   "/l1/l2-validators": {
     get: {
       tags: ["L1", "l2-validators"],
-      summary: "Get L1 and L2 validators",
+      summary: "Get L1 and L2 validators with sentinel stats",
       parameters: [
+        {
+          name: "order",
+          in: "query",
+          required: false,
+          schema: {
+            type: "string",
+            description:
+              "Order ascending or descending by how many slots or slot recency",
+          },
+        },
         {
           name: "limit",
           in: "query",
+          required: false,
           schema: {
             type: "integer",
             minimum: 1,
-            maximum: 100,
-            default: 20,
+            maximum: 500,
           },
         },
         {
           name: "offset",
           in: "query",
+          required: false,
           schema: {
             type: "integer",
             minimum: 0,
-            default: 0,
           },
         },
       ],
@@ -44,14 +54,25 @@ export const openapi_GET_L1_L2_VALIDATORS: OpenAPIObject["paths"] = {
 };
 
 export const GET_L1_L2_VALIDATORS = asyncHandler(async (req, res) => {
-  const { limit, offset } = getL1L2ValidatorsPaginatedSchema.parse(req).query;
-  const validators = await dbWrapper.get(
-    ["l1", "l2-validators", limit, offset],
-    () => db.l1.getAllL1L2Validators(undefined, { limit, offset }),
+  const { query } = getL1L2ValidatorsSchema.parse(req);
+  const { order, limit, offset } = query ?? {};
+
+  const cacheKeys = [
+    "l1",
+    "l2-validators",
+    order !== undefined ? `order:${order}` : "order:any",
+    limit !== undefined ? `limit:${limit}` : "limit:default",
+    offset !== undefined ? `offset:${offset}` : "offset:0",
+  ];
+
+  const validators = await dbWrapper.getLatest(cacheKeys, () =>
+    db.validator.getValidatorsWithSentinel({
+      order: order,
+      limit,
+      offset,
+    }),
   );
-  if (!validators) {
-    throw new Error("Validators not found");
-  }
+
   res.status(200).json(JSON.parse(validators));
 });
 
@@ -59,7 +80,7 @@ export const openapi_GET_L1_L2_VALIDATOR: OpenAPIObject["paths"] = {
   "/l1/l2-validators/:attesterAddress": {
     get: {
       tags: ["L1", "l2-validators"],
-      summary: "Get L1L2Validator",
+      summary: "Get single validator merged with sentinel stats",
       parameters: [
         {
           name: "attesterAddress",
@@ -68,6 +89,33 @@ export const openapi_GET_L1_L2_VALIDATOR: OpenAPIObject["paths"] = {
           schema: {
             type: "string",
             format: "hex",
+          },
+        },
+        {
+          name: "includeHistory",
+          in: "query",
+          required: false,
+          schema: {
+            type: "boolean",
+          },
+        },
+        {
+          name: "historyLimit",
+          in: "query",
+          required: false,
+          schema: {
+            type: "integer",
+            minimum: 1,
+            maximum: 500,
+          },
+        },
+        {
+          name: "historyOffset",
+          in: "query",
+          required: false,
+          schema: {
+            type: "integer",
+            minimum: 0,
           },
         },
       ],
@@ -80,7 +128,7 @@ export const GET_L1_L2_VALIDATOR = asyncHandler(async (req, res) => {
   const { attesterAddress } = getL1L2ValidatorSchema.parse(req).params;
   const validator = await dbWrapper.get(
     ["l1", "l2-validators", attesterAddress],
-    () => db.l1.getL1L2Validator(attesterAddress),
+    () => db.validator.getValidatorWithSentinel(attesterAddress),
   );
   res.status(200).json(JSON.parse(validator));
 });
