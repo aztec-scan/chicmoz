@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ethAddressSchema } from "../general.js";
 import { ValidatorStatusInSlot } from "@aztec/stdlib/validators";
-import { chicmozL1L2ValidatorSchema } from "../index.js";
+import { chicmozL1L2ValidatorSchema } from "../ethereum/index.js";
 
 const _statusMap: { [K in ValidatorStatusInSlot]: K } = {
   "block-mined": "block-mined",
