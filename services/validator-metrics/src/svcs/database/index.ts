@@ -1,6 +1,12 @@
 import { generateSvc } from "@chicmoz-pkg/postgres-helper";
-import * as schema from "@chicmoz-pkg/database-registry";
+import {
+  l1Schemas,
+  l2Schemas,
+  sentinelSchemas,
+} from "@chicmoz-pkg/database-registry";
 
 export * as controllers from "./controllers/index.js";
 
-export const databaseService = generateSvc({ schema });
+export const databaseService = generateSvc({
+  schema: { ...l1Schemas, ...l2Schemas, ...sentinelSchemas },
+});

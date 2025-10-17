@@ -1,7 +1,18 @@
 import { generateSvc } from "@chicmoz-pkg/postgres-helper";
-import * as explorerSchema from "./schema/index.js";
-import * as sharedSchema from "@chicmoz-pkg/database-registry"
+import * as explorerSchemas from "./schema/index.js";
+import {
+  l1Schemas,
+  l2Schemas,
+  sentinelSchemas,
+} from "@chicmoz-pkg/database-registry";
 
 export * as controllers from "./controllers/index.js";
 
-export const databaseService = generateSvc({ schema: { ...explorerSchema, ...sharedSchema } });
+export const databaseService = generateSvc({
+  schema: {
+    ...explorerSchemas,
+    ...l1Schemas,
+    ...l2Schemas,
+    ...sentinelSchemas,
+  },
+});

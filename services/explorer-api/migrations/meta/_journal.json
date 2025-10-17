@@ -71,6 +71,20 @@
       "when": 1760697995380,
       "tag": "0009_greedy_thunderbolts",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1760700485676,
+      "tag": "0010_jittery_forgotten_one",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1760700605974,
+      "tag": "0011_thick_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }
