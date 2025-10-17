@@ -15,18 +15,6 @@ spec:
       labels:
         app: validator-metrics-remote-devnet-label
     spec:
-      initContainers:
-        - name: run-migrations
-          image: validator-metrics:latest
-          command: ["yarn", "run", "migrate"]
-          envFrom:
-            - configMapRef:
-                name: postgres-config-global
-            - configMapRef:
-                name: postgres-config-validator-metrics-remote-devnet
-          env:
-            - name: TOTAL_DB_RESET
-              value: "false"
       containers:
         - image: validator-metrics:latest
           resources:
