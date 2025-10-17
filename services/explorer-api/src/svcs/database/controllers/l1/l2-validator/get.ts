@@ -324,10 +324,7 @@ export async function getValidatorTotals(): Promise<{
       result.find((row) => row.status === L1L2ValidatorStatus.VALIDATING)
         ?.count ?? 0;
 
-    const nonValidating = result
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      .filter((row) => row.status !== L1L2ValidatorStatus.VALIDATING)
-      .reduce((sum, row) => sum + row.count, 0);
+    const nonValidating = result.length - validating;
 
     return { validating, nonValidating };
   });
