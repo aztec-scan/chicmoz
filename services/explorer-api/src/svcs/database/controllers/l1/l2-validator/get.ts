@@ -8,7 +8,7 @@ import {
   chicmozValidatorWithSentinelSchema,
 } from "@chicmoz-pkg/types";
 import { l1Schemas, sentinelSchemas } from "@chicmoz-pkg/database-registry";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { L2_NETWORK_ID } from "../../../../../environment.js";
 import { getL2ChainInfo } from "../../l2/index.js";
 import { logger } from "../../../../../logger.js";
@@ -275,5 +275,60 @@ export async function getValidatorWithSentinel(
     }
 
     return mapRowToValidator(rows[0] as ValidatorRow, history) ?? null;
+  });
+}
+
+export async function getValidatorTotals(): Promise<{
+  validating: number;
+  nonValidating: number;
+}> {
+  const chainInfo = await getL2ChainInfo(L2_NETWORK_ID);
+
+  if (!chainInfo) {
+    logger.error("Chain info not found");
+    return { validating: 0, nonValidating: 0 };
+  }
+
+  return db().transaction(async (dbTx) => {
+    // Get the latest statuses for each validator
+    const latestStatuses = dbTx
+      .selectDistinctOn([l1L2ValidatorStatusTable.attesterAddress], {
+        attesterAddress: l1L2ValidatorStatusTable.attesterAddress,
+        status: l1L2ValidatorStatusTable.status,
+      })
+      .from(l1L2ValidatorStatusTable)
+      .orderBy(
+        l1L2ValidatorStatusTable.attesterAddress,
+        desc(l1L2ValidatorStatusTable.timestamp),
+      )
+      .as("latest_statuses");
+
+    // Count validators by status, filtered by rollup address
+    const result = await dbTx
+      .select({
+        status: latestStatuses.status,
+        count: count(),
+      })
+      .from(latestStatuses)
+      .where(
+        eq(
+          l1L2ValidatorTable.rollupAddress,
+          chainInfo.l1ContractAddresses.rollupAddress,
+        ),
+      )
+      .groupBy(latestStatuses.status);
+
+    // Extract counts
+    const validating =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      result.find((row) => row.status === L1L2ValidatorStatus.VALIDATING)
+        ?.count ?? 0;
+
+    const nonValidating = result
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      .filter((row) => row.status !== L1L2ValidatorStatus.VALIDATING)
+      .reduce((sum, row) => sum + row.count, 0);
+
+    return { validating, nonValidating };
   });
 }

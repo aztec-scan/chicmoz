@@ -24,10 +24,10 @@ minikube start --kubernetes-version=v1.25.3 --cpus max --memory max && skaffold 
 ./scripts/miscellaneous.sh
 ```
 
-Now you can access the explorer at http://sandbox.chicmoz.localhost and also...
+Now you can access the explorer at <http://sandbox.chicmoz.localhost> and also...
 
-- API: http://api.sandbox.chicmoz.localhost
-- index of API: http://api.sandbox.chicmoz.localhost/v1/dev-api-key/l2/index
+- API: <http://api.sandbox.chicmoz.localhost>
+- index of API: <http://api.sandbox.chicmoz.localhost/v1/dev-api-key/l2/index>
 
 ### Different Aztec-setups
 
@@ -329,7 +329,6 @@ The architecture follows an event-driven pattern:
 | `ETHEREUM_WS_RPC_URL`    | WebSocket URL of the Ethereum node          | `ws://anvil-ethereum-node:8545`   |
 | `BLOCK_POLL_INTERVAL_MS` | Polling interval for blocks in milliseconds | `500`                             |
 | `LISTEN_FOR_BLOCKS`      | Whether to listen for blocks                | `true`                            |
-| `GENESIS_CATCHUP`        | Whether to catch up from genesis            | `false`                           |
 | `LISTENER_DISABLED`      | Disable the listener entirely               | `false`                           |
 | `L2_NETWORK_ID`          | Identifier for the L2 network               | Required                          |
 
@@ -744,6 +743,7 @@ For production deployment, the process involves:
    ```
 
 4. **Deploy services**:
+
    ```sh
    skaffold run -f k8s/production/skaffold.testnet.yaml
    ```
