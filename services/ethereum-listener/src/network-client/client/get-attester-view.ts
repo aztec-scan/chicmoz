@@ -193,7 +193,7 @@ const fetchAllAttesters = async (
         outOfBoundsDetails.attemptedIndex - 1 < totalCount ? "less" : "more";
       logger.warn(
         `Finished due to out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex}` +
-        `(${Math.abs(outOfBoundsDetails.attemptedIndex - totalCount)} ${lessOrMore} than previous ${totalCount})`,
+          `(${Math.abs(outOfBoundsDetails.attemptedIndex - totalCount)} ${lessOrMore} than previous ${totalCount})`,
       );
       isFinished = true;
     }
@@ -210,8 +210,8 @@ const fetchAllAttesters = async (
 
       logger.info(
         `🔍 Batch ${batchNumber}/${estimatedTotalBatches} (${totalProgress}%) | ` +
-        `Attesters: ${attesters.length}/${totalCount} | ` +
-        `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
+          `Attesters: ${attesters.length}/${totalCount} | ` +
+          `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
       );
     }
     counter += BATCH_SIZE;

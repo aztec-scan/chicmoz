@@ -1,8 +1,7 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, primaryKey, smallint } from "drizzle-orm/pg-core";
+import { pgTable, primaryKey, smallint, bigint } from "drizzle-orm/pg-core";
 import {
   generateEthAddressColumn,
-  generateUint256Column,
   generateTimestampColumn,
 } from "@chicmoz-pkg/postgres-helper";
 
@@ -20,7 +19,7 @@ export const l1L2ValidatorStakeTable = pgTable(
     attesterAddress: generateEthAddressColumn("attester_address")
       .notNull()
       .references(() => l1L2ValidatorTable.attester, { onDelete: "cascade" }),
-    stake: generateUint256Column("stake").notNull(),
+    stake: bigint("stake", { mode: "bigint" }),
     timestamp: generateTimestampColumn("timestamp")
       .notNull()
       .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),

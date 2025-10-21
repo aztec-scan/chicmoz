@@ -11,11 +11,7 @@ import { l1Schemas } from "@chicmoz-pkg/database-registry";
 import { logger } from "../../../../../logger.js";
 import { getL2ChainInfo } from "../../l2/index.js";
 
-const {
-  l1L2ValidatorStakeTable,
-  l1L2ValidatorStatusTable,
-  l1L2ValidatorTable,
-} = l1Schemas;
+const { l1L2ValidatorStatusTable, l1L2ValidatorTable } = l1Schemas;
 
 export async function getL1L2Validator(
   attesterAddress: EthAddress,
@@ -34,20 +30,6 @@ export async function getL1L2Validator(
     rollupAddress ?? chainInfo!.l1ContractAddresses.rollupAddress;
 
   return db().transaction(async (dbTx) => {
-    const latestStake = dbTx
-      .selectDistinctOn([l1L2ValidatorStakeTable.attesterAddress], {
-        attesterAddress: l1L2ValidatorStakeTable.attesterAddress,
-        stake: l1L2ValidatorStakeTable.stake,
-        timestamp: l1L2ValidatorStakeTable.timestamp,
-      })
-      .from(l1L2ValidatorStakeTable)
-      .where(eq(l1L2ValidatorStakeTable.attesterAddress, attesterAddress))
-      .orderBy(
-        l1L2ValidatorStakeTable.attesterAddress,
-        desc(l1L2ValidatorStakeTable.timestamp),
-      )
-      .as("latest_stake");
-
     const latestStatus = dbTx
       .selectDistinctOn([l1L2ValidatorStatusTable.attesterAddress], {
         attesterAddress: l1L2ValidatorStatusTable.attesterAddress,
@@ -67,18 +49,13 @@ export async function getL1L2Validator(
         attester: l1L2ValidatorTable.attester,
         rollupAddress: l1L2ValidatorTable.rollupAddress,
         firstSeenAt: l1L2ValidatorTable.firstSeenAt,
-        stake: latestStake.stake,
+        stake: l1L2ValidatorTable.stake,
         status: latestStatus.status,
         withdrawer: l1L2ValidatorTable.withdrawer,
         proposer: l1L2ValidatorTable.proposer,
-        stakeTimestamp: latestStake.timestamp,
         statusTimestamp: latestStatus.timestamp,
       })
       .from(l1L2ValidatorTable)
-      .leftJoin(
-        latestStake,
-        eq(latestStake.attesterAddress, l1L2ValidatorTable.attester),
-      )
       .leftJoin(
         latestStatus,
         eq(latestStatus.attesterAddress, l1L2ValidatorTable.attester),
@@ -96,10 +73,7 @@ export async function getL1L2Validator(
     }
 
     const row = result[0];
-    const latestSeenChangeAt = Math.max(
-      row.stakeTimestamp ?? 0,
-      row.statusTimestamp ?? 0,
-    );
+    const latestSeenChangeAt = row.statusTimestamp ?? 0;
 
     const validator = {
       attester: row.attester,

@@ -1,25 +1,50 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  ChicmozL1L2Validator,
-  chicmozL1L2ValidatorSchema,
+  ChicmozValidatorWithSentinel,
   L1L2ValidatorStatus,
+  SentinelFilterEnum,
 } from "@chicmoz-pkg/types";
-import { count, desc, eq } from "drizzle-orm";
+import { l1Schemas, sentinelSchemas } from "@chicmoz-pkg/database-registry";
+import { asc, count, desc, eq } from "drizzle-orm";
 import { L2_NETWORK_ID } from "../../../../../environment.js";
-import { l1Schemas } from "@chicmoz-pkg/database-registry";
-import { logger } from "../../../../../logger.js";
-const {
-  l1L2ValidatorStakeTable,
-  l1L2ValidatorStatusTable,
-  l1L2ValidatorTable,
-} = l1Schemas
-
 import { getL2ChainInfo } from "../../l2/index.js";
+import { logger } from "../../../../../logger.js";
 
-export async function getAllL1L2Validators(
-  status?: ChicmozL1L2Validator["status"],
-  options?: { limit?: number; offset?: number },
-): Promise<ChicmozL1L2Validator[] | null> {
+import {
+  buildLatestStakeSubquery,
+  buildLatestStatusSubquery,
+  buildValidatorSelect,
+  mapRowToValidator,
+} from "./util.js";
+
+const { l1L2ValidatorTable } = l1Schemas;
+
+const { SentinelValidatorTable } = sentinelSchemas;
+
+function pickOrder(order?: SentinelFilterEnum) {
+  switch (order) {
+    case "asc-slots":
+      return asc(SentinelValidatorTable.totalSlots);
+    case "desc-slots":
+      return desc(SentinelValidatorTable.totalSlots);
+    case "asc-latest":
+      return asc(SentinelValidatorTable.lastSeenAtSlot);
+    case "desc-latest":
+    default:
+      return desc(SentinelValidatorTable.lastSeenAtSlot);
+  }
+}
+
+export type ValidatorQueryOptions = {
+  order?: SentinelFilterEnum;
+  limit?: number;
+  offset?: number;
+};
+
+export async function getValidatorsWithSentinel(
+  options: ValidatorQueryOptions = {},
+): Promise<ChicmozValidatorWithSentinel[] | null> {
+  const { order = "desc-latest", limit = 500, offset = 0 } = options;
   const chainInfo = await getL2ChainInfo(L2_NETWORK_ID);
 
   if (!chainInfo) {
@@ -28,91 +53,28 @@ export async function getAllL1L2Validators(
   }
 
   return db().transaction(async (dbTx) => {
-    const latestStakes = dbTx
-      .selectDistinctOn([l1L2ValidatorStakeTable.attesterAddress], {
-        attesterAddress: l1L2ValidatorStakeTable.attesterAddress,
-        stake: l1L2ValidatorStakeTable.stake,
-        timestamp: l1L2ValidatorStakeTable.timestamp,
-      })
-      .from(l1L2ValidatorStakeTable)
-      .orderBy(
-        l1L2ValidatorStakeTable.attesterAddress,
-        desc(l1L2ValidatorStakeTable.timestamp),
-      )
-      .as("latest_stakes");
+    const latestStatuses = buildLatestStatusSubquery(dbTx);
+    const latestStakes = buildLatestStakeSubquery(dbTx);
 
-    const latestStatuses = dbTx
-      .selectDistinctOn([l1L2ValidatorStatusTable.attesterAddress], {
-        attesterAddress: l1L2ValidatorStatusTable.attesterAddress,
-        status: l1L2ValidatorStatusTable.status,
-        timestamp: l1L2ValidatorStatusTable.timestamp,
-      })
-      .from(l1L2ValidatorStatusTable)
-      .orderBy(
-        l1L2ValidatorStatusTable.attesterAddress,
-        desc(l1L2ValidatorStatusTable.timestamp),
-      )
-      .as("latest_statuses");
+    const pickedOrder = pickOrder(order);
 
-    // Main query with joins
-    const result = await dbTx
-      .select({
-        attester: l1L2ValidatorTable.attester,
-        rollupAddress: l1L2ValidatorTable.rollupAddress,
-        firstSeenAt: l1L2ValidatorTable.firstSeenAt,
-        stake: latestStakes.stake,
-        status: latestStatuses.status,
-        withdrawer: l1L2ValidatorTable.withdrawer,
-        proposer: l1L2ValidatorTable.proposer,
-        stakeTimestamp: latestStakes.timestamp,
-        statusTimestamp: latestStatuses.timestamp,
-      })
-      .from(l1L2ValidatorTable)
-      .leftJoin(
-        latestStakes,
-        eq(latestStakes.attesterAddress, l1L2ValidatorTable.attester),
-      )
-      .leftJoin(
-        latestStatuses,
-        eq(latestStatuses.attesterAddress, l1L2ValidatorTable.attester),
-      )
+    const safeLimit = Math.max(1, Math.min(limit, 500));
+    const safeOffset = Math.max(0, offset);
+
+    const rows = await buildValidatorSelect(dbTx, latestStatuses, latestStakes)
       .where(
         eq(
           l1L2ValidatorTable.rollupAddress,
           chainInfo.l1ContractAddresses.rollupAddress,
         ),
       )
-      .orderBy(desc(latestStakes.stake), desc(l1L2ValidatorTable.firstSeenAt))
-      .limit(options?.limit ?? 1000)
-      .offset(options?.offset ?? 0);
+      .orderBy(pickedOrder)
+      .limit(safeLimit)
+      .offset(safeOffset);
 
-    // Transform the result to match ChicmozL1L2Validator schema
-    const validators = result
-      .map((row) => {
-        if (!row.attester) {
-          return null;
-        }
-
-        const latestSeenChangeAt = Math.max(
-          row.stakeTimestamp ?? 0,
-          row.statusTimestamp ?? 0,
-        );
-
-        const validator = {
-          attester: row.attester,
-          rollupAddress: row.rollupAddress,
-          firstSeenAt: row.firstSeenAt,
-          stake: row.stake ? BigInt(row.stake) : BigInt(0),
-          status: row.status,
-          withdrawer: row.withdrawer,
-          proposer: row.proposer,
-          latestSeenChangeAt,
-        };
-
-        return chicmozL1L2ValidatorSchema.parse(validator);
-      })
-      .filter((v) => v !== null && (status ? v.status === status : true))
-      .map((v) => chicmozL1L2ValidatorSchema.parse(v));
+    const validators = rows
+      .map((row) => mapRowToValidator(row))
+      .filter((value): value is ChicmozValidatorWithSentinel => value !== null);
 
     return validators;
   });
@@ -130,18 +92,7 @@ export async function getValidatorTotals(): Promise<{
   }
 
   return db().transaction(async (dbTx) => {
-    // Get the latest statuses for each validator
-    const latestStatuses = dbTx
-      .selectDistinctOn([l1L2ValidatorStatusTable.attesterAddress], {
-        attesterAddress: l1L2ValidatorStatusTable.attesterAddress,
-        status: l1L2ValidatorStatusTable.status,
-      })
-      .from(l1L2ValidatorStatusTable)
-      .orderBy(
-        l1L2ValidatorStatusTable.attesterAddress,
-        desc(l1L2ValidatorStatusTable.timestamp),
-      )
-      .as("latest_statuses");
+    const latestStatuses = buildLatestStatusSubquery(dbTx);
 
     // Count validators by status, filtered by rollup address
     const result = await dbTx
@@ -151,15 +102,12 @@ export async function getValidatorTotals(): Promise<{
       })
       .from(latestStatuses)
       .innerJoin(
-        l1L2ValidatorRollupAddress,
-        eq(
-          latestStatuses.attesterAddress,
-          l1L2ValidatorRollupAddress.attesterAddress,
-        ),
+        l1L2ValidatorTable,
+        eq(latestStatuses.attesterAddress, l1L2ValidatorTable.attester),
       )
       .where(
         eq(
-          l1L2ValidatorRollupAddress.rollupAddress,
+          l1L2ValidatorTable.rollupAddress,
           chainInfo.l1ContractAddresses.rollupAddress,
         ),
       )
@@ -171,10 +119,7 @@ export async function getValidatorTotals(): Promise<{
       result.find((row) => row.status === L1L2ValidatorStatus.VALIDATING)
         ?.count ?? 0;
 
-    const nonValidating = result
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      .filter((row) => row.status !== L1L2ValidatorStatus.VALIDATING)
-      .reduce((sum, row) => sum + row.count, 0);
+    const nonValidating = result.length - validating;
 
     return { validating, nonValidating };
   });

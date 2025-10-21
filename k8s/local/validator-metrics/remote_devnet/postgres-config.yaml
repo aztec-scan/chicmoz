@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config-validator-metrics-remote-devnet
-  namespace: chicmoz
-data:
-  POSTGRES_DB_NAME: "explorer_api_remote_devnet"

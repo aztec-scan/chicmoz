@@ -8,13 +8,10 @@ import {
 } from "@chicmoz-pkg/types";
 import { desc, eq, sql } from "drizzle-orm";
 
-const {
-  l1L2ValidatorStakeTable,
-  l1L2ValidatorStatusTable,
-} = l1Schemas
+const { l1L2ValidatorStakeTable, l1L2ValidatorStatusTable } = l1Schemas;
 
 export async function getL1L2ValidatorHistory(
-  attesterAddress: EthAddress
+  attesterAddress: EthAddress,
 ): Promise<ChicmozL1L2ValidatorHistoryEntry[]> {
   const result = await db()
     .select({
@@ -32,7 +29,7 @@ export async function getL1L2ValidatorHistory(
           newValue: sql<string>`CAST(${l1L2ValidatorStatusTable.status} AS TEXT)`,
         })
         .from(l1L2ValidatorStatusTable)
-        .where(eq(l1L2ValidatorStatusTable.attesterAddress, attesterAddress))
+        .where(eq(l1L2ValidatorStatusTable.attesterAddress, attesterAddress)),
     )
     .orderBy(desc(sql`timestamp`))
     .execute();
@@ -46,6 +43,6 @@ export async function getL1L2ValidatorHistory(
             newValue as keyof typeof L1L2ValidatorStatus
           ].toString()
         : newValue,
-    ])
+    ]),
   );
 }

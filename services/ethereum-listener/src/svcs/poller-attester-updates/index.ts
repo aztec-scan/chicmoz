@@ -1,7 +1,11 @@
 import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
 import { logger } from "../../logger.js";
 import { getAttestersView } from "../../network-client/contracts/index.js";
-import { ATTESTER_BATCH_DELAY_MS, ATTESTER_POLL_INTERVAL_MS, BATCH_SIZE } from "../../environment.js";
+import {
+  ATTESTER_BATCH_DELAY_MS,
+  ATTESTER_POLL_INTERVAL_MS,
+  BATCH_SIZE,
+} from "../../environment.js";
 
 let started = false;
 let timeoutId: NodeJS.Timeout | undefined;
@@ -40,7 +44,7 @@ const updateAttesters = async () => {
 
     logger.warn(
       `🔍 Skipping attester update - already in progress for ${Math.round(timeSinceStart / 1000)}s. ` +
-      `Estimated time remaining: ${Math.round(estimatedTimeLeft / 1000)}s`,
+        `Estimated time remaining: ${Math.round(estimatedTimeLeft / 1000)}s`,
     );
     return;
   }
