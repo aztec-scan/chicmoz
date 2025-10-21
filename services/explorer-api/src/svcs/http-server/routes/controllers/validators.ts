@@ -125,10 +125,18 @@ export const openapi_GET_L1_L2_VALIDATOR: OpenAPIObject["paths"] = {
 };
 
 export const GET_L1_L2_VALIDATOR = asyncHandler(async (req, res) => {
-  const { attesterAddress } = getL1L2ValidatorSchema.parse(req).params;
+  const reqParse = getL1L2ValidatorSchema.parse(req);
+  const { attesterAddress } = reqParse.params;
+  const { includeHistory, historyLimit, historyOffset } = reqParse.query ?? {};
+
   const validator = await dbWrapper.get(
     ["l1", "l2-validators", attesterAddress],
-    () => db.validator.getValidatorWithSentinel(attesterAddress),
+    () =>
+      db.validator.getValidatorWithSentinel(attesterAddress, {
+        includeHistory,
+        historyLimit,
+        historyOffset,
+      }),
   );
   res.status(200).json(JSON.parse(validator));
 });
