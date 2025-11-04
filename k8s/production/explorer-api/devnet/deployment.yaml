@@ -2,39 +2,39 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: explorer-api-testnet-label
-  name: explorer-api-testnet-deployment
+    app: explorer-api-devnet-label
+  name: explorer-api-devnet-deployment
   namespace: chicmoz-prod
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: explorer-api-testnet-label
+      app: explorer-api-devnet-label
   strategy: {}
   template:
     metadata:
       labels:
-        app: explorer-api-testnet-label
+        app: explorer-api-devnet-label
     spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
       initContainers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet:latest
           name: run-migrations
           command: ["yarn", run, "migrate"]
           envFrom:
             - configMapRef:
                 name: postgres-config-global
             - configMapRef:
-                name: postgres-config-explorer-api-testnet
+                name: postgres-config-explorer-api-devnet
           env:
             - name: NODE_ENV
               value: "production"
             - name: TOTAL_DB_RESET
               value: "false"
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
-          name: explorer-api-testnet
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet:latest
+          name: explorer-api-devnet
           resources:
             limits:
               memory: 300Mi
@@ -47,14 +47,14 @@ spec:
             - configMapRef:
                 name: postgres-config-global
             - configMapRef:
-                name: postgres-config-explorer-api-testnet
+                name: postgres-config-explorer-api-devnet
           env:
             - name: NODE_ENV
               value: "production"
             - name: INSTANCE_NAME
-              value: "testnet_explorer-api"
+              value: "devnet_explorer-api"
             - name: L2_NETWORK_ID
-              value: "TESTNET"
+              value: "DEVNET"
             - name: PUBLIC_API_KEY
               value: "temporary-api-key"
           readinessProbe:

@@ -1,0 +1,118 @@
+name: CI/CD Chicmoz Prod
+
+on:
+  push:
+    branches:
+      - production-devnet
+  pull_request:
+    branches:
+      - production-devnet
+    types:
+      - closed
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    outputs:
+      tools-cache-key: ${{ steps.cache-key.outputs.key }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up tools directory
+        run: mkdir -p tools
+
+      - name: Install Skaffold
+        run: |
+          curl -Lo tools/skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+          chmod +x tools/skaffold
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Copy doctl to tools directory
+        run: |
+          which doctl
+          cp $(which doctl) tools/
+          chmod +x tools/doctl
+
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          echo "key=${{ runner.os }}-tools-$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: tools/doctl registry login --expiry-seconds 1200
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - set-up
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save "chicmoz-prod"
+
+      - name: Log in to DigitalOcean Container Registry
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Deploy to cluster with Skaffold
+        env:
+          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
+          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+          AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_DEVNET }}
+        run: |
+          MAX_RETRIES=3
+          RETRY_DELAY=10
+
+          kubectl create secret generic global \
+            --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
+            --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
+            --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_DEVNET \
+            -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            if bash -x scripts/production/deploy-devnet.sh; then
+              echo "Deployment successful"
+              exit 0
+            fi
+            echo "Attempt $i failed. Retrying in $RETRY_DELAY seconds..."
+            sleep $RETRY_DELAY
+          done
+
+          echo "Deployment failed after $MAX_RETRIES attempts"
+          exit 1

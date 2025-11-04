@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: websocket-event-publisher-testnet-label
-  name: websocket-event-publisher-testnet-deployment
+    app: websocket-event-publisher-devnet-label
+  name: websocket-event-publisher-devnet-deployment
   namespace: chicmoz-prod
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: websocket-event-publisher-testnet-label
+      app: websocket-event-publisher-devnet-label
   strategy: {}
   template:
     metadata:
       labels:
-        app: websocket-event-publisher-testnet-label
+        app: websocket-event-publisher-devnet-label
     spec:
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet:latest
+        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-devnet:latest
           name: websocket-event-publisher
           resources:
             limits:
@@ -29,11 +29,11 @@ spec:
               protocol: TCP
           env:
             - name: INSTANCE_NAME
-              value: "testnet_websocket-event-publisher"
+              value: "devnet_websocket-event-publisher"
             - name: PORT
               value: "3000"
             - name: NODE_ENV
               value: "production"
             - name: L2_NETWORK_ID
-              value: "TESTNET"
+              value: "DEVNET"
 status: {}

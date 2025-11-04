@@ -4,7 +4,7 @@ requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
-    - image: registry.digitalocean.com/aztlan-containers/aztec-listener-testnet
+    - image: registry.digitalocean.com/aztlan-containers/aztec-listener-devnet
       context: ../../../services/aztec-listener
       docker:
         dockerfile: Dockerfile
@@ -17,5 +17,5 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./testnet/postgres-config.yaml
-    - ./testnet/deployment.yaml
+    - ./devnet/postgres-config.yaml
+    - ./devent/deployment.yaml
