@@ -1,4 +1,4 @@
-name: CI/CD Chicmoz Prod
+name: CI/CD Chicmoz Prod DEVNET
 
 on:
   push:
