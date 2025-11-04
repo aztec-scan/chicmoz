@@ -5,7 +5,7 @@ metadata:
 requires:
   - path: ./common/skaffold.manifests.yaml
   - path: ./explorer-ui/skaffold.devnet.yaml
-  - path: ./explorer-api/skaffold.devnet.yaml.yaml
+  - path: ./explorer-api/skaffold.devnet.yaml
   - path: ./auth/skaffold.yaml
   - path: ./aztec-listener/skaffold.devnet.yaml
   - path: ./ethereum-listener/skaffold.devnet.yaml

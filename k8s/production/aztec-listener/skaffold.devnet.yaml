@@ -18,4 +18,4 @@ deploy:
 manifests:
   rawYaml:
     - ./devnet/postgres-config.yaml
-    - ./devent/deployment.yaml
+    - ./devnet/deployment.yaml
