@@ -1,11 +1,11 @@
 // TODO: perhaps move this file to chicmoz-types?
-import { L2Block } from "@aztec/aztec.js";
 import {
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
   chicmozL2BlockSchema,
 } from "@chicmoz-pkg/types";
 import { parseTimeStamp } from "./time.js";
+import { L2Block } from "@aztec/aztec.js/block";
 
 const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
   return txEffects.map((txEffect) => {
@@ -18,7 +18,6 @@ const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
       publicLogs: txEffect.publicLogs.map((log) => ({
         contractAddress: log.contractAddress,
         fields: log.fields,
-        emittedLength: log.emittedLength,
       })),
       contractClassLogs: txEffect.contractClassLogs.map((log) => ({
         contractAddress: log.contractAddress,
@@ -66,7 +65,11 @@ export const parseBlock = async (
       },
       globalVariables: {
         ...blockWithTxEffectsHashesAdded.header.globalVariables,
-        timestamp: parseTimeStamp(Number(blockWithTxEffectsHashesAdded.header.globalVariables.timestamp.toString())),
+        timestamp: parseTimeStamp(
+          Number(
+            blockWithTxEffectsHashesAdded.header.globalVariables.timestamp.toString(),
+          ),
+        ),
         coinbase:
           blockWithTxEffectsHashesAdded.header.globalVariables.coinbase.toString(),
       },

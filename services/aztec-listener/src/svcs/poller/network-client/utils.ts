@@ -1,4 +1,4 @@
-import { NodeInfo } from "@aztec/aztec.js";
+import { NodeInfo } from "@aztec/aztec.js/node";
 import {
   ChicmozChainInfo,
   ChicmozL2Sequencer,
@@ -9,7 +9,7 @@ import {
 
 export const getChicmozChainInfoFromNodeInfo = (
   l2NetworkId: L2NetworkId,
-  nodeInfo: NodeInfo
+  nodeInfo: NodeInfo,
 ): ChicmozChainInfo => {
   return chicmozChainInfoSchema.parse({
     l2NetworkId,
@@ -20,7 +20,7 @@ export const getChicmozChainInfoFromNodeInfo = (
 export const getSequencerFromNodeInfo = (
   l2NetworkId: L2NetworkId,
   rpcUrl: string,
-  nodeInfo: NodeInfo
+  nodeInfo: NodeInfo,
 ): ChicmozL2Sequencer => {
   return chicmozL2SequencerSchema.parse({
     l2NetworkId,

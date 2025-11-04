@@ -19,7 +19,7 @@ spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
       initContainers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-api:latest
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
           name: run-migrations
           command: ["yarn", run, "migrate"]
           envFrom:
@@ -33,8 +33,8 @@ spec:
             - name: TOTAL_DB_RESET
               value: "false"
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-api:latest
-          name: explorer-api
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
+          name: explorer-api-testnet
           resources:
             limits:
               memory: 300Mi

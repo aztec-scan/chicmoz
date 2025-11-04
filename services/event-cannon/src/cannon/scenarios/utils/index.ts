@@ -1,25 +1,8 @@
 import {
-  SchnorrAccountContractArtifact,
-  getSchnorrAccount,
-} from "@aztec/accounts/schnorr";
-import {
-  AztecNode,
-  Contract,
-  DeploySentTx,
-  Fr,
-  FunctionSelector,
-  FunctionType,
-  NoirCompiledContract,
-  PXE,
-  SentTx,
-  Wallet,
-} from "@aztec/aztec.js";
-import {
   broadcastPrivateFunction,
   broadcastUtilityFunction,
 } from "@aztec/aztec.js/deployment";
 import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
-import { deriveSigningKey } from "@aztec/stdlib/keys";
 import {
   generateVerifyArtifactPayload,
   generateVerifyArtifactUrl,
@@ -32,8 +15,21 @@ import {
 } from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
-import { getWallets } from "../../pxe.js";
+import { getAccounts } from "../../pxe.js";
 import { callExplorerApi } from "./explorer-api.js";
+import { Contract, DeploySentTx, SentTx } from "@aztec/aztec.js/contracts";
+import {
+  FunctionSelector,
+  FunctionType,
+  NoirCompiledContract,
+} from "@aztec/aztec.js/abi";
+import { PXE } from "@aztec/pxe/server";
+import { Fr } from "@aztec/aztec.js/fields";
+import { TestWallet } from "@aztec/test-wallet/server";
+import { AztecNode } from "@aztec/aztec.js/node";
+import { Wallet } from "@aztec/aztec.js/wallet";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { Account } from "@aztec/aztec.js/account";
 
 export const truncateHashString = (value: string) => {
   const startHash = value.substring(0, 6);
@@ -62,47 +58,44 @@ export const getFunctionSpacer = (type: FunctionType) => {
 };
 
 export const getNewSchnorrAccount = async ({
-  pxe,
+  wallet,
   secretKey,
   salt,
   accountName,
 }: {
-  pxe: PXE;
+  wallet: TestWallet;
   secretKey: Fr;
   salt: Fr;
   accountName: string;
 }) => {
   logger.info(`  Creating new Schnorr account... (${accountName})`);
-  const schnorrAccount = await getSchnorrAccount(
-    pxe,
-    secretKey,
-    deriveSigningKey(secretKey),
-    salt,
-  );
+  const schnorrAccount = await wallet.createSchnorrAccount(secretKey, salt);
+
   logger.info(
-    `    Schnorr account created ${schnorrAccount
-      .getAddress()
-      .toString()} (${accountName})`,
+    `    Schnorr account created ${schnorrAccount.address.toString()} (${accountName})`,
   );
   const { address } = await schnorrAccount.getCompleteAddress();
   logger.info(`    Deploying Schnorr account to network... (${accountName})`);
+  const deployFunction = await schnorrAccount.getDeployMethod();
   await logAndWaitForTx(
-    schnorrAccount.deploy({ deployWallet: getWallets().alice }),
+    deployFunction.send({ from: AztecAddress.ZERO }),
     `Deploying account ${accountName}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
-  const wallet = await schnorrAccount.getWallet();
   logger.info(
     `    🔐 Schnorr account created at: ${address.toString()} (${accountName})`,
   );
-  return { schnorrAccount, wallet, address };
+  return { schnorrAccount, address };
 };
 
-export const getNewAccount = async (pxe: PXE, accountName: string) => {
+export const getNewAccount = async (
+  wallet: TestWallet,
+  accountName: string,
+) => {
   const secretKey = Fr.random();
   const salt = Fr.random();
   return getNewSchnorrAccount({
-    pxe,
+    wallet,
     secretKey,
     salt,
     accountName,
@@ -189,7 +182,7 @@ export const broadcastFunctions = async ({
       await logAndWaitForTx(
         (
           await broadcastPrivateFunction(wallet, contract.artifact, selector)
-        ).send({ from: wallet.getAddress() }),
+        ).send({ from: getAccounts().alice.address }),
         `Broadcasting private function ${fn.name}`,
       );
     }
@@ -201,7 +194,7 @@ export const broadcastFunctions = async ({
       await logAndWaitForTx(
         (
           await broadcastUtilityFunction(wallet, contract.artifact, selector)
-        ).send({ from: wallet.getAddress() }),
+        ).send({ from: getAccounts().alice.address }),
         `Broadcasting utility function ${fn.name}`,
       );
     }
@@ -209,8 +202,9 @@ export const broadcastFunctions = async ({
 };
 
 export const publicDeployAccounts = async (
-  sender: Wallet,
-  accountsToDeploy: Wallet[],
+  sender: Account,
+  accountsToDeploy: Account[],
+  wallet: Wallet,
   pxe: PXE,
 ) => {
   const notPubliclyDeployedAccounts = await Promise.all(
@@ -227,7 +221,7 @@ export const publicDeployAccounts = async (
   }
 
   // Register contract class first
-  await sender.registerContractClass(SchnorrAccountContractArtifact);
+  await wallet.registerSender(sender.getAddress());
 
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
@@ -237,9 +231,7 @@ export const publicDeployAccounts = async (
       );
       continue;
     }
-    await sender.registerContract({
-      instance: contractMetadata.contractInstance,
-    });
+    await wallet.registerContract(contractMetadata.contractInstance);
   }
 };
 

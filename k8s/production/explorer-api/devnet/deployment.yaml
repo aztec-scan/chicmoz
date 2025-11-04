@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-api-devnet-label
+  name: explorer-api-devnet-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-api-devnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: explorer-api-devnet-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet:latest
+          name: run-migrations
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-devnet
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet:latest
+          name: explorer-api-devnet
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-devnet
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: INSTANCE_NAME
+              value: "devnet_explorer-api"
+            - name: L2_NETWORK_ID
+              value: "DEVNET"
+            - name: PUBLIC_API_KEY
+              value: "temporary-api-key"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

@@ -17,7 +17,7 @@ spec:
         app: websocket-event-publisher-testnet-label
     spec:
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher:latest
+        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet:latest
           name: websocket-event-publisher
           resources:
             limits:

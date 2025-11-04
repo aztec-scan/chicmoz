@@ -1,27 +1,27 @@
-import { Contract, DeploySentTx, Fr, waitForPXE } from "@aztec/aztec.js";
 import {
   PrivateVotingContract,
   PrivateVotingContractArtifact,
 } from "@aztec/noir-contracts.js/PrivateVoting";
 import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/private_voting_contract-PrivateVoting" with { type: "json" };
 import { logger } from "../../logger.js";
-import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
+import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
   logAndWaitForTx,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
+import { Contract, DeploySentTx } from "@aztec/aztec.js/contracts";
+import { Fr } from "@aztec/aztec.js/fields";
 
 const contractId = "VotingContract";
 
 export async function run() {
   logger.info(`===== ${contractId} =====`);
-  const pxe = getPxe();
-  await waitForPXE(pxe);
-  const namedWallets = getWallets();
+  const namedWallets = getAccounts();
+  const wallet = getWallet();
 
   const deployerWallet = namedWallets.alice;
-  const votingAdmin = namedWallets.alice.getAddress();
+  const votingAdmin = namedWallets.alice.address;
 
   const contractLoggingName = contractId;
   const constructorArgs = [votingAdmin];
@@ -29,10 +29,10 @@ export async function run() {
   const contract = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<PrivateVotingContract> =>
-      PrivateVotingContract.deploy(deployerWallet, constructorArgs[0]).send({
-        from: deployerWallet.getAddress(),
+      PrivateVotingContract.deploy(wallet, constructorArgs[0]).send({
+        from: deployerWallet.address,
       }),
-    broadcastWithWallet: deployerWallet, // NOTE: comment this out to not broadcast
+    broadcastWithWallet: wallet, // NOTE: comment this out to not broadcast
     node: getAztecNodeClient(),
   });
 
@@ -65,17 +65,17 @@ export async function run() {
   const votingContractAlice = await Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
-    namedWallets.alice,
+    wallet,
   );
   const votingContractBob = await Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
-    namedWallets.bob,
+    wallet,
   );
   const votingContractCharlie = await Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
-    namedWallets.charlie,
+    wallet,
   );
 
   const candidateA = new Fr(1);
@@ -85,29 +85,29 @@ export async function run() {
     logAndWaitForTx(
       votingContractAlice.methods
         .cast_vote(candidateA)
-        .send({ from: namedWallets.alice.getAddress() }),
+        .send({ from: namedWallets.alice.address }),
       "Cast vote 1 - candidate A",
     ),
     logAndWaitForTx(
       votingContractBob.methods
         .cast_vote(candidateA)
-        .send({ from: namedWallets.bob.getAddress() }),
+        .send({ from: namedWallets.bob.address }),
       "Cast vote 2 - candidate A",
     ),
     await logAndWaitForTx(
       votingContractCharlie.methods
         .cast_vote(candidateB)
-        .send({ from: namedWallets.charlie.getAddress() }),
+        .send({ from: namedWallets.charlie.address }),
       "Cast vote 3 - candidate B",
     ),
   ]);
 
   const votesA = (await contract.methods
     .get_vote(candidateA)
-    .simulate({ from: deployerWallet.getAddress() })) as bigint;
+    .simulate({ from: deployerWallet.address })) as bigint;
   const votesB = (await contract.methods
     .get_vote(candidateB)
-    .simulate({ from: deployerWallet.getAddress() })) as bigint;
+    .simulate({ from: deployerWallet.address })) as bigint;
 
   logger.info(`  Votes for candidate 1: ${votesA}`);
   logger.info(`  Votes for candidate 2: ${votesB}`);

@@ -1,13 +1,13 @@
 import {
   NoirCompiledContract,
-  getContractClassFromArtifact,
   loadContractArtifact,
-} from "@aztec/aztec.js";
+} from "@aztec/aztec.js/abi";
 import contractArtifactJson from "@aztec/noir-contracts.js/artifacts/private_voting_contract-PrivateVoting" with { type: "json" };
 import { beforeAll, describe, expect, test } from "vitest";
 import { VerifyInstanceDeploymentPayload } from "../types.js";
 import { generateVerifyInstancePayload } from "./generate-payload.js";
 import { verifyInstanceDeploymentPayload } from "./verify-payload.js";
+import { getContractClassFromArtifact } from "@aztec/aztec.js/contracts";
 
 const salt =
   "0x22a286727cc52b2af208b884a01858793d29d20e897df4b2a80237d96528c8de";

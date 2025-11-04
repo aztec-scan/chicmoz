@@ -1,5 +1,4 @@
 import { generateSchema } from "@anatine/zod-openapi";
-import { NoirCompiledContract } from "@aztec/aztec.js";
 import {
   VerifyInstanceDeploymentPayload,
   generateVerifyArtifactPayload,
@@ -36,6 +35,7 @@ import {
   contractInstanceResponseArray,
   dbWrapper,
 } from "./utils/index.js";
+import { NoirCompiledContract } from "@aztec/aztec.js/abi";
 
 const verifyContractRequestBody = generateSchema(
   z.object({
