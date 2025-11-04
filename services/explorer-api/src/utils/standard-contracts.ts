@@ -1,4 +1,3 @@
-import { NoirCompiledContract } from "@aztec/aztec.js";
 import {
   ContractStandard,
   ContractStandardName,
@@ -8,6 +7,7 @@ import DripperContractJsonV1 from "@defi-wonderland/aztec-standards/historical/0
 import TokenContractJsonV1 from "@defi-wonderland/aztec-standards/historical/0.0.0-83476cda/target/token_contract-Token.json" with { type: "json" };
 import DripperContractJsonV083 from "@defi-wonderland/aztec-standards/historical/0.0.0-73e84dcc/target/dripper-Dripper.json" with { type: "json" };
 import TokenContractJsonV083 from "@defi-wonderland/aztec-standards/historical/0.0.0-73e84dcc/target/token_contract-Token.json" with { type: "json" };
+import { NoirCompiledContract } from "@aztec/aztec.js/abi";
 
 const contracts: Record<
   ContractStandardVersion,

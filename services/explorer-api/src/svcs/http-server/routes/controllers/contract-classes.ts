@@ -1,4 +1,3 @@
-import { NoirCompiledContract } from "@aztec/aztec.js";
 import { verifyArtifactPayload } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import {
@@ -21,6 +20,7 @@ import {
   contractClassResponseArray,
   dbWrapper,
 } from "./utils/index.js";
+import { NoirCompiledContract } from "@aztec/aztec.js/abi";
 
 export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS: OpenAPIObject["paths"] =
   {

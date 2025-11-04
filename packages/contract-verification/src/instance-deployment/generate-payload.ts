@@ -1,4 +1,4 @@
-import { NoirCompiledContract } from "@aztec/aztec.js";
+import { NoirCompiledContract } from "@aztec/aztec.js/abi";
 import {
   VerifyInstanceDeploymentPayload,
   verifyInstanceDeploymentPayloadSchema,

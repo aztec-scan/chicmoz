@@ -1,11 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import {
-  AztecAddress,
-  AztecNode,
-  Fr,
-  NodeInfo,
-  ProtocolContractAddress,
-} from "@aztec/aztec.js";
 import { deriveStorageSlotInMap } from "@aztec/stdlib/hash";
 import {
   ChicmozChainInfo,
@@ -36,6 +29,10 @@ import {
   getChicmozChainInfoFromNodeInfo,
   getSequencerFromNodeInfo,
 } from "./utils.js";
+import { AztecNode, NodeInfo } from "@aztec/aztec.js/node";
+import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { Fr } from "@aztec/aztec.js/fields";
+import { ProtocolContractAddress } from "@aztec/aztec.js/protocol";
 
 const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway"];
 

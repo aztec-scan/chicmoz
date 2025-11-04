@@ -1,34 +1,77 @@
 use dep::aztec::macros::aztec;
 
 #[aztec]
-contract SimpleLogging {
-    use dep::aztec::prelude::{Map, PublicMutable};
-    use aztec::macros::{functions::{public, initializer, utility, internal},storage::storage};
+pub contract SimpleLogging {
+    use aztec::{
+        macros::{functions::{external, initializer}, storage::storage},
+        oracle::debug_log::debug_log_format,
+        protocol_types::{address::AztecAddress, traits::ToField},
+        state_vars::Map,
+    };
+    use easy_private_state::EasyPrivateUint;
+
     #[storage]
     struct Storage<Context> {
-        counters: Map<Field, PublicMutable<Field, Context>, Context>,
+        counters: Map<AztecAddress, EasyPrivateUint<Context>, Context>,
     }
 
-    #[public]
     #[initializer]
-    fn constructor() {
+    #[external("private")]
+    // We can name our initializer anything we want as long as it's marked as aztec(initializer)
+    fn initialize(headstart: u64, owner: AztecAddress) {
+        let counters = storage.counters;
+        counters.at(owner).add(headstart, owner);
     }
 
-    #[public]
-    #[internal]
-    fn add_to_counter_public(counter_id: Field) {
-        let new_counter_value = storage.counters.at(counter_id).read() + 1;
-        storage.counters.at(counter_id).write(new_counter_value);
+    #[external("private")]
+    fn increment(owner: AztecAddress) {
+        debug_log_format("Incrementing counter for owner {0}", [owner.to_field()]);
+        let counters = storage.counters;
+        counters.at(owner).add(1, owner);
     }
 
-    #[public]
-    fn increase_counter_public(counter_id: Field) {
-      context.emit_public_log(/*message=*/ "pub log");
-      SimpleLogging::at(context.this_address()).add_to_counter_public(counter_id);
+    #[external("private")]
+    fn increment_twice(owner: AztecAddress) {
+        debug_log_format(
+            "Incrementing counter twice for owner {0}",
+            [owner.to_field()],
+        );
+        let counters = storage.counters;
+        counters.at(owner).add(1, owner);
+        counters.at(owner).add(1, owner);
     }
 
-    #[utility]
-    unconstrained fn get_counter_value(counter_id: Field) -> pub Field {
-        storage.counters.at(counter_id).read()
+    #[external("private")]
+    fn increment_and_decrement(owner: AztecAddress) {
+        debug_log_format(
+            "Incrementing and decrementing counter for owner {0}",
+            [owner.to_field()],
+        );
+        let counters = storage.counters;
+        counters.at(owner).add(1, owner);
+        counters.at(owner).sub(1, owner);
     }
+
+    #[external("private")]
+    fn decrement(owner: AztecAddress) {
+        debug_log_format("Decrementing counter for owner {0}", [owner.to_field()]);
+        let counters = storage.counters;
+        counters.at(owner).sub(1, owner);
+    }
+
+    #[external("utility")]
+    unconstrained fn get_counter(owner: AztecAddress) -> Field {
+        storage.counters.at(owner).get_value()
+    }
+
+    #[external("private")]
+    fn increment_self_and_other(other_counter: AztecAddress, owner: AztecAddress) {
+        debug_log_format("Incrementing counter for other {0}", [owner.to_field()]);
+
+        let counters = storage.counters;
+        counters.at(owner).add(1, owner);
+
+        SimpleLogging::at(other_counter).increment(owner).call(&mut context);
+    }
+
 }

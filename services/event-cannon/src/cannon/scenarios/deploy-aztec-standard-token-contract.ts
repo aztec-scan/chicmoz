@@ -1,17 +1,17 @@
-import { type DeploySentTx, waitForPXE } from "@aztec/aztec.js";
-import { TokenContract } from "@defi-wonderland/aztec-standards/historical/0.0.0-83476cda/artifacts/artifacts/Token.js";
+import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { logger } from "../../logger.js";
-import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
+import { getAccounts, getAztecNodeClient, getPxe, getWallet } from "../pxe.js";
 import {
   deployContract,
   registerStandardContractArtifact,
 } from "./utils/index.js";
+import { DeploySentTx } from "@aztec/aztec.js/contracts";
 
 export async function run() {
   logger.info("===== DEPLOY STANDARD CONTRACT =====");
-  const pxe = getPxe();
-  await waitForPXE(pxe);
-  const namedWallets = getWallets();
+  getPxe();
+  const namedWallets = getAccounts();
+  const wallet = getWallet();
 
   const deployerWallet = namedWallets.alice;
 
@@ -21,14 +21,12 @@ export async function run() {
     contractLoggingName,
     deployFn: (): DeploySentTx<TokenContract> =>
       TokenContract.deploy(
-        deployerWallet,
+        wallet,
+        deployerWallet.address,
         "Test Token",
         "TST",
         9,
-        1000000n,
-        deployerWallet.getAddress(),
-        deployerWallet.getAddress(),
-      ).send({ from: deployerWallet.getAddress() }),
+      ).send({ from: deployerWallet.address }),
     node: getAztecNodeClient(),
   });
 
