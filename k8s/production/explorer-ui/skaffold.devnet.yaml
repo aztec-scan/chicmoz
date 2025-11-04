@@ -27,6 +27,6 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./testnet/service.yaml
-    - ./testnet/ingress.yaml
-    - ./testnet/deployment.yaml
+    - ./devnet/service.yaml
+    - ./devnet/ingress.yaml
+    - ./devnet/deployment.yaml
