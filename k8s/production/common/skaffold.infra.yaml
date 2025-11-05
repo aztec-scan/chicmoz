@@ -19,6 +19,7 @@ manifests:
         setValues:
           installCRDs: true
           clusterResourceNamespace: chicmoz-prod
+          featureGates: "ACMEHTTP01IngressPathTypeExact=false"
       - name: ingress-nginx
         remoteChart: ingress-nginx
         repo: https://kubernetes.github.io/ingress-nginx
