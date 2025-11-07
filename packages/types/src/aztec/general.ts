@@ -16,7 +16,6 @@ export const L1ContractAddressesSchema = z.object({
   governanceProposerAddress: z.string().startsWith("0x"),
   governanceAddress: z.string().startsWith("0x"),
   stakingAssetAddress: z.string().startsWith("0x"),
-  slashFactoryAddress: z.string().startsWith("0x"),
 });
 
 export const ProtocolContractAddressesSchema = z.object({
