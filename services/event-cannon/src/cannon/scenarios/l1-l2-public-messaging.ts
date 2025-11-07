@@ -68,7 +68,7 @@ export const run = async () => {
   logger.info("🐰 Deploying contracts...");
 
   logger.info(
-    `🐰 Underlying ERC20 deployed at ${underlyingERC20Address.toString()}`,
+    `🐰 Underlying ERC20 deployed at ${underlyingERC20Address.address.toString()}`,
   );
 
   logger.info("🐰 Deploying TokenPortal contract...");
@@ -80,9 +80,11 @@ export const run = async () => {
     },
     [],
   );
-  logger.info(`🐰 TokenPortal deployed at ${tokenPortalAddress.toString()}`);
+  logger.info(
+    `🐰 TokenPortal deployed at ${tokenPortalAddress.address.toString()}`,
+  );
   const tokenPortal = getContract({
-    address: tokenPortalAddress.toString(),
+    address: tokenPortalAddress.address.toString(),
     abi: TokenPortalAbi,
     client: l1Client,
   });
@@ -172,15 +174,15 @@ export const run = async () => {
   await tokenPortal.write.initialize(
     [
       l1ContractAddresses.registryAddress.toString(),
-      underlyingERC20Address.toString(),
+      underlyingERC20Address.address.toString(),
       bridge.address.toString(),
     ],
     {},
   );
 
   const l1TokenPortalManager = new L1TokenPortalManager(
-    tokenPortalAddress,
-    underlyingERC20Address,
+    tokenPortalAddress.address,
+    underlyingERC20Address.address,
     undefined,
     l1ContractAddresses.outboxAddress,
     l1Client,
@@ -215,7 +217,7 @@ export const run = async () => {
 
   logger.info("waiting for the message to be available for consumption...");
   await retryUntil(
-    async () => await aztecNode.isL1ToL2MessageSynced(msgHash),
+    async () => await aztecNode.getL1ToL2MessageBlock(msgHash),
     "message sync",
     10,
   );
