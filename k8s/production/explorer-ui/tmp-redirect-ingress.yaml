@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-redirect-to-devnet
+  namespace: chicmoz-prod
+  annotations:
+    cert-manager.io/cluster-issuer: aztecscan-issuer-production
+    nginx.ingress.kubernetes.io/permanent-redirect: https://testnet.aztecscan.xyz
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: aztecscan.xyz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: explorer-ui-testnet-service # this is does nothing
+                port:
+                  name: http-app
+  tls:
+    - hosts:
+        - aztecscan.xyz
+      secretName: aztecscan-redirect-tls # New cert will be created
