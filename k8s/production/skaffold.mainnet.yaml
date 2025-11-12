@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: chicmoz-prod-sp
+requires:
+  - path: ./common/skaffold.manifests.yaml
+  - path: ./explorer-ui/skaffold.mainnet.yaml
+  - path: ./explorer-api/skaffold.mainnet.yaml
+  - path: ./auth/skaffold.yaml
+  - path: ./aztec-listener/skaffold.mainnet.yaml
+  - path: ./ethereum-listener/skaffold.mainnet.yaml
+  - path: ./websocket-event-publisher/skaffold.mainnet.yaml

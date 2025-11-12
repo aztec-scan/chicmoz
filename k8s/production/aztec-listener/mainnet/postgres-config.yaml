@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-aztec-listener-mainnet
+  namespace: chicmoz-prod
+data:
+  POSTGRES_DB_NAME: "aztec_listener_mainnet"

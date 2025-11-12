@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: aztec-listener-mainnet-label
+  name: aztec-listener-mainnet-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aztec-listener-mainnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: aztec-listener-mainnet-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - image: registry.digitalocean.com/aztlan-containers/aztec-listener-mainnet:latest
+          name: run-migrations
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener-mainnet
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: registry.digitalocean.com/aztlan-containers/aztec-listener-mainnet:latest
+          name: aztec-listener
+          resources:
+            limits:
+              memory: 2000Mi
+              cpu: 1000m
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener-mainnet
+          env:
+            - name: INSTANCE_NAME
+              value: "mainnet_aztec-listener"
+            - name: NODE_ENV
+              value: "production"
+            - name: L2_NETWORK_ID
+              value: "MAINNET"
+            - name: IGNORE_PROCESSED_HEIGHT
+              value: "false"
+            - name: AZTEC_LISTEN_FOR_BLOCKS
+              value: "true"
+            - name: AZTEC_LISTEN_FOR_PENDING_TXS
+              value: "true"
+            - name: AZTEC_RPC_URLS
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: AZTEC_RPC_NODES_MAINNET
+
+status: {}
