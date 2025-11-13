@@ -13,8 +13,19 @@ spec:
     - secretName: aztecscan-ws-tls-mainnet
       hosts:
         - ws.aztecscan.xyz
+        - ws.mainnet.aztecscan.xyz
   rules:
     - host: ws.aztecscan.xyz
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: websocket-event-publisher-mainnet-service
+                port:
+                  name: websocket-port
+    - host: ws.mainnet.aztecscan.xyz
       http:
         paths:
           - path: /

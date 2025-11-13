@@ -11,8 +11,19 @@ spec:
     - secretName: aztecscan-ui-tls-mainnet
       hosts:
         - aztecscan.xyz
+        - mainnet.aztecscan.xyz
   rules:
     - host: aztecscan.xyz
+      http:
+        paths:
+          - backend:
+              service:
+                name: explorer-ui-mainnet-service
+                port:
+                  name: http-app
+            path: /
+            pathType: Prefix
+    - host: mainnet.aztecscan.xyz
       http:
         paths:
           - backend:
