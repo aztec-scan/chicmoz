@@ -21,7 +21,7 @@ spec:
       initContainers:
         - image: registry.digitalocean.com/aztlan-containers/aztec-listener-mainnet:latest
           name: run-migrations
-          command: ["yarn", run, "migrate"]
+          command: ["yarn", "run", "migrate"]
           envFrom:
             - configMapRef:
                 name: postgres-config-global
