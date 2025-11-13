@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ethereum-listener-mainnet-label
+  name: ethereum-listener-mainnet-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ethereum-listener-mainnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: ethereum-listener-mainnet-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - name: run-migrations
+          image: registry.digitalocean.com/aztlan-containers/ethereum-listener-mainnet:latest
+          command: ["yarn", "run", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-mainnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: registry.digitalocean.com/aztlan-containers/ethereum-listener-mainnet:latest
+          name: ethereum-listener
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-mainnet
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: INSTANCE_NAME
+              value: "ethereum-listener-mainnet"
+            - name: L2_NETWORK_ID
+              value: "MAINNET"
+            - name: LISTENER_DISABLED
+              value: "false"
+            - name: LISTEN_FOR_BLOCKS
+              value: "true"
+            - name: ETHEREUM_HTTP_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: MAINNET_AZTEC_L1_HTTP
+            - name: ETHEREUM_WS_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: MAINNET_AZTEC_L1_WS
+            - name: ETHEREUM_ALCHEMY_HTTP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: ETHEREUM_HTTP_ALCHEMY_MAINNET_URL
+                  status: {}

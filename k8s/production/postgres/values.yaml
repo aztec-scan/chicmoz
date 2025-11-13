@@ -8,8 +8,17 @@ primary:
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_testnet')\gexec
         SELECT 'CREATE DATABASE ethereum_listener_testnet'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_testnet')\gexec
+
+        SELECT 'CREATE DATABASE aztec_listener_mainnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_mainnet')\gexec
+        SELECT 'CREATE DATABASE explorer_api_mainnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_mainnet')\gexec
+        SELECT 'CREATE DATABASE ethereum_listener_mainnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_mainnet')\gexec
+
         SELECT 'CREATE DATABASE auth'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'auth')\gexec
+
         \c auth
         CREATE TABLE public."auth_api-keys" (
             id integer NOT NULL,
