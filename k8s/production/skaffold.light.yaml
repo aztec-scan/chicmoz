@@ -3,4 +3,5 @@ kind: Config
 metadata:
   name: chicmoz-prod-light
 requires:
+  # - path: ./skaffold.testnet.yaml
   - path: ./skaffold.mainnet.yaml
