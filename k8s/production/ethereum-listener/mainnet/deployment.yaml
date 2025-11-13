@@ -21,7 +21,7 @@ spec:
       initContainers:
         - name: run-migrations
           image: registry.digitalocean.com/aztlan-containers/ethereum-listener-mainnet:latest
-          command: ["yarn", run, "migrate"]
+          command: ["yarn", "run", "migrate"]
           envFrom:
             - configMapRef:
                 name: postgres-config-global
@@ -67,5 +67,5 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: global
-                  key: ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL
-status: {}
+                  key: ETHEREUM_HTTP_ALCHEMY_MAINNET_URL
+                  status: {}
