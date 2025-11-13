@@ -17,7 +17,18 @@ spec:
     - secretName: aztecscan-api-tls-mainnet
       hosts:
         - api.aztecscan.xyz
+        - api.mainnet.aztecscan.xyz
   rules:
+    - host: api.mainnet.aztecscan.xyz
+      http:
+        paths:
+          - path: /v1/([^/]+)/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: explorer-api-mainnet-service
+                port:
+                  name: http-app
     - host: api.aztecscan.xyz
       http:
         paths:
