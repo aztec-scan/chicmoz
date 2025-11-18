@@ -12,6 +12,7 @@ spec:
     allowOrigins:
       - http://swagger.chicmoz.localhost
       - http://localhost:5173
+      - http://sandbox.chicmoz.localhost
     allowMethods:
       - GET
       - PUT
@@ -42,7 +43,15 @@ spec:
         - name: auth-service
           namespace: chicmoz
           port: 80
-      path: /
+      path: /_external-auth-envoy
       headersToBackend:
-        - x-api-key
+        - x-forwarded-for
+        - x-forwarded-proto
+        - x-forwarded-host
+        - x-forwarded-uri
+        - x-envoy-original-path
+        - x-request-id
+        - ":authority"
+        - ":scheme"
+        - ":path"
     failOpen: false

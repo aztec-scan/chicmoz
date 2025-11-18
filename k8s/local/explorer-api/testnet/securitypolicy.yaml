@@ -12,6 +12,7 @@ spec:
     allowOrigins:
       - http://swagger.chicmoz.localhost
       - http://localhost:5173
+      - http://testnet.chicmoz.localhost
     allowMethods:
       - GET
       - PUT
@@ -35,14 +36,22 @@ spec:
     exposeHeaders:
       - x-api-key
     maxAge: 24h
-  # extAuth:
-  #   timeout: 5s
-  #   http:
-  #     backendRefs:
-  #       - name: auth-service
-  #         namespace: chicmoz
-  #         port: 80
-  #     path: /
-  #     headersToBackend:
-  #       - x-api-key
-  #   failOpen: false
+  extAuth:
+    timeout: 5s
+    http:
+      backendRefs:
+        - name: auth-service
+          namespace: chicmoz
+          port: 80
+      path: /_external-auth-envoy
+      headersToBackend:
+        - x-forwarded-for
+        - x-forwarded-proto
+        - x-forwarded-host
+        - x-forwarded-uri
+        - x-envoy-original-path
+        - x-request-id
+        - ":authority"
+        - ":scheme"
+        - ":path"
+    failOpen: false
