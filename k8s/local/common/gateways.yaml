@@ -30,51 +30,6 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: chicmoz-remote-devnet-gateway
-  namespace: chicmoz
-  labels:
-    app.kubernetes.io/name: chicmoz-remote-devnet-gateway
-    app.kubernetes.io/part-of: chicmoz-local
-spec:
-  gatewayClassName: envoy-gateway
-  listeners:
-    - name: api-remote-devnet
-      hostname: api.remote-devnet.chicmoz.localhost
-      port: 80
-      protocol: HTTP
-      allowedRoutes:
-        namespaces:
-          from: Same
-    - name: ui-remote-devnet
-      hostname: remote-devnet.chicmoz.localhost
-      port: 80
-      protocol: HTTP
-      allowedRoutes:
-        namespaces:
-          from: Same
-    - name: ws-remote-devnet
-      hostname: ws.remote-devnet.chicmoz.localhost
-      port: 80
-      protocol: HTTP
-      allowedRoutes:
-        namespaces:
-          from: Same
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: chicmoz-shared-gateway
-  namespace: chicmoz
-  labels:
-    app.kubernetes.io/name: chicmoz-shared-gateway
-    app.kubernetes.io/part-of: chicmoz-local
-spec:
-  gatewayClassName: envoy-gateway
-  listeners:
     - name: swagger
       hostname: swagger.chicmoz.localhost
       port: 80
