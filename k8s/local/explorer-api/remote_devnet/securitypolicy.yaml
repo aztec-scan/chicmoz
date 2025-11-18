@@ -1,0 +1,48 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: explorer-api-remote-devnet-security
+  namespace: chicmoz
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: explorer-api-remote-devnet
+  cors:
+    allowOrigins:
+      - http://swagger.chicmoz.localhost
+      - http://localhost:5173
+    allowMethods:
+      - GET
+      - PUT
+      - POST
+      - DELETE
+      - PATCH
+      - OPTIONS
+    allowHeaders:
+      - DNT
+      - Keep-Alive
+      - User-Agent
+      - X-Requested-With
+      - If-Modified-Since
+      - Cache-Control
+      - Content-Type
+      - Range
+      - Authorization
+      - access-control-allow-credentials
+      - x-api-key
+    allowCredentials: true
+    exposeHeaders:
+      - x-api-key
+    maxAge: 24h
+  extAuth:
+    timeout: 5s
+    http:
+      backendRefs:
+        - name: auth-service
+          namespace: chicmoz
+          port: 80
+      path: /
+      headersToBackend:
+        - x-api-key
+    failOpen: false

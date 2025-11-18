@@ -1,0 +1,14 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: websocket-event-publisher-remote-devnet-client
+  namespace: chicmoz
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: chicmoz-remote-devnet-gateway
+      sectionName: ws-remote-devnet
+  timeout:
+    http:
+      streamIdleTimeout: 3600s
