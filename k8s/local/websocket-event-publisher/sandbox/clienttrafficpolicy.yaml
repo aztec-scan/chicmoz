@@ -7,7 +7,7 @@ spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: chicmoz-sandbox-gateway
+      name: chicmoz-gateway
       sectionName: ws-sandbox
   timeout:
     http:

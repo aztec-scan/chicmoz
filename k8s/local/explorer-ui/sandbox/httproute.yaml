@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: chicmoz-local
 spec:
   parentRefs:
-    - name: chicmoz-sandbox-gateway
+    - name: chicmoz-gateway
       sectionName: ui-sandbox
   hostnames:
     - sandbox.chicmoz.localhost

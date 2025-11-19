@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: chicmoz-local
 spec:
   parentRefs:
-    - name: chicmoz-testnet-gateway
+    - name: chicmoz-gateway
       sectionName: api-testnet
   hostnames:
     - api.testnet.chicmoz.localhost

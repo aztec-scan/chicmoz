@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: chicmoz-local
 spec:
   parentRefs:
-    - name: chicmoz-shared-gateway
+    - name: chicmoz-gateway
       sectionName: swagger
   hostnames:
     - swagger.chicmoz.localhost

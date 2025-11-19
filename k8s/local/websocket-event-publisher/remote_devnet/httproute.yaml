@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: chicmoz-local
 spec:
   parentRefs:
-    - name: chicmoz-remote-devnet-gateway
+    - name: chicmoz-gateway
       sectionName: ws-remote-devnet
   hostnames:
     - ws.remote-devnet.chicmoz.localhost
