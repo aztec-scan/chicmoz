@@ -9,20 +9,25 @@ deploy:
 manifests:
   rawYaml:
     - ./postgres-config.yaml
+    - ./gateway-class.yaml
+    - ./envoy-gateway-namespace.yaml
   helm:
     releases:
-      - name: ingress-nginx
-        remoteChart: ingress-nginx
-        repo: https://kubernetes.github.io/ingress-nginx
-        namespace: chicmoz
-        createNamespace: false
+      - name: envoy-gateway
+        remoteChart: oci://docker.io/envoyproxy/gateway-helm
+        namespace: envoy-gateway-system
+        createNamespace: true
         recreatePods: false
         skipBuildDependencies: false
         useHelmSecrets: false
-        wait: false
+        wait: true
         setValues:
-          controller.replicaCount: 1
-          defaultBackend.enabled: false
+          envoyGateway.logging.access.type: DEFAULT
+          envoyGateway.gateway.service.type: LoadBalancer
+          envoyGateway.provider.type: Kubernetes
+          envoyGateway.provider.kubernetes.service.type: LoadBalancer
+          envoyGateway.provider.kubernetes.service.annotations."service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol": "false"
+        version: v1.6.0
       - name: postgresql
         version: 12.10.0
         remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql

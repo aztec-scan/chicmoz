@@ -10,5 +10,7 @@ manifests:
   rawYaml:
     - ./testnet/postgres-config.yaml
     - ./testnet/service.yaml
-    - ./testnet/ingress.yaml
+    - ./testnet/httproute.yaml
+    - ./testnet/http-filter.yaml
+    - ./testnet/securitypolicy.yaml
     - ./testnet/deployment.yaml
