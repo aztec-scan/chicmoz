@@ -2,5 +2,6 @@ apiVersion: skaffold/v4beta6
 kind: Config
 requires:
   - path: ./common/skaffold.base.yaml
+  - path: ./gateways/skaffold.sandbox.yaml
   - path: ./common/skaffold.aztec_sanbox_nodes.yaml
   - path: ./event-cannon/skaffold.yaml
