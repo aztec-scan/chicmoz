@@ -42,6 +42,10 @@ export const paths = {
   txs: "/l2/txs",
   txByHash: `/l2/txs/:${txEffectHash}`,
 
+  publicDataTx: `/l2/public-call-requests/tx/:${txEffectHash}`,
+  publicDataContract: `/l2/public-call-requests/contract/:${address}`,
+  publicDataSender: `/l2/public-call-requests/sender/:${address}`,
+
   droppedTxByHash: `/l2/dropped-txs/:${txEffectHash}`,
 
   contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
@@ -125,6 +129,12 @@ export const getTxEffectByBlockHeightAndIndexSchema = z.object({
 export const getTxEffectsByTxHashSchema = z.object({
   params: z.object({
     [txEffectHash]: hexStringSchema,
+  }),
+});
+
+export const getPublicCallRequessByAddressSchema = z.object({
+  params: z.object({
+    [address]: hexStringSchema,
   }),
 });
 
