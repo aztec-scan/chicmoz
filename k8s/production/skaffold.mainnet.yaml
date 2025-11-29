@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: chicmoz-prod-sp
+  name: chicmoz-prod-mainnet
 requires:
   - path: ./common/skaffold.manifests.yaml
   - path: ./explorer-ui/skaffold.mainnet.yaml
