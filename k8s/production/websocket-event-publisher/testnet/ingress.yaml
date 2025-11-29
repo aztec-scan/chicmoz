@@ -12,19 +12,8 @@ spec:
   tls:
     - secretName: aztecscan-ws-tls-testnet
       hosts:
-        - ws.aztecscan.xyz
         - ws.testnet.aztecscan.xyz
   rules:
-    - host: ws.aztecscan.xyz
-      http:
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: websocket-event-publisher-testnet-service
-                port:
-                  name: websocket-port
     - host: ws.testnet.aztecscan.xyz
       http:
         paths:

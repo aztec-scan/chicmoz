@@ -16,19 +16,8 @@ spec:
   tls:
     - secretName: aztecscan-api-tls-testnet
       hosts:
-        - api.aztecscan.xyz
         - api.testnet.aztecscan.xyz
   rules:
-    - host: api.aztecscan.xyz
-      http:
-        paths:
-          - path: /v1/([^/]+)/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: explorer-api-testnet-service
-                port:
-                  name: http-app
     - host: api.testnet.aztecscan.xyz
       http:
         paths:
