@@ -3,8 +3,8 @@ kind: Config
 metadata:
   name: testnet
 requires:
-  - path: ./common/skaffold.infra.yaml
-  - path: ./explorer-ui/skaffold.testnet.yaml
+  # - path: ./common/skaffold.infra.yaml
+  # - path: ./explorer-ui/skaffold.testnet.yaml
   - path: ./ethereum-listener/skaffold.testnet.yaml
   - path: ./explorer-api/skaffold.testnet.yaml
   - path: ./auth/skaffold.yaml
