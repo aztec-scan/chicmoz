@@ -2,6 +2,7 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { lazy } from "react";
 import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
+import { StakingBanner } from "~/components/staking-banner";
 import { TailwindIndicator } from "~/components/ui/tailwind-indicator";
 import { BaseLayout } from "~/layout/base-layout";
 
@@ -19,6 +20,7 @@ export const Route = createRootRoute({
     <div className="flex flex-col overflow-auto min-h-screen flex-grow">
       <div className="flex-grow">
         <Header />
+        <StakingBanner />
         <Outlet />
       </div>
       <Footer />
