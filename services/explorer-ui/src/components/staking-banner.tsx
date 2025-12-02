@@ -28,7 +28,7 @@ export const StakingBanner: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <h3 className="text-lg font-medium text-foreground">
-              Support Aztecscan by staking AZTEC to us
+              Support Aztec-Scan by staking AZTEC to us
             </h3>
           </div>
           <button
@@ -40,14 +40,14 @@ export const StakingBanner: React.FC = () => {
           </button>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Help us keep Aztecscan running and support the Aztec network by
+          Help us keep Aztec-Scan running and support the Aztec network by
           delegating your AZTEC tokens to our validator. Your stake helps us
           maintain and improve the explorer for the community.{" "}
           <Link
             to={routes.staking.route}
             className="text-purple-light hover:underline"
           >
-            Learn more about delegating stake to Aztecscan
+            Learn more about delegating stake to Aztec-Scan
           </Link>
           .
         </p>
