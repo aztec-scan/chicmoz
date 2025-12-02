@@ -1,5 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { routes } from "~/routes/__root";
 
 const STORAGE_KEY = "staking-banner-dismissed";
 
@@ -41,23 +43,12 @@ export const StakingBanner: React.FC = () => {
           Help us keep Aztecscan running and support the Aztec network by
           delegating your AZTEC tokens to our validator. Your stake helps us
           maintain and improve the explorer for the community.{" "}
-          <a
-            href="https://stake.aztec.network/providers/4"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to={routes.staking.route}
             className="text-purple-light hover:underline"
           >
-            Stake on Aztec Network
-          </a>
-          {" or "}
-          <a
-            href="https://dashtec.xyz/providers/4"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-light hover:underline"
-          >
-            view our stats on Dashtec
-          </a>
+            Learn more about delegating stake to Aztecscan
+          </Link>
           .
         </p>
       </div>

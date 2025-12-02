@@ -18,6 +18,7 @@ import { Route as NetworkHealthImport } from './routes/network-health'
 
 // Create Virtual Routes
 
+const StakingLazyImport = createFileRoute('/staking')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const EcosystemLazyImport = createFileRoute('/ecosystem')()
@@ -47,6 +48,11 @@ const ContractsClassesIdVersionsVersionSubmitStandardContractLazyImport =
   )()
 
 // Create/Update Routes
+
+const StakingLazyRoute = StakingLazyImport.update({
+  path: '/staking',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/staking.lazy').then((d) => d.Route))
 
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
@@ -249,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyPolicyLazyImport
       parentRoute: typeof rootRoute
     }
+    '/staking': {
+      id: '/staking'
+      path: '/staking'
+      fullPath: '/staking'
+      preLoaderRoute: typeof StakingLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/blocks/$blockNumber': {
       id: '/blocks/$blockNumber'
       path: '/blocks/$blockNumber'
@@ -341,6 +354,7 @@ export const routeTree = rootRoute.addChildren({
   EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
+  StakingLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
   TxEffectsHashLazyRoute,
@@ -373,6 +387,7 @@ export const routeTree = rootRoute.addChildren({
         "/ecosystem",
         "/fee-recipients",
         "/privacy-policy",
+        "/staking",
         "/blocks/$blockNumber",
         "/l1/contract-events",
         "/tx-effects/$hash",
@@ -411,6 +426,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
+    },
+    "/staking": {
+      "filePath": "staking.lazy.tsx"
     },
     "/blocks/$blockNumber": {
       "filePath": "blocks/$blockNumber.lazy.tsx"
