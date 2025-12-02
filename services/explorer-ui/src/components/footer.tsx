@@ -22,6 +22,12 @@ export const Footer = () => {
                   {routes.aboutUs.title}
                 </Link>
                 <Link
+                  to={routes.staking.route}
+                  className="[&.active]:text-white mr-0 mb-[40px] lg:mb-0 lg:mr-[30px]  text-grey-light hover:text-white"
+                >
+                  {routes.staking.title}
+                </Link>
+                <Link
                   to={routes.privacyPolicy.route}
                   className="[&.active]:text-white mr-0 mb-[40px] lg:mb-0 lg:mr-[30px]  text-grey-light hover:text-white"
                 >
