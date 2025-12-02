@@ -5,7 +5,7 @@ export const Staking: FC = () => {
   return (
     <BaseLayout>
       <div className="flex flex-col items-center">
-        <h1>Support Us</h1>
+        <h1>Stake to Aztec-Scan</h1>
         <div className="bg-white w-full rounded-lg shadow-md p-6 md:p-8 md:w-3/4 lg:w-2/3 max-w-4xl">
           <section className="mb-8">
             <p className="text-lg">
