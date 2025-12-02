@@ -12,7 +12,7 @@ export const AboutUs: FC = () => {
           <p className="mb-4">
             We believe private-by-default blockchains will matter as much as the
             shift from Web2 to Web3 itself. Web2 showed what happens when trust
-            is centralised and privacy becomes something you trade away. Now
+            is centralized and privacy becomes something you trade away. Now
             that we know better, it is time to build better. Aztec unlocks a
             world where privacy and verifiability can coexist, and where onchain
             activity can finally feel human again. But none of this matters
