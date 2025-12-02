@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: swagger
+  namespace: chicmoz
+  labels:
+    app.kubernetes.io/name: swagger
+    app.kubernetes.io/part-of: chicmoz-local
+spec:
+  parentRefs:
+    - name: chicmoz-gateway
+      sectionName: swagger
+  hostnames:
+    - swagger.chicmoz.localhost
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: swagger-service
+          port: 80

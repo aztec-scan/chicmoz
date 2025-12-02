@@ -5,6 +5,10 @@ deploy:
     flags:
       apply: ["--force"]
 manifests:
+  rawYaml:
+    - k8s/local/kafka-ui/configmap.yaml
+    - k8s/local/kafka-ui/configmap-env.yaml
+    - k8s/local/kafka-ui/httproute.yaml
   helm:
     releases:
       - name: kafka-ui

@@ -23,20 +23,32 @@ export class Controller {
   }
 
   GET_EXISTS: RequestHandler = async (req, res) => {
+    const toString = (value?: string | string[]) =>
+      Array.isArray(value) ? value[0] : value;
+
+    const normalizePath = (value?: string | string[]) => {
+      const str = toString(value);
+      if (!str) {
+        return undefined;
+      }
+      const stripped = str.replace(/^\/_external-auth-[^/]+/, "");
+      return stripped.startsWith("/") ? stripped : undefined;
+    };
+
     const originalRoute =
-      req.headers["x-auth-request-redirect"] ??
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}${req.headers["x-forwarded-uri"]}`;
+      normalizePath(req.url) ??
+      normalizePath(req.headers["x-envoy-original-path"]) ??
+      normalizePath(req.headers["x-forwarded-uri"]) ??
+      normalizePath(req.headers[":path"]) ??
+      normalizePath(req.headers["x-auth-request-redirect"]);
 
     if (!originalRoute) {
-      throw new Error("x-auth-request-redirect not set by nginx");
-    }
-    if (Array.isArray(originalRoute)) {
-      throw new Error(
-        `x-auth-request-redirect array; not single string: ${originalRoute.join(
-          ", ",
-        )}`,
-      );
+      this.logger.error("Missing forwarded headers for API key extraction", {
+        headers: req.headers,
+        url: req.url,
+      });
+      res.status(400).send("API key not provided");
+      return;
     }
 
     const [found, apiKey] = this.core.extractApiKey(originalRoute);
