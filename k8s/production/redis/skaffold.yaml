@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: cache-system
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - namespace.yaml
+    - secret.yaml
+    - persistent-volume-claim.yaml
+    - configmap.yaml
+    - deployment.yaml
+    - service.yaml

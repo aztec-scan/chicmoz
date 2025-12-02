@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: cache-system
+  labels:
+    app: redis
+spec:
+  serviceName: redis-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "6379"
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      initContainers:
+        - name: init-redis-config
+          image: redis:8.2.2-alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "Initializing Redis configuration..."
+              # Read the password
+              REDIS_PASSWORD=$(cat /secret/redis-password)
+              # Copy config and replace password placeholder using awk (handles special chars)
+              awk -v pwd="$REDIS_PASSWORD" '{gsub(/REDIS_PASSWORD_PLACEHOLDER/, pwd)}1' /config/redis.conf > /tmp/redis.conf
+              chmod 644 /tmp/redis.conf
+              echo "Configuration initialized successfully"
+          volumeMounts:
+            - name: redis-config
+              mountPath: /config
+            - name: redis-config-processed
+              mountPath: /tmp
+            - name: redis-secret
+              mountPath: /secret
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      containers:
+        - name: redis
+          image: redis:8.2.2-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+              name: redis
+              protocol: TCP
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          env:
+            - name: REDIS_REPLICATION_MODE
+              value: master
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: redis-config-processed
+              mountPath: /etc/redis
+            - name: redis-secret
+              mountPath: /secret
+              readOnly: true
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $(cat /secret/redis-password) ping | grep PONG
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 5
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+        - name: redis-config-processed
+          emptyDir: {}
+        - name: redis-secret
+          secret:
+            secretName: redis-credentials
+            items:
+              - key: redis-password
+                path: redis-password
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 10Gi
