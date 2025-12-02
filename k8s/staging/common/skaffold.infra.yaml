@@ -39,7 +39,7 @@ manifests:
           controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-protocol: "tcp"
           controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-enable-proxy-protocol: "true"
       - name: postgresql
-        version: 12.10.0
+        version: 15.5.38
         remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
         valuesFiles:
           - ../postgres/values.yaml
@@ -48,7 +48,9 @@ manifests:
           global.postgresql.auth.username: "admin"
           global.postgresql.auth.password: "secret-local-password"
           image.debug: true
-          image.repository: bitnamilegacy/postgresql
+          image.registry: docker.io
+          image.repository: bitnami/postgresql
+          image.tag: 16.3.0-debian-12-r14
           primary.persistence.size: 100Gi
         namespace: chicmoz-staging
         createNamespace: false
@@ -57,7 +59,7 @@ manifests:
         useHelmSecrets: false
         wait: false
       - name: redis
-        version: 18.17.1
+        version: 20.3.0
         remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
         namespace: chicmoz-staging
         createNamespace: false
@@ -76,9 +78,11 @@ manifests:
             maxmemory-policy volatile-ttl
             lazyfree-lazy-eviction yes
           persistence.enabled: false
-          image.repository: bitnamilegacy/redis
+          image.registry: docker.io
+          image.repository: bitnami/redis
+          image.tag: 7.4.1-debian-12-r5
       - name: kafka
-        version: 26.4.2
+        version: 31.0.0
         remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka
         namespace: chicmoz-staging
         setValues:
@@ -99,7 +103,9 @@ manifests:
             log.retention.bytes=1073741824
             log.segment.bytes=536870912
             log.cleanup.policy=delete
-          image.repository: bitnamilegacy/kafka
+          image.registry: docker.io
+          image.repository: bitnami/kafka
+          image.tag: 3.8.1-debian-12-r3
         createNamespace: false
         recreatePods: true
         skipBuildDependencies: false
