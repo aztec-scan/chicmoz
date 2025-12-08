@@ -54,7 +54,7 @@ jobs:
           key: ${{ steps.cache-key.outputs.key }}
 
       - name: Log in to DigitalOcean Container Registry
-        run: tools/doctl registry login --expiry-seconds 1200
+        run: tools/doctl registry login --expiry-seconds 3600
 
   deploy:
     runs-on: ubuntu-latest
@@ -88,7 +88,7 @@ jobs:
         run: doctl kubernetes cluster kubeconfig save "chicmoz-prod"
 
       - name: Log in to DigitalOcean Container Registry
-        run: doctl registry login --expiry-seconds 1200
+        run: doctl registry login --expiry-seconds 3600
 
       - name: Deploy to cluster with Skaffold
         env:
