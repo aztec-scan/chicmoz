@@ -120,10 +120,15 @@ jobs:
           TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.TESTNET_AZTEC_L2_BOOTNODE_RPC }}
           TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
           TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
+          MAINNET_AZTEC_L1_HTTP: ${{ vars.MAINNET_AZTEC_L1_HTTP }}
+          MAINNET_AZTEC_L1_WS: ${{ vars.MAINNET_AZTEC_L1_WS }}
           DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
           DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
           DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+          AZTEC_RPC_NODES_DEVNET: ${{ vars.AZTEC_RPC_NODES_DEVNET }}
           AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_TESTNET }}
+          AZTEC_RPC_NODES_MAINNET: ${{ vars.AZTEC_RPC_NODES_MAINNET }}
+          ETHEREUM_HTTP_ALCHEMY_MAINNET_URL: ${{ vars.ETHEREUM_HTTP_ALCHEMY_MAINNET_URL }}
         run: |
           MAX_RETRIES=3
           RETRY_DELAY=10
@@ -134,10 +139,15 @@ jobs:
             --from-literal=TESTNET_AZTEC_L2_BOOTNODE_RPC=$TESTNET_AZTEC_L2_BOOTNODE_RPC \
             --from-literal=TESTNET_AZTEC_L1_HTTP=$TESTNET_AZTEC_L1_HTTP \
             --from-literal=TESTNET_AZTEC_L1_WS=$TESTNET_AZTEC_L1_WS \
+            --from-literal=MAINNET_AZTEC_L1_HTTP=$MAINNET_AZTEC_L1_HTTP \
+            --from-literal=MAINNET_AZTEC_L1_WS=$MAINNET_AZTEC_L1_WS \
             --from-literal=DEVNET_AZTEC_L2_BOOTNODE_RPC=$DEVNET_AZTEC_L2_BOOTNODE_RPC \
             --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
             --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
+            --from-literal=AZTEC_RPC_NODES_DEVNET=$AZTEC_RPC_NODES_DEVNET \
             --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_TESTNET \
+            --from-literal=AZTEC_RPC_NODES_MAINNET=$AZTEC_RPC_NODES_MAINNET \
+            --from-literal=ETHEREUM_HTTP_ALCHEMY_MAINNET_URL=$ETHEREUM_HTTP_ALCHEMY_MAINNET_URL \
             -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
 
           for i in $(seq 1 $MAX_RETRIES); do

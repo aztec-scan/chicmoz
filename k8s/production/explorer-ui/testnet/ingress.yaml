@@ -10,19 +10,8 @@ spec:
   tls:
     - secretName: aztecscan-ui-tls-testnet
       hosts:
-        - aztecscan.xyz
         - testnet.aztecscan.xyz
   rules:
-    - host: aztecscan.xyz
-      http:
-        paths:
-          - backend:
-              service:
-                name: explorer-ui-testnet-service
-                port:
-                  name: http-app
-            path: /
-            pathType: Prefix
     - host: testnet.aztecscan.xyz
       http:
         paths:

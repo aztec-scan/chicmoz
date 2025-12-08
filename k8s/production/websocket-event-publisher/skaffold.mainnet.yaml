@@ -1,0 +1,24 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: websocket-event-publisher-mainnet
+requires:
+  - path: ../common/skaffold.chicmoz-base-image.yaml
+build:
+  artifacts:
+    - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-mainnet
+      context: ../../../services/websocket-event-publisher
+      docker:
+        dockerfile: Dockerfile
+      requires:
+        - image: registry.digitalocean.com/aztlan-containers/chicmoz-base
+          alias: BASE
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./mainnet/service.yaml
+    - ./mainnet/deployment.yaml
+    - ./mainnet/ingress.yaml

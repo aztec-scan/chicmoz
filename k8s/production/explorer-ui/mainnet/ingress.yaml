@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-explorer-ui-mainnet
+  namespace: chicmoz-prod
+  annotations:
+    cert-manager.io/cluster-issuer: "aztecscan-issuer-production"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: aztecscan-ui-tls-mainnet
+      hosts:
+        - aztecscan.xyz
+        - mainnet.aztecscan.xyz
+  rules:
+    - host: aztecscan.xyz
+      http:
+        paths:
+          - backend:
+              service:
+                name: explorer-ui-mainnet-service
+                port:
+                  name: http-app
+            path: /
+            pathType: Prefix
+    - host: mainnet.aztecscan.xyz
+      http:
+        paths:
+          - backend:
+              service:
+                name: explorer-ui-mainnet-service
+                port:
+                  name: http-app
+            path: /
+            pathType: Prefix
+status:
+  loadBalancer: {}
