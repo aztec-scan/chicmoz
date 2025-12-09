@@ -8,23 +8,25 @@ delete_old_tags() {
     local repo="$1"
     echo "Processing repository: $repo"
     
-    # List tags and filter for SHA-based tags, excluding the most recent 5
-    SHA_TAGS=$(doctl registry repository list-tags $repo --no-header | awk '{print $4, $5, $8}' | sort -r | tail -n +6 | awk '{print $3}') || true
+    # List tags and filter tags, excluding the most recent 5
+    # Output format: Tag CompressedSize UpdatedAt(4 fields) ManifestDigest
+    # We extract: UpdatedAt(4 fields) Tag Digest, sort by date, skip first 5, then get Tag and Digest
+    TAG_DIGEST_PAIRS=$(doctl registry repository list-tags "$repo" --no-header | tail -n +2 | awk '{print $5, $6, $7, $8, $1, $NF}' | sort -r | tail -n +6 | awk '{print $5, $6}') || true
     
-    if [ -z "$SHA_TAGS" ]; then
-        echo "No old SHA tags found for repository: $repo"
+    if [ -z "$TAG_DIGEST_PAIRS" ]; then
+        echo "No old tags found for repository: $repo"
         return
     fi
     
-    # Delete each old SHA-based tag
-    while IFS= read -r tag; do
-        echo "Attempting to delete tag: $tag from repository: $repo"
-        if doctl registry repository delete-manifest "$repo" "$tag" --force; then
+    # Delete each old tag using its manifest digest
+    while IFS=' ' read -r tag digest; do
+        echo "Attempting to delete tag: $tag (digest: $digest) from repository: $repo"
+        if doctl registry repository delete-manifest "$repo" "$digest" --force; then
             echo "Successfully deleted tag: $tag from repository: $repo"
         else
             echo "Failed to delete tag: $tag from repository: $repo"
         fi
-    done <<< "$SHA_TAGS"
+    done <<< "$TAG_DIGEST_PAIRS"
 }
 
 # Function to start garbage collection
@@ -86,7 +88,7 @@ wait_for_garbage_collection() {
 
 # List all repositories in the registry
 echo "Listing repositories..."
-REPOS=$(doctl registry repository list --format Name --no-header) || { echo "Failed to list repositories"; exit 1; }
+REPOS=$(doctl registry repository list --format Name --no-header | tail -n +2 | awk '{print $1}') || { echo "Failed to list repositories"; exit 1; }
 
 if [ -z "$REPOS" ]; then
     echo "No repositories found in the registry."
