@@ -2,10 +2,10 @@ import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { SearchInput } from "~/components/ui/input";
-import { MagicDevLink } from "../magic-dev-link";
 import { ThemeToggle } from "../theme-toggle";
 import { Button } from "../ui";
 import { ChicmozHomeLink } from "../ui/chicmoz-home-link";
+import { NetworkSelector } from "./network-selector";
 import { type HeaderLink } from "./types";
 
 interface MobileHeaderProps {
@@ -51,9 +51,9 @@ export const MobileHeader = ({
   return (
     <>
       {/* Mobile Navigation Header */}
-      <div className="flex items-center justify-between w-full px-4 md:hidden">
-        <ChicmozHomeLink textClasses="hidden md:block" />
-        <MagicDevLink textClasses="md:hidden" />
+      <div className="flex items-center justify-between w-full px-4 lg:hidden">
+        <ChicmozHomeLink textClasses="hidden lg:block" />
+        <NetworkSelector className="lg:hidden" />
         <div className="flex items-center justify-between space-x-4">
           <Button
             variant="ghost"
@@ -74,7 +74,7 @@ export const MobileHeader = ({
 
       {/* Mobile Menu Content */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out
         ${isMenuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"}`}
       >
         <div className="px-4 pt-4 space-y-3 overflow-y-auto">
