@@ -1,10 +1,12 @@
 import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
+import { useState } from "react";
+import { AztecIconWhite } from "~/assets";
 import { SearchInput } from "~/components/ui/input";
+import { routes } from "~/routes/__root";
 import { ThemeToggle } from "../theme-toggle";
 import { Button } from "../ui";
-import { ChicmozHomeLink } from "../ui/chicmoz-home-link";
 import { NetworkSelector } from "./network-selector";
 import { type HeaderLink } from "./types";
 
@@ -48,28 +50,75 @@ export const MobileHeader = ({
     .map((link) => link.group ?? "default")
     .filter((group, index, self) => self.indexOf(group) === index);
 
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   return (
     <>
       {/* Mobile Navigation Header */}
       <div className="flex items-center justify-between w-full px-4 lg:hidden">
-        <ChicmozHomeLink textClasses="hidden lg:block" />
-        <NetworkSelector className="lg:hidden" />
-        <div className="flex items-center justify-between space-x-4">
+        {/* Left: Logo + Network */}
+        <div className="flex items-center gap-3">
+          <Link to={routes.home.route} className="flex items-center gap-1">
+            <AztecIconWhite className="size-5" />
+            <span className="text-white font-bold text-base font-space-grotesk">
+              Aztec-Scan
+            </span>
+          </Link>
+          <NetworkSelector className="lg:hidden" />
+        </div>
+
+        {/* Center: Search bar (tablet only) */}
+        <div className="hidden md:flex flex-1 justify-center mx-4 max-w-xs">
+          <SearchInput
+            placeholder="Search"
+            onIconClick={handleSearch}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            onChange={(e) => handleOnChange(e.target.value)}
+            isLoading={isLoading}
+            noResults={hasNoResults}
+            className="w-full"
+          />
+        </div>
+
+        {/* Right: Search icon (mobile only) + Menu */}
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-transparent"
+            className="text-white hover:bg-transparent p-2 md:hidden"
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+          >
+            <Search className="h-5 w-5 text-white" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-transparent p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <span className="flex items-center">
-              {isMenuOpen ? (
-                <X className="h-6 w-6 mr-2 text-white" />
-              ) : (
-                <Menu className="h-6 w-6 mr-2 text-white" />
-              )}
-            </span>
+            {isMenuOpen ? (
+              <X className="h-6 w-6 text-white" />
+            ) : (
+              <Menu className="h-6 w-6 text-white" />
+            )}
           </Button>
         </div>
+      </div>
+
+      {/* Mobile Search Bar (expandable - mobile only) */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out px-4
+        ${isSearchOpen ? "max-h-20 opacity-100 pt-3" : "max-h-0 opacity-0"}`}
+      >
+        <SearchInput
+          placeholder="Search"
+          onIconClick={handleSearch}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          onChange={(e) => handleOnChange(e.target.value)}
+          isLoading={isLoading}
+          noResults={hasNoResults}
+          className="w-full"
+        />
       </div>
 
       {/* Mobile Menu Content */}
@@ -78,19 +127,6 @@ export const MobileHeader = ({
         ${isMenuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"}`}
       >
         <div className="px-4 pt-4 space-y-3 overflow-y-auto">
-          {/* Search bar */}
-          <div className="flex items-center mt-1 w-full">
-            <SearchInput
-              placeholder="Search"
-              onIconClick={handleSearch}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              onChange={(e) => handleOnChange(e.target.value)}
-              isLoading={isLoading}
-              noResults={hasNoResults}
-              className="w-full"
-            />
-          </div>
-
           {/* Navigation Items */}
           <div className="flex flex-col space-y-2">
             {groups.map((group, groupIndex) => (
