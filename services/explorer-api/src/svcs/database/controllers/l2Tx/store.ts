@@ -2,6 +2,7 @@ import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { type ChicmozL2PendingTx } from "@chicmoz-pkg/types";
 import { logger } from "../../../../logger.js";
 import { l2Tx } from "../../schema/l2tx/index.js";
+import { storePublicCallRequests } from "../l2Public-call/store.js";
 
 export const storeL2Tx = async (tx: ChicmozL2PendingTx): Promise<void> => {
   const res = await db()
@@ -33,5 +34,10 @@ export const storeOrUpdateL2Tx = async (
     logger.info(
       `🔄 Pending tx: ${tx.txHash} stored/updated successfully (timestamp: ${tx.birthTimestamp.toString()})`,
     );
+  }
+
+  // Store public call requests if they exist
+  if (tx.publicCallRequests && tx.publicCallRequests.length > 0) {
+    await storePublicCallRequests(tx.txHash, tx.publicCallRequests);
   }
 };
