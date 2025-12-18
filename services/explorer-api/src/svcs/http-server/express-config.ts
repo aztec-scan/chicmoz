@@ -59,6 +59,7 @@ export function setup(
   app.use(cors({ credentials: true }));
 
   // NOTE: body parser should be configured AFTER proxy configuration https://www.npmjs.com/package/express-http-proxy#middleware-mixing
+  // NOTE: Artifact routes skip global body parsing because they use route-specific parsers with ARTIFACT_BODY_LIMIT
   app.use((req, res, next) => {
     if (isArtifactUpdate(req.path, req.method)) {
       return next();
