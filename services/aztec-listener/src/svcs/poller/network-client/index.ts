@@ -33,6 +33,7 @@ import { AztecNode, NodeInfo } from "@aztec/aztec.js/node";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { Fr } from "@aztec/aztec.js/fields";
 import { ProtocolContractAddress } from "@aztec/aztec.js/protocol";
+import { BlockNumber } from "@aztec/foundation/branded-types";
 
 const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway"];
 
@@ -174,7 +175,7 @@ export const getFreshInfo = async (): Promise<{
 };
 
 export const getBlock = async (height: number) =>
-  callNodeFunction("getBlock", [height]);
+  callNodeFunction("getBlock", [BlockNumber(height)]);
 
 export const getBlocks = async (fromHeight: number, toHeight: number) => {
   if (toHeight - fromHeight > MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS) {
@@ -209,8 +210,10 @@ export const getBalanceOf = async (
   address: AztecAddress,
 ) => {
   const slot = await deriveStorageSlotInMap(new Fr(1), address);
+  const blockParam =
+    blockNumber === "latest" ? "latest" : BlockNumber(blockNumber);
   return callNodeFunction("getPublicStorageAt", [
-    blockNumber,
+    blockParam,
     ProtocolContractAddress.FeeJuice,
     slot,
   ]);

@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: arch-config
-  namespace: chicmoz
-data:
-  arch_tag: "$(ARCH_TAG)"

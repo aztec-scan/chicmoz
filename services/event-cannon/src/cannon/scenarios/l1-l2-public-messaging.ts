@@ -1,4 +1,5 @@
-import { L1Deployer, createExtendedL1Client } from "@aztec/ethereum";
+import { L1Deployer } from "@aztec/ethereum/deploy-l1-contract";
+import { createExtendedL1Client } from "@aztec/ethereum/client";
 import {
   TestERC20Abi,
   TestERC20Bytecode,
@@ -87,7 +88,7 @@ export const run = async () => {
   const owner = account.getAddress();
 
   const tokenContractLoggingName = "Token Contract";
-  const token = await deployContract({
+  const { contract: token, instance: tokenInstance } = await deployContract({
     contractLoggingName: tokenContractLoggingName,
     deployFn: (): DeploySentTx<TokenContract> => {
       return TokenContract.deploy(
@@ -104,14 +105,14 @@ export const run = async () => {
   registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
-    token.instance.currentContractClassId.toString(),
-    token.instance.version,
+    tokenInstance.currentContractClassId.toString(),
+    tokenInstance.version,
   ).catch((err) => {
     logger.error(err);
   });
 
   const tokenBridgeContractLoggingName = "Token Bridge Contract";
-  const bridge = await deployContract({
+  const { contract: bridge, instance: bridgeInstance } = await deployContract({
     contractLoggingName: tokenBridgeContractLoggingName,
     deployFn: (): DeploySentTx<TokenBridgeContract> => {
       return TokenBridgeContract.deploy(
@@ -126,8 +127,8 @@ export const run = async () => {
   registerContractClassArtifact(
     tokenBridgeContractLoggingName,
     tokenBridgeContractArtifactJson,
-    bridge.instance.currentContractClassId.toString(),
-    bridge.instance.version,
+    bridgeInstance.currentContractClassId.toString(),
+    bridgeInstance.version,
   ).catch((err) => {
     logger.error(err);
   });
@@ -206,7 +207,7 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-    l1TokenBalance - bridgeAmount,
+      l1TokenBalance - bridgeAmount,
   );
   const msgHash = Fr.fromString(claim.messageHash);
 
@@ -288,11 +289,11 @@ export const run = async () => {
     (await l2Token.methods
       .balance_of_public(ownerAddress)
       .simulate({ from: account.getAddress() })) ===
-    bridgeAmount - withdrawAmount,
+      bridgeAmount - withdrawAmount,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-    l1TokenBalance - bridgeAmount,
+      l1TokenBalance - bridgeAmount,
   );
 
   const l2ToL1MessageWitness =
@@ -305,7 +306,8 @@ export const run = async () => {
 
   const wait = 10000;
   logger.info(
-    `waiting ${wait / 1000
+    `waiting ${
+      wait / 1000
     } seconds for the message to be available for consumption...`,
   );
   await new Promise((resolve) => setTimeout(resolve, wait));
@@ -319,6 +321,6 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-    l1TokenBalance - bridgeAmount + withdrawAmount,
+      l1TokenBalance - bridgeAmount + withdrawAmount,
   );
 };

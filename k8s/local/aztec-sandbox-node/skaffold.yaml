@@ -3,18 +3,20 @@ kind: Config
 metadata:
   name: aztec-sandbox-deployment
 build:
+  local:
+    push: false
+    tryImportMissing: false
   artifacts:
     - image: aztecprotocol/aztec
       custom:
         buildCommand: |
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-            ARCH_TAG="arm64"
-          else
-            ARCH_TAG="amd64"
-          fi
-          docker pull aztecprotocol/aztec:1.1.2-${ARCH_TAG}
-          docker tag aztecprotocol/aztec:1.1.2-${ARCH_TAG} $IMAGE
+          # Unset minikube docker env to use host docker
+          unset DOCKER_TLS_VERIFY DOCKER_HOST DOCKER_CERT_PATH MINIKUBE_ACTIVE_DOCKERD
+          # Pull image on host docker
+          docker pull aztecprotocol/aztec:3.0.1-rc.1
+          docker tag aztecprotocol/aztec:3.0.1-rc.1 $IMAGE
+          # Load into minikube
+          minikube image load $IMAGE
         dependencies:
           paths:
             - "."

@@ -1,6 +1,6 @@
 # Compile contracts (if changed, or updated version)
 
-aztec-up 0.81.0
+aztec-up 3.0.1-rc.1
 
 cd contract-projects/YOUR_PROJECT
 aztec-nargo compile

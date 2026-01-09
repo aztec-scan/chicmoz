@@ -17,7 +17,7 @@ export async function run() {
 
   const contractLoggingName = "Standard Token";
 
-  const contract = await deployContract({
+  const { instance: contractInstance } = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<TokenContract> =>
       TokenContract.deploy(
@@ -32,8 +32,8 @@ export async function run() {
 
   await registerStandardContractArtifact(
     contractLoggingName,
-    contract.instance.currentContractClassId.toString(),
-    contract.instance.version,
+    contractInstance.currentContractClassId.toString(),
+    contractInstance.version,
     "token",
     "0.0.0-73e84dcc",
   );

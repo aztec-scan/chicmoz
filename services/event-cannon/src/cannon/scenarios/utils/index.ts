@@ -17,7 +17,12 @@ import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { getAccounts } from "../../pxe.js";
 import { callExplorerApi } from "./explorer-api.js";
-import { Contract, DeploySentTx, SentTx } from "@aztec/aztec.js/contracts";
+import {
+  Contract,
+  DeploySentTx,
+  SentTx,
+  type ContractInstanceWithAddress,
+} from "@aztec/aztec.js/contracts";
 import {
   FunctionSelector,
   FunctionType,
@@ -27,6 +32,7 @@ import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
 import { TestWallet } from "@aztec/test-wallet/server";
 import { AztecNode } from "@aztec/aztec.js/node";
+import { BlockNumber } from "@aztec/foundation/branded-types";
 import { Wallet } from "@aztec/aztec.js/wallet";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { Account } from "@aztec/aztec.js/account";
@@ -102,7 +108,10 @@ export const getNewAccount = async (
   });
 };
 
-const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
+const getNewContractClassId = async (
+  node: AztecNode,
+  blockNumber?: BlockNumber,
+) => {
   if (!blockNumber) {
     return undefined;
   }
@@ -138,11 +147,14 @@ export const deployContract = async <T extends Contract>({
   deployFn: () => DeploySentTx<T>;
   broadcastWithWallet?: Wallet;
   node: AztecNode;
-}): Promise<T> => {
+}): Promise<{ contract: T; instance: ContractInstanceWithAddress }> => {
   logger.info(`DEPLOYING ${contractLoggingName}`);
 
   const contractTx = deployFn();
   const hash = (await contractTx.getTxHash()).toString();
+
+  // Get instance BEFORE calling deployed()
+  const instance = await contractTx.getInstance();
 
   logger.info(`📫 ${contractLoggingName} txHash: ${hash} (Deploying contract)`);
   const deployedContract = await contractTx.deployed();
@@ -151,7 +163,7 @@ export const deployContract = async <T extends Contract>({
   const newClassId = await getNewContractClassId(node, receipt.blockNumber);
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
-    : `(🍎 attached currentclassId: ${deployedContract.instance.currentContractClassId.toString()})`;
+    : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
     `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );
@@ -161,7 +173,7 @@ export const deployContract = async <T extends Contract>({
       contract: deployedContract,
     });
   }
-  return deployedContract;
+  return { contract: deployedContract, instance };
 };
 
 export const broadcastFunctions = async ({

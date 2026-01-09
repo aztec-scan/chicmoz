@@ -25,28 +25,29 @@ export async function run() {
     "LOL",
     9,
   ];
-  const tokenContract = await deployContract({
-    contractLoggingName,
-    deployFn: (): DeploySentTx<TokenContract> => {
-      return TokenContract.deploy(
-        wallet,
-        constructorArgs[0],
-        constructorArgs[1],
-        constructorArgs[2],
-        constructorArgs[3],
-      ).send({ from: deployerWallet.getAddress() });
-    },
-    node: getAztecNodeClient(),
-  });
+  const { contract: tokenContract, instance: tokenInstance } =
+    await deployContract({
+      contractLoggingName,
+      deployFn: (): DeploySentTx<TokenContract> => {
+        return TokenContract.deploy(
+          wallet,
+          constructorArgs[0],
+          constructorArgs[1],
+          constructorArgs[2],
+          constructorArgs[3],
+        ).send({ from: deployerWallet.getAddress() });
+      },
+      node: getAztecNodeClient(),
+    });
 
   verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: tokenContract.address.toString(),
     verifyArgs: {
       artifactObj: tokenContractArtifactJson,
-      publicKeysString: tokenContract.instance.publicKeys.toString(),
-      deployer: tokenContract.instance.deployer.toString(),
-      salt: tokenContract.instance.salt.toString(),
+      publicKeysString: tokenInstance.publicKeys.toString(),
+      deployer: tokenInstance.deployer.toString(),
+      salt: tokenInstance.salt.toString(),
       constructorArgs: constructorArgs.map((arg) => arg.toString()),
     },
     deployerMetadata: {
@@ -100,23 +101,23 @@ export async function run() {
   logger.info(`Bob balance: ${balanceBob}`);
   logger.info(`Charlie balance: ${balanceCharlie}`);
 
-  const aliceContract = (await Contract.at(
+  const aliceContract = Contract.at(
     tokenContract.address,
     TokenContract.artifact,
     wallet,
-  )) as TokenContract;
+  ) as TokenContract;
 
-  const bobsTokenContract = (await Contract.at(
+  const bobsTokenContract = Contract.at(
     tokenContract.address,
     TokenContract.artifact,
     wallet,
-  )) as TokenContract;
+  ) as TokenContract;
 
-  const charliesTokenContract = (await Contract.at(
+  const charliesTokenContract = Contract.at(
     tokenContract.address,
     TokenContract.artifact,
     wallet,
-  )) as TokenContract;
+  ) as TokenContract;
 
   let bobNonce = 0;
   await logAndWaitForTx(

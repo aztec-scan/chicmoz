@@ -26,7 +26,7 @@ export async function run() {
   const contractLoggingName = contractId;
   const constructorArgs = [votingAdmin];
 
-  const contract = await deployContract({
+  const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<PrivateVotingContract> =>
       PrivateVotingContract.deploy(wallet, constructorArgs[0]).send({
@@ -41,9 +41,9 @@ export async function run() {
     contractInstanceAddress: contract.address.toString(),
     verifyArgs: {
       artifactObj: contractArtifactJson,
-      publicKeysString: contract.instance.publicKeys.toString(),
-      deployer: contract.instance.deployer.toString(),
-      salt: contract.instance.salt.toString(),
+      publicKeysString: contractInstance.publicKeys.toString(),
+      deployer: contractInstance.deployer.toString(),
+      salt: contractInstance.salt.toString(),
       constructorArgs: constructorArgs.map((arg) => arg.toString()),
     },
     deployerMetadata: {
@@ -62,17 +62,17 @@ export async function run() {
     );
   });
 
-  const votingContractAlice = await Contract.at(
+  const votingContractAlice = Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
     wallet,
   );
-  const votingContractBob = await Contract.at(
+  const votingContractBob = Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
     wallet,
   );
-  const votingContractCharlie = await Contract.at(
+  const votingContractCharlie = Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
     wallet,
@@ -81,32 +81,35 @@ export async function run() {
   const candidateA = new Fr(1);
   const candidateB = new Fr(2);
 
+  // Define election ID for this voting session
+  const electionId = { id: new Fr(1) };
+
   await Promise.all([
     logAndWaitForTx(
       votingContractAlice.methods
-        .cast_vote(candidateA)
+        .cast_vote(electionId, candidateA)
         .send({ from: namedWallets.alice.address }),
       "Cast vote 1 - candidate A",
     ),
     logAndWaitForTx(
       votingContractBob.methods
-        .cast_vote(candidateA)
+        .cast_vote(electionId, candidateA)
         .send({ from: namedWallets.bob.address }),
       "Cast vote 2 - candidate A",
     ),
     await logAndWaitForTx(
       votingContractCharlie.methods
-        .cast_vote(candidateB)
+        .cast_vote(electionId, candidateB)
         .send({ from: namedWallets.charlie.address }),
       "Cast vote 3 - candidate B",
     ),
   ]);
 
   const votesA = (await contract.methods
-    .get_vote(candidateA)
+    .get_tally(electionId, candidateA)
     .simulate({ from: deployerWallet.address })) as bigint;
   const votesB = (await contract.methods
-    .get_vote(candidateB)
+    .get_tally(electionId, candidateB)
     .simulate({ from: deployerWallet.address })) as bigint;
 
   logger.info(`  Votes for candidate 1: ${votesA}`);
