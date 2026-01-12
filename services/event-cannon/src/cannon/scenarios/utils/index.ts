@@ -34,7 +34,6 @@ import { TestWallet } from "@aztec/test-wallet/server";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
 import { Wallet } from "@aztec/aztec.js/wallet";
-import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { Account } from "@aztec/aztec.js/account";
 
 export const truncateHashString = (value: string) => {
@@ -83,8 +82,12 @@ export const getNewSchnorrAccount = async ({
   const { address } = await schnorrAccount.getCompleteAddress();
   logger.info(`    Deploying Schnorr account to network... (${accountName})`);
   const deployFunction = await schnorrAccount.getDeployMethod();
+
+  // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
+  // but fails in devnet/testnet where it has no balance.
+  const feePayer = getAccounts().alice.address;
   await logAndWaitForTx(
-    deployFunction.send({ from: AztecAddress.ZERO }),
+    deployFunction.send({ from: feePayer }),
     `Deploying account ${accountName}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
