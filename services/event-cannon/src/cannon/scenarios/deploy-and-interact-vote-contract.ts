@@ -36,7 +36,8 @@ export async function run() {
     node: getAztecNodeClient(),
   });
 
-  verifyContractInstanceDeployment({
+  // Fire-and-forget verification; do not block scenario execution.
+  void verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: contract.address.toString(),
     verifyArgs: {
@@ -56,10 +57,6 @@ export async function run() {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
     },
-  }).catch((err) => {
-    logger.error(
-      `Failed to verify contract instance deployment: ${(err as Error).stack}`,
-    );
   });
 
   const votingContractAlice = Contract.at(
@@ -78,32 +75,35 @@ export async function run() {
     wallet,
   );
 
+  // Ensure the contract instance is registered with the PXE/wallet before
+  // attempting private interactions (cast_vote is private).
+  await wallet.registerContract(contractInstance);
+
   const candidateA = new Fr(1);
   const candidateB = new Fr(2);
 
   // Define election ID for this voting session
   const electionId = { id: new Fr(1) };
 
-  await Promise.all([
-    logAndWaitForTx(
-      votingContractAlice.methods
-        .cast_vote(electionId, candidateA)
-        .send({ from: namedWallets.alice.address }),
-      "Cast vote 1 - candidate A",
-    ),
-    logAndWaitForTx(
-      votingContractBob.methods
-        .cast_vote(electionId, candidateA)
-        .send({ from: namedWallets.bob.address }),
-      "Cast vote 2 - candidate A",
-    ),
-    await logAndWaitForTx(
-      votingContractCharlie.methods
-        .cast_vote(electionId, candidateB)
-        .send({ from: namedWallets.charlie.address }),
-      "Cast vote 3 - candidate B",
-    ),
-  ]);
+  // Run sequentially: PXE does not support concurrent job processing.
+  await logAndWaitForTx(
+    votingContractAlice.methods
+      .cast_vote(electionId, candidateA)
+      .send({ from: namedWallets.alice.address }),
+    "Cast vote 1 - candidate A",
+  );
+  await logAndWaitForTx(
+    votingContractBob.methods
+      .cast_vote(electionId, candidateA)
+      .send({ from: namedWallets.bob.address }),
+    "Cast vote 2 - candidate A",
+  );
+  await logAndWaitForTx(
+    votingContractCharlie.methods
+      .cast_vote(electionId, candidateB)
+      .send({ from: namedWallets.charlie.address }),
+    "Cast vote 3 - candidate B",
+  );
 
   const votesA = (await contract.methods
     .get_tally(electionId, candidateA)

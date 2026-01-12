@@ -267,6 +267,7 @@ export const registerContractClassArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
+    waitForIndexing: false,
   });
 };
 
@@ -287,6 +288,7 @@ export const registerStandardContractArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
+    waitForIndexing: false,
   });
 };
 
@@ -313,10 +315,19 @@ export const verifyContractInstanceDeployment = async ({
     verifiedDeploymentArguments: generateVerifyInstancePayload(verifyArgs),
     deployerMetadata,
   });
-  await callExplorerApi({
-    loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
-    urlStr: url,
-    postData,
-    method: "POST",
-  });
+
+  try {
+    await callExplorerApi({
+      loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
+      urlStr: url,
+      postData,
+      method: "POST",
+      waitForIndexing: false,
+    });
+  } catch (err) {
+    // Explorer is best-effort here; failures should not break scenarios.
+    logger.warn(
+      `verifyContractInstanceDeployment failed (${contractLoggingName}): ${(err as Error).message}`,
+    );
+  }
 };

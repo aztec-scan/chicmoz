@@ -40,7 +40,8 @@ export async function run() {
       node: getAztecNodeClient(),
     });
 
-  verifyContractInstanceDeployment({
+  // Fire-and-forget verification; do not block scenario execution.
+  void verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: tokenContract.address.toString(),
     verifyArgs: {
@@ -60,8 +61,6 @@ export async function run() {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
     },
-  }).catch((err) => {
-    logger.error(`Failed to verify contract instance deployment: ${err}`);
   });
 
   await Promise.all([
@@ -119,6 +118,9 @@ export async function run() {
     wallet,
   ) as TokenContract;
 
+  // IMPORTANT: `transfer_in_public(from, to, amount, nonce)` must be sent by `from`.
+  // The previous code was sending from Alice while specifying Bob as the sender,
+  // which causes `app_logic_reverted`.
   let bobNonce = 0;
   await logAndWaitForTx(
     bobsTokenContract.methods
@@ -128,8 +130,8 @@ export async function run() {
         100,
         bobNonce,
       )
-      .send({ from: deployerWallet.getAddress() }),
-    "Public transfer from Alice to Bob",
+      .send({ from: namedAccounts.bob.address }),
+    "Public transfer from Bob to Alice",
   );
   bobNonce++;
 
@@ -154,6 +156,7 @@ export async function run() {
     "Public to private transfer from Charlie to Alice",
   );
 
+  // `transfer_in_private(from, to, amount, nonce)` must also be sent by `from`.
   let aliceNonce = 0;
   await logAndWaitForTx(
     aliceContract.methods
@@ -163,8 +166,8 @@ export async function run() {
         100,
         aliceNonce,
       )
-      .send({ from: deployerWallet.getAddress() }),
-    "Private transfer from Bob to Alice",
+      .send({ from: namedAccounts.alice.address }),
+    "Private transfer from Alice to Bob",
   );
   aliceNonce++;
 
@@ -193,11 +196,11 @@ export async function run() {
       .simulate({ from: deployerWallet.getAddress() })
       .then((balance) => balance as bigint),
     tokenContract.methods
-      .balance_of_private(namedAccounts.charlie)
+      .balance_of_private(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() })
       .then((balance) => balance as bigint),
     tokenContract.methods
-      .balance_of_public(namedAccounts.charlie)
+      .balance_of_public(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() })
       .then((balance) => balance as bigint),
   ]);
