@@ -4,21 +4,25 @@ import { DB_MAX_BLOCKS } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { l2Block } from "../schema/index.js";
 
-export const dbParseErrorCallback = (e: Error) => {
+export const dbParseErrorCallback = (e: unknown) => {
   if (e instanceof ZodError) {
     const newError = new Error("Internal server error (DB)");
     newError.name = "DbParseError";
-    newError.cause = e;
+    newError.cause = {
+      name: e.name,
+      message: e.message,
+      issues: e.issues,
+    };
     newError.stack = e.stack;
     logger.error(`FATAL - dbParseErrorCallback: ${JSON.stringify(e.issues)}`);
     throw newError;
-  } else {
-    // NOTE: this should never happen
-    logger.error(
-      `BIG PROBLEM - dbParseErrorCallback: returned an error that is not ZodError: ${e.message}`
-    );
+  }
+
+  if (e instanceof Error) {
     throw e;
   }
+
+  throw new Error("Internal server error (DB)", { cause: e });
 };
 
 export const getTableColumnsWithoutId = <T extends Table>(table: T) => {
@@ -36,14 +40,17 @@ export const getBlocksWhereRange = ({
 }) => {
   let whereRange;
   if (to && from) {
-    if (from > to) {throw new Error("Invalid range: from is greater than to");}
-    if (to - from > DB_MAX_BLOCKS)
-      {throw new Error("Invalid range: too wide of a range requested");}
+    if (from > to) {
+      throw new Error("Invalid range: from is greater than to");
+    }
+    if (to - from > DB_MAX_BLOCKS) {
+      throw new Error("Invalid range: too wide of a range requested");
+    }
     whereRange = and(gte(l2Block.height, from), lt(l2Block.height, to));
   } else if (from) {
     whereRange = and(
       gte(l2Block.height, from),
-      lt(l2Block.height, from + BigInt(DB_MAX_BLOCKS))
+      lt(l2Block.height, from + BigInt(DB_MAX_BLOCKS)),
     );
   } else if (to) {
     whereRange = lt(l2Block.height, to);

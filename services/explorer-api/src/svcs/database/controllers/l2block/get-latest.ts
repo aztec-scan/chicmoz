@@ -11,35 +11,85 @@ export const getLatestBlock = async (
   return getBlock(-1n, options);
 };
 
+const getBlockFilters = (options: BlockQueryOptions) => {
+  const { includeOrphaned = false } = options;
+
+  const orphanFilter = includeOrphaned
+    ? undefined
+    : isNull(l2Block.orphan_timestamp);
+  return {
+    orphanFilter,
+    currentVersion: parseInt(CURRENT_ROLLUP_VERSION),
+  };
+};
+
 export const getLatestHeight = async (
   options: BlockQueryOptions = {},
 ): Promise<bigint | null> => {
-  const { includeOrphaned = false } = options;
+  const { orphanFilter, currentVersion } = getBlockFilters(options);
 
-  // Execute the appropriate query based on the includeOrphaned flag
-  const latestBlockNumber = await (
-    includeOrphaned
-      ? db()
-          .select({ height: l2Block.height })
-          .from(l2Block)
-          .where(eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)))
-          .orderBy(desc(l2Block.height))
-          .limit(1)
-      : db()
-          .select({ height: l2Block.height })
-          .from(l2Block)
-          .where(
-            and(
-              isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
-            ),
-          )
-          .orderBy(desc(l2Block.height))
-          .limit(1)
-  ).execute();
+  const latestHeightForCurrentVersion = await db()
+    .select({ height: l2Block.height })
+    .from(l2Block)
+    .where(
+      orphanFilter
+        ? and(orphanFilter, eq(l2Block.version, currentVersion))
+        : eq(l2Block.version, currentVersion),
+    )
+    .orderBy(desc(l2Block.height))
+    .limit(1)
+    .execute();
 
-  if (latestBlockNumber.length === 0) {
+  if (latestHeightForCurrentVersion.length > 0) {
+    return latestHeightForCurrentVersion[0].height;
+  }
+
+  const latestHeightAnyVersion = await db()
+    .select({ height: l2Block.height })
+    .from(l2Block)
+    .where(orphanFilter)
+    .orderBy(desc(l2Block.height))
+    .limit(1)
+    .execute();
+
+  if (latestHeightAnyVersion.length === 0) {
     return null;
   }
-  return latestBlockNumber[0].height;
+
+  return latestHeightAnyVersion[0].height;
+};
+
+export const getExistingRollupVersion = async (
+  options: BlockQueryOptions = {},
+): Promise<number | null> => {
+  const { orphanFilter, currentVersion } = getBlockFilters(options);
+
+  const hasCurrentVersion = await db()
+    .select({ height: l2Block.height })
+    .from(l2Block)
+    .where(
+      orphanFilter
+        ? and(orphanFilter, eq(l2Block.version, currentVersion))
+        : eq(l2Block.version, currentVersion),
+    )
+    .limit(1)
+    .execute();
+
+  if (hasCurrentVersion.length > 0) {
+    return currentVersion;
+  }
+
+  const anyVersion = await db()
+    .select({ version: l2Block.version })
+    .from(l2Block)
+    .where(orphanFilter)
+    .orderBy(desc(l2Block.height))
+    .limit(1)
+    .execute();
+
+  if (anyVersion.length === 0) {
+    return null;
+  }
+
+  return anyVersion[0].version;
 };
