@@ -20,7 +20,7 @@ spec:
         - image: event-cannon:latest
           resources:
             limits:
-              memory: 500Mi
+              memory: 2Gi
               cpu: 500m
           name: event-cannon
           env:
