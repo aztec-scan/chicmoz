@@ -18,7 +18,7 @@ export async function run() {
 
   const deployerWallet = namedWallets.alice;
 
-  const contractLoggingName = "Voting Contract";
+  const contractLoggingName = "SimpleLogging Contract";
 
   const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,

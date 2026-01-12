@@ -21,7 +21,7 @@ import {
 import { Fr } from "@aztec/aztec.js/fields";
 import { PublicKeys } from "@aztec/aztec.js/keys";
 import type { Wallet } from "@aztec/aztec.js/wallet";
-import SimpleLoggingContractArtifactJson from "../../target/simple_voting-SimpleLogging.json" with { type: "json" };
+import SimpleLoggingContractArtifactJson from "../../target/simple_logging-SimpleLogging.json" with { type: "json" };
 export const SimpleLoggingContractArtifact = loadContractArtifact(
   SimpleLoggingContractArtifactJson as NoirCompiledContract,
 );
