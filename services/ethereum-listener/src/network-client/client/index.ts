@@ -160,6 +160,11 @@ const hardcodedRollupGenesisBlocks = (
     rollupAddress.toLowerCase() === "0xebd99ff0ff6677205509ae73f93d0ca52ac85d67"
   ) {
     return 8125387n;
+  } else if (
+    networkId === "DEVNET" &&
+    rollupAddress.toLowerCase() === "0x5d84b64b0b2f468df065d8cf01fff88a73238a13"
+  ) {
+    return 9824270n;
   }
   return 0n;
 };
