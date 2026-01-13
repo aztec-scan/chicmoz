@@ -4,8 +4,7 @@ FROM $BASE as BUILD
 WORKDIR /usr/main/services/auth
 RUN yarn workspaces focus @chicmoz/auth
 COPY . .
-RUN yarn build && \
-  rm -rf node_modules/.cache .yarn/cache
+RUN yarn build
 
 FROM node:20-alpine
 WORKDIR /usr/main/services/auth
