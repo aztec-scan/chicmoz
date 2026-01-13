@@ -18,9 +18,9 @@ export async function run() {
 
   const deployerWallet = namedWallets.alice;
 
-  const contractLoggingName = "Voting Contract";
+  const contractLoggingName = "SimpleLogging Contract";
 
-  const contract = await deployContract({
+  const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<SimpleLoggingContract> =>
       SimpleLoggingContract.deploy(
@@ -36,8 +36,8 @@ export async function run() {
   registerContractClassArtifact(
     contractLoggingName,
     artifactJson as unknown as NoirCompiledContract,
-    contract.instance.currentContractClassId.toString(),
-    contract.instance.version,
+    contractInstance.currentContractClassId.toString(),
+    contractInstance.version,
   ).catch((err) => {
     logger.error(err);
   });

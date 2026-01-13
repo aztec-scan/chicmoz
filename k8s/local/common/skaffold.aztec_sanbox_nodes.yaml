@@ -9,11 +9,9 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
+    - ./namespace.yaml
+    - ../anvil-ethereum-node/deployment.yaml
+    - ../anvil-ethereum-node/service.yaml
     - ../aztec-sandbox-node/ingress.yaml
     - ../aztec-sandbox-node/deployment.yaml
     - ../aztec-sandbox-node/service.yaml
-    - ../aztec-sandbox-node/config.yaml
-    - ../anvil-ethereum-node/config.yaml
-    - ../anvil-ethereum-node/ingress.yaml
-    - ../anvil-ethereum-node/deployment.yaml
-    - ../anvil-ethereum-node/service.yaml

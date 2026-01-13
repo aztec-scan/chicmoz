@@ -7,7 +7,7 @@ import { logger } from "../../logger.js";
 import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
-  logAndWaitForTx,
+  simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { Contract, DeploySentTx } from "@aztec/aztec.js/contracts";
@@ -26,7 +26,7 @@ export async function run() {
   const contractLoggingName = contractId;
   const constructorArgs = [votingAdmin];
 
-  const contract = await deployContract({
+  const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<PrivateVotingContract> =>
       PrivateVotingContract.deploy(wallet, constructorArgs[0]).send({
@@ -36,14 +36,15 @@ export async function run() {
     node: getAztecNodeClient(),
   });
 
-  verifyContractInstanceDeployment({
+  // Fire-and-forget verification; do not block scenario execution.
+  void verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: contract.address.toString(),
     verifyArgs: {
       artifactObj: contractArtifactJson,
-      publicKeysString: contract.instance.publicKeys.toString(),
-      deployer: contract.instance.deployer.toString(),
-      salt: contract.instance.salt.toString(),
+      publicKeysString: contractInstance.publicKeys.toString(),
+      deployer: contractInstance.deployer.toString(),
+      salt: contractInstance.salt.toString(),
       constructorArgs: constructorArgs.map((arg) => arg.toString()),
     },
     deployerMetadata: {
@@ -56,56 +57,53 @@ export async function run() {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
     },
-  }).catch((err) => {
-    logger.error(
-      `Failed to verify contract instance deployment: ${(err as Error).stack}`,
-    );
   });
 
-  const votingContractAlice = await Contract.at(
+  const votingContractAlice = Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
     wallet,
   );
-  const votingContractBob = await Contract.at(
+  const votingContractBob = Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
     wallet,
   );
-  const votingContractCharlie = await Contract.at(
+  const votingContractCharlie = Contract.at(
     contract.address,
     PrivateVotingContractArtifact,
     wallet,
   );
+
+  // Ensure the contract instance is registered with the PXE/wallet before
+  // attempting private interactions (cast_vote is private).
+  await wallet.registerContract(contractInstance);
 
   const candidateA = new Fr(1);
   const candidateB = new Fr(2);
 
-  await Promise.all([
-    logAndWaitForTx(
-      votingContractAlice.methods
-        .cast_vote(candidateA)
-        .send({ from: namedWallets.alice.address }),
-      "Cast vote 1 - candidate A",
-    ),
-    logAndWaitForTx(
-      votingContractBob.methods
-        .cast_vote(candidateA)
-        .send({ from: namedWallets.bob.address }),
-      "Cast vote 2 - candidate A",
-    ),
-    await logAndWaitForTx(
-      votingContractCharlie.methods
-        .cast_vote(candidateB)
-        .send({ from: namedWallets.charlie.address }),
-      "Cast vote 3 - candidate B",
-    ),
-  ]);
+  // Initialize election before casting votes.
+  // Run sequentially: PXE does not support concurrent job processing.
+  await simulateThenSend({
+    method: votingContractAlice.methods.cast_vote(candidateA),
+    from: namedWallets.alice.address,
+    additionalInfo: "Cast vote 1 - candidate A",
+  });
+  await simulateThenSend({
+    method: votingContractBob.methods.cast_vote(candidateA),
+    from: namedWallets.bob.address,
+    additionalInfo: "Cast vote 2 - candidate A",
+  });
+  await simulateThenSend({
+    method: votingContractCharlie.methods.cast_vote(candidateB),
+    from: namedWallets.charlie.address,
+    additionalInfo: "Cast vote 3 - candidate B",
+  });
 
-  const votesA = (await contract.methods
+  const votesA = (await votingContractAlice.methods
     .get_vote(candidateA)
     .simulate({ from: deployerWallet.address })) as bigint;
-  const votesB = (await contract.methods
+  const votesB = (await votingContractAlice.methods
     .get_vote(candidateB)
     .simulate({ from: deployerWallet.address })) as bigint;
 

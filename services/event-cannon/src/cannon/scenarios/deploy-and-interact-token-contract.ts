@@ -5,6 +5,7 @@ import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
   logAndWaitForTx,
+  simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
@@ -25,28 +26,30 @@ export async function run() {
     "LOL",
     9,
   ];
-  const tokenContract = await deployContract({
-    contractLoggingName,
-    deployFn: (): DeploySentTx<TokenContract> => {
-      return TokenContract.deploy(
-        wallet,
-        constructorArgs[0],
-        constructorArgs[1],
-        constructorArgs[2],
-        constructorArgs[3],
-      ).send({ from: deployerWallet.getAddress() });
-    },
-    node: getAztecNodeClient(),
-  });
+  const { contract: tokenContract, instance: tokenInstance } =
+    await deployContract({
+      contractLoggingName,
+      deployFn: (): DeploySentTx<TokenContract> => {
+        return TokenContract.deploy(
+          wallet,
+          constructorArgs[0],
+          constructorArgs[1],
+          constructorArgs[2],
+          constructorArgs[3],
+        ).send({ from: deployerWallet.getAddress() });
+      },
+      node: getAztecNodeClient(),
+    });
 
-  verifyContractInstanceDeployment({
+  // Fire-and-forget verification; do not block scenario execution.
+  void verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: tokenContract.address.toString(),
     verifyArgs: {
       artifactObj: tokenContractArtifactJson,
-      publicKeysString: tokenContract.instance.publicKeys.toString(),
-      deployer: tokenContract.instance.deployer.toString(),
-      salt: tokenContract.instance.salt.toString(),
+      publicKeysString: tokenInstance.publicKeys.toString(),
+      deployer: tokenInstance.deployer.toString(),
+      salt: tokenInstance.salt.toString(),
       constructorArgs: constructorArgs.map((arg) => arg.toString()),
     },
     deployerMetadata: {
@@ -59,30 +62,27 @@ export async function run() {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
     },
-  }).catch((err) => {
-    logger.error(`Failed to verify contract instance deployment: ${err}`);
   });
 
-  await Promise.all([
-    logAndWaitForTx(
-      tokenContract.methods
-        .mint_to_public(namedAccounts.alice.address, 1000)
-        .send({ from: deployerWallet.getAddress() }),
-      "Mint to Alice",
-    ),
-    logAndWaitForTx(
-      tokenContract.methods
-        .mint_to_public(namedAccounts.bob.address, 1000)
-        .send({ from: deployerWallet.getAddress() }),
-      "Mint to Bob",
-    ),
-    logAndWaitForTx(
-      tokenContract.methods
-        .mint_to_public(namedAccounts.charlie.address, 1000)
-        .send({ from: deployerWallet.getAddress() }),
-      "Mint to Charlie",
-    ),
-  ]);
+  // Run sequentially: PXE does not support concurrent job processing.
+  await logAndWaitForTx(
+    tokenContract.methods
+      .mint_to_public(namedAccounts.alice.address, 1000)
+      .send({ from: deployerWallet.getAddress() }),
+    "Mint to Alice",
+  );
+  await logAndWaitForTx(
+    tokenContract.methods
+      .mint_to_public(namedAccounts.bob.address, 1000)
+      .send({ from: deployerWallet.getAddress() }),
+    "Mint to Bob",
+  );
+  await logAndWaitForTx(
+    tokenContract.methods
+      .mint_to_public(namedAccounts.charlie.address, 1000)
+      .send({ from: deployerWallet.getAddress() }),
+    "Mint to Charlie",
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [balanceAlice, balanceBob, balanceCharlie] = await Promise.all([
@@ -100,36 +100,38 @@ export async function run() {
   logger.info(`Bob balance: ${balanceBob}`);
   logger.info(`Charlie balance: ${balanceCharlie}`);
 
-  const aliceContract = (await Contract.at(
+  const aliceContract = Contract.at(
     tokenContract.address,
     TokenContract.artifact,
     wallet,
-  )) as TokenContract;
+  ) as TokenContract;
 
-  const bobsTokenContract = (await Contract.at(
+  const bobsTokenContract = Contract.at(
     tokenContract.address,
     TokenContract.artifact,
     wallet,
-  )) as TokenContract;
+  ) as TokenContract;
 
-  const charliesTokenContract = (await Contract.at(
+  const charliesTokenContract = Contract.at(
     tokenContract.address,
     TokenContract.artifact,
     wallet,
-  )) as TokenContract;
+  ) as TokenContract;
 
+  // IMPORTANT: `transfer_in_public(from, to, amount, nonce)` must be sent by `from`.
+  // The previous code was sending from Alice while specifying Bob as the sender,
+  // which causes `app_logic_reverted`.
   let bobNonce = 0;
-  await logAndWaitForTx(
-    bobsTokenContract.methods
-      .transfer_in_public(
-        namedAccounts.bob.address,
-        namedAccounts.alice.address,
-        100,
-        bobNonce,
-      )
-      .send({ from: deployerWallet.getAddress() }),
-    "Public transfer from Alice to Bob",
-  );
+  await simulateThenSend({
+    method: bobsTokenContract.methods.transfer_in_public(
+      namedAccounts.bob.address,
+      namedAccounts.alice.address,
+      100,
+      bobNonce,
+    ),
+    from: namedAccounts.bob.address,
+    additionalInfo: "Public transfer from Bob to Alice",
+  });
   bobNonce++;
 
   const [balanceAliceAfter, balanceBobAfter] = await Promise.all([
@@ -153,18 +155,18 @@ export async function run() {
     "Public to private transfer from Charlie to Alice",
   );
 
+  // `transfer_in_private(from, to, amount, nonce)` must also be sent by `from`.
   let aliceNonce = 0;
-  await logAndWaitForTx(
-    aliceContract.methods
-      .transfer_in_private(
-        namedAccounts.alice.address,
-        namedAccounts.bob.address,
-        100,
-        aliceNonce,
-      )
-      .send({ from: deployerWallet.getAddress() }),
-    "Private transfer from Bob to Alice",
-  );
+  await simulateThenSend({
+    method: aliceContract.methods.transfer_in_private(
+      namedAccounts.alice.address,
+      namedAccounts.bob.address,
+      100,
+      aliceNonce,
+    ),
+    from: namedAccounts.alice.address,
+    additionalInfo: "Private transfer from Alice to Bob",
+  });
   aliceNonce++;
 
   const [
@@ -192,11 +194,11 @@ export async function run() {
       .simulate({ from: deployerWallet.getAddress() })
       .then((balance) => balance as bigint),
     tokenContract.methods
-      .balance_of_private(namedAccounts.charlie)
+      .balance_of_private(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() })
       .then((balance) => balance as bigint),
     tokenContract.methods
-      .balance_of_public(namedAccounts.charlie)
+      .balance_of_public(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() })
       .then((balance) => balance as bigint),
   ]);

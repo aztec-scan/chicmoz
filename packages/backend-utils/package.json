@@ -14,7 +14,7 @@
     "lint-base": "yarn run g:lint"
   },
   "dependencies": {
-    "@aztec/aztec.js": "3.0.0-devnet.2",
+    "@aztec/aztec.js": "3.0.0-devnet.20251212",
     "@chicmoz-pkg/types": "workspace:^",
     "drizzle-orm": "0.33.0",
     "exponential-backoff": "3.1.1",

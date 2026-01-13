@@ -22,24 +22,24 @@ export async function run() {
 
   const contractLoggingName = "Voting Contract";
 
-  const contract = await deployContract({
+  const { instance: contractInstance } = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<PrivateVotingContract> => sentTx,
     node: getAztecNodeClient(),
   });
 
   logger.info(
-    `conract currentContractClassId ${contract.instance.currentContractClassId.toString()}`,
+    `conract currentContractClassId ${contractInstance.currentContractClassId.toString()}`,
   );
   logger.info(
-    `conract originalContractClassId ${contract.instance.originalContractClassId.toString()}`,
+    `conract originalContractClassId ${contractInstance.originalContractClassId.toString()}`,
   );
 
   registerContractClassArtifact(
     contractLoggingName,
     contractArtifactJson,
-    contract.instance.currentContractClassId.toString(),
-    contract.instance.version,
+    contractInstance.currentContractClassId.toString(),
+    contractInstance.version,
   ).catch((err) => {
     logger.error(err);
   });

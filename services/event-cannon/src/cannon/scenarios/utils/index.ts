@@ -17,7 +17,12 @@ import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { getAccounts } from "../../pxe.js";
 import { callExplorerApi } from "./explorer-api.js";
-import { Contract, DeploySentTx, SentTx } from "@aztec/aztec.js/contracts";
+import {
+  Contract,
+  DeploySentTx,
+  SentTx,
+  type ContractInstanceWithAddress,
+} from "@aztec/aztec.js/contracts";
 import {
   FunctionSelector,
   FunctionType,
@@ -25,10 +30,11 @@ import {
 } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { TestWallet } from "@aztec/test-wallet/server";
 import { AztecNode } from "@aztec/aztec.js/node";
+import { BlockNumber } from "@aztec/foundation/branded-types";
 import { Wallet } from "@aztec/aztec.js/wallet";
-import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { Account } from "@aztec/aztec.js/account";
 
 export const truncateHashString = (value: string) => {
@@ -45,6 +51,34 @@ export const logAndWaitForTx = async (tx: SentTx, additionalInfo: string) => {
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
   );
   return receipt;
+};
+
+export const simulateThenSend = async ({
+  method,
+  from,
+  additionalInfo,
+}: {
+  method: {
+    simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
+    send: (opts: { from: AztecAddress }) => SentTx;
+  };
+  from: AztecAddress;
+  additionalInfo: string;
+}) => {
+  try {
+    await method.simulate({ from });
+  } catch (err) {
+    logger.error(
+      `simulate() failed (${additionalInfo}) from=${from.toString()}: ${
+        (err as Error).stack ?? (err as Error).message
+      }`,
+    );
+
+    throw err;
+  }
+
+  const tx = method.send({ from });
+  return await logAndWaitForTx(tx, additionalInfo);
 };
 
 export const getFunctionSpacer = (type: FunctionType) => {
@@ -77,8 +111,12 @@ export const getNewSchnorrAccount = async ({
   const { address } = await schnorrAccount.getCompleteAddress();
   logger.info(`    Deploying Schnorr account to network... (${accountName})`);
   const deployFunction = await schnorrAccount.getDeployMethod();
+
+  // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
+  // but fails in devnet/testnet where it has no balance.
+  const feePayer = getAccounts().alice.address;
   await logAndWaitForTx(
-    deployFunction.send({ from: AztecAddress.ZERO }),
+    deployFunction.send({ from: feePayer }),
     `Deploying account ${accountName}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
@@ -102,7 +140,10 @@ export const getNewAccount = async (
   });
 };
 
-const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
+const getNewContractClassId = async (
+  node: AztecNode,
+  blockNumber?: BlockNumber,
+) => {
   if (!blockNumber) {
     return undefined;
   }
@@ -124,7 +165,12 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
   );
 
   logger.info(`  Found ${contractClasses.length} contract classes`);
-  logger.info(`${jsonStringify(contractClassLogs)}`);
+  const contractClassLogsStr = jsonStringify(contractClassLogs);
+  const contractClassLogsPreview =
+    contractClassLogsStr.length > 300
+      ? `${contractClassLogsStr.slice(0, 300)}...`
+      : contractClassLogsStr;
+  logger.info(contractClassLogsPreview);
   return contractClasses[0]?.id.toString();
 };
 
@@ -138,11 +184,14 @@ export const deployContract = async <T extends Contract>({
   deployFn: () => DeploySentTx<T>;
   broadcastWithWallet?: Wallet;
   node: AztecNode;
-}): Promise<T> => {
+}): Promise<{ contract: T; instance: ContractInstanceWithAddress }> => {
   logger.info(`DEPLOYING ${contractLoggingName}`);
 
   const contractTx = deployFn();
   const hash = (await contractTx.getTxHash()).toString();
+
+  // Get instance BEFORE calling deployed()
+  const instance = await contractTx.getInstance();
 
   logger.info(`📫 ${contractLoggingName} txHash: ${hash} (Deploying contract)`);
   const deployedContract = await contractTx.deployed();
@@ -151,7 +200,7 @@ export const deployContract = async <T extends Contract>({
   const newClassId = await getNewContractClassId(node, receipt.blockNumber);
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
-    : `(🍎 attached currentclassId: ${deployedContract.instance.currentContractClassId.toString()})`;
+    : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
     `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );
@@ -161,7 +210,7 @@ export const deployContract = async <T extends Contract>({
       contract: deployedContract,
     });
   }
-  return deployedContract;
+  return { contract: deployedContract, instance };
 };
 
 export const broadcastFunctions = async ({
@@ -252,6 +301,7 @@ export const registerContractClassArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
+    waitForIndexing: false,
   });
 };
 
@@ -272,6 +322,7 @@ export const registerStandardContractArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
+    waitForIndexing: false,
   });
 };
 
@@ -298,10 +349,19 @@ export const verifyContractInstanceDeployment = async ({
     verifiedDeploymentArguments: generateVerifyInstancePayload(verifyArgs),
     deployerMetadata,
   });
-  await callExplorerApi({
-    loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
-    urlStr: url,
-    postData,
-    method: "POST",
-  });
+
+  try {
+    await callExplorerApi({
+      loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
+      urlStr: url,
+      postData,
+      method: "POST",
+      waitForIndexing: false,
+    });
+  } catch (err) {
+    // Explorer is best-effort here; failures should not break scenarios.
+    logger.warn(
+      `verifyContractInstanceDeployment failed (${contractLoggingName}): ${(err as Error).message}`,
+    );
+  }
 };

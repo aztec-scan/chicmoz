@@ -6,8 +6,12 @@ import {
   l2Block,
 } from "../../../database/schema/index.js";
 import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { getExistingRollupVersion } from "./get-latest.js";
 
 export const getAverageFees = async (): Promise<string> => {
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+
   const dbRes = await db()
     .select({
       average: sql<string>`cast(avg(${header.totalFees}) as numeric)`,
@@ -15,16 +19,22 @@ export const getAverageFees = async (): Promise<string> => {
     .from(header)
     .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
     .where(
-      and(
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
-      ),
+      and(isNull(l2Block.orphan_timestamp), eq(l2Block.version, rollupVersion)),
     )
     .execute();
-  return dbRes[0].average.split(".")[0];
+
+  const averageStr = dbRes[0]?.average;
+  if (!averageStr) {
+    return "0";
+  }
+
+  return averageStr.split(".")[0] ?? "0";
 };
 
 export const getAverageBlockTime = async (): Promise<string> => {
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+
   const dbRes = await db()
     .select({
       count: sql<number>`count(${globalVariables.id})`,
@@ -35,10 +45,7 @@ export const getAverageBlockTime = async (): Promise<string> => {
     .innerJoin(header, eq(globalVariables.headerId, header.id))
     .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
     .where(
-      and(
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
-      ),
+      and(isNull(l2Block.orphan_timestamp), eq(l2Block.version, rollupVersion)),
     )
     .execute();
 

@@ -20,7 +20,7 @@ spec:
         - image: event-cannon:latest
           resources:
             limits:
-              memory: 500Mi
+              memory: 2Gi
               cpu: 500m
           name: event-cannon
           env:
@@ -48,7 +48,7 @@ spec:
               value: "true"
             #TODO: https://github.com/aztec-scan/chicmoz/issues/375
             - name: SCENARIO_DEPLOY_AND_UPDATE
-              value: "false"
+              value: "true"
             - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT
               value: "true"
 status: {}
