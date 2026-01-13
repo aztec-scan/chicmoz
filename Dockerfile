@@ -5,7 +5,7 @@ RUN apk update && apk add jq python3 make g++ && rm -rf /var/cache/apk/*
 WORKDIR /usr/main
 
 COPY .yarnrc.yml yarn.lock package.json .yarn .yarn/
-RUN yarn install --immutable
+RUN yarn install
 
 COPY packages packages
 COPY services services
