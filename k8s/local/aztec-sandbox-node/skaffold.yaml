@@ -13,8 +13,8 @@ build:
           # Unset minikube docker env to use host docker
           unset DOCKER_TLS_VERIFY DOCKER_HOST DOCKER_CERT_PATH MINIKUBE_ACTIVE_DOCKERD
           # Pull image on host docker
-          docker pull aztecprotocol/aztec:3.0.1-rc.1
-          docker tag aztecprotocol/aztec:3.0.1-rc.1 $IMAGE
+          docker pull aztecprotocol/aztec:3.0.0-devnet.20251212
+          docker tag aztecprotocol/aztec:3.0.0-devnet.20251212 $IMAGE
           # Load into minikube
           minikube image load $IMAGE
         dependencies:

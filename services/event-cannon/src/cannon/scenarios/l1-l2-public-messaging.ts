@@ -1,4 +1,4 @@
-import { L1Deployer } from "@aztec/ethereum/deploy-l1-contract";
+import { L1Deployer } from "@aztec/ethereum/deploy-l1-contracts";
 import { createExtendedL1Client } from "@aztec/ethereum/client";
 import {
   TestERC20Abi,
@@ -20,6 +20,7 @@ import {
   logAndWaitForTx,
   publicDeployAccounts,
   registerContractClassArtifact,
+  simulateThenSend,
 } from "./utils/index.js";
 import { DeploySentTx } from "@aztec/aztec.js/contracts";
 import { AztecAddress, EthAddress } from "@aztec/aztec.js/addresses";
@@ -196,7 +197,17 @@ export const run = async () => {
   const l2Token = token;
   const l2Bridge = bridge;
   logger.info("🐰 1. minting tokens on L1");
-  await l1TokenManager.mint(ethAccount.toString(), "Test Tokn");
+
+  // In this scenario we don't deploy a FeeAssetHandler (faucet), so
+  // `l1TokenManager.mint()` would throw "Minting handler was not provided".
+  await l1Client.waitForTransactionReceipt({
+    hash: await l1Client.writeContract({
+      address: underlyingERC20Address.address.toString(),
+      abi: TestERC20Abi,
+      functionName: "mint",
+      args: [ethAccount.toString(), l1TokenBalance],
+    }),
+  });
 
   logger.info("🐰 2. depositing tokens to the TokenPortal");
   const shouldMint = false;
@@ -257,7 +268,7 @@ export const run = async () => {
   await logAndWaitForTx(
     (
       await user1Wallet.setPublicAuthWit(
-        l2Bridge.address,
+        account.getAddress(),
         {
           caller: account.getAddress(),
           action: l2Token.methods.burn_public(
@@ -279,12 +290,16 @@ export const run = async () => {
     l2Bridge.address,
     EthAddress.ZERO,
   );
-  const l2TxReceipt = await logAndWaitForTx(
-    l2Bridge.methods
-      .exit_to_l1_public(ethAccount, withdrawAmount, EthAddress.ZERO, nonce)
-      .send({ from: account.getAddress() }),
-    "exiting to L1",
-  );
+  const l2TxReceipt = await simulateThenSend({
+    method: l2Bridge.methods.exit_to_l1_public(
+      ethAccount,
+      withdrawAmount,
+      EthAddress.ZERO,
+      nonce,
+    ),
+    from: account.getAddress(),
+    additionalInfo: "exiting to L1",
+  });
   assert(
     (await l2Token.methods
       .balance_of_public(ownerAddress)

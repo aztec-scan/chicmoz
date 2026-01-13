@@ -7,7 +7,7 @@ import { logger } from "../../logger.js";
 import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
-  logAndWaitForTx,
+  simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { Contract, DeploySentTx } from "@aztec/aztec.js/contracts";
@@ -82,34 +82,29 @@ export async function run() {
   const candidateA = new Fr(1);
   const candidateB = new Fr(2);
 
-  // Define election ID for this voting session
-  const electionId = { id: new Fr(1) };
-
+  // Initialize election before casting votes.
   // Run sequentially: PXE does not support concurrent job processing.
-  await logAndWaitForTx(
-    votingContractAlice.methods
-      .cast_vote(electionId, candidateA)
-      .send({ from: namedWallets.alice.address }),
-    "Cast vote 1 - candidate A",
-  );
-  await logAndWaitForTx(
-    votingContractBob.methods
-      .cast_vote(electionId, candidateA)
-      .send({ from: namedWallets.bob.address }),
-    "Cast vote 2 - candidate A",
-  );
-  await logAndWaitForTx(
-    votingContractCharlie.methods
-      .cast_vote(electionId, candidateB)
-      .send({ from: namedWallets.charlie.address }),
-    "Cast vote 3 - candidate B",
-  );
+  await simulateThenSend({
+    method: votingContractAlice.methods.cast_vote(candidateA),
+    from: namedWallets.alice.address,
+    additionalInfo: "Cast vote 1 - candidate A",
+  });
+  await simulateThenSend({
+    method: votingContractBob.methods.cast_vote(candidateA),
+    from: namedWallets.bob.address,
+    additionalInfo: "Cast vote 2 - candidate A",
+  });
+  await simulateThenSend({
+    method: votingContractCharlie.methods.cast_vote(candidateB),
+    from: namedWallets.charlie.address,
+    additionalInfo: "Cast vote 3 - candidate B",
+  });
 
-  const votesA = (await contract.methods
-    .get_tally(electionId, candidateA)
+  const votesA = (await votingContractAlice.methods
+    .get_vote(candidateA)
     .simulate({ from: deployerWallet.address })) as bigint;
-  const votesB = (await contract.methods
-    .get_tally(electionId, candidateB)
+  const votesB = (await votingContractAlice.methods
+    .get_vote(candidateB)
     .simulate({ from: deployerWallet.address })) as bigint;
 
   logger.info(`  Votes for candidate 1: ${votesA}`);

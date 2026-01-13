@@ -5,6 +5,7 @@ import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
   logAndWaitForTx,
+  simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
@@ -63,26 +64,25 @@ export async function run() {
     },
   });
 
-  await Promise.all([
-    logAndWaitForTx(
-      tokenContract.methods
-        .mint_to_public(namedAccounts.alice.address, 1000)
-        .send({ from: deployerWallet.getAddress() }),
-      "Mint to Alice",
-    ),
-    logAndWaitForTx(
-      tokenContract.methods
-        .mint_to_public(namedAccounts.bob.address, 1000)
-        .send({ from: deployerWallet.getAddress() }),
-      "Mint to Bob",
-    ),
-    logAndWaitForTx(
-      tokenContract.methods
-        .mint_to_public(namedAccounts.charlie.address, 1000)
-        .send({ from: deployerWallet.getAddress() }),
-      "Mint to Charlie",
-    ),
-  ]);
+  // Run sequentially: PXE does not support concurrent job processing.
+  await logAndWaitForTx(
+    tokenContract.methods
+      .mint_to_public(namedAccounts.alice.address, 1000)
+      .send({ from: deployerWallet.getAddress() }),
+    "Mint to Alice",
+  );
+  await logAndWaitForTx(
+    tokenContract.methods
+      .mint_to_public(namedAccounts.bob.address, 1000)
+      .send({ from: deployerWallet.getAddress() }),
+    "Mint to Bob",
+  );
+  await logAndWaitForTx(
+    tokenContract.methods
+      .mint_to_public(namedAccounts.charlie.address, 1000)
+      .send({ from: deployerWallet.getAddress() }),
+    "Mint to Charlie",
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [balanceAlice, balanceBob, balanceCharlie] = await Promise.all([
@@ -122,17 +122,16 @@ export async function run() {
   // The previous code was sending from Alice while specifying Bob as the sender,
   // which causes `app_logic_reverted`.
   let bobNonce = 0;
-  await logAndWaitForTx(
-    bobsTokenContract.methods
-      .transfer_in_public(
-        namedAccounts.bob.address,
-        namedAccounts.alice.address,
-        100,
-        bobNonce,
-      )
-      .send({ from: namedAccounts.bob.address }),
-    "Public transfer from Bob to Alice",
-  );
+  await simulateThenSend({
+    method: bobsTokenContract.methods.transfer_in_public(
+      namedAccounts.bob.address,
+      namedAccounts.alice.address,
+      100,
+      bobNonce,
+    ),
+    from: namedAccounts.bob.address,
+    additionalInfo: "Public transfer from Bob to Alice",
+  });
   bobNonce++;
 
   const [balanceAliceAfter, balanceBobAfter] = await Promise.all([
@@ -158,17 +157,16 @@ export async function run() {
 
   // `transfer_in_private(from, to, amount, nonce)` must also be sent by `from`.
   let aliceNonce = 0;
-  await logAndWaitForTx(
-    aliceContract.methods
-      .transfer_in_private(
-        namedAccounts.alice.address,
-        namedAccounts.bob.address,
-        100,
-        aliceNonce,
-      )
-      .send({ from: namedAccounts.alice.address }),
-    "Private transfer from Alice to Bob",
-  );
+  await simulateThenSend({
+    method: aliceContract.methods.transfer_in_private(
+      namedAccounts.alice.address,
+      namedAccounts.bob.address,
+      100,
+      aliceNonce,
+    ),
+    from: namedAccounts.alice.address,
+    additionalInfo: "Private transfer from Alice to Bob",
+  });
   aliceNonce++;
 
   const [

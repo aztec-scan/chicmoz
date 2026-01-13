@@ -1,4 +1,4 @@
-import { L1Deployer } from "@aztec/ethereum/deploy-l1-contract";
+import { L1Deployer } from "@aztec/ethereum/deploy-l1-contracts";
 import { createExtendedL1Client } from "@aztec/ethereum/client";
 import {
   TestERC20Abi,
@@ -20,6 +20,7 @@ import {
   logAndWaitForTx,
   publicDeployAccounts,
   registerContractClassArtifact,
+  simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { DeploySentTx } from "@aztec/aztec.js/contracts";
@@ -255,6 +256,9 @@ export const run = async () => {
     {},
   );
 
+  // `L1TokenPortalManager` expects a handler contract address for minting.
+  // In this setup we deploy just the ERC20 and portal (no faucet/handler),
+  // so we must mint directly on the ERC20 instead.
   const l1TokenPortalManager = new L1TokenPortalManager(
     tokenPortalAddress.address,
     underlyingERC20Address.address,
@@ -276,7 +280,17 @@ export const run = async () => {
   const l2Bridge = bridge;
 
   logger.info("🐰 1. minting tokens on L1");
-  await l1TokenManager.mint(ethAccount.toString(), "Test address");
+
+  // In this scenario we don't deploy a FeeAssetHandler (faucet), so
+  // `l1TokenManager.mint()` would throw "Minting handler was not provided".
+  await l1Client.waitForTransactionReceipt({
+    hash: await l1Client.writeContract({
+      address: underlyingERC20Address.address.toString(),
+      abi: TestERC20Abi,
+      functionName: "mint",
+      args: [ethAccount.toString(), l1TokenBalance],
+    }),
+  });
 
   logger.info("🐰 2. depositing tokens to the TokenPortal privately");
   const shouldMint = false;
@@ -339,18 +353,36 @@ export const run = async () => {
     l2Bridge.address,
     EthAddress.ZERO,
   );
-  const l2TxReceipt = await logAndWaitForTx(
-    l2Bridge.methods
-      .exit_to_l1_private(
-        l2Token.address,
-        ethAccount,
-        withdrawAmount,
-        EthAddress.ZERO,
-        nonce,
+  const user1Wallet = wallet;
+  await logAndWaitForTx(
+    (
+      await user1Wallet.setPublicAuthWit(
+        account.getAddress(),
+        {
+          caller: account.getAddress(),
+          action: l2Token.methods.burn_private(
+            ownerAddress,
+            withdrawAmount,
+            nonce,
+          ),
+        },
+        true,
       )
-      .send({ from: account.getAddress() }),
-    "exiting to L1",
+    ).send(),
+    "setting private burn auth wit",
   );
+
+  const l2TxReceipt = await simulateThenSend({
+    method: l2Bridge.methods.exit_to_l1_private(
+      l2Token.address,
+      ethAccount,
+      withdrawAmount,
+      EthAddress.ZERO,
+      nonce,
+    ),
+    from: account.getAddress(),
+    additionalInfo: "exiting to L1",
+  });
 
   assert(
     (await l2Token.methods

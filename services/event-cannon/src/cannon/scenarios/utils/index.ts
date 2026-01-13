@@ -30,6 +30,7 @@ import {
 } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { TestWallet } from "@aztec/test-wallet/server";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
@@ -50,6 +51,34 @@ export const logAndWaitForTx = async (tx: SentTx, additionalInfo: string) => {
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
   );
   return receipt;
+};
+
+export const simulateThenSend = async ({
+  method,
+  from,
+  additionalInfo,
+}: {
+  method: {
+    simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
+    send: (opts: { from: AztecAddress }) => SentTx;
+  };
+  from: AztecAddress;
+  additionalInfo: string;
+}) => {
+  try {
+    await method.simulate({ from });
+  } catch (err) {
+    logger.error(
+      `simulate() failed (${additionalInfo}) from=${from.toString()}: ${
+        (err as Error).stack ?? (err as Error).message
+      }`,
+    );
+
+    throw err;
+  }
+
+  const tx = method.send({ from });
+  return await logAndWaitForTx(tx, additionalInfo);
 };
 
 export const getFunctionSpacer = (type: FunctionType) => {
@@ -136,7 +165,12 @@ const getNewContractClassId = async (
   );
 
   logger.info(`  Found ${contractClasses.length} contract classes`);
-  logger.info(`${jsonStringify(contractClassLogs)}`);
+  const contractClassLogsStr = jsonStringify(contractClassLogs);
+  const contractClassLogsPreview =
+    contractClassLogsStr.length > 300
+      ? `${contractClassLogsStr.slice(0, 300)}...`
+      : contractClassLogsStr;
+  logger.info(contractClassLogsPreview);
   return contractClasses[0]?.id.toString();
 };
 
