@@ -37,7 +37,9 @@ export const inMemoryHeightTracker = async ({
     ? latestFinalizedHeight
     : latestPendingHeight;
 
-  let memoryHeight = lastProcessedHeight;
+  const genesisBlock = await getEarliestRollupBlockNumber();
+  let memoryHeight =
+    lastProcessedHeight < genesisBlock ? genesisBlock : lastProcessedHeight;
   const finalizedString = isFinalized ? "✅" : "💤";
   logger.info(
     `START ${lastProcessedHeight} ${finalizedString} ${contractName} ${eventName}`,
