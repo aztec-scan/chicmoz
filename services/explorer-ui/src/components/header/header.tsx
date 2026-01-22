@@ -68,6 +68,18 @@ export const Header = () => {
       group: "dev",
     },
     {
+      key: "staking",
+      name: "Aztecscan Staking",
+      to: routes.staking.route,
+      group: "dev",
+    },
+    {
+      key: "incidents",
+      name: routes.incidents.title,
+      to: routes.incidents.route,
+      group: "dev",
+    },
+    {
       key: "docs",
       name: "API Docs",
       to: "https://docs.aztecscan.xyz/",
