@@ -94,7 +94,7 @@ jobs:
         env:
           DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
           DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
-          AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_DEVNET }}
+          AZTEC_RPC_NODES_DEVNET: ${{ vars.AZTEC_RPC_NODES_DEVNET }}
         run: |
           MAX_RETRIES=3
           RETRY_DELAY=10
@@ -102,7 +102,7 @@ jobs:
           kubectl create secret generic global \
             --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
             --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
-            --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_DEVNET \
+            --from-literal=AZTEC_RPC_NODES_DEVNET=$AZTEC_RPC_NODES_DEVNET \
             -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
 
           for i in $(seq 1 $MAX_RETRIES); do
