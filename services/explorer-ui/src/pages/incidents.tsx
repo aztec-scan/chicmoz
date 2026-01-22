@@ -67,6 +67,10 @@ const incidents: Incident[] = [
           address once tokens are unlocked. We also hope that the transparency
           of creating this post-mortem will help in restoring some of it.
         </p>
+        <p className="mt-4">
+          Going forward, we are working on setting up an external monitoring-system
+          in the near future. And also, looking into distributing our signing-service.
+        </p>
       </>
     ),
   },
