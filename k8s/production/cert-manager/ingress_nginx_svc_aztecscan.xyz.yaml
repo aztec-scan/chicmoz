@@ -1,10 +1,12 @@
-# this is a workaround for deploying cert-manager with nginx-ingress on digital ocean
-# for reference see: https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nginx-ingress-with-cert-manager-on-digitalocean-kubernetes#step-5-enabling-pod-communication-through-the-load-balancer-optional
+# NOTE: PROXY protocol disabled to allow automatic cert-manager ACME challenge validation
+# DigitalOcean PROXY protocol conflicts with cert-manager HTTP-01 challenges
+# See: https://github.com/cert-manager/cert-manager/issues/1094
+# Previously used as workaround for DO load balancer, but caused cert renewal failures
 apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "false"
     service.beta.kubernetes.io/do-loadbalancer-hostname: "workaround.aztecscan.xyz"
   labels:
     helm.sh/chart: ingress-nginx-4.11.2

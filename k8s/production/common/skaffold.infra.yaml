@@ -30,14 +30,17 @@ manifests:
         wait: false
         setValues:
           controller.allowSnippetAnnotations: false
-          controller.config.enable-real-ip: "true"
-          controller.config.proxy-add-original-uri-header: "true"
-          controller.config.real-ip-header: "proxy_protocol"
-          controller.config.use-forwarded-headers: "true"
-          controller.config.use-proxy-protocol: "true"
-          controller.config.set-real-ip-from: "0.0.0.0/0"
+          # PROXY protocol disabled to allow automatic cert-manager ACME challenge validation
+          # DigitalOcean PROXY protocol conflicts with cert-manager HTTP-01 challenges
+          # See: https://github.com/cert-manager/cert-manager/issues/1094
+          # controller.config.enable-real-ip: "true"
+          # controller.config.proxy-add-original-uri-header: "true"
+          # controller.config.real-ip-header: proxy_protocol
+          # controller.config.use-forwarded-headers: "true"
+          controller.config.use-proxy-protocol: "false"
+          # controller.config.set-real-ip-from: "0.0.0.0/0"
           controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-protocol: "tcp"
-          controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-enable-proxy-protocol: "true"
+          controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-enable-proxy-protocol: "false"
       - name: postgresql
         version: 12.10.0
         remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
