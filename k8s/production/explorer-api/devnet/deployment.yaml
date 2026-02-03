@@ -59,7 +59,10 @@ spec:
               value: "temporary-api-key"
           readinessProbe:
             httpGet:
-              path: /health
+              # /health is a strict composite health check (DB + CACHE + MB) and
+              # can return 500 even when the HTTP server is usable.
+              # For readiness we only need the pod to accept traffic.
+              path: /open-api-specification
               port: 80
             initialDelaySeconds: 15
             periodSeconds: 10
