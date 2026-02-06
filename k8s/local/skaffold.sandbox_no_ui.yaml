@@ -3,11 +3,11 @@ kind: Config
 metadata:
   name: no_ui
 requires:
-  # - path: ./common/skaffold.infra.yaml
-  # - path: ./common/skaffold.aztec_sanbox_nodes.yaml
+  - path: ./common/skaffold.infra.yaml
+  - path: ./common/skaffold.aztec_sanbox_nodes.yaml
   - path: ./explorer-api/skaffold.sandbox.yaml
-  # - path: ./ethereum-listener/skaffold.sandbox.yaml
+  - path: ./ethereum-listener/skaffold.sandbox.yaml
   - path: ./aztec-listener/skaffold.sandbox.yaml
-  # - path: ./websocket-event-publisher/skaffold.sandbox.yaml
+  - path: ./websocket-event-publisher/skaffold.sandbox.yaml
   - path: ./event-cannon/skaffold.yaml
-  # - path: ./auth/skaffold.yaml
+  - path: ./auth/skaffold.yaml
