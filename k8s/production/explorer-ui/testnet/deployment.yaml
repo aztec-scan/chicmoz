@@ -18,7 +18,7 @@ spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-ui-devnet:latest
+        - image: registry.digitalocean.com/aztlan-containers/explorer-ui-testnet:latest
           name: explorer-ui-testnet
           resources:
             limits:
