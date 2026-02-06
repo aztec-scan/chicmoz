@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: websocket-event-publisher-devnet-label
+  name: websocket-event-publisher-devnet-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-event-publisher-devnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: websocket-event-publisher-devnet-label
+    spec:
+      containers:
+        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-devnet:latest
+          name: websocket-event-publisher
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: websocket-port
+              containerPort: 3000
+              protocol: TCP
+            - name: health-port
+              containerPort: 3001
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          env:
+            - name: INSTANCE_NAME
+              value: "devnet_websocket-event-publisher"
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: "production"
+            - name: L2_NETWORK_ID
+              value: "DEVNET"
+status: {}

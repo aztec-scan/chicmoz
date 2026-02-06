@@ -1,8 +1,9 @@
-import { AztecAddress, L2Block } from "@aztec/aztec.js";
+import { L2Block } from "@aztec/aztec.js/block";
 import { logger } from "../../../../logger.js";
 import { txsController } from "../../../database/index.js";
 import { publishMessage } from "../../../message-bus/index.js";
 import { getBalanceOf } from "../../network-client/index.js";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 
 export const handleProvenTransactions = async (block: L2Block) => {
   try {

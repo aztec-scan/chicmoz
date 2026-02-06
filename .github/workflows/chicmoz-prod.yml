@@ -85,6 +85,14 @@ jobs:
       - set-up
 
     steps:
+      - name: Free up disk space
+        run: |
+          docker system prune -af --volumes
+          rm -rf ~/.npm ~/.yarn ~/.cache
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get clean
+          df -h
+
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:

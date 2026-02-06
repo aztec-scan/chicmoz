@@ -1,34 +1,35 @@
 use dep::aztec::macros::aztec;
 
 #[aztec]
-contract SimpleLogging {
-    use dep::aztec::prelude::{Map, PublicMutable};
-    use aztec::macros::{functions::{public, initializer, utility, internal},storage::storage};
+pub contract SimpleLogging {
+    use aztec::{
+        macros::{
+            functions::{external, initializer},
+            storage::storage,
+        },
+        protocol_types::address::AztecAddress,
+        state_vars::{Map, PublicMutable},
+    };
+
     #[storage]
     struct Storage<Context> {
-        counters: Map<Field, PublicMutable<Field, Context>, Context>,
+        counters: Map<AztecAddress, PublicMutable<u64, Context>, Context>,
     }
 
-    #[public]
     #[initializer]
-    fn constructor() {
+    #[external("public")]
+    fn initialize(headstart: u64, owner: AztecAddress) {
+        self.storage.counters.at(owner).write(headstart);
     }
 
-    #[public]
-    #[internal]
-    fn add_to_counter_public(counter_id: Field) {
-        let new_counter_value = storage.counters.at(counter_id).read() + 1;
-        storage.counters.at(counter_id).write(new_counter_value);
+    #[external("public")]
+    fn increment(owner: AztecAddress) {
+        let new_value = self.storage.counters.at(owner).read() + 1;
+        self.storage.counters.at(owner).write(new_value);
     }
 
-    #[public]
-    fn increase_counter_public(counter_id: Field) {
-      context.emit_public_log(/*message=*/ "pub log");
-      SimpleLogging::at(context.this_address()).add_to_counter_public(counter_id);
-    }
-
-    #[utility]
-    unconstrained fn get_counter_value(counter_id: Field) -> pub Field {
-        storage.counters.at(counter_id).read()
+    #[external("utility")]
+    unconstrained fn get_counter(owner: AztecAddress) -> u64 {
+        self.storage.counters.at(owner).read()
     }
 }

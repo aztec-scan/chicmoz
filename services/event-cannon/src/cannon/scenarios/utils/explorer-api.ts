@@ -10,23 +10,33 @@ export const callExplorerApi = async ({
   method,
   postData,
   loggingString,
+  waitForIndexing,
 }: {
   urlStr: string;
   method: string;
   postData: string;
   loggingString: string;
+  waitForIndexing?: boolean;
 }) => {
   const url = new URL(urlStr);
   const request = url.protocol === "https:" ? https.request : http.request;
 
   const sizeInMB = Buffer.byteLength(postData) / 1000 ** 2;
-  logger.info(
-    `📲📡 "${loggingString}" CALLING EXPLORER API: but first sleeping for ${
-      SLEEP_TIME / 1000
-    } seconds... (byte length: ${sizeInMB} MB)`
-  );
 
-  await new Promise((resolve) => setTimeout(resolve, SLEEP_TIME));
+  // Only wait for indexing when we are about to query data that depends on it.
+  if (waitForIndexing) {
+    logger.info(
+      `📲📡 "${loggingString}" CALLING EXPLORER API: sleeping for ${
+        SLEEP_TIME / 1000
+      } seconds before request... (byte length: ${sizeInMB} MB)`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, SLEEP_TIME));
+  } else {
+    logger.info(
+      `📲📡 "${loggingString}" CALLING EXPLORER API (byte length: ${sizeInMB} MB)`,
+    );
+  }
+
   const res: {
     statusCode: number | undefined;
     statusMessage: string | undefined;
@@ -53,7 +63,7 @@ export const callExplorerApi = async ({
             data,
           });
         });
-      }
+      },
     );
     req.on("error", (error) => {
       logger.error(`📲❌ "${loggingString}" REQUEST FAILED! rejecting...`);
@@ -72,16 +82,17 @@ export const callExplorerApi = async ({
       `📲✅ "${loggingString}" SUCCESS! ${JSON.stringify({
         statusCode: res.statusCode,
         statusMessage: res.statusMessage,
-      })}`
+      })}`,
     );
   } else {
-    logger.error(
+    logger.warn(
       `📲🚨 "${loggingString}" FAILED! ${JSON.stringify({
         statusCode: res.statusCode,
         statusMessage: res.statusMessage,
         data: res.data,
-      })}`
+      })}`,
     );
   }
+
   return res;
 };

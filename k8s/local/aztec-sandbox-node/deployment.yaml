@@ -16,49 +16,39 @@ spec:
       labels:
         app: aztec-sandbox-node
     spec:
+      initContainers:
+        - name: wait-for-anvil
+          image: aztecprotocol/aztec:3.0.0-devnet.20251212
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z anvil-ethereum-node 8545; do echo waiting for anvil; sleep 2; done",
+            ]
       containers:
-        - image: aztecprotocol/aztec:0.87.8
+        - image: aztecprotocol/aztec:3.0.0-devnet.20251212
           name: aztec-sandbox-node
           resources:
             limits:
-              memory: 1500Mi
-              cpu: 1000m
+              memory: 4Gi
+              cpu: 2000m
           command: ["node"]
           args:
             - ./aztec/dest/bin/index.js
             - start
-            - --sandbox
+            - --local-network
           ports:
             - name: pxe-port
               containerPort: 8081
               protocol: TCP
           env:
-            - name: ARCH_TAG
-              valueFrom:
-                configMapKeyRef:
-                  name: aztec-arch-config
-                  key: arch_tag
-            # NOTE: So far this file in aztec-packages seems to be closest to the truth: yarn-project/aztec/src/cli/aztec_start_options.ts (also boxes/docker-compose.yml is a good place)
+            # NOTE: Reference file in aztec-packages: yarn-project/aztec/src/cli/aztec_start_options.ts
             #- name: DEBUG
             #  value: "aztec:*"
             - name: ETHEREUM_HOSTS
               value: "http://anvil-ethereum-node:8545"
             - name: L1_CHAIN_ID
               value: "31337"
-            - name: ARCHIVER_POLLING_INTERVAL_MS
-              value: "50"
-            - name: P2P_BLOCK_CHECK_INTERVAL_MS
-              value: "50"
-            - name: SEQ_TX_POLLING_INTERVAL_MS
-              value: "50"
-            - name: WS_BLOCK_CHECK_INTERVAL_MS
-              value: "50"
-            - name: PXE_BLOCK_POLLING_INTERVAL_MS
-              value: "50"
-            - name: ARCHIVER_VIEM_POLLING_INTERVAL_MS
-              value: "500"
-            - name: PXE_PORT
-              value: "8081"
             - name: AZTEC_PORT
               value: "8081"
 status: {}

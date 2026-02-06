@@ -1,25 +1,8 @@
 import {
-  SchnorrAccountContractArtifact,
-  getSchnorrAccount,
-} from "@aztec/accounts/schnorr";
-import {
-  AztecNode,
-  Contract,
-  DeploySentTx,
-  Fr,
-  FunctionSelector,
-  FunctionType,
-  NoirCompiledContract,
-  PXE,
-  SentTx,
-  Wallet,
-} from "@aztec/aztec.js";
-import {
   broadcastPrivateFunction,
   broadcastUtilityFunction,
 } from "@aztec/aztec.js/deployment";
 import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
-import { deriveSigningKey } from "@aztec/stdlib/keys";
 import {
   generateVerifyArtifactPayload,
   generateVerifyArtifactUrl,
@@ -32,8 +15,27 @@ import {
 } from "@chicmoz-pkg/types";
 import { EXPLORER_API_URL } from "../../../environment.js";
 import { logger } from "../../../logger.js";
-import { getWallets } from "../../pxe.js";
+import { getAccounts } from "../../pxe.js";
 import { callExplorerApi } from "./explorer-api.js";
+import {
+  Contract,
+  DeploySentTx,
+  SentTx,
+  type ContractInstanceWithAddress,
+} from "@aztec/aztec.js/contracts";
+import {
+  FunctionSelector,
+  FunctionType,
+  NoirCompiledContract,
+} from "@aztec/aztec.js/abi";
+import { PXE } from "@aztec/pxe/server";
+import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { TestWallet } from "@aztec/test-wallet/server";
+import { AztecNode } from "@aztec/aztec.js/node";
+import { BlockNumber } from "@aztec/foundation/branded-types";
+import { Wallet } from "@aztec/aztec.js/wallet";
+import { Account } from "@aztec/aztec.js/account";
 
 export const truncateHashString = (value: string) => {
   const startHash = value.substring(0, 6);
@@ -51,6 +53,34 @@ export const logAndWaitForTx = async (tx: SentTx, additionalInfo: string) => {
   return receipt;
 };
 
+export const simulateThenSend = async ({
+  method,
+  from,
+  additionalInfo,
+}: {
+  method: {
+    simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
+    send: (opts: { from: AztecAddress }) => SentTx;
+  };
+  from: AztecAddress;
+  additionalInfo: string;
+}) => {
+  try {
+    await method.simulate({ from });
+  } catch (err) {
+    logger.error(
+      `simulate() failed (${additionalInfo}) from=${from.toString()}: ${
+        (err as Error).stack ?? (err as Error).message
+      }`,
+    );
+
+    throw err;
+  }
+
+  const tx = method.send({ from });
+  return await logAndWaitForTx(tx, additionalInfo);
+};
+
 export const getFunctionSpacer = (type: FunctionType) => {
   if (type === FunctionType.PRIVATE) {
     return type + "       ";
@@ -62,54 +92,58 @@ export const getFunctionSpacer = (type: FunctionType) => {
 };
 
 export const getNewSchnorrAccount = async ({
-  pxe,
+  wallet,
   secretKey,
   salt,
   accountName,
 }: {
-  pxe: PXE;
+  wallet: TestWallet;
   secretKey: Fr;
   salt: Fr;
   accountName: string;
 }) => {
   logger.info(`  Creating new Schnorr account... (${accountName})`);
-  const schnorrAccount = await getSchnorrAccount(
-    pxe,
-    secretKey,
-    deriveSigningKey(secretKey),
-    salt,
-  );
+  const schnorrAccount = await wallet.createSchnorrAccount(secretKey, salt);
+
   logger.info(
-    `    Schnorr account created ${schnorrAccount
-      .getAddress()
-      .toString()} (${accountName})`,
+    `    Schnorr account created ${schnorrAccount.address.toString()} (${accountName})`,
   );
   const { address } = await schnorrAccount.getCompleteAddress();
   logger.info(`    Deploying Schnorr account to network... (${accountName})`);
+  const deployFunction = await schnorrAccount.getDeployMethod();
+
+  // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
+  // but fails in devnet/testnet where it has no balance.
+  const feePayer = getAccounts().alice.address;
   await logAndWaitForTx(
-    schnorrAccount.deploy({ deployWallet: getWallets().alice }),
+    deployFunction.send({ from: feePayer }),
     `Deploying account ${accountName}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
-  const wallet = await schnorrAccount.getWallet();
   logger.info(
     `    🔐 Schnorr account created at: ${address.toString()} (${accountName})`,
   );
-  return { schnorrAccount, wallet, address };
+  return { schnorrAccount, address };
 };
 
-export const getNewAccount = async (pxe: PXE, accountName: string) => {
+export const getNewAccount = async (
+  wallet: TestWallet,
+  accountName: string,
+) => {
   const secretKey = Fr.random();
   const salt = Fr.random();
   return getNewSchnorrAccount({
-    pxe,
+    wallet,
     secretKey,
     salt,
     accountName,
   });
 };
 
-const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
+const getNewContractClassId = async (
+  node: AztecNode,
+  blockNumber?: BlockNumber,
+) => {
   if (!blockNumber) {
     return undefined;
   }
@@ -131,7 +165,12 @@ const getNewContractClassId = async (node: AztecNode, blockNumber?: number) => {
   );
 
   logger.info(`  Found ${contractClasses.length} contract classes`);
-  logger.info(`${jsonStringify(contractClassLogs)}`);
+  const contractClassLogsStr = jsonStringify(contractClassLogs);
+  const contractClassLogsPreview =
+    contractClassLogsStr.length > 300
+      ? `${contractClassLogsStr.slice(0, 300)}...`
+      : contractClassLogsStr;
+  logger.info(contractClassLogsPreview);
   return contractClasses[0]?.id.toString();
 };
 
@@ -145,11 +184,14 @@ export const deployContract = async <T extends Contract>({
   deployFn: () => DeploySentTx<T>;
   broadcastWithWallet?: Wallet;
   node: AztecNode;
-}): Promise<T> => {
+}): Promise<{ contract: T; instance: ContractInstanceWithAddress }> => {
   logger.info(`DEPLOYING ${contractLoggingName}`);
 
   const contractTx = deployFn();
   const hash = (await contractTx.getTxHash()).toString();
+
+  // Get instance BEFORE calling deployed()
+  const instance = await contractTx.getInstance();
 
   logger.info(`📫 ${contractLoggingName} txHash: ${hash} (Deploying contract)`);
   const deployedContract = await contractTx.deployed();
@@ -158,7 +200,7 @@ export const deployContract = async <T extends Contract>({
   const newClassId = await getNewContractClassId(node, receipt.blockNumber);
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
-    : `(🍎 attached currentclassId: ${deployedContract.instance.currentContractClassId.toString()})`;
+    : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
     `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
   );
@@ -168,7 +210,7 @@ export const deployContract = async <T extends Contract>({
       contract: deployedContract,
     });
   }
-  return deployedContract;
+  return { contract: deployedContract, instance };
 };
 
 export const broadcastFunctions = async ({
@@ -189,7 +231,7 @@ export const broadcastFunctions = async ({
       await logAndWaitForTx(
         (
           await broadcastPrivateFunction(wallet, contract.artifact, selector)
-        ).send({ from: wallet.getAddress() }),
+        ).send({ from: getAccounts().alice.address }),
         `Broadcasting private function ${fn.name}`,
       );
     }
@@ -201,7 +243,7 @@ export const broadcastFunctions = async ({
       await logAndWaitForTx(
         (
           await broadcastUtilityFunction(wallet, contract.artifact, selector)
-        ).send({ from: wallet.getAddress() }),
+        ).send({ from: getAccounts().alice.address }),
         `Broadcasting utility function ${fn.name}`,
       );
     }
@@ -209,8 +251,9 @@ export const broadcastFunctions = async ({
 };
 
 export const publicDeployAccounts = async (
-  sender: Wallet,
-  accountsToDeploy: Wallet[],
+  sender: Account,
+  accountsToDeploy: Account[],
+  wallet: Wallet,
   pxe: PXE,
 ) => {
   const notPubliclyDeployedAccounts = await Promise.all(
@@ -227,7 +270,7 @@ export const publicDeployAccounts = async (
   }
 
   // Register contract class first
-  await sender.registerContractClass(SchnorrAccountContractArtifact);
+  await wallet.registerSender(sender.getAddress());
 
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
@@ -237,9 +280,7 @@ export const publicDeployAccounts = async (
       );
       continue;
     }
-    await sender.registerContract({
-      instance: contractMetadata.contractInstance,
-    });
+    await wallet.registerContract(contractMetadata.contractInstance);
   }
 };
 
@@ -260,6 +301,7 @@ export const registerContractClassArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
+    waitForIndexing: false,
   });
 };
 
@@ -280,6 +322,7 @@ export const registerStandardContractArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
+    waitForIndexing: false,
   });
 };
 
@@ -306,10 +349,19 @@ export const verifyContractInstanceDeployment = async ({
     verifiedDeploymentArguments: generateVerifyInstancePayload(verifyArgs),
     deployerMetadata,
   });
-  await callExplorerApi({
-    loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
-    urlStr: url,
-    postData,
-    method: "POST",
-  });
+
+  try {
+    await callExplorerApi({
+      loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
+      urlStr: url,
+      postData,
+      method: "POST",
+      waitForIndexing: false,
+    });
+  } catch (err) {
+    // Explorer is best-effort here; failures should not break scenarios.
+    logger.warn(
+      `verifyContractInstanceDeployment failed (${contractLoggingName}): ${(err as Error).message}`,
+    );
+  }
 };

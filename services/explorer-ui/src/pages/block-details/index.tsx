@@ -1,6 +1,5 @@
 import { useParams } from "@tanstack/react-router";
 import { useState, type FC } from "react";
-import { CURRENT_ROLLUP_VERSION } from "~/constants/versions";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyBlockData } from "~/components/loading/util";
@@ -9,6 +8,7 @@ import { OptionButtons } from "~/components/option-buttons";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
+  useChainInfo,
   useGetBlockByIdentifier,
   useGetTableTxEffectsByBlockHeight,
   useSubTitle,
@@ -28,6 +28,8 @@ export const BlockDetails: FC = () => {
   const onOptionSelect = (value: string) => {
     setSelectedTab(value as TabId);
   };
+  const { data: chainInfo } = useChainInfo();
+
   const {
     data: block,
     isLoading,
@@ -97,10 +99,12 @@ export const BlockDetails: FC = () => {
           {block.orphan ? <OrphanedBanner type="block" /> : null}
           {!block.orphan &&
           block?.header.globalVariables.version &&
-          block.header.globalVariables.version !== CURRENT_ROLLUP_VERSION ? (
+          chainInfo?.rollupVersion &&
+          block.header.globalVariables.version !==
+            Number(chainInfo.rollupVersion) ? (
             <OlderVersionBanner
               blockVersion={block.header.globalVariables.version}
-              chainVersion={BigInt(CURRENT_ROLLUP_VERSION)}
+              chainVersion={chainInfo.rollupVersion}
             />
           ) : null}
           {!block.orphan && block.height > 0n && (

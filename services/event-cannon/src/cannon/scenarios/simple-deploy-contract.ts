@@ -1,6 +1,6 @@
-import { DeploySentTx, waitForPXE } from "@aztec/aztec.js";
+import { DeploySentTx } from "@aztec/aztec.js/contracts";
 import { logger } from "../../logger.js";
-import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
+import { getAztecNodeClient, getAccounts, getWallet } from "../pxe.js";
 import {
   deployContract,
   registerContractClassArtifact,
@@ -10,37 +10,36 @@ import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/privat
 
 export async function run() {
   logger.info("===== SIMPLE DEPLOY CONTRACT =====");
-  const pxe = getPxe();
-  await waitForPXE(pxe);
-  const namedWallets = getWallets();
+  const namedAccounts = getAccounts();
+  const wallet = getWallet();
 
-  const deployerWallet = namedWallets.alice;
-  const votingAdmin = namedWallets.alice.getAddress();
+  const deployerWallet = await namedAccounts.alice.getAccount();
+  const votingAdmin = namedAccounts.alice.address;
 
-  const sentTx = PrivateVotingContract.deploy(deployerWallet, votingAdmin).send(
-    { from: deployerWallet.getAddress() },
-  );
+  const sentTx = PrivateVotingContract.deploy(wallet, votingAdmin).send({
+    from: deployerWallet.getAddress(),
+  });
 
   const contractLoggingName = "Voting Contract";
 
-  const contract = await deployContract({
+  const { instance: contractInstance } = await deployContract({
     contractLoggingName,
     deployFn: (): DeploySentTx<PrivateVotingContract> => sentTx,
     node: getAztecNodeClient(),
   });
 
   logger.info(
-    `conract currentContractClassId ${contract.instance.currentContractClassId.toString()}`,
+    `conract currentContractClassId ${contractInstance.currentContractClassId.toString()}`,
   );
   logger.info(
-    `conract originalContractClassId ${contract.instance.originalContractClassId.toString()}`,
+    `conract originalContractClassId ${contractInstance.originalContractClassId.toString()}`,
   );
 
   registerContractClassArtifact(
     contractLoggingName,
     contractArtifactJson,
-    contract.instance.currentContractClassId.toString(),
-    contract.instance.version,
+    contractInstance.currentContractClassId.toString(),
+    contractInstance.version,
   ).catch((err) => {
     logger.error(err);
   });

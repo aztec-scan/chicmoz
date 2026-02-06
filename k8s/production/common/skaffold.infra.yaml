@@ -8,8 +8,8 @@ manifests:
   helm:
     releases:
       - name: cert-manager
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/cert-manager
-        version: 1.3.18
+        remoteChart: oci://quay.io/jetstack/charts/cert-manager
+        version: 1.19.1
         namespace: cert-manager
         createNamespace: false
         recreatePods: false
@@ -19,6 +19,7 @@ manifests:
         setValues:
           installCRDs: true
           clusterResourceNamespace: chicmoz-prod
+          featureGates: "ACMEHTTP01IngressPathTypeExact=false"
       - name: ingress-nginx
         remoteChart: ingress-nginx
         repo: https://kubernetes.github.io/ingress-nginx

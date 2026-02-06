@@ -1,4 +1,3 @@
-import { NodeInfo } from "@aztec/aztec.js";
 import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
 import { NODE_ENV, NodeEnv } from "@chicmoz-pkg/types";
 import {
@@ -14,6 +13,7 @@ import * as blockPoller from "./pollers/block_poller/index.js";
 import * as chainInfoPoller from "./pollers/chain-info-poller.js";
 import * as pendingTxsPoller from "./pollers/txs_poller.js";
 import * as droppedTxVerifier from "./pollers/dropped-tx-verifier.js";
+import { NodeInfo } from "@aztec/aztec.js/contracts";
 
 let nodeInfo: NodeInfo;
 

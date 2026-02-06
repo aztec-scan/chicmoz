@@ -1,0 +1,23 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+requires:
+  - path: ../common/skaffold.chicmoz-base-image.yaml
+build:
+  artifacts:
+    - image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet
+      context: ../../../services/explorer-api
+      docker:
+        dockerfile: Dockerfile
+      requires:
+        - image: registry.digitalocean.com/aztlan-containers/chicmoz-base
+          alias: BASE
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./devnet/postgres-config.yaml
+    - ./devnet/service.yaml
+    - ./devnet/ingress.yaml
+    - ./devnet/deployment.yaml

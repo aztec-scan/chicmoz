@@ -4,4 +4,4 @@ metadata:
   name: default-chicmoz
 requires:
   - path: ./skaffold.sandbox_no_ui.yaml
-  - path: ./explorer-ui/skaffold.sandbox.yaml
+  # - path: ./explorer-ui/skaffold.sandbox.yaml

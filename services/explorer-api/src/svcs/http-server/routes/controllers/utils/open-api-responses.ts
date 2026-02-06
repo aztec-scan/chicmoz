@@ -29,19 +29,19 @@ import { logger } from "../../../../../logger.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
-  let schema = {};
-  // logger.info(`Generating schema for ${name}`);
+  let schema: unknown = {};
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     schema = generateSchema(zodSchema);
-    // logger.info(
-    //   `Generated schema for ${name}: ${JSON.stringify(schema, null, 2)}`,
-    // );
   } catch (e) {
-    // NOTE: this catch never happens
     logger.error(
-      `Failed to generate schema for ${name}: ${(e as Error).stack}`,
+      `Failed to generate OpenAPI schema for ${name}: ${(e as Error).stack}`,
     );
+    schema = {
+      type: "object",
+      description:
+        "Schema generation failed (likely bigint). Response is still JSON.",
+    };
   }
 
   return {

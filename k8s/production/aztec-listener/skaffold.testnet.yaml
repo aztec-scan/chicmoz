@@ -1,7 +1,16 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 requires:
-  - path: ./common/skaffold.base.yaml
+  - path: ../common/skaffold.chicmoz-base-image.yaml
+build:
+  artifacts:
+    - image: registry.digitalocean.com/aztlan-containers/aztec-listener-testnet
+      context: ../../../services/aztec-listener
+      docker:
+        dockerfile: Dockerfile
+      requires:
+        - image: registry.digitalocean.com/aztlan-containers/chicmoz-base
+          alias: BASE
 deploy:
   kubectl:
     flags:

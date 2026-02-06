@@ -6,13 +6,12 @@ interface PublicLogsProps {
   logs: {
     contractAddress: string;
     fields: string[];
-    emittedLength: number;
   }[];
 }
 
 export const PublicLogs: FC<PublicLogsProps> = ({ logs }) => (
   <div>
-    {logs.map(({ contractAddress, fields, emittedLength }, index) => (
+    {logs.map(({ contractAddress, fields }, index) => (
       <div key={index}>
         <h4>Index {index}</h4>
         <KeyValueDisplay
@@ -25,10 +24,6 @@ export const PublicLogs: FC<PublicLogsProps> = ({ logs }) => (
             {
               label: "data",
               value: fields.toString(),
-            },
-            {
-              label: "emittedLength",
-              value: emittedLength.toString(),
             },
           ]}
         />

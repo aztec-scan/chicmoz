@@ -1,4 +1,3 @@
-import { L2Block } from "@aztec/aztec.js";
 import { blockFromString, parseBlock } from "@chicmoz-pkg/backend-utils";
 import { EventHandler } from "@chicmoz-pkg/message-bus";
 import {
@@ -22,6 +21,7 @@ import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
 import { storeContracts } from "./contracts.js";
 import { detectReorg, handleReorg } from "./reorg-handler.js";
+import { L2Block } from "@aztec/aztec.js/block";
 
 const truncateString = (value: string) => {
   const startHash = value.substring(0, 100);

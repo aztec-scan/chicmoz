@@ -2,7 +2,7 @@ import { z } from "zod";
 import { aztecAddressSchema } from "../index.js";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
-export const CHICMOZ_TYPES_AZTEC_VERSION = "2.1.2"; // TODO: this should be retreived dynamically
+export const CHICMOZ_TYPES_AZTEC_VERSION = "3.0.0-devnet.20251212"; // TODO: this should be retreived dynamically
 
 export const L1ContractAddressesSchema = z.object({
   rollupAddress: z.string().startsWith("0x"),
