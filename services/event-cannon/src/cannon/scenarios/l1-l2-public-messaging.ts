@@ -1,4 +1,4 @@
-import { L1Deployer } from "@aztec/ethereum/deploy-l1-contracts";
+import { L1Deployer } from "@aztec/ethereum/deploy-l1-contract";
 import { createExtendedL1Client } from "@aztec/ethereum/client";
 import {
   TestERC20Abi,
@@ -218,7 +218,7 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount,
+    l1TokenBalance - bridgeAmount,
   );
   const msgHash = Fr.fromString(claim.messageHash);
 
@@ -304,11 +304,11 @@ export const run = async () => {
     (await l2Token.methods
       .balance_of_public(ownerAddress)
       .simulate({ from: account.getAddress() })) ===
-      bridgeAmount - withdrawAmount,
+    bridgeAmount - withdrawAmount,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount,
+    l1TokenBalance - bridgeAmount,
   );
 
   const l2ToL1MessageWitness =
@@ -321,8 +321,7 @@ export const run = async () => {
 
   const wait = 10000;
   logger.info(
-    `waiting ${
-      wait / 1000
+    `waiting ${wait / 1000
     } seconds for the message to be available for consumption...`,
   );
   await new Promise((resolve) => setTimeout(resolve, wait));
@@ -336,6 +335,6 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-      l1TokenBalance - bridgeAmount + withdrawAmount,
+    l1TokenBalance - bridgeAmount + withdrawAmount,
   );
 };

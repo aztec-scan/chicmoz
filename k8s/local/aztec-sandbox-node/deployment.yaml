@@ -26,7 +26,7 @@ spec:
               "until nc -z anvil-ethereum-node 8545; do echo waiting for anvil; sleep 2; done",
             ]
       containers:
-        - image: aztecprotocol/aztec:3.0.0-devnet.20251212
+        - image: aztecprotocol/aztec:3.0.3
           name: aztec-sandbox-node
           resources:
             limits:

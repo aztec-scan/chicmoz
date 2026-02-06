@@ -30,6 +30,23 @@ export const onBlock = async (
       await block.hash()
     ).toString()})...`,
   );
+
+  // DEBUG: Log contract class logs info BEFORE serialization
+  for (let i = 0; i < block.body.txEffects.length; i++) {
+    const txEffect = block.body.txEffects[i];
+    const ccLogs = txEffect.contractClassLogs;
+    logger.info(
+      `🔍 DEBUG LISTENER block ${height} txEffect[${i}]: contractClassLogs length=${ccLogs.length}`,
+    );
+    if (ccLogs.length > 0) {
+      for (const log of ccLogs) {
+        logger.info(
+          `🔍 DEBUG LISTENER: Log contractAddress=${log.contractAddress.toString()}, emittedLength=${log.emittedLength}`,
+        );
+      }
+    }
+  }
+
   const blockStr = block.toString();
   await publishMessage("NEW_BLOCK_EVENT", {
     block: blockStr,

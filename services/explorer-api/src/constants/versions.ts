@@ -5,7 +5,8 @@ export const v0_8_x = "4189337207"; // This should not be used anywhere
 export const v3_0_0_devnet_2 = "1667575857";
 export const v3_0_0_devnet_20251212 = "1647720761";
 export const v3_0_1_rc_1 = "3468522156";
+export const v3_0_3 = "2500495677";
 
 // Current active version to use for fetching blocks
 // NOTE: must match the aztec version running in the environment.
-export const CURRENT_ROLLUP_VERSION = v3_0_0_devnet_20251212;
+export const CURRENT_ROLLUP_VERSION = v3_0_3;
