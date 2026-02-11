@@ -4,107 +4,103 @@ deploy:
   kubectl:
     flags:
       apply: ["--force"]
-manifests:
-  helm:
-    releases:
-      - name: cert-manager
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/cert-manager
-        version: 1.3.18
-        namespace: cert-manager
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: true
-        setValues:
-          installCRDs: true
-          clusterResourceNamespace: chicmoz-prod
-      - name: ingress-nginx
-        remoteChart: ingress-nginx
-        repo: https://kubernetes.github.io/ingress-nginx
-        namespace: ingress-nginx
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
-        setValues:
-          controller.allowSnippetAnnotations: false
-          # PROXY protocol disabled to allow automatic cert-manager ACME challenge validation
-          # DigitalOcean PROXY protocol conflicts with cert-manager HTTP-01 challenges
-          # See: https://github.com/cert-manager/cert-manager/issues/1094
-          # controller.config.enable-real-ip: "true"
-          # controller.config.proxy-add-original-uri-header: "true"
-          # controller.config.real-ip-header: proxy_protocol
-          # controller.config.use-forwarded-headers: "true"
-          controller.config.use-proxy-protocol: "false"
-          # controller.config.set-real-ip-from: "0.0.0.0/0"
-          controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-protocol: "tcp"
-          controller.service.annotations.service\.beta\.kubernetes\.io/do-loadbalancer-enable-proxy-protocol: "false"
-      - name: postgresql
-        version: 12.10.0
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
-        valuesFiles:
-          - ../postgres/values.yaml
-        setValues:
-          global.postgresql.auth.postgresPassword: "secret-local-password"
-          global.postgresql.auth.username: "admin"
-          global.postgresql.auth.password: "secret-local-password"
-          image.debug: true
-          image.repository: bitnamilegacy/postgresql
-          primary.persistence.size: 100Gi
-        namespace: chicmoz-prod
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
-      - name: redis
-        version: 18.17.1
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
-        namespace: chicmoz-prod
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
-        setValues:
-          auth.enabled: false
-          master.configuration: |
-            maxmemory 100mb
-            maxmemory-policy volatile-ttl
-            lazyfree-lazy-eviction yes
-          replica.configuration: |
-            maxmemory 100mb
-            maxmemory-policy volatile-ttl
-            lazyfree-lazy-eviction yes
-          persistence.enabled: false
-          image.repository: bitnamilegacy/redis
-      - name: kafka
-        version: 26.4.2
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka
-        namespace: chicmoz-prod
-        setValues:
-          sasl.enabledMechanisms: plain
-          sasl.controllerMechanism: plain
-          sasl.interBrokerMechanism: plain
-          sasl.controller.user: controller_user
-          sasl.controller.password: test
-          sasl.interbroker.user: inter_broker_user
-          sasl.interbroker.password: test
-          sasl.client.users:
-            - controller_user
-          sasl.client.passwords:
-            - test
-          extraConfig: |
-            message.max.bytes=10000000
-            log.retention.hours=168
-            log.retention.bytes=1073741824
-            log.segment.bytes=536870912
-            log.cleanup.policy=delete
-          image.repository: bitnamilegacy/kafka
-        createNamespace: false
-        recreatePods: true
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
+  manifests:
+    rawYaml:
+      - ./envoy-gateway-namespace.yaml
+      - ./gateway-class.yaml
+    helm:
+      releases:
+        - name: envoy-gateway
+          remoteChart: oci://docker.io/envoyproxy/gateway-helm
+          namespace: envoy-gateway-system
+          createNamespace: true
+          recreatePods: false
+          skipBuildDependencies: false
+          useHelmSecrets: false
+          wait: true
+          setValues:
+            envoyGateway.logging.access.type: DEFAULT
+            envoyGateway.gateway.service.type: LoadBalancer
+            envoyGateway.provider.type: Kubernetes
+            envoyGateway.provider.kubernetes.service.type: LoadBalancer
+            envoyGateway.provider.kubernetes.service.annotations."service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol": "false"
+          version: v1.6.0
+        - name: cert-manager
+          remoteChart: oci://quay.io/jetstack/charts/cert-manager
+          version: 1.19.2
+          namespace: cert-manager
+          createNamespace: false
+          recreatePods: false
+          skipBuildDependencies: false
+          useHelmSecrets: false
+          wait: true
+          setValues:
+            installCRDs: true
+            clusterResourceNamespace: chicmoz-prod
+        - name: postgresql
+          version: 12.10.0
+          remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+          valuesFiles:
+            - ../postgres/values.yaml
+          setValues:
+            global.postgresql.auth.postgresPassword: "secret-local-password"
+            global.postgresql.auth.username: "admin"
+            global.postgresql.auth.password: "secret-local-password"
+            image.debug: true
+            image.repository: bitnamilegacy/postgresql
+            primary.persistence.size: 100Gi
+          namespace: chicmoz-prod
+          createNamespace: false
+          recreatePods: false
+          skipBuildDependencies: false
+          useHelmSecrets: false
+          wait: false
+        - name: redis
+          version: 18.17.1
+          remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
+          namespace: chicmoz-prod
+          createNamespace: false
+          recreatePods: false
+          skipBuildDependencies: false
+          useHelmSecrets: false
+          wait: false
+          setValues:
+            auth.enabled: false
+            master.configuration: |
+              maxmemory 100mb
+              maxmemory-policy volatile-ttl
+              lazyfree-lazy-eviction yes
+            replica.configuration: |
+              maxmemory 100mb
+              maxmemory-policy volatile-ttl
+              lazyfree-lazy-eviction yes
+            persistence.enabled: false
+            image.repository: bitnamilegacy/redis
+        - name: kafka
+          version: 26.4.2
+          remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka
+          namespace: chicmoz-prod
+          setValues:
+            sasl.enabledMechanisms: plain
+            sasl.controllerMechanism: plain
+            sasl.interBrokerMechanism: plain
+            sasl.controller.user: controller_user
+            sasl.controller.password: test
+            sasl.interbroker.user: inter_broker_user
+            sasl.interbroker.password: test
+            sasl.client.users:
+              - controller_user
+            sasl.client.passwords:
+              - test
+            extraConfig: |
+              message.max.bytes=10000000
+              log.retention.hours=168
+              log.retention.bytes=1073741824
+              log.segment.bytes=536870912
+              log.cleanup.policy=delete
+            image.repository: bitnamilegacy/kafka
+          createNamespace: false
+          recreatePods: true
+          skipBuildDependencies: false
+          useHelmSecrets: false
+          wait: false

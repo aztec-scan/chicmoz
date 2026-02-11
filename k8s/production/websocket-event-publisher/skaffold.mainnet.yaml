@@ -17,8 +17,8 @@ deploy:
   kubectl:
     flags:
       apply: ["--force"]
-manifests:
-  rawYaml:
-    - ./mainnet/service.yaml
-    - ./mainnet/deployment.yaml
-    - ./mainnet/ingress.yaml
+  manifests:
+    rawYaml:
+      - ./mainnet/service.yaml
+      - ./mainnet/deployment.yaml
+      - ./mainnet/httproute.yaml

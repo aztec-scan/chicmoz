@@ -1,0 +1,10 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: gateways-beta
+deploy:
+  kubectl:
+    manifests:
+      - beta/gateway.yaml
+      - beta/clienttrafficpolicy.yaml
+      - beta/certificates.yaml

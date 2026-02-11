@@ -1,0 +1,67 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-api-tls-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-api-tls-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - api.beta.aztecscan.xyz
+    - api.mainnet.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ui-tls-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ui-tls-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - beta.aztecscan.xyz
+    - mainnet.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-grafana-tls-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-grafana-tls-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - dashboard.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-swagger-tls-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-swagger-tls-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - docs.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ws-tls-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ws-tls-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - ws.beta.aztecscan.xyz
+    - ws.mainnet.beta.aztecscan.xyz
