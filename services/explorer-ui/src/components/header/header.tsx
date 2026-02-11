@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useSearch } from "~/hooks";
 import { routes } from "~/routes/__root.tsx";
 import { DesktopHeader } from "./desktop-header";
@@ -68,6 +68,18 @@ export const Header = () => {
       group: "dev",
     },
     {
+      key: "staking",
+      name: "Aztecscan Staking",
+      to: routes.staking.route,
+      group: "dev",
+    },
+    {
+      key: "incidents",
+      name: routes.incidents.title,
+      to: routes.incidents.route,
+      group: "dev",
+    },
+    {
       key: "docs",
       name: "API Docs",
       to: "https://docs.aztecscan.xyz/",
@@ -90,22 +102,34 @@ export const Header = () => {
       const [validators] = data.results.validators;
 
       if (block) {
-        void navigate({ to: `/blocks/${block.hash}` });
+        startTransition(() => {
+          void navigate({ to: `/blocks/${block.hash}` });
+        });
         setIsMenuOpen(false);
       } else if (txEffect || pendingTx || droppedTx) {
         const hash = txEffect || pendingTx || droppedTx;
-        void navigate({ to: `/tx-effects/${hash.txHash}` });
+        startTransition(() => {
+          void navigate({ to: `/tx-effects/${hash.txHash}` });
+        });
         setIsMenuOpen(false);
       } else if (instance) {
-        void navigate({ to: `/contracts/instances/${instance.address}` });
+        startTransition(() => {
+          void navigate({ to: `/contracts/instances/${instance.address}` });
+        });
         setIsMenuOpen(false);
       } else if (contractClass) {
-        void navigate({
-          to: `/contracts/classes/${contractClass.contractClassId}/versions/${contractClass.version}`,
+        startTransition(() => {
+          void navigate({
+            to: `/contracts/classes/${contractClass.contractClassId}/versions/${contractClass.version}`,
+          });
         });
         setIsMenuOpen(false);
       } else if (validators) {
-        void navigate({ to: `/l1/validators/${validators.validatorAddress}` });
+        startTransition(() => {
+          void navigate({
+            to: `/l1/validators/${validators.validatorAddress}`,
+          });
+        });
         setIsMenuOpen(false);
       } else if (Object.values(data.results).every((arr) => !arr.length)) {
         setHasNoResults(true);
