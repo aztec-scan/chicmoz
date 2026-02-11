@@ -8,6 +8,9 @@ deploy:
     rawYaml:
       - ./envoy-gateway-namespace.yaml
       - ./gateway-class.yaml
+      - ../postgres/postgres.yaml
+      - ../redis/redis.yaml
+      - ../kafka/kafka.yaml
     helm:
       releases:
         - name: envoy-gateway
@@ -37,70 +40,3 @@ deploy:
           setValues:
             installCRDs: true
             clusterResourceNamespace: chicmoz-prod
-        - name: postgresql
-          version: 12.10.0
-          remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
-          valuesFiles:
-            - ../postgres/values.yaml
-          setValues:
-            global.postgresql.auth.postgresPassword: "secret-local-password"
-            global.postgresql.auth.username: "admin"
-            global.postgresql.auth.password: "secret-local-password"
-            image.debug: true
-            image.repository: bitnamilegacy/postgresql
-            primary.persistence.size: 100Gi
-          namespace: chicmoz-prod
-          createNamespace: false
-          recreatePods: false
-          skipBuildDependencies: false
-          useHelmSecrets: false
-          wait: false
-        - name: redis
-          version: 18.17.1
-          remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
-          namespace: chicmoz-prod
-          createNamespace: false
-          recreatePods: false
-          skipBuildDependencies: false
-          useHelmSecrets: false
-          wait: false
-          setValues:
-            auth.enabled: false
-            master.configuration: |
-              maxmemory 100mb
-              maxmemory-policy volatile-ttl
-              lazyfree-lazy-eviction yes
-            replica.configuration: |
-              maxmemory 100mb
-              maxmemory-policy volatile-ttl
-              lazyfree-lazy-eviction yes
-            persistence.enabled: false
-            image.repository: bitnamilegacy/redis
-        - name: kafka
-          version: 26.4.2
-          remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka
-          namespace: chicmoz-prod
-          setValues:
-            sasl.enabledMechanisms: plain
-            sasl.controllerMechanism: plain
-            sasl.interBrokerMechanism: plain
-            sasl.controller.user: controller_user
-            sasl.controller.password: test
-            sasl.interbroker.user: inter_broker_user
-            sasl.interbroker.password: test
-            sasl.client.users:
-              - controller_user
-            sasl.client.passwords:
-              - test
-            extraConfig: |
-              message.max.bytes=10000000
-              log.retention.hours=168
-              log.retention.bytes=1073741824
-              log.segment.bytes=536870912
-              log.cleanup.policy=delete
-            image.repository: bitnamilegacy/kafka
-          createNamespace: false
-          recreatePods: true
-          skipBuildDependencies: false
-          useHelmSecrets: false
-          wait: false
