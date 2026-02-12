@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: chicmoz
+data:
+  init.sql: |
+    SELECT 'CREATE DATABASE aztec_listener_sandbox'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_sandbox')\gexec
+    SELECT 'CREATE DATABASE aztec_listener_testnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_testnet')\gexec
+    select 'CREATE DATABASE aztec_listener_local_devnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_local_devnet')\gexec
+    select 'CREATE DATABASE aztec_listener_remote_devnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_remote_devnet')\gexec
+    select 'CREATE DATABASE ethereum_listener_sandbox'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_sandbox')\gexec
+    select 'CREATE DATABASE ethereum_listener_testnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_testnet')\gexec
+    select 'CREATE DATABASE ethereum_listener_local_devnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_local_devnet')\gexec
+    select 'CREATE DATABASE ethereum_listener_remote_devnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_remote_devnet')\gexec
+    SELECT 'CREATE DATABASE explorer_api_sandbox'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_sandbox')\gexec
+    SELECT 'CREATE DATABASE explorer_api_testnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_testnet')\gexec
+    SELECT 'CREATE DATABASE explorer_api_local_devnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_local_devnet')\gexec
+    SELECT 'CREATE DATABASE explorer_api_remote_devnet'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_remote_devnet')\gexec
+
+    SELECT 'CREATE DATABASE auth'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'auth')\gexec
+
+    \c auth
+    CREATE TABLE IF NOT EXISTS public."auth_api-keys" (
+        id integer NOT NULL,
+        "apiKey" uuid NOT NULL,
+        "createdAt" timestamp with time zone NOT NULL,
+        "updatedAt" timestamp with time zone NOT NULL
+    );
+
+    CREATE SEQUENCE IF NOT EXISTS public."auth_api-keys_id_seq"
+        AS integer
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+
+    ALTER SEQUENCE public."auth_api-keys_id_seq" OWNED BY public."auth_api-keys".id;
+
+    ALTER TABLE ONLY public."auth_api-keys" ALTER COLUMN id SET DEFAULT nextval('public."auth_api-keys_id_seq"'::regclass);
+
+    COPY public."auth_api-keys" (id, "apiKey", "createdAt", "updatedAt") FROM stdin;
+    1	d1e2083a-660c-4314-a6f2-1d42f4b944f4	2023-11-02 12:22:48.82+00	2023-11-02 12:22:48.82+00
+    \.
+    SELECT pg_catalog.setval('public."auth_api-keys_id_seq"', 1, true);
+    ALTER TABLE ONLY public."auth_api-keys" DROP CONSTRAINT IF EXISTS "auth_api-keys_pkey";
+    ALTER TABLE ONLY public."auth_api-keys"
+        ADD CONSTRAINT "auth_api-keys_pkey" PRIMARY KEY (id);
+    DROP INDEX IF EXISTS "auth_api-keys_api_key";
+    CREATE UNIQUE INDEX "auth_api-keys_api_key" ON public."auth_api-keys" USING btree ("apiKey");
+
+    SELECT 'CREATE DATABASE apikey'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'apikey')\gexec
+    \c apikey
+    CREATE TABLE IF NOT EXISTS public."api-key_api-keys" (
+        id integer NOT NULL,
+        "apiKey" uuid NOT NULL,
+        "userId" character varying(255),
+        "createdAt" timestamp with time zone NOT NULL,
+        "updatedAt" timestamp with time zone NOT NULL
+    );
+
+    CREATE SEQUENCE IF NOT EXISTS public."api-key_api-keys_id_seq"
+        AS integer
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+
+    ALTER SEQUENCE public."api-key_api-keys_id_seq" OWNED BY public."api-key_api-keys".id;
+
+    ALTER TABLE ONLY public."api-key_api-keys" ALTER COLUMN id SET DEFAULT nextval('public."api-key_api-keys_id_seq"'::regclass);
+
+    COPY public."api-key_api-keys" (id, "apiKey", "userId", "createdAt", "updatedAt") FROM stdin;
+    1	d1e2083a-660c-4314-a6f2-1d42f4b944f4	\N	2023-11-02 12:22:48.82+00	2023-11-02 12:22:48.82+00
+    \.
+    SELECT pg_catalog.setval('public."api-key_api-keys_id_seq"', 67, true);
+    ALTER TABLE ONLY public."api-key_api-keys" DROP CONSTRAINT IF EXISTS "api-key_api-keys_pkey";
+    ALTER TABLE ONLY public."api-key_api-keys"
+        ADD CONSTRAINT "api-key_api-keys_pkey" PRIMARY KEY (id);
+    DROP INDEX IF EXISTS "api-key_api-keys_api_key";
+    CREATE UNIQUE INDEX "api-key_api-keys_api_key" ON public."api-key_api-keys" USING btree ("apiKey");
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-auth
+  namespace: chicmoz
+type: Opaque
+stringData:
+  password: "secret-local-password"
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: chicmoz
+  labels:
+    app: postgresql
+spec:
+  serviceName: postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:18.1-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: postgres-init-scripts
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: chicmoz
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgresql

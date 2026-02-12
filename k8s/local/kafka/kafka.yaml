@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: kafka-jaas-config
-  namespace: chicmoz-prod
+  namespace: chicmoz
 type: Opaque
 stringData:
   jaas.conf: |
@@ -19,7 +19,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kafka
-  namespace: chicmoz-prod
+  namespace: chicmoz
   labels:
     app: kafka
 spec:
@@ -50,7 +50,7 @@ spec:
               echo "Starting Kafka Node ID: $KAFKA_NODE_ID"
 
               # Dynamic Advertised Listeners using the specific pod identity
-              export KAFKA_ADVERTISED_LISTENERS=SASL_PLAINTEXT://${HOSTNAME}.kafka-headless.chicmoz-prod.svc.cluster.local:9092
+              export KAFKA_ADVERTISED_LISTENERS=SASL_PLAINTEXT://${HOSTNAME}.kafka-headless.chicmoz.svc.cluster.local:9092
 
               # Start Kafka
               /etc/kafka/docker/run
@@ -60,8 +60,9 @@ spec:
 
             # This logic assumes we might scale up to 3 nodes eventually.
             # Only nodes 0, 1, 2 participate in the quorum.
+            # If replicas=1, only node 0 exists and is the sole voter.
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: "0@kafka-0.kafka-headless.chicmoz-prod.svc.cluster.local:9093"
+              value: "0@kafka-0.kafka-headless.chicmoz.svc.cluster.local:9093"
 
             # Listeners
             - name: KAFKA_LISTENERS
@@ -90,6 +91,7 @@ spec:
               value: "1073741824"
 
             # Single-node & Scalability Safety
+            # Allow creating topics with replication factor 1 (essential for 1-node clusters)
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
@@ -122,13 +124,13 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
+            storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: kafka-headless
-  namespace: chicmoz-prod
+  namespace: chicmoz
   labels:
     app: kafka
 spec:
@@ -145,7 +147,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kafka
-  namespace: chicmoz-prod
+  namespace: chicmoz
   labels:
     app: kafka
 spec:

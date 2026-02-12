@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: redis-cache-config
-  namespace: chicmoz-prod
+  namespace: chicmoz
 data:
   redis.conf: |
     maxmemory 100mb
@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-cache
-  namespace: chicmoz-prod
+  namespace: chicmoz
   labels:
     app: redis-cache
 spec:
@@ -53,7 +53,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis-cache
-  namespace: chicmoz-prod
+  namespace: chicmoz
 spec:
   type: ClusterIP
   ports:

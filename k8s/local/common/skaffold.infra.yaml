@@ -11,6 +11,9 @@ manifests:
     - ./postgres-config.yaml
     - ./gateway-class.yaml
     - ./envoy-gateway-namespace.yaml
+    - ../postgres/postgres.yaml
+    - ../redis/redis.yaml
+    - ../kafka/kafka.yaml
   helm:
     releases:
       - name: envoy-gateway
@@ -28,68 +31,3 @@ manifests:
           envoyGateway.provider.kubernetes.service.type: LoadBalancer
           envoyGateway.provider.kubernetes.service.annotations."service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol": "false"
         version: v1.6.0
-      - name: postgresql
-        version: 12.10.0
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
-        valuesFiles:
-          - ../postgres/values.yaml
-        setValues:
-          global.postgresql.auth.postgresPassword: "secret-local-password"
-          global.postgresql.auth.username: "admin"
-          global.postgresql.auth.password: "secret-local-password"
-          image.debug: true
-          image.repository: bitnamilegacy/postgresql
-          primary.replicaCount: 1
-        namespace: chicmoz
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
-      - name: redis
-        version: 18.17.1
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
-        namespace: chicmoz
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
-        setValues:
-          architecture: standalone
-          replica.replicaCount: 0
-          auth.enabled: false
-          image.repository: bitnamilegacy/redis
-          master.configuration: |
-            maxmemory 100mb
-            maxmemory-policy volatile-ttl
-            lazyfree-lazy-eviction yes
-          replica.configuration: |
-            maxmemory 100mb
-            maxmemory-policy volatile-ttl
-            lazyfree-lazy-eviction yes
-          persistence.enabled: false
-      - name: kafka
-        version: 26.4.2
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka
-        namespace: chicmoz
-        setValues:
-          sasl.enabledMechanisms: plain
-          sasl.controllerMechanism: plain
-          sasl.interBrokerMechanism: plain
-          sasl.controller.user: controller_user
-          sasl.controller.password: test
-          sasl.interbroker.user: inter_broker_user
-          sasl.interbroker.password: test
-          sasl.client.users:
-            - controller_user
-          sasl.client.passwords:
-            - test
-          extraConfig: |
-            message.max.bytes=10000000
-          image.repository: bitnamilegacy/kafka
-        createNamespace: false
-        recreatePods: true
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
