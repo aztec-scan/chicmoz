@@ -114,7 +114,7 @@ spec:
     spec:
       containers:
         - name: postgresql
-          image: postgres:18.1-alpine
+          image: postgres:15-alpine
           ports:
             - containerPort: 5432
           env:
@@ -125,6 +125,8 @@ spec:
                 secretKeyRef:
                   name: postgres-auth
                   key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data

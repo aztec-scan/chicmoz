@@ -13,12 +13,12 @@ build:
       requires:
         - image: registry.digitalocean.com/aztlan-containers/chicmoz-base
           alias: BASE
+manifests:
+  rawYaml:
+    - ./mainnet/service.yaml
+    - ./mainnet/httproute.yaml
+    - ./mainnet/deployment.yaml
 deploy:
   kubectl:
     flags:
       apply: ["--force"]
-  manifests:
-    rawYaml:
-      - ./mainnet/service.yaml
-      - ./mainnet/deployment.yaml
-      - ./mainnet/httproute.yaml
