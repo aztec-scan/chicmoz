@@ -65,3 +65,43 @@ spec:
   dnsNames:
     - ws.beta.aztecscan.xyz
     - ws.mainnet.beta.aztecscan.xyz
+---
+# Testnet Certificates
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-api-tls-testnet-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-api-tls-testnet-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - api.testnet.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ui-tls-testnet-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ui-tls-testnet-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - testnet.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ws-tls-testnet-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ws-tls-testnet-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - ws.testnet.beta.aztecscan.xyz

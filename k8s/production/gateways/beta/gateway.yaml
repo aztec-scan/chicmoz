@@ -63,6 +63,28 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    # Testnet HTTP Listeners
+    - name: api-testnet-http
+      hostname: api.testnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-http
+      hostname: testnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-http
+      hostname: ws.testnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
 
     # HTTPS Listeners
     - name: api-https
@@ -150,6 +172,40 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: aztecscan-ws-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Testnet HTTPS Listeners
+    - name: api-testnet-https
+      hostname: api.testnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-testnet-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-https
+      hostname: testnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-testnet-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-https
+      hostname: ws.testnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-testnet-beta
       allowedRoutes:
         namespaces:
           from: Same
