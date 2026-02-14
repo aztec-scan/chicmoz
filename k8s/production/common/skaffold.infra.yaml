@@ -1,42 +1,45 @@
 apiVersion: skaffold/v4beta6
 kind: Config
+manifests:
+  rawYaml:
+    - k8s/production/common/envoy-gateway-namespace.yaml
+    - k8s/production/common/namespace.yaml
+    - k8s/production/common/gateway-class.yaml
+    - k8s/production/postgres/postgres.yaml
+    - k8s/production/redis/redis.yaml
+    - k8s/production/kafka/kafka.yaml
+  helm:
+    releases:
+      - name: envoy-gateway
+        remoteChart: oci://docker.io/envoyproxy/gateway-helm
+        namespace: envoy-gateway-system
+        createNamespace: true
+        recreatePods: false
+        skipBuildDependencies: false
+        useHelmSecrets: false
+        wait: true
+        setValues:
+          envoyGateway.logging.access.type: DEFAULT
+          envoyGateway.gateway.service.type: LoadBalancer
+          envoyGateway.provider.type: Kubernetes
+          envoyGateway.provider.kubernetes.service.type: LoadBalancer
+          envoyGateway.provider.kubernetes.service.annotations."service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol": "false"
+        version: v1.6.0
+      - name: cert-manager
+        remoteChart: oci://quay.io/jetstack/charts/cert-manager
+        version: 1.19.2
+        namespace: cert-manager
+        createNamespace: true
+        recreatePods: false
+        skipBuildDependencies: false
+        useHelmSecrets: false
+        wait: true
+        setValues:
+          installCRDs: true
+          clusterResourceNamespace: chicmoz-prod
+          config.enableGatewayAPI: true
 deploy:
   kubectl:
     flags:
       apply: ["--force"]
-  manifests:
-    rawYaml:
-      - ./envoy-gateway-namespace.yaml
-      - ./gateway-class.yaml
-      - ../postgres/postgres.yaml
-      - ../redis/redis.yaml
-      - ../kafka/kafka.yaml
-    helm:
-      releases:
-        - name: envoy-gateway
-          remoteChart: oci://docker.io/envoyproxy/gateway-helm
-          namespace: envoy-gateway-system
-          createNamespace: true
-          recreatePods: false
-          skipBuildDependencies: false
-          useHelmSecrets: false
-          wait: true
-          setValues:
-            envoyGateway.logging.access.type: DEFAULT
-            envoyGateway.gateway.service.type: LoadBalancer
-            envoyGateway.provider.type: Kubernetes
-            envoyGateway.provider.kubernetes.service.type: LoadBalancer
-            envoyGateway.provider.kubernetes.service.annotations."service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol": "false"
-          version: v1.6.0
-        - name: cert-manager
-          remoteChart: oci://quay.io/jetstack/charts/cert-manager
-          version: 1.19.2
-          namespace: cert-manager
-          createNamespace: false
-          recreatePods: false
-          skipBuildDependencies: false
-          useHelmSecrets: false
-          wait: true
-          setValues:
-            installCRDs: true
-            clusterResourceNamespace: chicmoz-prod
+  helm: {}
