@@ -68,4 +68,3 @@ spec:
                 secretKeyRef:
                   name: global
                   key: ETHEREUM_HTTP_ALCHEMY_MAINNET_URL
-                  status: {}

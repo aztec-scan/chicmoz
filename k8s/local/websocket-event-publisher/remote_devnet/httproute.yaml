@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: websocket-event-publisher-remote-devnet
+  namespace: chicmoz
+  labels:
+    app.kubernetes.io/name: websocket-event-publisher
+    app.kubernetes.io/part-of: chicmoz-local
+spec:
+  parentRefs:
+    - name: chicmoz-gateway
+      sectionName: ws-remote-devnet
+  hostnames:
+    - ws.remote-devnet.chicmoz.localhost
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: websocket-event-publisher-remote-devnet-service
+          port: 80

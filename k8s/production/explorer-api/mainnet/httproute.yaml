@@ -1,0 +1,35 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: explorer-api-mainnet
+  namespace: chicmoz-prod
+  labels:
+    app.kubernetes.io/name: explorer-api
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  parentRefs:
+    - name: aztecscan-gateway
+      sectionName: api-http
+    - name: aztecscan-gateway
+      sectionName: api-https
+    - name: aztecscan-gateway
+      sectionName: api-mainnet-http
+    - name: aztecscan-gateway
+      sectionName: api-mainnet-https
+  hostnames:
+    - api.beta.aztecscan.xyz
+    - api.mainnet.beta.aztecscan.xyz
+  rules:
+    - matches:
+        - path:
+            type: RegularExpression
+            value: /v1/([^/]+)/(.*)
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: gateway.envoyproxy.io
+            kind: HTTPRouteFilter
+            name: explorer-api-mainnet-rewrite
+      backendRefs:
+        - name: explorer-api-mainnet-service
+          port: 80

@@ -28,5 +28,5 @@ deploy:
 manifests:
   rawYaml:
     - ./remote_devnet/service.yaml
-    - ./remote_devnet/ingress.yaml
+    - ./remote_devnet/httproute.yaml
     - ./remote_devnet/deployment.yaml

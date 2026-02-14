@@ -1,0 +1,53 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: chicmoz-gateway
+  namespace: chicmoz
+  labels:
+    app.kubernetes.io/name: chicmoz-gateway
+    app.kubernetes.io/part-of: chicmoz-local
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    - name: api-testnet
+      hostname: api.testnet.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet
+      hostname: testnet.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet
+      hostname: ws.testnet.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: swagger
+      hostname: swagger.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: dashboard
+      hostname: dashboard.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: kafka
+      hostname: kafka.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same

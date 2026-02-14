@@ -10,5 +10,7 @@ manifests:
   rawYaml:
     - ./sandbox/postgres-config.yaml
     - ./sandbox/service.yaml
-    - ./sandbox/ingress.yaml
+    - ./sandbox/http-filter.yaml
+    - ./sandbox/securitypolicy.yaml
+    - ./sandbox/httproute.yaml
     - ./sandbox/deployment.yaml

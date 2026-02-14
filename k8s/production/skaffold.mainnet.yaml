@@ -3,6 +3,7 @@ kind: Config
 metadata:
   name: chicmoz-prod-mainnet
 requires:
+  - path: ./gateways/skaffold.beta.yaml
   - path: ./common/skaffold.manifests.yaml
   - path: ./explorer-ui/skaffold.mainnet.yaml
   - path: ./explorer-api/skaffold.mainnet.yaml

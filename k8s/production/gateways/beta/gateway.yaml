@@ -1,0 +1,211 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: aztecscan-gateway
+  namespace: chicmoz-prod
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    # HTTP Listeners
+    - name: api-http
+      hostname: api.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: api-mainnet-http
+      hostname: api.mainnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-http
+      hostname: beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-mainnet-http
+      hostname: mainnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: grafana-http
+      hostname: dashboard.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: swagger-http
+      hostname: docs.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-http
+      hostname: ws.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-mainnet-http
+      hostname: ws.mainnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Testnet HTTP Listeners
+    - name: api-testnet-http
+      hostname: api.testnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-http
+      hostname: testnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-http
+      hostname: ws.testnet.beta.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+    # HTTPS Listeners
+    - name: api-https
+      hostname: api.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: api-mainnet-https
+      hostname: api.mainnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-https
+      hostname: beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-mainnet-https
+      hostname: mainnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: grafana-https
+      hostname: dashboard.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-grafana-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: swagger-https
+      hostname: docs.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-swagger-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-https
+      hostname: ws.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-mainnet-https
+      hostname: ws.mainnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Testnet HTTPS Listeners
+    - name: api-testnet-https
+      hostname: api.testnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-testnet-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-https
+      hostname: testnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-testnet-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-https
+      hostname: ws.testnet.beta.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-testnet-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
