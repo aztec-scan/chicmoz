@@ -1,4 +1,4 @@
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 #[aztec]
 pub contract SimpleLogging {
@@ -7,7 +7,7 @@ pub contract SimpleLogging {
             functions::{external, initializer},
             storage::storage,
         },
-        protocol_types::address::AztecAddress,
+        protocol::address::AztecAddress,
         state_vars::{Map, PublicMutable},
     };
 

@@ -29,8 +29,8 @@ const getTxEffectWithHashes = (txEffects: L2Block["body"]["txEffects"]) => {
   });
 };
 
-export const blockFromString = (stringifiedBlock: string): L2Block => {
-  return L2Block.fromString(stringifiedBlock);
+export const blockFromBuffer = (hexEncodedBlock: string): L2Block => {
+  return L2Block.fromBuffer(Buffer.from(hexEncodedBlock, "hex"));
 };
 
 export const parseBlock = async (
@@ -54,15 +54,6 @@ export const parseBlock = async (
     header: {
       ...blockWithTxEffectsHashesAdded.header,
       totalFees: blockWithTxEffectsHashesAdded.header.totalFees.toBigInt(),
-      contentCommitment: {
-        ...blockWithTxEffectsHashesAdded.header.contentCommitment,
-        blobsHash:
-          blockWithTxEffectsHashesAdded.header.contentCommitment.blobsHash.toString(),
-        inHash:
-          blockWithTxEffectsHashesAdded.header.contentCommitment.inHash.toString(),
-        outHash:
-          blockWithTxEffectsHashesAdded.header.contentCommitment.outHash.toString(),
-      },
       globalVariables: {
         ...blockWithTxEffectsHashesAdded.header.globalVariables,
         timestamp: parseTimeStamp(

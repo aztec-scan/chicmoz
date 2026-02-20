@@ -30,7 +30,8 @@ export const onBlock = async (
       await block.hash()
     ).toString()})...`,
   );
-  const blockStr = block.toString();
+  const blockBuffer = block.toBuffer() as Uint8Array;
+  const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("NEW_BLOCK_EVENT", {
     block: blockStr,
     finalizationStatus,
@@ -64,7 +65,8 @@ export const onCatchupBlock = async (
   block: L2Block,
   finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ) => {
-  const blockStr = block.toString();
+  const blockBuffer = block.toBuffer() as Uint8Array;
+  const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("CATCHUP_BLOCK_EVENT", {
     block: blockStr,
     finalizationStatus,

@@ -1,4 +1,4 @@
-import { blockFromString, parseBlock } from "@chicmoz-pkg/backend-utils";
+import { blockFromBuffer, parseBlock } from "@chicmoz-pkg/backend-utils";
 import { EventHandler } from "@chicmoz-pkg/message-bus";
 import {
   generateL2TopicName,
@@ -62,7 +62,7 @@ const onBlock = async ({
     return;
   }
   logger.info(`👓 Parsing block ${blockNumber}`);
-  const b = blockFromString(block);
+  const b = blockFromBuffer(block);
   let parsedBlock;
   try {
     parsedBlock = await parseBlock(b, finalizationStatus);

@@ -133,6 +133,7 @@ export const getFreshInfo = async (): Promise<{
         enr,
         l1ContractAddresses: l1ContractAddresses,
         protocolContractAddresses: protocolContractAddresses,
+        realProofs: false,
       };
       const cInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
       if (!chainInfo || chainInfo.rollupVersion < cInfo.rollupVersion) {

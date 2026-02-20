@@ -9,21 +9,21 @@ import { EthAddress } from '@aztec/aztec.js/addresses';
 import { Fr, Point } from '@aztec/aztec.js/fields';
 import { type PublicKey, PublicKeys } from '@aztec/aztec.js/keys';
 import type { Wallet } from '@aztec/aztec.js/wallet';
-import SimpleLoggingContractArtifactJson from '../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json' with { type: 'json' };
-export const SimpleLoggingContractArtifact = loadContractArtifact(SimpleLoggingContractArtifactJson as NoirCompiledContract);
+import SimpleLoggingUpdateContractArtifactJson from '../contract-projects/SimpleLoggingUpdate/target/simple_logging_update-SimpleLoggingUpdate.json' with { type: 'json' };
+export const SimpleLoggingUpdateContractArtifact = loadContractArtifact(SimpleLoggingUpdateContractArtifactJson as NoirCompiledContract);
 
 
 
 /**
- * Type-safe interface for contract SimpleLogging;
+ * Type-safe interface for contract SimpleLoggingUpdate;
  */
-export class SimpleLoggingContract extends ContractBase {
+export class SimpleLoggingUpdateContract extends ContractBase {
   
   private constructor(
     address: AztecAddress,
     wallet: Wallet,
   ) {
-    super(address, SimpleLoggingContractArtifact, wallet);
+    super(address, SimpleLoggingUpdateContractArtifact, wallet);
   }
   
 
@@ -37,37 +37,37 @@ export class SimpleLoggingContract extends ContractBase {
   public static at(
     address: AztecAddress,
     wallet: Wallet,
-  ): SimpleLoggingContract {
-    return Contract.at(address, SimpleLoggingContract.artifact, wallet) as SimpleLoggingContract;
+  ): SimpleLoggingUpdateContract {
+    return Contract.at(address, SimpleLoggingUpdateContract.artifact, wallet) as SimpleLoggingUpdateContract;
   }
 
   
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
-  public static deploy(wallet: Wallet, headstart: (bigint | number), owner: AztecAddressLike) {
-    return new DeployMethod<SimpleLoggingContract>(PublicKeys.default(), wallet, SimpleLoggingContractArtifact, (instance, wallet) => SimpleLoggingContract.at(instance.address, wallet), Array.from(arguments).slice(1));
+  public static deploy(wallet: Wallet, ) {
+    return new DeployMethod<SimpleLoggingUpdateContract>(PublicKeys.default(), wallet, SimpleLoggingUpdateContractArtifact, (instance, wallet) => SimpleLoggingUpdateContract.at(instance.address, wallet), Array.from(arguments).slice(1));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified public keys hash to derive the address.
    */
-  public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet, headstart: (bigint | number), owner: AztecAddressLike) {
-    return new DeployMethod<SimpleLoggingContract>(publicKeys, wallet, SimpleLoggingContractArtifact, (instance, wallet) => SimpleLoggingContract.at(instance.address, wallet), Array.from(arguments).slice(2));
+  public static deployWithPublicKeys(publicKeys: PublicKeys, wallet: Wallet, ) {
+    return new DeployMethod<SimpleLoggingUpdateContract>(publicKeys, wallet, SimpleLoggingUpdateContractArtifact, (instance, wallet) => SimpleLoggingUpdateContract.at(instance.address, wallet), Array.from(arguments).slice(2));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified constructor method.
    */
-  public static deployWithOpts<M extends keyof SimpleLoggingContract['methods']>(
+  public static deployWithOpts<M extends keyof SimpleLoggingUpdateContract['methods']>(
     opts: { publicKeys?: PublicKeys; method?: M; wallet: Wallet },
-    ...args: Parameters<SimpleLoggingContract['methods'][M]>
+    ...args: Parameters<SimpleLoggingUpdateContract['methods'][M]>
   ) {
-    return new DeployMethod<SimpleLoggingContract>(
+    return new DeployMethod<SimpleLoggingUpdateContract>(
       opts.publicKeys ?? PublicKeys.default(),
       opts.wallet,
-      SimpleLoggingContractArtifact,
-      (instance, wallet) => SimpleLoggingContract.at(instance.address, wallet),
+      SimpleLoggingUpdateContractArtifact,
+      (instance, wallet) => SimpleLoggingUpdateContract.at(instance.address, wallet),
       Array.from(arguments).slice(1),
       opts.method ?? 'constructor',
     );
@@ -79,14 +79,14 @@ export class SimpleLoggingContract extends ContractBase {
    * Returns this contract's artifact.
    */
   public static get artifact(): ContractArtifact {
-    return SimpleLoggingContractArtifact;
+    return SimpleLoggingUpdateContractArtifact;
   }
 
   /**
    * Returns this contract's artifact with public bytecode.
    */
   public static get artifactForPublic(): ContractArtifact {
-    return loadContractArtifactForPublic(SimpleLoggingContractArtifactJson as NoirCompiledContract);
+    return loadContractArtifactForPublic(SimpleLoggingUpdateContractArtifactJson as NoirCompiledContract);
   }
   
 
@@ -102,14 +102,17 @@ export class SimpleLoggingContract extends ContractBase {
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public declare methods: {
     
-    /** get_counter(owner: struct) */
-    get_counter: ((owner: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** constructor() */
+    constructor: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** increment(owner: struct) */
-    increment: ((owner: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** decrease_counter_public(counter_id: field) */
+    decrease_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
-    /** initialize(headstart: integer, owner: struct) */
-    initialize: ((headstart: (bigint | number), owner: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+    /** get_counter_value(counter_id: field) */
+    get_counter_value: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+
+    /** increase_counter_public(counter_id: field) */
+    increase_counter_public: ((counter_id: FieldLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
     /** process_message(message_ciphertext: struct, message_context: struct) */
     process_message: ((message_ciphertext: FieldLike[], message_context: { tx_hash: FieldLike, unique_note_hashes_in_tx: FieldLike[], first_nullifier_in_tx: FieldLike, recipient: AztecAddressLike }) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;

@@ -9,7 +9,7 @@ import {
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
-import { Contract, DeploySentTx } from "@aztec/aztec.js/contracts";
+import { Contract, DeployMethod } from "@aztec/aztec.js/contracts";
 
 export async function run() {
   logger.info("===== TOKEN CONTRACT =====");
@@ -29,15 +29,16 @@ export async function run() {
   const { contract: tokenContract, instance: tokenInstance } =
     await deployContract({
       contractLoggingName,
-      deployFn: (): DeploySentTx<TokenContract> => {
+      deployFn: (): DeployMethod<TokenContract> => {
         return TokenContract.deploy(
           wallet,
           constructorArgs[0],
           constructorArgs[1],
           constructorArgs[2],
           constructorArgs[3],
-        ).send({ from: deployerWallet.getAddress() });
+        );
       },
+      from: deployerWallet.getAddress(),
       node: getAztecNodeClient(),
     });
 

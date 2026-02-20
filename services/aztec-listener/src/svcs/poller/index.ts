@@ -38,7 +38,8 @@ export const init = async () => {
       .l1ContractAddresses as unknown as NodeInfo["l1ContractAddresses"],
     protocolContractAddresses: initResult.chainInfo
       .protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
-    enr: undefined, // Add missing required property
+    enr: undefined,
+    realProofs: false,
   };
 };
 

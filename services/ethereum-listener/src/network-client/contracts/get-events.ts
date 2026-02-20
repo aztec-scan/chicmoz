@@ -47,12 +47,12 @@ const getRollupL2BlockProposedLogs = async ({
   } = await dbControllers.inMemoryHeightTracker({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
-    eventName: "L2BlockProposed",
+    eventName: "CheckpointProposed",
     isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
   if (fromBlock >= latestHeight) {
-    logger.info("Rollup L2BlockProposed logs up to date");
+    logger.info("Rollup CheckpointProposed logs up to date");
     return 0n;
   }
   const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
@@ -62,7 +62,7 @@ const getRollupL2BlockProposedLogs = async ({
   const rollupL2BlockProposedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
-    eventName: "L2BlockProposed",
+    eventName: "CheckpointProposed",
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });

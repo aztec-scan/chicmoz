@@ -1,49 +1,47 @@
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 #[aztec]
 contract SimpleLoggingUpdate {
-    use dep::aztec::prelude::{Map, PublicMutable};
-    use dep::aztec::{
-        macros::{storage::storage, functions::{public, initializer, utility, internal}},
+    use ::aztec::{
+        macros::{functions::{external, initializer, internal}, storage::storage},
+        state_vars::{Map, PublicMutable},
     };
     #[storage]
     struct Storage<Context> {
         counters: Map<Field, PublicMutable<Field, Context>, Context>,
     }
 
-    #[public]
+    #[external("public")]
     #[initializer]
     fn constructor() {
     }
 
-    #[public]
-    #[internal]
-    fn add_to_counter_public(counter_id: Field) {
-        let new_counter_value = storage.counters.at(counter_id).read() + 1;
-        storage.counters.at(counter_id).write(new_counter_value);
+    #[internal("public")]
+    fn add_to_counter_internal(counter_id: Field) {
+        let new_counter_value = self.storage.counters.at(counter_id).read() + 1;
+        self.storage.counters.at(counter_id).write(new_counter_value);
     }
 
-    #[public]
-    #[internal]
-    fn remove_from_counter_public(counter_id: Field) {
-        let new_counter_value = storage.counters.at(counter_id).read() - 1;
-        storage.counters.at(counter_id).write(new_counter_value);
+    #[internal("public")]
+    fn remove_from_counter_internal(counter_id: Field) {
+        let new_counter_value = self.storage.counters.at(counter_id).read() - 1;
+        self.storage.counters.at(counter_id).write(new_counter_value);
     }
 
-    #[public]
+    #[external("public")]
     fn decrease_counter_public(counter_id: Field){
-      context.emit_public_log(/*message=*/ "pub log");
-      SimpleLoggingUpdate::at(context.this_address()).remove_from_counter_public(counter_id);
+      self.context.emit_public_log(/*message=*/ "pub log");
+      self.internal.remove_from_counter_internal(counter_id);
     }
 
-    #[public]
+    #[external("public")]
     fn increase_counter_public(counter_id: Field) {
-      context.emit_public_log(/*message=*/ "pub log");
-      SimpleLoggingUpdate::at(context.this_address()).add_to_counter_public(counter_id);
+      self.context.emit_public_log(/*message=*/ "pub log");
+      self.internal.add_to_counter_internal(counter_id);
     }
 
-    #[utility]
+    #[external("utility")]
     unconstrained fn get_counter_value(counter_id: Field) -> pub Field {
-        storage.counters.at(counter_id).read()
+        self.storage.counters.at(counter_id).read()
     }
 }

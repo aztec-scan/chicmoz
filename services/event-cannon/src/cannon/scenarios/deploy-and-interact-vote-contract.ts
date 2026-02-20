@@ -10,7 +10,7 @@ import {
   simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
-import { Contract, DeploySentTx } from "@aztec/aztec.js/contracts";
+import { Contract, DeployMethod } from "@aztec/aztec.js/contracts";
 import { Fr } from "@aztec/aztec.js/fields";
 
 const contractId = "VotingContract";
@@ -28,11 +28,10 @@ export async function run() {
 
   const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,
-    deployFn: (): DeploySentTx<PrivateVotingContract> =>
-      PrivateVotingContract.deploy(wallet, constructorArgs[0]).send({
-        from: deployerWallet.address,
-      }),
+    deployFn: (): DeployMethod<PrivateVotingContract> =>
+      PrivateVotingContract.deploy(wallet, constructorArgs[0]),
     broadcastWithWallet: wallet, // NOTE: comment this out to not broadcast
+    from: deployerWallet.address,
     node: getAztecNodeClient(),
   });
 

@@ -21,7 +21,6 @@ import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import {
   archive,
   body,
-  contentCommitment,
   gasFees,
   globalVariables,
   header,
@@ -211,7 +210,7 @@ const _getBlocks = async (
       header_LastArchive: getTableColumnsWithoutId(lastArchive),
       header_TotalFees: header.totalFees,
       header_TotalManaUsed: header.totalManaUsed,
-      header_ContentCommitment: getTableColumnsWithoutId(contentCommitment),
+      header_SpongeBlobHash: header.spongeBlobHash,
       header_State_L1ToL2MessageTree:
         getTableColumnsWithoutId(l1ToL2MessageTree),
       header_State_Partial_NoteHashTree: getTableColumnsWithoutId(noteHashTree),
@@ -229,7 +228,6 @@ const _getBlocks = async (
     .innerJoin(archive, eq(l2Block.hash, archive.fk))
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(lastArchive, eq(header.id, lastArchive.fk))
-    .innerJoin(contentCommitment, eq(header.id, contentCommitment.headerId))
     .innerJoin(state, eq(header.id, state.headerId))
     .innerJoin(l1ToL2MessageTree, eq(state.id, l1ToL2MessageTree.fk))
     .innerJoin(partial, eq(state.id, partial.stateId))
@@ -351,7 +349,7 @@ const _getBlocks = async (
         lastArchive: result.header_LastArchive,
         totalFees: result.header_TotalFees,
         totalManaUsed: result.header_TotalManaUsed,
-        contentCommitment: result.header_ContentCommitment,
+        spongeBlobHash: result.header_SpongeBlobHash,
         state: {
           l1ToL2MessageTree: result.header_State_L1ToL2MessageTree,
           partial: {

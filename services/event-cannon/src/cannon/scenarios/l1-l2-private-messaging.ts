@@ -1,4 +1,4 @@
-import { L1Deployer } from "@aztec/ethereum/deploy-l1-contracts";
+import { L1Deployer } from "@aztec/ethereum/deploy-l1-contract";
 import { createExtendedL1Client } from "@aztec/ethereum/client";
 import {
   TestERC20Abi,
@@ -23,12 +23,14 @@ import {
   simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
-import { DeploySentTx } from "@aztec/aztec.js/contracts";
+import { DeployMethod } from "@aztec/aztec.js/contracts";
 import { AztecAddress, EthAddress } from "@aztec/aztec.js/addresses";
 import { L1TokenPortalManager } from "@aztec/aztec.js/ethereum";
 import { createLogger } from "@aztec/aztec.js/log";
 import { Fr } from "@aztec/aztec.js/fields";
 import { SiblingPath } from "@aztec/aztec.js/trees";
+import { EpochNumber } from "@aztec/foundation/branded-types";
+import { SetPublicAuthwitContractInteraction } from "@aztec/aztec.js/authorization";
 
 const MNEMONIC = "test test test test test test test test test test test junk";
 const TOKEN_NAME = "TokenName";
@@ -92,15 +94,10 @@ export const run = async () => {
   const tokenContractLoggingName = "Token Contract";
   const { contract: token, instance: tokenInstance } = await deployContract({
     contractLoggingName: tokenContractLoggingName,
-    deployFn: (): DeploySentTx<TokenContract> => {
-      return TokenContract.deploy(
-        wallet,
-        owner,
-        TOKEN_NAME,
-        TOKEN_SYMBOL,
-        18,
-      ).send({ from: account.getAddress() });
+    deployFn: (): DeployMethod<TokenContract> => {
+      return TokenContract.deploy(wallet, owner, TOKEN_NAME, TOKEN_SYMBOL, 18);
     },
+    from: account.getAddress(),
     node: getAztecNodeClient(),
   });
 
@@ -150,13 +147,14 @@ export const run = async () => {
   const tokenBridgeContractLoggingName = "Token Bridge Contract";
   const { contract: bridge, instance: bridgeInstance } = await deployContract({
     contractLoggingName: tokenBridgeContractLoggingName,
-    deployFn: (): DeploySentTx<TokenBridgeContract> => {
+    deployFn: (): DeployMethod<TokenBridgeContract> => {
       return TokenBridgeContract.deploy(
         wallet,
         token.address,
         tokenPortalAddress,
-      ).send({ from: account.getAddress() });
+      );
     },
+    from: account.getAddress(),
     node: getAztecNodeClient(),
   });
 
@@ -242,6 +240,8 @@ export const run = async () => {
       .is_minter(bridge.address)
       .simulate({ from: account.getAddress() })) === 1n
   ) {
+    // `is_minter` returns 1n when true.
+  } else {
     throw new Error(`Bridge is not a minter`);
   }
 
@@ -354,21 +354,24 @@ export const run = async () => {
     EthAddress.ZERO,
   );
   const user1Wallet = wallet;
+  const setPublicAuthWitInteraction =
+    await SetPublicAuthwitContractInteraction.create(
+      user1Wallet,
+      account.getAddress(),
+      {
+        // The bridge will burn the user's tokens during the exit.
+        // Authorize the bridge (not the user) to perform the burn.
+        caller: l2Bridge.address,
+        action: l2Token.methods.burn_private(
+          ownerAddress,
+          withdrawAmount,
+          nonce,
+        ),
+      },
+      true,
+    );
   await logAndWaitForTx(
-    (
-      await user1Wallet.setPublicAuthWit(
-        account.getAddress(),
-        {
-          caller: account.getAddress(),
-          action: l2Token.methods.burn_private(
-            ownerAddress,
-            withdrawAmount,
-            nonce,
-          ),
-        },
-        true,
-      )
-    ).send(),
+    setPublicAuthWitInteraction.send(),
     "setting private burn auth wit",
   );
 
@@ -414,7 +417,7 @@ export const run = async () => {
   await l1TokenPortalManager.withdrawFunds(
     withdrawAmount,
     ethAccount,
-    BigInt(l2TxReceipt.blockNumber!),
+    l2TxReceipt.blockNumber! as unknown as EpochNumber,
     l2ToL1MessageIndex,
     siblingPath as SiblingPath<number>,
   );

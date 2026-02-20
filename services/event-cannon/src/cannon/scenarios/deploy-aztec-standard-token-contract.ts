@@ -5,7 +5,7 @@ import {
   deployContract,
   registerStandardContractArtifact,
 } from "./utils/index.js";
-import { DeploySentTx } from "@aztec/aztec.js/contracts";
+import { DeployMethod } from "@aztec/aztec.js/contracts";
 
 export async function run() {
   logger.info("===== DEPLOY STANDARD CONTRACT =====");
@@ -19,14 +19,15 @@ export async function run() {
 
   const { instance: contractInstance } = await deployContract({
     contractLoggingName,
-    deployFn: (): DeploySentTx<TokenContract> =>
+    deployFn: (): DeployMethod<TokenContract> =>
       TokenContract.deploy(
         wallet,
         deployerWallet.address,
         "Test Token",
         "TST",
         9,
-      ).send({ from: deployerWallet.address }),
+      ),
+    from: deployerWallet.address,
     node: getAztecNodeClient(),
   });
 

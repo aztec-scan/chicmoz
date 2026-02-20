@@ -39,7 +39,7 @@ const watchRollupL2BlockProposed = async ({
     await dbControllers.inMemoryHeightTracker({
       contractName: "rollup",
       contractAddress: contracts.rollup.address,
-      eventName: "L2BlockProposed",
+      eventName: "CheckpointProposed",
       isFinalized: WATCH_DEFAULT_IS_FINALIZED,
       latestHeight,
     });
@@ -48,7 +48,7 @@ const watchRollupL2BlockProposed = async ({
     updateHeight,
     storeHeight,
   });
-  return contracts.rollup.watchEvent.L2BlockProposed(emptyFilterArgs, {
+  return contracts.rollup.watchEvent.CheckpointProposed(emptyFilterArgs, {
     fromBlock,
     onError: callbacks.onError,
     onLogs: callbacks.onLogs,

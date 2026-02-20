@@ -1,5 +1,5 @@
 import { getInitialTestAccountsData } from "@aztec/accounts/testing";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { createStore } from "@aztec/kv-store/lmdb";
 import { AZTEC_RPC_URL } from "../environment.js";
 import { AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
@@ -8,7 +8,7 @@ import { AccountManager } from "@aztec/aztec.js/wallet";
 
 let pxe: PXE;
 let aztecNode: AztecNode;
-let wallet: TestWallet;
+let wallet: EmbeddedWallet;
 let namedAccounts: {
   alice: AccountManager;
   bob: AccountManager;
@@ -28,7 +28,7 @@ export const setup = async () => {
   });
   pxe = await createPXE(aztecNode, fullConfig, { store });
 
-  wallet = await TestWallet.create(aztecNode);
+  wallet = await EmbeddedWallet.create(aztecNode);
   const [aliceAccount, bobAccount, charlieAccount] =
     await getInitialTestAccountsData();
 

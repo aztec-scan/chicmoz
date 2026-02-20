@@ -11,7 +11,6 @@ import { logger } from "../../../../logger.js";
 import {
   archive,
   body,
-  contentCommitment,
   gasFees,
   globalVariables,
   header,
@@ -51,6 +50,7 @@ export const store = async (
       blockHash: block.hash,
       totalFees: block.header.totalFees,
       totalManaUsed: block.header.totalManaUsed,
+      spongeBlobHash: block.header.spongeBlobHash,
     });
 
     // Insert archive
@@ -67,16 +67,6 @@ export const store = async (
       root: block.header.lastArchive.root,
       nextAvailableLeafIndex: block.header.lastArchive.nextAvailableLeafIndex,
       fk: headerId,
-    });
-
-    const contentCommitmentId = uuidv4();
-    // Insert content commitment
-    await dbTx.insert(contentCommitment).values({
-      id: contentCommitmentId,
-      headerId: headerId,
-      blobsHash: block.header.contentCommitment.blobsHash,
-      inHash: block.header.contentCommitment.inHash,
-      outHash: block.header.contentCommitment.outHash,
     });
 
     const stateId = uuidv4();

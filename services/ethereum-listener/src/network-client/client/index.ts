@@ -116,7 +116,7 @@ export const getEarliestRollupBlockNumber = async () => {
         functionName: "getTips",
         blockNumber: BigInt(blockNbr),
       });
-      if (res.provenBlockNumber === 0n) {
+      if (res.proven === 0n) {
         start = BigInt(blockNbr);
         foundL2ProvenBlockNumber = BigInt(blockNbr);
       }
