@@ -101,19 +101,18 @@ export const run = async () => {
     node: getAztecNodeClient(),
   });
 
-  registerContractClassArtifact(
+  await registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
     tokenInstance.currentContractClassId.toString(),
     tokenInstance.version,
-  ).catch((err) => {
-    logger.error(err);
-  });
+  );
+  // Verify without artifact — it was registered above, so the explorer-api
+  // will use the DB copy.  This avoids 413 from nginx for large artifacts.
   verifyContractInstanceDeployment({
     contractLoggingName: tokenContractLoggingName,
     contractInstanceAddress: token.address.toString(),
     verifyArgs: {
-      artifactObj: tokenContractArtifactJson,
       publicKeysString: tokenInstance.publicKeys.toString(),
       deployer: tokenInstance.deployer.toString(),
       salt: tokenInstance.salt.toString(),
@@ -158,20 +157,17 @@ export const run = async () => {
     node: getAztecNodeClient(),
   });
 
-  registerContractClassArtifact(
+  await registerContractClassArtifact(
     tokenBridgeContractLoggingName,
     tokenBridgeContractArtifactJson,
     bridgeInstance.currentContractClassId.toString(),
     bridgeInstance.version,
-  ).catch((err) => {
-    logger.error(err);
-  });
+  );
 
   verifyContractInstanceDeployment({
     contractLoggingName: tokenBridgeContractLoggingName,
     contractInstanceAddress: bridge.address.toString(),
     verifyArgs: {
-      artifactObj: tokenBridgeContractArtifactJson,
       publicKeysString: bridgeInstance.publicKeys.toString(),
       deployer: bridgeInstance.deployer.toString(),
       salt: bridgeInstance.salt.toString(),
@@ -235,13 +231,13 @@ export const run = async () => {
       .send({ from: account.getAddress() }),
     "setting minter",
   );
-  if (
-    (await token.methods
-      .is_minter(bridge.address)
-      .simulate({ from: account.getAddress() })) === 1n
-  ) {
-    // `is_minter` returns 1n when true.
-  } else {
+  const isMinterResult = (await token.methods
+    .is_minter(bridge.address)
+    .simulate({ from: account.getAddress() })) as boolean;
+  logger.info(
+    `is_minter result: ${JSON.stringify(isMinterResult)} (type: ${typeof isMinterResult})`,
+  );
+  if (!isMinterResult) {
     throw new Error(`Bridge is not a minter`);
   }
 

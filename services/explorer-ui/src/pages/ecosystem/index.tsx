@@ -103,11 +103,10 @@ export const Ecosystem: FC = () => {
               )}
             </button>
             <div
-              className={`overflow-hidden transition-all duration-300 ${
-                isMetadataExpanded
+              className={`overflow-hidden transition-all duration-300 ${isMetadataExpanded
                   ? "max-h-[1000px] opacity-100 mt-3"
                   : "max-h-0 opacity-0"
-              }`}
+                }`}
             >
               <h3>Contract Metadata</h3>
               <p className="mb-4">
@@ -190,7 +189,7 @@ export const Ecosystem: FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full md:w-2/3">
           {contractsList.map((contract) => {
-            const contractUrl = `${routes.contracts.route}${routes.contracts.children.instances.route}${contract.address}`;
+            const contractUrl = `${routes.contracts.route}${routes.contracts.children.instances.route}/${contract.address}`;
 
             return (
               <div key={contract.address} className="relative">

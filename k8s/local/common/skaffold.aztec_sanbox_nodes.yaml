@@ -12,6 +12,7 @@ manifests:
     - ./namespace.yaml
     - ../anvil-ethereum-node/deployment.yaml
     - ../anvil-ethereum-node/service.yaml
+    - ../anvil-ethereum-node/ingress.yaml
     - ../aztec-sandbox-node/ingress.yaml
     - ../aztec-sandbox-node/deployment.yaml
     - ../aztec-sandbox-node/service.yaml

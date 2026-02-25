@@ -302,7 +302,7 @@ export const registerContractClassArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
-    waitForIndexing: false,
+    waitForIndexing: true,
   });
 };
 
@@ -323,7 +323,7 @@ export const registerStandardContractArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
-    waitForIndexing: false,
+    waitForIndexing: true,
   });
 };
 
@@ -357,7 +357,7 @@ export const verifyContractInstanceDeployment = async ({
       urlStr: url,
       postData,
       method: "POST",
-      waitForIndexing: false,
+      waitForIndexing: true,
     });
   } catch (err) {
     // Explorer is best-effort here; failures should not break scenarios.

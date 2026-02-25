@@ -1,6 +1,7 @@
 import { NODE_ENV, NodeEnv } from "@chicmoz-pkg/types";
 import http from "http";
 import https from "https";
+import { EXIT_ON_API_ERROR } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 
 const SLEEP_TIME = NODE_ENV === NodeEnv.PROD ? 10000 : 5000;
@@ -70,8 +71,10 @@ export const callExplorerApi = async ({
       reject(error);
     });
 
-    req.setTimeout(5000, () => {
-      reject(new Error("Request timed out"));
+    // Scale timeout based on payload size: 30s base + extra for large payloads
+    const timeoutMs = Math.max(30000, sizeInMB * 10000);
+    req.setTimeout(timeoutMs, () => {
+      reject(new Error(`Request timed out after ${timeoutMs}ms`));
     });
 
     req.write(postData);
@@ -92,6 +95,10 @@ export const callExplorerApi = async ({
         data: res.data,
       })}`,
     );
+    if (EXIT_ON_API_ERROR) {
+      logger.error(`EXIT_ON_API_ERROR is enabled, exiting due to API error.`);
+      process.exit(1);
+    }
   }
 
   return res;
