@@ -3,5 +3,7 @@ kind: Config
 metadata:
   name: multi_network
 requires:
-  - path: ./skaffold.default.yaml
-  - path: ./skaffold.testnet.yaml
+  - path: ./skaffold.sandbox_no_ui.components.yaml
+  - path: ./explorer-ui/skaffold.sandbox.yaml
+  - path: ./skaffold.testnet.components.yaml
+  - path: ./gateways/skaffold.sandbox-testnet.yaml
