@@ -1,4 +1,4 @@
-name: CI/CD Chicmoz Prod
+name: CI/CD Aztecscan Prod
 
 on:
   push:
@@ -108,7 +108,7 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Save DigitalOcean kubeconfig
-        run: doctl kubernetes cluster kubeconfig save "chicmoz-prod"
+        run: doctl kubernetes cluster kubeconfig save "aztecscan-prod"
 
       - name: Log in to DigitalOcean Container Registry
         run: doctl registry login --expiry-seconds 1200
