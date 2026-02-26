@@ -3,6 +3,7 @@ kind: Config
 metadata:
   name: testnet
 requires:
+  - path: ./common/skaffold.gateway-crds.yaml
   - path: ./common/skaffold.infra.yaml
   - path: ./gateways/skaffold.testnet.yaml
   # - path: ./explorer-ui/skaffold.testnet.yaml
