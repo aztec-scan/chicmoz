@@ -1,0 +1,28 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: explorer-api-remote-devnet
+  namespace: chicmoz
+  labels:
+    app.kubernetes.io/name: explorer-api
+    app.kubernetes.io/part-of: chicmoz-local
+spec:
+  parentRefs:
+    - name: chicmoz-gateway
+      sectionName: api-remote-devnet
+  hostnames:
+    - api.remote-devnet.chicmoz.localhost
+  rules:
+    - matches:
+        - path:
+            type: RegularExpression
+            value: /v1/([^/]+)/(.*)
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: gateway.envoyproxy.io
+            kind: HTTPRouteFilter
+            name: explorer-api-remote-devnet-rewrite
+      backendRefs:
+        - name: explorer-api-remote-devnet-service
+          port: 80

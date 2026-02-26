@@ -1,0 +1,163 @@
+name: CI/CD Aztecscan Prod
+
+on:
+  push:
+    branches:
+      - production
+  pull_request:
+    branches:
+      - production
+    types:
+      - closed
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    outputs:
+      tools-cache-key: ${{ steps.cache-key.outputs.key }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Print important information
+        # TODO: pipelines are public like the repo. This should not be printed as long as the repo is public
+        #        env:
+        #          TESTNET_OBSCURA_L2_RPC_1: ${{ vars.TESTNET_OBSCURA_L2_RPC_1 }}
+        #          TESTNET_OBSCURA_L2_RPC_2: ${{ vars.TESTNET_OBSCURA_L2_RPC_2 }}
+        #          TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.TESTNET_AZTEC_L2_BOOTNODE_RPC }}
+        #          TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
+        #          TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
+        #          DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
+        #          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
+        #          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+        run: |
+          echo "VERSION: $(git describe --tags)"
+        #          echo "TESTNET_OBSCURA_L2_RPC_1: $TESTNET_OBSCURA_L2_RPC_1"
+        #          echo "TESTNET_OBSCURA_L2_RPC_2: $TESTNET_OBSCURA_L2_RPC_2"
+        #          echo "TESTNET_AZTEC_L2_BOOTNODE_RPC: $TESTNET_AZTEC_L2_BOOTNODE_RPC"
+        #          echo "TESTNET_AZTEC_L1_HTTP: $TESTNET_AZTEC_L1_HTTP"
+        #          echo "TESTNET_AZTEC_L1_WS: $TESTNET_AZTEC_L1_WS"
+        #          echo "DEVNET_AZTEC_L2_BOOTNODE_RPC: $DEVNET_AZTEC_L2_BOOTNODE_RPC"
+        #          echo "DEVNET_AZTEC_L1_HTTP: $DEVNET_AZTEC_L1_HTTP"
+        #          echo "DEVNET_AZTEC_L1_WS: $DEVNET_AZTEC_L1_WS"
+        shell: bash
+
+      - name: Set up tools directory
+        run: mkdir -p tools
+
+      - name: Install Skaffold
+        run: |
+          curl -Lo tools/skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+          chmod +x tools/skaffold
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Copy doctl to tools directory
+        run: |
+          which doctl
+          cp $(which doctl) tools/
+          chmod +x tools/doctl
+
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          echo "key=${{ runner.os }}-tools-$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: tools/doctl registry login --expiry-seconds 1200
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - set-up
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save "aztecscan-prod"
+
+      - name: Log in to DigitalOcean Container Registry
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Deploy to cluster with Skaffold
+        env:
+          TESTNET_OBSCURA_L2_RPC_1: ${{ vars.TESTNET_OBSCURA_L2_RPC_1 }}
+          TESTNET_OBSCURA_L2_RPC_2: ${{ vars.TESTNET_OBSCURA_L2_RPC_2 }}
+          TESTNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.TESTNET_AZTEC_L2_BOOTNODE_RPC }}
+          TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
+          TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
+          MAINNET_AZTEC_L1_HTTP: ${{ vars.MAINNET_AZTEC_L1_HTTP }}
+          MAINNET_AZTEC_L1_WS: ${{ vars.MAINNET_AZTEC_L1_WS }}
+          DEVNET_AZTEC_L2_BOOTNODE_RPC: ${{ vars.DEVNET_AZTEC_L2_BOOTNODE_RPC }}
+          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
+          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+          AZTEC_RPC_NODES_DEVNET: ${{ vars.AZTEC_RPC_NODES_DEVNET }}
+          AZTEC_RPC_NODES_TESTNET: ${{ vars.AZTEC_RPC_NODES_TESTNET }}
+          AZTEC_RPC_NODES_MAINNET: ${{ vars.AZTEC_RPC_NODES_MAINNET }}
+          ETHEREUM_HTTP_ALCHEMY_MAINNET_URL: ${{ vars.ETHEREUM_HTTP_ALCHEMY_MAINNET_URL }}
+        run: |
+          MAX_RETRIES=3
+          RETRY_DELAY=10
+
+          kubectl create secret generic global \
+            --from-literal=TESTNET_OBSCURA_L2_RPC_1=$TESTNET_OBSCURA_L2_RPC_1 \
+            --from-literal=TESTNET_OBSCURA_L2_RPC_2=$TESTNET_OBSCURA_L2_RPC_2 \
+            --from-literal=TESTNET_AZTEC_L2_BOOTNODE_RPC=$TESTNET_AZTEC_L2_BOOTNODE_RPC \
+            --from-literal=TESTNET_AZTEC_L1_HTTP=$TESTNET_AZTEC_L1_HTTP \
+            --from-literal=TESTNET_AZTEC_L1_WS=$TESTNET_AZTEC_L1_WS \
+            --from-literal=MAINNET_AZTEC_L1_HTTP=$MAINNET_AZTEC_L1_HTTP \
+            --from-literal=MAINNET_AZTEC_L1_WS=$MAINNET_AZTEC_L1_WS \
+            --from-literal=DEVNET_AZTEC_L2_BOOTNODE_RPC=$DEVNET_AZTEC_L2_BOOTNODE_RPC \
+            --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
+            --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
+            --from-literal=AZTEC_RPC_NODES_DEVNET=$AZTEC_RPC_NODES_DEVNET \
+            --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_TESTNET \
+            --from-literal=AZTEC_RPC_NODES_MAINNET=$AZTEC_RPC_NODES_MAINNET \
+            --from-literal=ETHEREUM_HTTP_ALCHEMY_MAINNET_URL=$ETHEREUM_HTTP_ALCHEMY_MAINNET_URL \
+            -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            if bash -x scripts/production/deploy.sh; then
+              echo "Deployment successful"
+              exit 0
+            fi
+            echo "Attempt $i failed. Retrying in $RETRY_DELAY seconds..."
+            sleep $RETRY_DELAY
+          done
+
+          echo "Deployment failed after $MAX_RETRIES attempts"
+          exit 1

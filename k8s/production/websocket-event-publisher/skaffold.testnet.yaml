@@ -11,5 +11,5 @@ deploy:
 manifests:
   rawYaml:
     - ./testnet/service.yaml
+    - ./testnet/httproute.yaml
     - ./testnet/deployment.yaml
-    - ./testnet/ingress.yaml

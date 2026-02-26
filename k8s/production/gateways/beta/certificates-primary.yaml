@@ -1,0 +1,109 @@
+# Primary domain certificates (for when you migrate DNS)
+# Mainnet Primary Certificates
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-api-tls-primary
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-api-tls-primary
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - api.aztecscan.xyz
+    - api.mainnet.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ui-tls-primary
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ui-tls-primary
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - aztecscan.xyz
+    - mainnet.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ws-tls-primary
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ws-tls-primary
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - ws.aztecscan.xyz
+    - ws.mainnet.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-grafana-tls-primary
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-grafana-tls-primary
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - dashboard.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-swagger-tls-primary
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-swagger-tls-primary
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - docs.aztecscan.xyz
+---
+# Testnet Primary Certificates
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-api-tls-testnet
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-api-tls-testnet
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - api.testnet.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ui-tls-testnet
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ui-tls-testnet
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - testnet.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ws-tls-testnet
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ws-tls-testnet
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - ws.testnet.aztecscan.xyz

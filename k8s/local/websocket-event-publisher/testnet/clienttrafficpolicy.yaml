@@ -1,0 +1,14 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: websocket-event-publisher-testnet-client
+  namespace: chicmoz
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: chicmoz-gateway
+      sectionName: ws-testnet
+  timeout:
+    http:
+      streamIdleTimeout: 3600s

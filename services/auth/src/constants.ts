@@ -17,5 +17,5 @@ export const KAFKA_SASL_PASSWORD = process.env.KAFKA_SASL_PASSWORD ?? "test";
 
 export const SERVICE_NAME = process.env.SERVICE_NAME ?? "auth";
 
-export const REDIS_HOST = process.env.REDIS_HOST ?? "localhost";
+export const REDIS_HOST = process.env.REDIS_HOST ?? "redis-cache";
 export const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
