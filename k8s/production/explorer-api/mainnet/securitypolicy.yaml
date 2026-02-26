@@ -10,9 +10,9 @@ spec:
       name: explorer-api-mainnet
   cors:
     allowOrigins:
-      - https://docs.beta.aztecscan.xyz
-      - https://beta.aztecscan.xyz
-      - https://mainnet.beta.aztecscan.xyz
+      - https://aztecscan.xyz
+      - https://api.aztecscan.xyz
+      - https://docs.aztecscan.xyz
     allowMethods:
       - GET
       - PUT
