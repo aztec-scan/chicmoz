@@ -28,10 +28,3 @@ spec:
             - name: http-app-port
               containerPort: 80
               protocol: TCP
-          env:
-            - name: VITE_CHICMOZ_ALL_UI_URLS
-              value: "Mainnet|https://aztecscan.xyz,Testnet|https://testnet.aztecscan.xyz,Devnet|https://devnet.aztecscan.xyz"
-            - name: VITE_API_URL
-              value: "https://api.aztecscan.xyz/v1"
-            - name: VITE_WS_URL
-              value: "wss://ws.aztecscan.xyz"
