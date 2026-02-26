@@ -1,11 +1,11 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 requires:
-  - path: ./common/skaffold.base.yaml
+  - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet
-      context: ../../../services/explorer-api
+      context: ../../../../services/explorer-api
       docker:
         dockerfile: Dockerfile
       requires:
