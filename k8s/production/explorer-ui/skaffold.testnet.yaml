@@ -5,7 +5,7 @@ requires:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/explorer-ui-testnet
-      context: ../../../services/explorer-ui
+      context: ../../../../services/explorer-ui
       docker:
         dockerfile: Dockerfile
         buildArgs:
