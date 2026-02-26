@@ -4,6 +4,7 @@ metadata:
   name: chicmoz-prod-devnet-sp
 requires:
   - path: ./common/skaffold.manifests.yaml
+  - path: ./gateways/skaffold.devnet.yaml
   - path: ./explorer-ui/skaffold.devnet.yaml
   - path: ./explorer-api/skaffold.devnet.yaml
   - path: ./auth/skaffold.yaml

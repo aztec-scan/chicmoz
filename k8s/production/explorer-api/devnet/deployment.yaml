@@ -57,6 +57,8 @@ spec:
               value: "DEVNET"
             - name: PUBLIC_API_KEY
               value: "temporary-api-key"
+            - name: REDIS_HOST
+              value: "redis-cache"
           readinessProbe:
             httpGet:
               # /health is a strict composite health check (DB + CACHE + MB) and

@@ -21,4 +21,5 @@ manifests:
   rawYaml:
     - ./devnet/service.yaml
     - ./devnet/deployment.yaml
-    - ./devnet/ingress.yaml
+    - ./devnet/backendtrafficpolicy.yaml
+    - ./devnet/httproute.yaml

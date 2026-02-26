@@ -1,0 +1,39 @@
+# Beta-only certificates for devnet (new cluster testing)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-api-tls-devnet-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-api-tls-devnet-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - api.devnet.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ui-tls-devnet-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ui-tls-devnet-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - devnet.beta.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ws-tls-devnet-beta
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ws-tls-devnet-beta
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - ws.devnet.beta.aztecscan.xyz
