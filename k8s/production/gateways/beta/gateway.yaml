@@ -85,6 +85,85 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    # Primary HTTP Listeners (for migration)
+    - name: api-primary-http
+      hostname: api.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: api-mainnet-primary-http
+      hostname: api.mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-primary-http
+      hostname: aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-mainnet-primary-http
+      hostname: mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: grafana-primary-http
+      hostname: dashboard.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: swagger-primary-http
+      hostname: docs.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-primary-http
+      hostname: ws.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-mainnet-primary-http
+      hostname: ws.mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Testnet Primary HTTP Listeners
+    - name: api-testnet-primary-http
+      hostname: api.testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-primary-http
+      hostname: testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-primary-http
+      hostname: ws.testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
 
     # HTTPS Listeners
     - name: api-https
@@ -206,6 +285,129 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: aztecscan-ws-tls-testnet-beta
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Primary HTTPS Listeners (for migration)
+    - name: api-primary-https
+      hostname: api.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: api-mainnet-primary-https
+      hostname: api.mainnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-primary-https
+      hostname: aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-mainnet-primary-https
+      hostname: mainnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: grafana-primary-https
+      hostname: dashboard.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-grafana-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: swagger-primary-https
+      hostname: docs.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-swagger-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-primary-https
+      hostname: ws.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-mainnet-primary-https
+      hostname: ws.mainnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Testnet Primary HTTPS Listeners
+    - name: api-testnet-primary-https
+      hostname: api.testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-testnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-primary-https
+      hostname: testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-testnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-primary-https
+      hostname: ws.testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-testnet
       allowedRoutes:
         namespaces:
           from: Same

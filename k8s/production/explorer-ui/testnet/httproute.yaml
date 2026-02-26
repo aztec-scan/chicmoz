@@ -12,8 +12,13 @@ spec:
       sectionName: ui-testnet-http
     - name: aztecscan-gateway
       sectionName: ui-testnet-https
+    - name: aztecscan-gateway
+      sectionName: ui-testnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: ui-testnet-primary-https
   hostnames:
     - testnet.beta.aztecscan.xyz
+    - testnet.aztecscan.xyz
   rules:
     - backendRefs:
         - name: explorer-ui-testnet-service

@@ -12,8 +12,13 @@ spec:
       sectionName: ws-testnet-http
     - name: aztecscan-gateway
       sectionName: ws-testnet-https
+    - name: aztecscan-gateway
+      sectionName: ws-testnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: ws-testnet-primary-https
   hostnames:
     - ws.testnet.beta.aztecscan.xyz
+    - ws.testnet.aztecscan.xyz
   rules:
     - backendRefs:
         - name: websocket-event-publisher-testnet-service

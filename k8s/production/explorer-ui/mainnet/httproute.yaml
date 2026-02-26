@@ -16,9 +16,19 @@ spec:
       sectionName: ui-mainnet-http
     - name: aztecscan-gateway
       sectionName: ui-mainnet-https
+    - name: aztecscan-gateway
+      sectionName: ui-primary-http
+    - name: aztecscan-gateway
+      sectionName: ui-primary-https
+    - name: aztecscan-gateway
+      sectionName: ui-mainnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: ui-mainnet-primary-https
   hostnames:
     - beta.aztecscan.xyz
     - mainnet.beta.aztecscan.xyz
+    - aztecscan.xyz
+    - mainnet.aztecscan.xyz
   rules:
     - backendRefs:
         - name: explorer-ui-mainnet-service

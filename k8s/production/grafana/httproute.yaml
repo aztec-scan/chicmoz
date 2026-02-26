@@ -12,8 +12,13 @@ spec:
       sectionName: grafana-http
     - name: aztecscan-gateway
       sectionName: grafana-https
+    - name: aztecscan-gateway
+      sectionName: grafana-primary-http
+    - name: aztecscan-gateway
+      sectionName: grafana-primary-https
   hostnames:
     - dashboard.beta.aztecscan.xyz
+    - dashboard.aztecscan.xyz
   rules:
     - backendRefs:
         - name: grafana

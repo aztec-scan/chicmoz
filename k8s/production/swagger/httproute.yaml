@@ -12,8 +12,13 @@ spec:
       sectionName: swagger-http
     - name: aztecscan-gateway
       sectionName: swagger-https
+    - name: aztecscan-gateway
+      sectionName: swagger-primary-http
+    - name: aztecscan-gateway
+      sectionName: swagger-primary-https
   hostnames:
     - docs.beta.aztecscan.xyz
+    - docs.aztecscan.xyz
   rules:
     - backendRefs:
         - name: swagger-service

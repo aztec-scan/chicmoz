@@ -16,9 +16,19 @@ spec:
       sectionName: ws-mainnet-http
     - name: aztecscan-gateway
       sectionName: ws-mainnet-https
+    - name: aztecscan-gateway
+      sectionName: ws-primary-http
+    - name: aztecscan-gateway
+      sectionName: ws-primary-https
+    - name: aztecscan-gateway
+      sectionName: ws-mainnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: ws-mainnet-primary-https
   hostnames:
     - ws.beta.aztecscan.xyz
     - ws.mainnet.beta.aztecscan.xyz
+    - ws.aztecscan.xyz
+    - ws.mainnet.aztecscan.xyz
   rules:
     - backendRefs:
         - name: websocket-event-publisher-mainnet-service

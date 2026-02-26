@@ -12,8 +12,13 @@ spec:
       sectionName: api-testnet-http
     - name: aztecscan-gateway
       sectionName: api-testnet-https
+    - name: aztecscan-gateway
+      sectionName: api-testnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: api-testnet-primary-https
   hostnames:
     - api.testnet.beta.aztecscan.xyz
+    - api.testnet.aztecscan.xyz
   rules:
     - matches:
         - path:
