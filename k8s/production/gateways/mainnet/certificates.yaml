@@ -10,6 +10,7 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - api.aztecscan.xyz
+    - api.mainnet.aztecscan.xyz
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -23,6 +24,7 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - aztecscan.xyz
+    - mainnet.aztecscan.xyz
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -36,3 +38,4 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - ws.aztecscan.xyz
+    - ws.mainnet.aztecscan.xyz

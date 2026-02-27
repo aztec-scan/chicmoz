@@ -28,6 +28,28 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    # HTTP Listeners - Mainnet Subdomains
+    - name: api-mainnet-primary-http
+      hostname: api.mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-mainnet-primary-http
+      hostname: mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-mainnet-primary-http
+      hostname: ws.mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     # HTTP Listeners - Primary Testnet
     - name: api-testnet-primary-http
       hostname: api.testnet.aztecscan.xyz
@@ -97,6 +119,40 @@ spec:
           from: Same
     - name: ws-primary-https
       hostname: ws.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - Mainnet Subdomains
+    - name: api-mainnet-primary-https
+      hostname: api.mainnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-mainnet-primary-https
+      hostname: mainnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-mainnet-primary-https
+      hostname: ws.mainnet.aztecscan.xyz
       port: 443
       protocol: HTTPS
       tls:
