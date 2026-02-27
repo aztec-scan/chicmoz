@@ -60,7 +60,7 @@ spec:
             - name: AZTEC_RPC_URLS
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: devnet-config
                   key: AZTEC_RPC_NODES_DEVNET
 
 status: {}
