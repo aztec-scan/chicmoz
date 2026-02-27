@@ -26,7 +26,7 @@ export class Controller {
     const originalRoute =
       req.headers["x-auth-request-redirect"] ??
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}${req.headers["x-forwarded-uri"]}`;
+      `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}${req.headers["x-envoy-original-path"] ?? req.headers["x-forwarded-uri"]}`;
 
     if (!originalRoute) {
       throw new Error("x-auth-request-redirect not set by nginx");
