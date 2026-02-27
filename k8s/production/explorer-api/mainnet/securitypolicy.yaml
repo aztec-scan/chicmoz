@@ -11,6 +11,7 @@ spec:
   cors:
     allowOrigins:
       - https://aztecscan.xyz
+      - https://mainnet.aztecscan.xyz
       - https://api.aztecscan.xyz
       - https://docs.aztecscan.xyz
     allowMethods:
