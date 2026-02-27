@@ -179,6 +179,13 @@ export class MessageBus {
     await this.#consumers[groupId]!.consumer.run({
       // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
       eachMessage: async ({ topic, message }) => {
+        // Yield the event loop between messages so that other consumers sharing
+        // this Node.js process get a chance to fetch and process their messages.
+        // Without this, a consumer with a large backlog (e.g. catchup) can
+        // starve other consumers (e.g. tip-of-chain block handler) by
+        // monopolizing the event loop with back-to-back await chains.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         const messageValue = message.value!;
         const valueAsUint8Array =
           messageValue instanceof Buffer
