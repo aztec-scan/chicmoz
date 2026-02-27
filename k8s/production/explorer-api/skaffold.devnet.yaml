@@ -19,5 +19,7 @@ manifests:
   rawYaml:
     - ./devnet/postgres-config.yaml
     - ./devnet/service.yaml
-    - ./devnet/ingress.yaml
+    - ./devnet/http-filter.yaml
+    - ./devnet/securitypolicy.yaml
+    - ./devnet/httproute.yaml
     - ./devnet/deployment.yaml

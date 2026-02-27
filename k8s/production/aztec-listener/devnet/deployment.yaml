@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: aztec-listener-devent-label
+    app: aztec-listener-devnet-label
   name: aztec-listener-devnet-deployment
   namespace: chicmoz-prod
 spec:
