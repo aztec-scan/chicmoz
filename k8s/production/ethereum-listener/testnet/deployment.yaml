@@ -56,16 +56,16 @@ spec:
             - name: ETHEREUM_HTTP_RPC_URL
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: testnet-config
                   key: TESTNET_AZTEC_L1_HTTP
             - name: ETHEREUM_WS_RPC_URL
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: testnet-config
                   key: TESTNET_AZTEC_L1_WS
             - name: ETHEREUM_ALCHEMY_HTTP_URL
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: testnet-config
                   key: ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL
 status: {}
