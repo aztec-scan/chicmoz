@@ -5,7 +5,7 @@ requires:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet
-      context: ../../../../services/explorer-api
+      context: ../../../services/explorer-api
       docker:
         dockerfile: Dockerfile
       requires:

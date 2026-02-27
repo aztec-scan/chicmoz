@@ -7,7 +7,7 @@ requires:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet
-      context: ../../../../services/websocket-event-publisher
+      context: ../../../services/websocket-event-publisher
       docker:
         dockerfile: Dockerfile
       requires:
