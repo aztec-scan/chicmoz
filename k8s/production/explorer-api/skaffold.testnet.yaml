@@ -5,7 +5,7 @@ requires:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet
-      context: ../../../services/explorer-api
+      context: ../../../../services/explorer-api
       docker:
         dockerfile: Dockerfile
       requires:
@@ -19,5 +19,7 @@ manifests:
   rawYaml:
     - ./testnet/postgres-config.yaml
     - ./testnet/service.yaml
-    - ./testnet/ingress.yaml
+    - ./testnet/httproute.yaml
+    - ./testnet/http-filter.yaml
+    - ./testnet/securitypolicy.yaml
     - ./testnet/deployment.yaml

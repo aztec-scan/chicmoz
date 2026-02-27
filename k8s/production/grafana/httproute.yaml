@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: chicmoz-prod
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  parentRefs:
+    - name: aztecscan-gateway
+      sectionName: grafana-http
+    - name: aztecscan-gateway
+      sectionName: grafana-https
+    - name: aztecscan-gateway
+      sectionName: grafana-primary-http
+    - name: aztecscan-gateway
+      sectionName: grafana-primary-https
+  hostnames:
+    - dashboard.beta.aztecscan.xyz
+    - dashboard.aztecscan.xyz
+  rules:
+    - backendRefs:
+        - name: grafana
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

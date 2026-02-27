@@ -11,11 +11,11 @@ build:
       requires:
         - image: registry.digitalocean.com/aztlan-containers/chicmoz-base
           alias: BASE
-deploy:
-  kubectl:
-    flags:
-      apply: ["--force"]
 manifests:
   rawYaml:
     - ./mainnet/postgres-config.yaml
     - ./mainnet/deployment.yaml
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
