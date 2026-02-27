@@ -17,7 +17,6 @@ spec:
     - name: aztecscan-gateway
       sectionName: api-testnet-primary-https
   hostnames:
-    - api.testnet.beta.aztecscan.xyz
     - api.testnet.aztecscan.xyz
   rules:
     - matches:

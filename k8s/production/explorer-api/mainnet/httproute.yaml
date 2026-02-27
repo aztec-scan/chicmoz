@@ -25,8 +25,6 @@ spec:
     - name: aztecscan-gateway
       sectionName: api-mainnet-primary-https
   hostnames:
-    - api.beta.aztecscan.xyz
-    - api.mainnet.beta.aztecscan.xyz
     - api.aztecscan.xyz
     - api.mainnet.aztecscan.xyz
   rules:
