@@ -9,13 +9,8 @@ spec:
       sectionName: ui-devnet-http
     - name: aztecscan-gateway
       sectionName: ui-devnet-https
-    - name: aztecscan-gateway
-      sectionName: ui-devnet-beta-http
-    - name: aztecscan-gateway
-      sectionName: ui-devnet-beta-https
   hostnames:
     - devnet.aztecscan.xyz
-    - devnet.beta.aztecscan.xyz
   rules:
     - backendRefs:
         - name: explorer-ui-devnet-service

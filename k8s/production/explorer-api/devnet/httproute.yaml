@@ -9,13 +9,8 @@ spec:
       sectionName: api-devnet-http
     - name: aztecscan-gateway
       sectionName: api-devnet-https
-    - name: aztecscan-gateway
-      sectionName: api-devnet-beta-http
-    - name: aztecscan-gateway
-      sectionName: api-devnet-beta-https
   hostnames:
     - api.devnet.aztecscan.xyz
-    - api.devnet.beta.aztecscan.xyz
   rules:
     - matches:
         - path:

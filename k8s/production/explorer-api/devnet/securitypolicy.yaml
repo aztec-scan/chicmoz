@@ -12,7 +12,6 @@ spec:
     allowOrigins:
       - "https://docs.aztecscan.xyz"
       - "https://devnet.aztecscan.xyz"
-      - "https://devnet.beta.aztecscan.xyz"
     allowMethods:
       - GET
       - PUT

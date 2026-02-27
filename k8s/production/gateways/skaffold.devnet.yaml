@@ -5,9 +5,7 @@ metadata:
 manifests:
   rawYaml:
     - ./gateway.yaml
-    - ./beta/clienttrafficpolicy.yaml
     - ./devnet/certificates.yaml
-    - ./devnet/certificates-beta.yaml
 deploy:
   kubectl:
     flags:

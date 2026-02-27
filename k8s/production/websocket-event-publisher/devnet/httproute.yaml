@@ -9,13 +9,8 @@ spec:
       sectionName: ws-devnet-http
     - name: aztecscan-gateway
       sectionName: ws-devnet-https
-    - name: aztecscan-gateway
-      sectionName: ws-devnet-beta-http
-    - name: aztecscan-gateway
-      sectionName: ws-devnet-beta-https
   hostnames:
     - ws.devnet.aztecscan.xyz
-    - ws.devnet.beta.aztecscan.xyz
   rules:
     - backendRefs:
         - name: websocket-event-publisher-devnet-service
