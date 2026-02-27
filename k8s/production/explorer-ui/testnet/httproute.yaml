@@ -17,7 +17,6 @@ spec:
     - name: aztecscan-gateway
       sectionName: ui-testnet-primary-https
   hostnames:
-    - testnet.beta.aztecscan.xyz
     - testnet.aztecscan.xyz
   rules:
     - backendRefs:

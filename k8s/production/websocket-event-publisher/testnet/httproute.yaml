@@ -17,7 +17,6 @@ spec:
     - name: aztecscan-gateway
       sectionName: ws-testnet-primary-https
   hostnames:
-    - ws.testnet.beta.aztecscan.xyz
     - ws.testnet.aztecscan.xyz
   rules:
     - backendRefs:

@@ -10,8 +10,8 @@ spec:
       name: explorer-api-testnet
   cors:
     allowOrigins:
-      - https://docs.beta.aztecscan.xyz
-      - https://testnet.beta.aztecscan.xyz
+      - https://testnet.aztecscan.xyz
+      - https://docs.aztecscan.xyz
     allowMethods:
       - GET
       - PUT
