@@ -94,6 +94,14 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    # HTTP Listeners - Swagger
+    - name: swagger-http
+      hostname: docs.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     # HTTPS Listeners - Primary Mainnet
     - name: api-primary-https
       hostname: api.aztecscan.xyz
@@ -227,6 +235,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: aztecscan-ws-tls-devnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - Swagger
+    - name: swagger-https
+      hostname: docs.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-swagger-tls
       allowedRoutes:
         namespaces:
           from: Same

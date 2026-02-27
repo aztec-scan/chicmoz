@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-swagger-tls
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-swagger-tls
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - docs.aztecscan.xyz
