@@ -136,11 +136,11 @@ spec:
               mountPath: /dev/shm
           resources:
             limits:
+              memory: "8Gi"
+              cpu: "4000m"
+            requests:
               memory: "2Gi"
               cpu: "1000m"
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
       volumes:
         - name: init-scripts
           configMap:
@@ -148,7 +148,7 @@ spec:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 1Gi
+            sizeLimit: 2Gi
   volumeClaimTemplates:
     - metadata:
         name: data
