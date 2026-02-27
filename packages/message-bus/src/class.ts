@@ -93,17 +93,6 @@ export class MessageBus {
     await this.#consumers[groupId]!.consumer.connect();
   }
 
-  private async commitOffset(
-    groupId: string,
-    topic: string,
-    partition: number,
-    offset: string,
-  ) {
-    await this.#consumers[groupId]!.consumer.commitOffsets([
-      { topic, partition, offset: String(Number(offset) + 1) },
-    ]);
-  }
-
   async publish<T>(topic: string, ...messages: T[]) {
     if (this.#shutdown) {
       throw new Error("MessageBus is already shutdown");
@@ -135,7 +124,7 @@ export class MessageBus {
     this.logger.info(`Kafka (sub): subscribing to topic ${topic}`);
     await this.#consumers[groupId]!.consumer.subscribe({
       topic,
-      fromBeginning: false,
+      fromBeginning: true,
     });
     this.#consumers[groupId]!.topicCallbacks = {
       ...this.#consumers[groupId]?.topicCallbacks,
@@ -188,11 +177,8 @@ export class MessageBus {
     this.nonRetriableWrapper(groupId);
 
     await this.#consumers[groupId]!.consumer.run({
-      autoCommit: false,
-      eachMessage: async ({ topic, partition, message }) => {
-        // Commit offset immediately on receive, before processing.
-        // This ensures messages are consumed exactly once (at-most-once delivery).
-        await this.commitOffset(groupId, topic, partition, message.offset);
+      // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
+      eachMessage: async ({ topic, message }) => {
         const messageValue = message.value!;
         const valueAsUint8Array =
           messageValue instanceof Buffer
