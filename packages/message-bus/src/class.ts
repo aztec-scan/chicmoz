@@ -93,6 +93,17 @@ export class MessageBus {
     await this.#consumers[groupId]!.consumer.connect();
   }
 
+  private async commitOffset(
+    groupId: string,
+    topic: string,
+    partition: number,
+    offset: string,
+  ) {
+    await this.#consumers[groupId]!.consumer.commitOffsets([
+      { topic, partition, offset: String(Number(offset) + 1) },
+    ]);
+  }
+
   async publish<T>(topic: string, ...messages: T[]) {
     if (this.#shutdown) {
       throw new Error("MessageBus is already shutdown");
@@ -111,7 +122,6 @@ export class MessageBus {
     await this.#producer!.send({ topic, messages: kafkaMessages });
   }
 
-  // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
   async subscribe<T>(
     groupId: string,
     topic: string,
@@ -125,7 +135,7 @@ export class MessageBus {
     this.logger.info(`Kafka (sub): subscribing to topic ${topic}`);
     await this.#consumers[groupId]!.consumer.subscribe({
       topic,
-      fromBeginning: true,
+      fromBeginning: false,
     });
     this.#consumers[groupId]!.topicCallbacks = {
       ...this.#consumers[groupId]?.topicCallbacks,
@@ -178,12 +188,11 @@ export class MessageBus {
     this.nonRetriableWrapper(groupId);
 
     await this.#consumers[groupId]!.consumer.run({
-      eachMessage: async ({ topic, message }) => {
-        // this.logger.info(
-        //   `Kafka: received message from topic ${topic} in group ${groupId}`
-        // );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        // Convert Buffer to Uint8Array before deserializing
+      autoCommit: false,
+      eachMessage: async ({ topic, partition, message }) => {
+        // Commit offset immediately on receive, before processing.
+        // This ensures messages are consumed exactly once (at-most-once delivery).
+        await this.commitOffset(groupId, topic, partition, message.offset);
         const messageValue = message.value!;
         const valueAsUint8Array =
           messageValue instanceof Buffer
@@ -191,7 +200,6 @@ export class MessageBus {
             : typeof messageValue === "string"
               ? new TextEncoder().encode(messageValue)
               : new Uint8Array(0);
-        // Add proper type assertion to satisfy the linter
         const deserializedObj = BSON.deserialize(valueAsUint8Array);
         if (typeof deserializedObj?.data !== "object") {
           throw new Error(
