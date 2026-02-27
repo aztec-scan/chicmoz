@@ -1,38 +1,38 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: aztecscan-api-tls-testnet
+  name: aztecscan-api-tls-primary
   namespace: chicmoz-prod
 spec:
-  secretName: aztecscan-api-tls-testnet
+  secretName: aztecscan-api-tls-primary
   issuerRef:
     name: aztecscan-issuer-production
     kind: ClusterIssuer
   dnsNames:
-    - api.testnet.aztecscan.xyz
+    - api.aztecscan.xyz
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: aztecscan-ui-tls-testnet
+  name: aztecscan-ui-tls-primary
   namespace: chicmoz-prod
 spec:
-  secretName: aztecscan-ui-tls-testnet
+  secretName: aztecscan-ui-tls-primary
   issuerRef:
     name: aztecscan-issuer-production
     kind: ClusterIssuer
   dnsNames:
-    - testnet.aztecscan.xyz
+    - aztecscan.xyz
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: aztecscan-ws-tls-testnet
+  name: aztecscan-ws-tls-primary
   namespace: chicmoz-prod
 spec:
-  secretName: aztecscan-ws-tls-testnet
+  secretName: aztecscan-ws-tls-primary
   issuerRef:
     name: aztecscan-issuer-production
     kind: ClusterIssuer
   dnsNames:
-    - ws.testnet.aztecscan.xyz
+    - ws.aztecscan.xyz

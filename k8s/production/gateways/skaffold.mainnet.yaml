@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: gateways-mainnet
+manifests:
+  rawYaml:
+    - ./gateway.yaml
+    - ./mainnet/certificates.yaml
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]

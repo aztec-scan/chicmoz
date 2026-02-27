@@ -56,15 +56,15 @@ spec:
             - name: ETHEREUM_HTTP_RPC_URL
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: mainnet-config
                   key: MAINNET_AZTEC_L1_HTTP
             - name: ETHEREUM_WS_RPC_URL
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: mainnet-config
                   key: MAINNET_AZTEC_L1_WS
             - name: ETHEREUM_ALCHEMY_HTTP_URL
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: mainnet-config
                   key: ETHEREUM_HTTP_ALCHEMY_MAINNET_URL
