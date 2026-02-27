@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const REDIS_HOST = z
   .string()
-  .default("redis-master")
+  .default("redis-cache")
   .parse(process.env.REDIS_HOST);
 export const REDIS_PORT = z
   .number()
@@ -17,5 +17,5 @@ Port: ${REDIS_PORT}`;
 };
 
 export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
-  process.env.L2_NETWORK_ID
+  process.env.L2_NETWORK_ID,
 );

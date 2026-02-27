@@ -34,7 +34,7 @@ spec:
               value: "false"
       containers:
         - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
-          name: explorer-api-testnet
+          name: explorer-api
           resources:
             limits:
               memory: 300Mi

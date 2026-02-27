@@ -15,9 +15,8 @@ spec:
     # Enable the HTTP-01 challenge provider
     solvers:
       - http01:
-          ingress:
-            class: nginx
-            ingressTemplate:
-              metadata:
-                annotations:
-                  nginx.ingress.kubernetes.io/ssl-redirect: "false"
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: aztecscan-gateway
+                namespace: chicmoz-prod
+                kind: Gateway
