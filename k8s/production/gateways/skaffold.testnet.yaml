@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: gateways-testnet
+manifests:
+  rawYaml:
+    - ./gateway.yaml
+    - ./testnet/certificates.yaml
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]

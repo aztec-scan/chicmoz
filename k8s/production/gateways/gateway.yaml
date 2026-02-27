@@ -1,0 +1,176 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: aztecscan-gateway
+  namespace: chicmoz-prod
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    # HTTP Listeners - Primary Mainnet
+    - name: api-primary-http
+      hostname: api.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-primary-http
+      hostname: aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-primary-http
+      hostname: ws.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTP Listeners - Primary Testnet
+    - name: api-testnet-primary-http
+      hostname: api.testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-primary-http
+      hostname: testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-primary-http
+      hostname: ws.testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTP Listeners - Devnet
+    - name: api-devnet-http
+      hostname: api.devnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-devnet-http
+      hostname: devnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-devnet-http
+      hostname: ws.devnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - Primary Mainnet
+    - name: api-primary-https
+      hostname: api.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-primary-https
+      hostname: aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-primary-https
+      hostname: ws.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - Primary Testnet
+    - name: api-testnet-primary-https
+      hostname: api.testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-testnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-testnet-primary-https
+      hostname: testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-testnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-testnet-primary-https
+      hostname: ws.testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-testnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - Devnet
+    - name: api-devnet-https
+      hostname: api.devnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-api-tls-devnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-devnet-https
+      hostname: devnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-tls-devnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ws-devnet-https
+      hostname: ws.devnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ws-tls-devnet
+      allowedRoutes:
+        namespaces:
+          from: Same
