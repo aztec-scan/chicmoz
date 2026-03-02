@@ -113,6 +113,10 @@ jobs:
       - name: Log in to DigitalOcean Container Registry
         run: doctl registry login --expiry-seconds 1200
 
+      - name: Ensure DigitalOcean registry credentials exist in cluster
+        run: |
+          doctl registry kubernetes-manifest | kubectl apply -n chicmoz-prod -f -
+
       - name: Deploy to cluster with Skaffold
         env:
           MAINNET_AZTEC_L1_HTTP: ${{ vars.MAINNET_AZTEC_L1_HTTP }}
