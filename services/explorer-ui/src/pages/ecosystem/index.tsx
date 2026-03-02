@@ -72,12 +72,12 @@ export const Ecosystem: FC = () => {
             </li>
             <li>
               <a
-                href="https://aztec.network/ecosystem"
+                href="https://aztec.network/projects"
                 target="_blank"
                 rel="noreferrer"
                 className="text-purple-light hover:font-bold"
               >
-                Aztec Ecosystem Page
+                Aztec Ecosystem Projects
               </a>
             </li>
           </ul>
@@ -104,8 +104,8 @@ export const Ecosystem: FC = () => {
             </button>
             <div
               className={`overflow-hidden transition-all duration-300 ${isMetadataExpanded
-                  ? "max-h-[1000px] opacity-100 mt-3"
-                  : "max-h-0 opacity-0"
+                ? "max-h-[1000px] opacity-100 mt-3"
+                : "max-h-0 opacity-0"
                 }`}
             >
               <h3>Contract Metadata</h3>
