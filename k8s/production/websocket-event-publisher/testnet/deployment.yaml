@@ -16,6 +16,8 @@ spec:
       labels:
         app: websocket-event-publisher-testnet-label
     spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
       containers:
         - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet:latest
           name: websocket-event-publisher
