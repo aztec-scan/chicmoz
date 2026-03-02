@@ -34,6 +34,11 @@ export const AZTEC_SCAN_NOTES: Record<
       name: "GregoCoin Premium",
       origin: "Example token on devnet",
       comment: "Used to swap for GregoCoin on https://gregoswap.anothercoffeefor.me"
+    },
+    "0x27a055c07cf0149068f3acff87a31c9cbd019a810d3f6f49d068c323bc506719": {
+      name: "Train",
+      origin: "Train Protocol – https://github.com/TrainProtocol/contracts",
+      comment: "Trustless, permissionless cross-chain bridge using improved HTLCs. Enables asset transfers across chains without oracles or 3rd parties."
     }
   },
   TESTNET: {
