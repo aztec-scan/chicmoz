@@ -6,6 +6,8 @@ manifests:
   rawYaml:
     - ./gateway.yaml
     - ./mainnet/certificates.yaml
+    - ./devnet/certificates.yaml
+    - ./testnet/certificates.yaml
 deploy:
   kubectl:
     flags:
