@@ -2084,7 +2084,7 @@ __metadata:
     "@chicmoz-pkg/contract-verification": "workspace:^"
     "@chicmoz-pkg/logger-server": "workspace:^"
     "@chicmoz-pkg/types": "workspace:^"
-    "@defi-wonderland/aztec-standards": "npm:0.0.0-83476cda"
+    "@defi-wonderland/aztec-standards": "npm:4.0.0-devnet.2-patch.1"
     "@types/node": "npm:20.5.0"
     "@typescript-eslint/eslint-plugin": "npm:6.11.0"
     "@typescript-eslint/parser": "npm:6.11.0"
@@ -2117,7 +2117,7 @@ __metadata:
     "@chicmoz-pkg/postgres-helper": "workspace:^"
     "@chicmoz-pkg/redis-helper": "workspace:^"
     "@chicmoz-pkg/types": "workspace:^"
-    "@defi-wonderland/aztec-standards": "npm:0.0.0-83476cda"
+    "@defi-wonderland/aztec-standards": "npm:4.0.0-devnet.2-patch.1"
     "@types/auto-bind": "npm:2.1.0"
     "@types/body-parser": "npm:1.19.5"
     "@types/cors": "npm:2.8.13"
@@ -2335,10 +2335,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@defi-wonderland/aztec-standards@npm:0.0.0-83476cda":
-  version: 0.0.0-83476cda
-  resolution: "@defi-wonderland/aztec-standards@npm:0.0.0-83476cda"
-  checksum: 813ee485b8f40bb1165777aa1355983ebed46e9882dc7545c929fe63c7c5324f26b798888dfad0e705dcf981d03382ee662bff0fbd9bdccb4c2f11ae63382f5e
+"@defi-wonderland/aztec-standards@npm:4.0.0-devnet.2-patch.1":
+  version: 4.0.0-devnet.2-patch.1
+  resolution: "@defi-wonderland/aztec-standards@npm:4.0.0-devnet.2-patch.1"
+  checksum: f2547bd2778321baabdde50acfd86a7028ec7e6955828e36e5cf0ed1a772e74b4ea36eac3158cac4a1073b04fabbf7195a95aa2f822e7239bb23c04ce72aabe3
   languageName: node
   linkType: hard
 
