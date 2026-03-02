@@ -100,7 +100,7 @@ jobs:
 
       - name: Ensure DigitalOcean registry credentials exist in cluster
         run: |
-          doctl registry kubernetes-manifest | kubectl apply -n chicmoz-prod -f -
+          doctl registry kubernetes-manifest | sed 's/namespace: kube-system/namespace: chicmoz-prod/' | kubectl apply -f -
 
       - name: Deploy to cluster with Skaffold
         env:
