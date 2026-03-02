@@ -35,22 +35,22 @@ spec:
     exposeHeaders:
       - x-api-key
     maxAge: 24h
-extAuth:
-  timeout: 5s
-  http:
-    backendRefs:
-      - name: auth-service
-        namespace: chicmoz-prod
-        port: 80
-    path: /_external-auth-envoy
-    headersToBackend:
-      - x-forwarded-for
-      - x-forwarded-proto
-      - x-forwarded-host
-      - x-forwarded-uri
-      - x-envoy-original-path
-      - x-request-id
-      - ":authority"
-      - ":scheme"
-      - ":path"
-  failOpen: false
+  extAuth:
+    timeout: 5s
+    http:
+      backendRefs:
+        - name: auth-service
+          namespace: chicmoz-prod
+          port: 80
+      path: /_external-auth-envoy
+      headersToBackend:
+        - x-forwarded-for
+        - x-forwarded-proto
+        - x-forwarded-host
+        - x-forwarded-uri
+        - x-envoy-original-path
+        - x-request-id
+        - ":authority"
+        - ":scheme"
+        - ":path"
+    failOpen: false
