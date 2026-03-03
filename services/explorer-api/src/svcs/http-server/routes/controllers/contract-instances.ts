@@ -331,10 +331,12 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
           dbContractInstance.version,
         ),
     );
-    const dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
-      JSON.parse(contractClassString),
-    );
-    if (!dbContractClass) {
+    let dbContractClass;
+    try {
+      dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
+        JSON.parse(contractClassString),
+      );
+    } catch {
       res.status(500).send("Contract class found in DB is not valid");
       return;
     }
