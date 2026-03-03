@@ -461,6 +461,15 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     });
 
     if (!deployerMetadata) {
+      const freshInstance =
+        await l2Contract.getL2DeployedContractInstanceByAddress(address, true);
+      await setEntry(
+        contractInstanceKeys(address),
+        JSON.stringify(freshInstance),
+        CACHE_TTL_SECONDS,
+      ).catch((err) => {
+        logger.warn(`Failed to cache contract instance(${address}): ${err}`);
+      });
       res
         .status(200)
         .send("Contract instance deployment arguments verified and stored");
