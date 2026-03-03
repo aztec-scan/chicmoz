@@ -9,6 +9,7 @@ deploy:
 manifests:
   rawYaml:
     - ./postgres-config.yaml
+    - ../redis/redis.yaml
   helm:
     releases:
       - name: ingress-nginx
@@ -41,29 +42,6 @@ manifests:
         skipBuildDependencies: false
         useHelmSecrets: false
         wait: false
-      - name: redis
-        version: 18.17.1
-        remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
-        namespace: chicmoz
-        createNamespace: false
-        recreatePods: false
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: false
-        setValues:
-          architecture: standalone
-          replica.replicaCount: 0
-          auth.enabled: false
-          image.repository: bitnamilegacy/redis
-          master.configuration: |
-            maxmemory 100mb
-            maxmemory-policy volatile-ttl
-            lazyfree-lazy-eviction yes
-          replica.configuration: |
-            maxmemory 100mb
-            maxmemory-policy volatile-ttl
-            lazyfree-lazy-eviction yes
-          persistence.enabled: false
       - name: kafka
         version: 26.4.2
         remoteChart: oci://registry-1.docker.io/bitnamicharts/kafka

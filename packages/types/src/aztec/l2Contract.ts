@@ -117,15 +117,68 @@ export type ChicmozL2UtilityFunctionBroadcastedEvent = z.infer<
   typeof chicmozL2UtilityFunctionBroadcastedEventSchema
 >;
 
+// Source code verification
+export const sourceVerificationStatusEnum = z.enum([
+  "PENDING",
+  "COMPILING",
+  "VERIFYING",
+  "VERIFIED",
+  "FAILED",
+]);
+
+export type SourceVerificationStatus = z.infer<
+  typeof sourceVerificationStatusEnum
+>;
+
+export const sourceCodeEntrySchema = z.object({
+  path: z.string(),
+  content: z.string(),
+});
+
+export type SourceCodeEntry = z.infer<typeof sourceCodeEntrySchema>;
+
+export const compileSourceRequestSchema = z.object({
+  jobId: z.string().uuid(),
+  contractClassId: frSchema,
+  version: z.number(),
+  githubUrl: z.string().url(),
+  gitRef: z.string().optional(),
+  subPath: z.string().optional(),
+  aztecVersion: z.string(),
+});
+
+export type CompileSourceRequest = z.infer<typeof compileSourceRequestSchema>;
+
+export const compileSourceResultSchema = z.object({
+  jobId: z.string().uuid(),
+  contractClassId: frSchema,
+  version: z.number(),
+  status: z.enum(["success", "compilation_failed", "clone_failed", "timeout"]),
+  artifactJson: z.string().optional(),
+  sourceFiles: sourceCodeEntrySchema.array().optional(),
+  error: z.string().optional(),
+});
+
+export type CompileSourceResult = z.infer<typeof compileSourceResultSchema>;
+
+export const sourceVerificationJobSchema = z.object({
+  id: z.string().uuid(),
+  contractClassId: frSchema,
+  version: z.number(),
+  githubUrl: z.string().url(),
+  gitRef: z.string().nullable().optional(),
+  subPath: z.string().nullable().optional(),
+  aztecVersion: z.string(),
+  status: sourceVerificationStatusEnum,
+  error: z.string().nullable().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export type SourceVerificationJob = z.infer<typeof sourceVerificationJobSchema>;
+
 export const CONTRACT_STANDARDS = {
-  "4.0.3": [
-    "token",
-    "dripper",
-    "escrow",
-    "nft",
-    "generic_proxy",
-    "test_logic",
-  ],
+  "4.0.3": ["token", "dripper", "escrow", "nft", "generic_proxy", "test_logic"],
 };
 
 export const contractStandardVersionSchema = z.enum(
