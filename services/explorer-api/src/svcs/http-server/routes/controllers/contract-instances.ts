@@ -363,12 +363,13 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
 
     if (stringifiedArtifactJson && !dbContractClass.artifactJson) {
       // TODO: this entire block should use verify contract class artifact
-      const { isMatchingByteCode } = await verifyArtifactPayload(
-        generateVerifyArtifactPayload(
-          JSON.parse(stringifiedArtifactJson ?? "{}") as NoirCompiledContract,
-        ),
-        dbContractClass,
-      );
+      const { isMatchingByteCode, artifactContractName } =
+        await verifyArtifactPayload(
+          generateVerifyArtifactPayload(
+            JSON.parse(stringifiedArtifactJson ?? "{}") as NoirCompiledContract,
+          ),
+          dbContractClass,
+        );
       if (!isMatchingByteCode) {
         res.status(400).send("Uploaded artifact does not match contract class");
         return;
@@ -376,6 +377,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       const completeContractClass = {
         ...dbContractClass,
         artifactJson: stringifiedArtifactJson,
+        artifactContractName,
       };
 
       setEntry(
@@ -394,6 +396,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         contractClassId: dbContractClass.contractClassId,
         version: dbContractClass.version,
         artifactJson: stringifiedArtifactJson,
+        contractName: artifactContractName,
       });
     }
 
