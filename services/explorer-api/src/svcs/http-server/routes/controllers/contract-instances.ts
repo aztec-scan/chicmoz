@@ -368,7 +368,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         dbContractClass,
       );
       if (!isMatchingByteCode) {
-        res.status(500).send("Uploaded artifact does not match contract class");
+        res.status(400).send("Uploaded artifact does not match contract class");
         return;
       }
       const completeContractClass = {
@@ -436,7 +436,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
 
     if (!isVerifiedDeploymentPayload) {
       res
-        .status(500)
+        .status(400)
         .send("Uploaded data does not lead to correct contract address");
       return;
     }
