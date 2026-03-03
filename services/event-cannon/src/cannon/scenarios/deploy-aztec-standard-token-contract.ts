@@ -36,6 +36,6 @@ export async function run() {
     contractInstance.currentContractClassId.toString(),
     contractInstance.version,
     "token",
-    "4.0.0-devnet.2-patch.1",
+    "4.0.3",
   );
 }

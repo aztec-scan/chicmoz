@@ -8,8 +8,8 @@
 ## Compile contracts (if changed or updated version)
 
 ```sh
-aztec-up install 4.0.0-devnet.2-patch.1
-aztec-up use 4.0.0-devnet.2-patch.1
+aztec-up install 4.0.3
+aztec-up use 4.0.3
 
 cd src/contract-projects/YOUR_PROJECT
 aztec compile
