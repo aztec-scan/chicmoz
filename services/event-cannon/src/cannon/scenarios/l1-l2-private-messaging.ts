@@ -23,12 +23,14 @@ import {
   simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
-import { DeploySentTx } from "@aztec/aztec.js/contracts";
+import { DeployMethod } from "@aztec/aztec.js/contracts";
 import { AztecAddress, EthAddress } from "@aztec/aztec.js/addresses";
 import { L1TokenPortalManager } from "@aztec/aztec.js/ethereum";
 import { createLogger } from "@aztec/aztec.js/log";
 import { Fr } from "@aztec/aztec.js/fields";
 import { SiblingPath } from "@aztec/aztec.js/trees";
+import { EpochNumber } from "@aztec/foundation/branded-types";
+import { SetPublicAuthwitContractInteraction } from "@aztec/aztec.js/authorization";
 
 const MNEMONIC = "test test test test test test test test test test test junk";
 const TOKEN_NAME = "TokenName";
@@ -92,31 +94,25 @@ export const run = async () => {
   const tokenContractLoggingName = "Token Contract";
   const { contract: token, instance: tokenInstance } = await deployContract({
     contractLoggingName: tokenContractLoggingName,
-    deployFn: (): DeploySentTx<TokenContract> => {
-      return TokenContract.deploy(
-        wallet,
-        owner,
-        TOKEN_NAME,
-        TOKEN_SYMBOL,
-        18,
-      ).send({ from: account.getAddress() });
+    deployFn: (): DeployMethod<TokenContract> => {
+      return TokenContract.deploy(wallet, owner, TOKEN_NAME, TOKEN_SYMBOL, 18);
     },
+    from: account.getAddress(),
     node: getAztecNodeClient(),
   });
 
-  registerContractClassArtifact(
+  await registerContractClassArtifact(
     tokenContractLoggingName,
     tokenContractArtifactJson,
     tokenInstance.currentContractClassId.toString(),
     tokenInstance.version,
-  ).catch((err) => {
-    logger.error(err);
-  });
+  );
+  // Verify without artifact — it was registered above, so the explorer-api
+  // will use the DB copy.  This avoids 413 from nginx for large artifacts.
   verifyContractInstanceDeployment({
     contractLoggingName: tokenContractLoggingName,
     contractInstanceAddress: token.address.toString(),
     verifyArgs: {
-      artifactObj: tokenContractArtifactJson,
       publicKeysString: tokenInstance.publicKeys.toString(),
       deployer: tokenInstance.deployer.toString(),
       salt: tokenInstance.salt.toString(),
@@ -150,30 +146,28 @@ export const run = async () => {
   const tokenBridgeContractLoggingName = "Token Bridge Contract";
   const { contract: bridge, instance: bridgeInstance } = await deployContract({
     contractLoggingName: tokenBridgeContractLoggingName,
-    deployFn: (): DeploySentTx<TokenBridgeContract> => {
+    deployFn: (): DeployMethod<TokenBridgeContract> => {
       return TokenBridgeContract.deploy(
         wallet,
         token.address,
         tokenPortalAddress,
-      ).send({ from: account.getAddress() });
+      );
     },
+    from: account.getAddress(),
     node: getAztecNodeClient(),
   });
 
-  registerContractClassArtifact(
+  await registerContractClassArtifact(
     tokenBridgeContractLoggingName,
     tokenBridgeContractArtifactJson,
     bridgeInstance.currentContractClassId.toString(),
     bridgeInstance.version,
-  ).catch((err) => {
-    logger.error(err);
-  });
+  );
 
   verifyContractInstanceDeployment({
     contractLoggingName: tokenBridgeContractLoggingName,
     contractInstanceAddress: bridge.address.toString(),
     verifyArgs: {
-      artifactObj: tokenBridgeContractArtifactJson,
       publicKeysString: bridgeInstance.publicKeys.toString(),
       deployer: bridgeInstance.deployer.toString(),
       salt: bridgeInstance.salt.toString(),
@@ -237,11 +231,13 @@ export const run = async () => {
       .send({ from: account.getAddress() }),
     "setting minter",
   );
-  if (
-    (await token.methods
-      .is_minter(bridge.address)
-      .simulate({ from: account.getAddress() })) === 1n
-  ) {
+  const isMinterResult = (await token.methods
+    .is_minter(bridge.address)
+    .simulate({ from: account.getAddress() })) as boolean;
+  logger.info(
+    `is_minter result: ${JSON.stringify(isMinterResult)} (type: ${typeof isMinterResult})`,
+  );
+  if (!isMinterResult) {
     throw new Error(`Bridge is not a minter`);
   }
 
@@ -354,21 +350,24 @@ export const run = async () => {
     EthAddress.ZERO,
   );
   const user1Wallet = wallet;
+  const setPublicAuthWitInteraction =
+    await SetPublicAuthwitContractInteraction.create(
+      user1Wallet,
+      account.getAddress(),
+      {
+        // The bridge will burn the user's tokens during the exit.
+        // Authorize the bridge (not the user) to perform the burn.
+        caller: l2Bridge.address,
+        action: l2Token.methods.burn_private(
+          ownerAddress,
+          withdrawAmount,
+          nonce,
+        ),
+      },
+      true,
+    );
   await logAndWaitForTx(
-    (
-      await user1Wallet.setPublicAuthWit(
-        account.getAddress(),
-        {
-          caller: account.getAddress(),
-          action: l2Token.methods.burn_private(
-            ownerAddress,
-            withdrawAmount,
-            nonce,
-          ),
-        },
-        true,
-      )
-    ).send(),
+    setPublicAuthWitInteraction.send(),
     "setting private burn auth wit",
   );
 
@@ -413,7 +412,7 @@ export const run = async () => {
   await l1TokenPortalManager.withdrawFunds(
     withdrawAmount,
     ethAccount,
-    BigInt(l2TxReceipt.blockNumber!),
+    l2TxReceipt.blockNumber! as unknown as EpochNumber,
     l2ToL1MessageIndex,
     siblingPath as SiblingPath<number>,
   );

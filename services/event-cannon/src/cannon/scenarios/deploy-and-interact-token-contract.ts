@@ -5,11 +5,12 @@ import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
   logAndWaitForTx,
+  registerContractClassArtifact,
   simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
-import { Contract, DeploySentTx } from "@aztec/aztec.js/contracts";
+import { Contract, DeployMethod } from "@aztec/aztec.js/contracts";
 
 export async function run() {
   logger.info("===== TOKEN CONTRACT =====");
@@ -29,24 +30,33 @@ export async function run() {
   const { contract: tokenContract, instance: tokenInstance } =
     await deployContract({
       contractLoggingName,
-      deployFn: (): DeploySentTx<TokenContract> => {
+      deployFn: (): DeployMethod<TokenContract> => {
         return TokenContract.deploy(
           wallet,
           constructorArgs[0],
           constructorArgs[1],
           constructorArgs[2],
           constructorArgs[3],
-        ).send({ from: deployerWallet.getAddress() });
+        );
       },
+      from: deployerWallet.getAddress(),
       node: getAztecNodeClient(),
     });
+
+  // Register the artifact first, then verify the instance.
+  // The verify endpoint requires the artifact to exist, so we must await this.
+  await registerContractClassArtifact(
+    contractLoggingName,
+    tokenContractArtifactJson,
+    tokenInstance.currentContractClassId.toString(),
+    tokenInstance.version,
+  );
 
   // Fire-and-forget verification; do not block scenario execution.
   void verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: tokenContract.address.toString(),
     verifyArgs: {
-      artifactObj: tokenContractArtifactJson,
       publicKeysString: tokenInstance.publicKeys.toString(),
       deployer: tokenInstance.deployer.toString(),
       salt: tokenInstance.salt.toString(),

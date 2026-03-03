@@ -1,0 +1,56 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: explorer-api-devnet
+  namespace: chicmoz-prod
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: explorer-api-devnet
+  cors:
+    allowOrigins:
+      - "https://docs.aztecscan.xyz"
+      - "https://devnet.aztecscan.xyz"
+    allowMethods:
+      - GET
+      - PUT
+      - POST
+      - DELETE
+      - PATCH
+      - OPTIONS
+    allowHeaders:
+      - DNT
+      - Keep-Alive
+      - User-Agent
+      - X-Requested-With
+      - If-Modified-Since
+      - Cache-Control
+      - Content-Type
+      - Range
+      - Authorization
+      - access-control-allow-credentials
+      - X-Api-Key
+    allowCredentials: true
+    exposeHeaders:
+      - x-api-key
+    maxAge: 24h
+  extAuth:
+    timeout: 5s
+    http:
+      backendRefs:
+        - name: auth-service
+          namespace: chicmoz-prod
+          port: 80
+      path: /_external-auth-envoy
+      headersToBackend:
+        - x-forwarded-for
+        - x-forwarded-proto
+        - x-forwarded-host
+        - x-forwarded-uri
+        - x-envoy-original-path
+        - x-request-id
+        - ":authority"
+        - ":scheme"
+        - ":path"
+    failOpen: false

@@ -24,87 +24,51 @@ type OnLogsCallbackWrapperArgs = {
 };
 
 type L2BlockProposedGetEventsResult = Awaited<
-  ReturnType<RollupContract["getEvents"]["L2BlockProposed"]>
+  ReturnType<RollupContract["getEvents"]["CheckpointProposed"]>
 >;
 
-type L2BlockProposedWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["L2BlockProposed"]
->[1];
-
 type L2BlockProposedEventParameters = {
-  onLogs:
-    | ((logs: L2BlockProposedGetEventsResult) => void)
-    | L2BlockProposedWatchEventParameters["onLogs"];
+  onLogs: (logs: L2BlockProposedGetEventsResult) => void;
 };
 
 type L2ProofVerifiedGetEventsResult = Awaited<
   ReturnType<RollupContract["getEvents"]["L2ProofVerified"]>
 >;
 
-type L2ProofVerifiedWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["L2ProofVerified"]
->[1];
-
 type L2ProofVerifiedEventParameters = {
-  onLogs:
-    | ((logs: L2ProofVerifiedGetEventsResult) => void)
-    | L2ProofVerifiedWatchEventParameters["onLogs"];
+  onLogs: (logs: L2ProofVerifiedGetEventsResult) => void;
 };
 
 type DepositGetEventsResult = Awaited<
   ReturnType<RollupContract["getEvents"]["Deposit"]>
 >;
 
-type DepositWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["Deposit"]
->[1];
-
 type DepositEventParameters = {
-  onLogs:
-    | ((logs: DepositGetEventsResult) => void)
-    | DepositWatchEventParameters["onLogs"];
+  onLogs: (logs: DepositGetEventsResult) => void;
 };
 
 type WithdrawInitiatedGetEventsResult = Awaited<
   ReturnType<RollupContract["getEvents"]["WithdrawInitiated"]>
 >;
 
-type WithdrawInitiatedWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["WithdrawInitiated"]
->[1];
-
 type WithdrawInitiatedEventParameters = {
-  onLogs:
-    | ((logs: WithdrawInitiatedGetEventsResult) => void)
-    | WithdrawInitiatedWatchEventParameters["onLogs"];
+  onLogs: (logs: WithdrawInitiatedGetEventsResult) => void;
 };
 
 type WithdrawFinalisedGetEventsResult = Awaited<
   ReturnType<RollupContract["getEvents"]["WithdrawFinalized"]>
 >;
 
-type WithdrawFinalisedWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["WithdrawFinalized"]
->[1];
-
 type WithdrawFinalisedEventParameters = {
-  onLogs:
-    | ((logs: WithdrawFinalisedGetEventsResult) => void)
-    | WithdrawFinalisedWatchEventParameters["onLogs"];
+  onLogs: (logs: WithdrawFinalisedGetEventsResult) => void;
 };
 
 type SlashedGetEventsResult = Awaited<
   ReturnType<RollupContract["getEvents"]["Slashed"]>
 >;
 
-type SlashedWatchEventParameters = Parameters<
-  RollupContract["watchEvent"]["Slashed"]
->[1];
-
 type SlashedEventParameters = {
-  onLogs:
-    | ((logs: SlashedGetEventsResult) => void)
-    | SlashedWatchEventParameters["onLogs"];
+  onLogs: (logs: SlashedGetEventsResult) => void;
 };
 
 type OnLogsWrapper<
@@ -126,7 +90,7 @@ const l2BlockProposedOnLogs: OnLogsWrapper<L2BlockProposedEventParameters> =
           l1BlockNumber: log.blockNumber,
           l1BlockHash: log.blockHash,
           isFinalized: wrapperArgs.isFinalized,
-          l2BlockNumber: log.args.blockNumber,
+          l2BlockNumber: log.args.checkpointNumber,
           archive: log.args.archive,
           l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
         }),
@@ -154,7 +118,7 @@ const l2BlockVerifiedOnLogs: OnLogsWrapper<L2ProofVerifiedEventParameters> =
           l1BlockNumber: log.blockNumber,
           l1BlockHash: log.blockHash,
           isFinalized: wrapperArgs.isFinalized,
-          l2BlockNumber: log.args.blockNumber,
+          l2BlockNumber: log.args.checkpointNumber,
           proverId: log.args.proverId,
           l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
         }),

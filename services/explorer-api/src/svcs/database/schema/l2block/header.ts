@@ -2,8 +2,8 @@ import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import { bigint, index, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import {
-  bufferType,
   generateEthAddressColumn,
+  generateFrColumn,
   generateFrNumberColumn,
   generateTimestampColumn,
   generateTreeTable,
@@ -20,6 +20,7 @@ export const header = pgTable(
       .references(() => l2Block.hash, { onDelete: "cascade" }),
     totalFees: bigint("total_fees", { mode: "bigint" }).notNull(),
     totalManaUsed: bigint("total_mana_used", { mode: "bigint" }).notNull(),
+    spongeBlobHash: generateFrColumn("sponge_blob_hash").notNull(),
   },
   (t) => ({
     blockHashIdx: index("header_block_hash_idx").on(t.blockHash),
@@ -31,22 +32,6 @@ export const lastArchive = generateTreeTable(
   uuid("header_id")
     .notNull()
     .references(() => header.id, { onDelete: "cascade" }),
-);
-
-export const contentCommitment = pgTable(
-  "content_commitment",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    headerId: uuid("header_id")
-      .notNull()
-      .references(() => header.id, { onDelete: "cascade" }),
-    blobsHash: bufferType("blobs_hash").notNull(),
-    inHash: bufferType("in_hash").notNull(),
-    outHash: bufferType("out_hash").notNull(),
-  },
-  (t) => ({
-    headerIdIdx: index("content_commitment_header_id_idx").on(t.headerId),
-  }),
 );
 
 export const state = pgTable(

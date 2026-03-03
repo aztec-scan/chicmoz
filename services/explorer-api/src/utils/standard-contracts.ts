@@ -3,25 +3,26 @@ import {
   ContractStandardName,
   ContractStandardVersion,
 } from "@chicmoz-pkg/types";
-import DripperContractJsonV1 from "@defi-wonderland/aztec-standards/historical/0.0.0-83476cda/target/dripper-Dripper.json" with { type: "json" };
-import TokenContractJsonV1 from "@defi-wonderland/aztec-standards/historical/0.0.0-83476cda/target/token_contract-Token.json" with { type: "json" };
-import DripperContractJsonV083 from "@defi-wonderland/aztec-standards/historical/0.0.0-73e84dcc/target/dripper-Dripper.json" with { type: "json" };
-import TokenContractJsonV083 from "@defi-wonderland/aztec-standards/historical/0.0.0-73e84dcc/target/token_contract-Token.json" with { type: "json" };
+import DripperContractJson from "@defi-wonderland/aztec-standards/target/dripper-Dripper.json" with { type: "json" };
+import TokenContractJson from "@defi-wonderland/aztec-standards/target/token_contract-Token.json" with { type: "json" };
+import EscrowContractJson from "@defi-wonderland/aztec-standards/target/escrow_contract-Escrow.json" with { type: "json" };
+import NftContractJson from "@defi-wonderland/aztec-standards/target/nft_contract-NFT.json" with { type: "json" };
+import GenericProxyContractJson from "@defi-wonderland/aztec-standards/target/generic_proxy-GenericProxy.json" with { type: "json" };
+import TestLogicContractJson from "@defi-wonderland/aztec-standards/target/test_logic_contract-TestLogic.json" with { type: "json" };
 import { NoirCompiledContract } from "@aztec/aztec.js/abi";
 
 const contracts: Record<
   ContractStandardVersion,
   Record<ContractStandardName<ContractStandardVersion>, NoirCompiledContract>
 > = {
-  "0.0.0-73e84dcc": {
+  "4.0.0-devnet.2-patch.1": {
     // TODO: these types are not actually checked
-    token: TokenContractJsonV083 as NoirCompiledContract,
-    dripper: DripperContractJsonV083 as NoirCompiledContract,
-  },
-  "0.0.0-83476cda": {
-    // TODO: these types are not actually checked
-    token: TokenContractJsonV1 as NoirCompiledContract,
-    dripper: DripperContractJsonV1 as NoirCompiledContract,
+    token: TokenContractJson as NoirCompiledContract,
+    dripper: DripperContractJson as NoirCompiledContract,
+    escrow: EscrowContractJson as NoirCompiledContract,
+    nft: NftContractJson as NoirCompiledContract,
+    generic_proxy: GenericProxyContractJson as NoirCompiledContract,
+    test_logic: TestLogicContractJson as NoirCompiledContract,
   },
 };
 

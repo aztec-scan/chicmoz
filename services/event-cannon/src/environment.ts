@@ -15,6 +15,7 @@ export const SCENARIO_DELAY = z.coerce
   .parse(process.env.SCENARIO_DELAY);
 
 export const INIFINITE_LOOP = process.env.INIFINITE_LOOP === "true";
+export const EXIT_ON_API_ERROR = process.env.EXIT_ON_API_ERROR === "true";
 
 export const SCENARIO_SIMPLE_DEFAULT_ACCOUNT =
   process.env.SCENARIO_SIMPLE_DEFAULT_ACCOUNT === "true";
@@ -24,8 +25,7 @@ export const SCENARIO_FUNCTIONS_VOTE =
   process.env.SCENARIO_FUNCTIONS_VOTE === "true";
 export const SCENARIO_SIMPLE_CONTRACT =
   process.env.SCENARIO_SIMPLE_CONTRACT === "true";
-export const SCENARIO_SIMPLE_LOG =
-  process.env.SCENARIO_SIMPLE_LOG === "true";
+export const SCENARIO_SIMPLE_LOG = process.env.SCENARIO_SIMPLE_LOG === "true";
 export const SCENARIO_L1L2_PUBLIC_MESSAGING =
   process.env.SCENARIO_L1L2_PUBLIC_MESSAGING === "true";
 export const SCENARIO_L1L2_PRIVATE_MESSAGING =

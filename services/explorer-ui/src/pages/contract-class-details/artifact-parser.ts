@@ -31,28 +31,38 @@ export const getArtifactData = (
       artifact = JSON.parse(selectedVersion.artifactJson) as SimpleArtifactData;
 
       artifact.functions.forEach((func) => {
-        if (!func.abi?.parameters) { return; }
+        if (!func.abi?.parameters) {
+          return;
+        }
 
         // Use String() to ensure we have primitive string keys
         const funcNameStr = String(func.name);
 
         func.abi.parameters.forEach((param) => {
-          if (param.name === "inputs") { return; }
+          if (param.name === "inputs") {
+            return;
+          }
           const paramNameStr = String(param.name);
           const paramType = param.type?.kind || "unknown";
 
           if (func.is_unconstrained) {
-            if (!uncFunc.has(funcNameStr)) { uncFunc.set(funcNameStr, new Map()); }
+            if (!uncFunc.has(funcNameStr)) {
+              uncFunc.set(funcNameStr, new Map());
+            }
             uncFunc.get(funcNameStr)?.set(paramNameStr, paramType);
           }
 
-          if (func.custom_attributes?.includes("public")) {
-            if (!pubFunc.has(funcNameStr)) { pubFunc.set(funcNameStr, new Map()); }
+          if (func.custom_attributes?.includes("abi_public")) {
+            if (!pubFunc.has(funcNameStr)) {
+              pubFunc.set(funcNameStr, new Map());
+            }
             pubFunc.get(funcNameStr)?.set(paramNameStr, paramType);
           }
 
-          if (func.custom_attributes?.includes("private")) {
-            if (!privFunc.has(funcNameStr)) { privFunc.set(funcNameStr, new Map()); }
+          if (func.custom_attributes?.includes("abi_private")) {
+            if (!privFunc.has(funcNameStr)) {
+              privFunc.set(funcNameStr, new Map());
+            }
             privFunc.get(funcNameStr)?.set(paramNameStr, paramType);
           }
         });

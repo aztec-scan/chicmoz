@@ -1,8 +1,5 @@
-import {
-  broadcastPrivateFunction,
-  broadcastUtilityFunction,
-} from "@aztec/aztec.js/deployment";
 import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
+import { publishContractClass } from "@aztec/aztec.js/deployment";
 import {
   generateVerifyArtifactPayload,
   generateVerifyArtifactUrl,
@@ -19,23 +16,20 @@ import { getAccounts } from "../../pxe.js";
 import { callExplorerApi } from "./explorer-api.js";
 import {
   Contract,
-  DeploySentTx,
-  SentTx,
   type ContractInstanceWithAddress,
+  type DeployTxReceipt,
+  DeployMethod,
 } from "@aztec/aztec.js/contracts";
-import {
-  FunctionSelector,
-  FunctionType,
-  NoirCompiledContract,
-} from "@aztec/aztec.js/abi";
+import { FunctionType, NoirCompiledContract } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
 import { Wallet } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
+import { TxReceipt } from "@aztec/aztec.js/tx";
 
 export const truncateHashString = (value: string) => {
   const startHash = value.substring(0, 6);
@@ -43,10 +37,13 @@ export const truncateHashString = (value: string) => {
   return `${startHash}...${endHash}`;
 };
 
-export const logAndWaitForTx = async (tx: SentTx, additionalInfo: string) => {
-  const hash = (await tx.getTxHash()).toString();
-  logger.info(`📫 TX ${hash} (${additionalInfo})`);
-  const receipt = await tx.wait();
+export const logAndWaitForTx = async (
+  txReceiptPromise: Promise<TxReceipt>,
+  additionalInfo: string,
+) => {
+  logger.info(`📫 TX (${additionalInfo}) waiting...`);
+  const receipt = await txReceiptPromise;
+  const hash = receipt.txHash.toString();
   logger.info(
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
   );
@@ -60,7 +57,7 @@ export const simulateThenSend = async ({
 }: {
   method: {
     simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
-    send: (opts: { from: AztecAddress }) => SentTx;
+    send: (opts: { from: AztecAddress }) => Promise<TxReceipt>;
   };
   from: AztecAddress;
   additionalInfo: string;
@@ -77,8 +74,12 @@ export const simulateThenSend = async ({
     throw err;
   }
 
-  const tx = method.send({ from });
-  return await logAndWaitForTx(tx, additionalInfo);
+  const receipt = await method.send({ from });
+  const hash = receipt.txHash.toString();
+  logger.info(
+    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
+  );
+  return receipt;
 };
 
 export const getFunctionSpacer = (type: FunctionType) => {
@@ -97,7 +98,7 @@ export const getNewSchnorrAccount = async ({
   salt,
   accountName,
 }: {
-  wallet: TestWallet;
+  wallet: EmbeddedWallet;
   secretKey: Fr;
   salt: Fr;
   accountName: string;
@@ -115,9 +116,12 @@ export const getNewSchnorrAccount = async ({
   // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
   // but fails in devnet/testnet where it has no balance.
   const feePayer = getAccounts().alice.address;
-  await logAndWaitForTx(
-    deployFunction.send({ from: feePayer }),
-    `Deploying account ${accountName}`,
+  const deployReceipt = await deployFunction.send({
+    from: feePayer,
+    wait: { returnReceipt: true },
+  });
+  logger.info(
+    `    Account deployed (${accountName}) block ${deployReceipt.blockNumber}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
   logger.info(
@@ -127,7 +131,7 @@ export const getNewSchnorrAccount = async ({
 };
 
 export const getNewAccount = async (
-  wallet: TestWallet,
+  wallet: EmbeddedWallet,
   accountName: string,
 ) => {
   const secretKey = Fr.random();
@@ -179,30 +183,36 @@ export const deployContract = async <T extends Contract>({
   deployFn,
   broadcastWithWallet,
   node,
+  from,
 }: {
   contractLoggingName: string;
-  deployFn: () => DeploySentTx<T>;
+  deployFn: () => DeployMethod<T>;
   broadcastWithWallet?: Wallet;
   node: AztecNode;
+  from?: AztecAddress;
 }): Promise<{ contract: T; instance: ContractInstanceWithAddress }> => {
   logger.info(`DEPLOYING ${contractLoggingName}`);
 
-  const contractTx = deployFn();
-  const hash = (await contractTx.getTxHash()).toString();
+  const deployMethod = deployFn();
+  const feePayer = from ?? getAccounts().alice.address;
 
-  // Get instance BEFORE calling deployed()
-  const instance = await contractTx.getInstance();
+  logger.info(`📫 ${contractLoggingName} (Deploying contract)`);
+  const deployResult: DeployTxReceipt<T> = await deployMethod.send({
+    from: feePayer,
+    wait: { returnReceipt: true },
+  });
 
-  logger.info(`📫 ${contractLoggingName} txHash: ${hash} (Deploying contract)`);
-  const deployedContract = await contractTx.deployed();
-  const receipt = await contractTx.wait();
+  const { contract: deployedContract, instance } = deployResult;
   const addressString = deployedContract.address.toString();
-  const newClassId = await getNewContractClassId(node, receipt.blockNumber);
+  const newClassId = await getNewContractClassId(
+    node,
+    deployResult.blockNumber,
+  );
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
     : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
-    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${receipt.blockNumber} ${classIdString}`,
+    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.blockNumber} ${classIdString}`,
   );
   if (broadcastWithWallet) {
     await broadcastFunctions({
@@ -220,33 +230,24 @@ export const broadcastFunctions = async ({
   wallet: Wallet;
   contract: Contract;
 }) => {
-  logger.info("BROADCASTING FUNCTIONS");
+  logger.info("PUBLISHING CONTRACT CLASS");
   for (const fn of contract.artifact.functions) {
     logger.info(`${getFunctionSpacer(fn.functionType)}${fn.name}`);
-    if (fn.functionType === FunctionType.PRIVATE) {
-      const selector = await FunctionSelector.fromNameAndParameters(
-        fn.name,
-        fn.parameters,
-      );
-      await logAndWaitForTx(
-        (
-          await broadcastPrivateFunction(wallet, contract.artifact, selector)
-        ).send({ from: getAccounts().alice.address }),
-        `Broadcasting private function ${fn.name}`,
-      );
+  }
+  const interaction = await publishContractClass(wallet, contract.artifact);
+
+  try {
+    await interaction.send({ from: getAccounts().alice.address });
+    logger.info("CONTRACT CLASS PUBLISHED");
+  } catch (err) {
+    const msg = (err as Error).message ?? String(err);
+    // When re-running against a chain/PXE with state, publishing can fail with
+    // "Existing nullifier" (already published). This should be non-fatal.
+    if (msg.includes("Existing nullifier")) {
+      logger.warn(`Contract class publish skipped: ${msg}`);
+      return;
     }
-    if (fn.functionType === FunctionType.UTILITY) {
-      const selector = await FunctionSelector.fromNameAndParameters(
-        fn.name,
-        fn.parameters,
-      );
-      await logAndWaitForTx(
-        (
-          await broadcastUtilityFunction(wallet, contract.artifact, selector)
-        ).send({ from: getAccounts().alice.address }),
-        `Broadcasting utility function ${fn.name}`,
-      );
-    }
+    throw err;
   }
 };
 
@@ -254,12 +255,12 @@ export const publicDeployAccounts = async (
   sender: Account,
   accountsToDeploy: Account[],
   wallet: Wallet,
-  pxe: PXE,
+  _pxe: PXE,
 ) => {
   const notPubliclyDeployedAccounts = await Promise.all(
     accountsToDeploy.map(async (a) => {
       const address = a.getAddress();
-      const contractMetadata = await pxe.getContractMetadata(address);
+      const contractMetadata = await wallet.getContractMetadata(address);
       return contractMetadata;
     }),
   ).then((results) =>
@@ -274,13 +275,13 @@ export const publicDeployAccounts = async (
 
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
-    if (!contractMetadata.contractInstance) {
+    if (!contractMetadata.instance) {
       logger.warn(
         `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
       );
       continue;
     }
-    await wallet.registerContract(contractMetadata.contractInstance);
+    await wallet.registerContract(contractMetadata.instance);
   }
 };
 
@@ -301,7 +302,7 @@ export const registerContractClassArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
-    waitForIndexing: false,
+    waitForIndexing: true,
   });
 };
 
@@ -322,7 +323,7 @@ export const registerStandardContractArtifact = async (
     urlStr: url,
     postData,
     method: "POST",
-    waitForIndexing: false,
+    waitForIndexing: true,
   });
 };
 
@@ -356,7 +357,7 @@ export const verifyContractInstanceDeployment = async ({
       urlStr: url,
       postData,
       method: "POST",
-      waitForIndexing: false,
+      waitForIndexing: true,
     });
   } catch (err) {
     // Explorer is best-effort here; failures should not break scenarios.

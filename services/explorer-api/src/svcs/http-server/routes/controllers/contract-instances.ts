@@ -331,10 +331,12 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
           dbContractInstance.version,
         ),
     );
-    const dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
-      JSON.parse(contractClassString),
-    );
-    if (!dbContractClass) {
+    let dbContractClass;
+    try {
+      dbContractClass = chicmozL2ContractClassRegisteredEventSchema.parse(
+        JSON.parse(contractClassString),
+      );
+    } catch {
       res.status(500).send("Contract class found in DB is not valid");
       return;
     }
@@ -349,7 +351,13 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     }
 
     if (stringifiedArtifactJson && dbContractClass.artifactJson) {
-      if (stringifiedArtifactJson !== dbContractClass.artifactJson) {
+      const { isMatchingByteCode } = await verifyArtifactPayload(
+        generateVerifyArtifactPayload(
+          JSON.parse(stringifiedArtifactJson) as NoirCompiledContract,
+        ),
+        dbContractClass,
+      );
+      if (!isMatchingByteCode) {
         res
           .status(400)
           .send(
@@ -361,19 +369,21 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
 
     if (stringifiedArtifactJson && !dbContractClass.artifactJson) {
       // TODO: this entire block should use verify contract class artifact
-      const { isMatchingByteCode } = await verifyArtifactPayload(
-        generateVerifyArtifactPayload(
-          JSON.parse(stringifiedArtifactJson ?? "{}") as NoirCompiledContract,
-        ),
-        dbContractClass,
-      );
+      const { isMatchingByteCode, artifactContractName } =
+        await verifyArtifactPayload(
+          generateVerifyArtifactPayload(
+            JSON.parse(stringifiedArtifactJson ?? "{}") as NoirCompiledContract,
+          ),
+          dbContractClass,
+        );
       if (!isMatchingByteCode) {
-        res.status(500).send("Uploaded artifact does not match contract class");
+        res.status(400).send("Uploaded artifact does not match contract class");
         return;
       }
       const completeContractClass = {
         ...dbContractClass,
         artifactJson: stringifiedArtifactJson,
+        artifactContractName,
       };
 
       setEntry(
@@ -392,6 +402,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         contractClassId: dbContractClass.contractClassId,
         version: dbContractClass.version,
         artifactJson: stringifiedArtifactJson,
+        contractName: artifactContractName,
       });
     }
 
@@ -436,7 +447,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
 
     if (!isVerifiedDeploymentPayload) {
       res
-        .status(500)
+        .status(400)
         .send("Uploaded data does not lead to correct contract address");
       return;
     }
@@ -450,6 +461,15 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     });
 
     if (!deployerMetadata) {
+      const freshInstance =
+        await l2Contract.getL2DeployedContractInstanceByAddress(address, true);
+      await setEntry(
+        contractInstanceKeys(address),
+        JSON.stringify(freshInstance),
+        CACHE_TTL_SECONDS,
+      ).catch((err) => {
+        logger.warn(`Failed to cache contract instance(${address}): ${err}`);
+      });
       res
         .status(200)
         .send("Contract instance deployment arguments verified and stored");
@@ -457,7 +477,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     }
 
     const { aztecScanNotes, ...cleanDeployerMetadata } = deployerMetadata;
-    if (NODE_ENV !== NodeEnv.PROD) {
+    if (NODE_ENV !== NodeEnv.PROD && aztecScanNotes) {
       const aztecScanNotesRes =
         await db.l2.updateContractInstanceAztecScanNotes({
           contractInstanceAddress: address,

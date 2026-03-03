@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: aztec-listener-devent-label
+    app: aztec-listener-devnet-label
   name: aztec-listener-devnet-deployment
   namespace: chicmoz-prod
 spec:
@@ -60,7 +60,7 @@ spec:
             - name: AZTEC_RPC_URLS
               valueFrom:
                 secretKeyRef:
-                  name: global
+                  name: devnet-config
                   key: AZTEC_RPC_NODES_DEVNET
 
 status: {}

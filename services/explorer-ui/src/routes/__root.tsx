@@ -9,10 +9,10 @@ import { BaseLayout } from "~/layout/base-layout";
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "development"
     ? lazy(() =>
-      import("@tanstack/router-devtools").then((res) => ({
-        default: res.TanStackRouterDevtools,
-      })),
-    )
+        import("@tanstack/router-devtools").then((res) => ({
+          default: res.TanStackRouterDevtools,
+        })),
+      )
     : () => null;
 
 export const Route = createRootRoute({
@@ -171,6 +171,10 @@ export const routes = {
   networkHealth: {
     route: "/network-health",
     title: "Network Health",
+  },
+  incidents: {
+    route: "/incidents",
+    title: "Aztecscan Incidents",
   },
 };
 

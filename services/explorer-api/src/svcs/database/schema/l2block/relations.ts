@@ -3,7 +3,6 @@ import { relations } from "drizzle-orm";
 import { body, publicDataWrite, txEffect } from "./body.js";
 import { l2BlockFinalizationStatusTable } from "./finalization-status.js";
 import {
-  contentCommitment,
   gasFees,
   globalVariables,
   header,
@@ -45,14 +44,14 @@ export const l1L2BlockProposedTableRelations = relations(
   l1L2BlockProposedTable,
   ({ one }) => ({
     l2Block: one(l2Block),
-  })
+  }),
 );
 
 export const l1L2ProofVerifiedTableRelations = relations(
   l1L2ProofVerifiedTable,
   ({ one }) => ({
     l2Block: one(l2Block),
-  })
+  }),
 );
 
 export const archiveRelations = relations(archive, ({ one }) => ({
@@ -64,10 +63,6 @@ export const headerRelations = relations(header, ({ one }) => ({
   lastArchive: one(lastArchive, {
     fields: [header.id],
     references: [lastArchive.fk],
-  }),
-  contentCommitment: one(contentCommitment, {
-    fields: [header.id],
-    references: [contentCommitment.headerId],
   }),
   state: one(state, {
     fields: [header.id],
@@ -82,13 +77,6 @@ export const headerRelations = relations(header, ({ one }) => ({
 export const lastArchiveRelations = relations(lastArchive, ({ one }) => ({
   header: one(header),
 }));
-
-export const contentCommitmentRelations = relations(
-  contentCommitment,
-  ({ one }) => ({
-    header: one(header),
-  })
-);
 
 export const stateRelations = relations(state, ({ one }) => ({
   header: one(header),
@@ -106,7 +94,7 @@ export const l1ToL2MessageTreeRelations = relations(
   l1ToL2MessageTree,
   ({ one }) => ({
     state: one(state),
-  })
+  }),
 );
 
 export const partialRelations = relations(partial, ({ one }) => ({
@@ -145,7 +133,7 @@ export const globalVariablesRelations = relations(
       fields: [globalVariables.id],
       references: [gasFees.globalVariablesId],
     }),
-  })
+  }),
 );
 
 export const gasFeesRelations = relations(gasFees, ({ one }) => ({
@@ -166,12 +154,12 @@ export const publicDataWriteRelations = relations(
   publicDataWrite,
   ({ one }) => ({
     txEffect: one(txEffect),
-  })
+  }),
 );
 
 export const finalizationStatusRelations = relations(
   l2BlockFinalizationStatusTable,
   ({ one }) => ({
     l2Block: one(l2Block),
-  })
+  }),
 );

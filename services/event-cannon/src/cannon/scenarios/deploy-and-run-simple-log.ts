@@ -1,4 +1,4 @@
-import { DeploySentTx } from "@aztec/aztec.js/contracts";
+import { DeployMethod } from "@aztec/aztec.js/contracts";
 import { SimpleLoggingContract } from "../../artifacts/SimpleLogging.js";
 import artifactJson from "../../contract-projects/SimpleLogging/target/simple_logging-SimpleLogging.json" with { type: "json" };
 import { logger } from "../../logger.js";
@@ -22,14 +22,9 @@ export async function run() {
 
   const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,
-    deployFn: (): DeploySentTx<SimpleLoggingContract> =>
-      SimpleLoggingContract.deploy(
-        wallet,
-        10,
-        getAccounts().charlie.address,
-      ).send({
-        from: deployerWallet.address,
-      }),
+    deployFn: (): DeployMethod<SimpleLoggingContract> =>
+      SimpleLoggingContract.deploy(wallet, 10, getAccounts().charlie.address),
+    from: deployerWallet.address,
     node: getAztecNodeClient(),
   });
 

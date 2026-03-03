@@ -1,4 +1,4 @@
-import { DeploySentTx } from "@aztec/aztec.js/contracts";
+import { DeployMethod } from "@aztec/aztec.js/contracts";
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getAccounts, getWallet } from "../pxe.js";
 import {
@@ -16,15 +16,14 @@ export async function run() {
   const deployerWallet = await namedAccounts.alice.getAccount();
   const votingAdmin = namedAccounts.alice.address;
 
-  const sentTx = PrivateVotingContract.deploy(wallet, votingAdmin).send({
-    from: deployerWallet.getAddress(),
-  });
+  const deployMethod = PrivateVotingContract.deploy(wallet, votingAdmin);
 
   const contractLoggingName = "Voting Contract";
 
   const { instance: contractInstance } = await deployContract({
     contractLoggingName,
-    deployFn: (): DeploySentTx<PrivateVotingContract> => sentTx,
+    deployFn: (): DeployMethod<PrivateVotingContract> => deployMethod,
+    from: deployerWallet.getAddress(),
     node: getAztecNodeClient(),
   });
 
