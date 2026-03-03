@@ -6,6 +6,7 @@ export const v3_0_0_devnet_2 = "1667575857";
 export const v3_0_0_devnet_20251212 = "1647720761";
 export const v3_0_1_rc_1 = "3468522156";
 export const v3_0_3 = "2500495677";
+export const v4_0_3 = "4181870535";
 export const v4_0_0_devnet_2_patch_0 = "615022430";
 export const sandbox_v4_0_0_devnet_2_patch_1 = "126353417";
 
@@ -14,4 +15,4 @@ export const sandbox_v4_0_0_devnet_2_patch_1 = "126353417";
 export const CURRENT_ROLLUP_VERSION =
   process.env.L2_NETWORK_ID === "SANDBOX"
     ? sandbox_v4_0_0_devnet_2_patch_1
-    : v4_0_0_devnet_2_patch_0;
+    : v4_0_3;
