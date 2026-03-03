@@ -22,12 +22,12 @@
     "typescript": "5.8.3"
   },
   "scripts": {
-    "build:packages": "yarn workspaces foreach --parallel --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",
-    "lint:packages": "yarn workspaces foreach --parallel --all --topological-dev --verbose --include '@chicmoz-pkg/*' run lint",
+    "build:packages": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",
+    "lint:packages": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose --include '@chicmoz-pkg/*' run lint",
     "build-all-slow": "yarn workspaces foreach --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build && yarn workspaces foreach --all --topological-dev --verbose --include 'services/*' run build",
-    "build": "yarn workspaces foreach --parallel --all --topological-dev --verbose run build",
-    "lint": "yarn workspaces foreach --parallel --all --topological-dev --verbose run lint",
-    "test": "yarn workspaces foreach --parallel --all --topological-dev --verbose run test-once",
+    "build": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose run build",
+    "lint": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose run lint",
+    "test": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose run test-once",
     "g:lint": "cd $INIT_CWD && eslint --fix",
     "postinstall": "husky install",
     "prepare": "husky install"
