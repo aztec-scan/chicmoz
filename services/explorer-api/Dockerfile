@@ -12,6 +12,7 @@ COPY . .
 RUN yarn build
 
 FROM node:20-alpine
+RUN apk add --no-cache gcompat libstdc++
 WORKDIR /usr/main/services/explorer-api
 
 # Pass VERSION_STRING to the runtime environment
