@@ -351,7 +351,13 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
     }
 
     if (stringifiedArtifactJson && dbContractClass.artifactJson) {
-      if (stringifiedArtifactJson !== dbContractClass.artifactJson) {
+      const { isMatchingByteCode } = await verifyArtifactPayload(
+        generateVerifyArtifactPayload(
+          JSON.parse(stringifiedArtifactJson) as NoirCompiledContract,
+        ),
+        dbContractClass,
+      );
+      if (!isMatchingByteCode) {
         res
           .status(400)
           .send(
