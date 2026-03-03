@@ -21,5 +21,6 @@ manifests:
     - ./devnet/service.yaml
     - ./devnet/http-filter.yaml
     - ./devnet/securitypolicy.yaml
+    - ./devnet/clienttrafficpolicy.yaml
     - ./devnet/httproute.yaml
     - ./devnet/deployment.yaml
