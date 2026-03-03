@@ -6,8 +6,7 @@ RUN yarn workspaces focus @chicmoz/ethereum-listener
 COPY . .
 RUN yarn build
 
-FROM node:20-alpine
-RUN apk add --no-cache gcompat libstdc++
+FROM node:22-trixie-slim
 WORKDIR /usr/main/services/ethereum-listener
 COPY --from=BUILD /usr/main /usr/main
 

@@ -11,8 +11,7 @@ RUN yarn workspaces focus @chicmoz/explorer-api
 COPY . .
 RUN yarn build
 
-FROM node:20-alpine
-RUN apk add --no-cache gcompat libstdc++
+FROM node:22-trixie-slim
 WORKDIR /usr/main/services/explorer-api
 
 # Pass VERSION_STRING to the runtime environment
