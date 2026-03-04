@@ -55,6 +55,21 @@ export const openapi_POST_VERIFY_SOURCE: OpenAPIObject["paths"] = {
         },
       },
       responses: {
+        "200": {
+          description: "Source code already verified",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  jobId: { type: "string", nullable: true },
+                  status: { type: "string" },
+                  sourceCodeUrl: { type: "string" },
+                },
+              },
+            },
+          },
+        },
         "202": {
           description: "Verification job created",
           content: {
@@ -104,10 +119,11 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
     return;
   }
 
-  // Check if source code is already verified
+  // Check if source code is already verified — return a consistent response shape
   if (contractClass.sourceCodeUrl) {
     res.status(200).json({
-      message: "Source code already verified for this contract class",
+      jobId: null,
+      status: "VERIFIED",
       sourceCodeUrl: contractClass.sourceCodeUrl,
     });
     return;
@@ -133,6 +149,7 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
     gitRef,
     subPath,
     aztecVersion,
+    clientIp,
   });
 
   // Track active jobs per IP
@@ -148,6 +165,12 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
       gitRef,
       subPath,
       aztecVersion,
+    });
+
+    // Update job status to COMPILING now that the request has been published
+    await db.l2Contract.updateSourceVerificationJobStatus({
+      jobId,
+      status: "COMPILING",
     });
   } catch (error) {
     logger.error(

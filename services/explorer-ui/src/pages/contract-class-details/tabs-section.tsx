@@ -68,7 +68,7 @@ export const TabSection: FC<TabSectionProps> = ({
       !!selectedVersion &&
       (!!selectedVersion.artifactJson || isContractArtifactLoading),
     functionJson: !!selectedVersion && !!selectedVersion.artifactJson,
-    sourceCode: true,
+    sourceCode: !!selectedVersion,
   };
 
   const renderTabContent = () => {
@@ -99,11 +99,14 @@ export const TabSection: FC<TabSectionProps> = ({
           <ArtifactExplorerTab data={artifact} />
         );
       case "sourceCode":
+        if (!selectedVersion) {
+          return <Loader amount={1} />;
+        }
         return (
           <SourceCodeTab
             classId={contractClassId}
-            version={selectedVersion?.version?.toString() ?? "1"}
-            hasSourceCode={!!selectedVersion?.sourceCodeUrl}
+            version={selectedVersion.version.toString()}
+            hasSourceCode={!!selectedVersion.sourceCodeUrl}
           />
         );
       default:

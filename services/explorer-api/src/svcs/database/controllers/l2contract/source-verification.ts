@@ -14,6 +14,7 @@ export const createSourceVerificationJob = async ({
   gitRef,
   subPath,
   aztecVersion,
+  clientIp,
 }: {
   id: string;
   contractClassId: string;
@@ -22,6 +23,7 @@ export const createSourceVerificationJob = async ({
   gitRef?: string;
   subPath?: string;
   aztecVersion: string;
+  clientIp?: string;
 }): Promise<void> => {
   await db()
     .insert(sourceVerificationJobs)
@@ -33,6 +35,7 @@ export const createSourceVerificationJob = async ({
       gitRef: gitRef ?? null,
       subPath: subPath ?? null,
       aztecVersion,
+      clientIp: clientIp ?? null,
       status: "PENDING",
     });
 };

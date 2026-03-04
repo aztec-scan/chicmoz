@@ -25,12 +25,14 @@ export const CodeDisplay: FC<CodeDisplayProps> = ({ filePath, content }) => {
   const language = getLanguage(filePath);
 
   const handleCopy = () => {
-    try {
-      void navigator.clipboard.writeText(content);
-      toast.success("Copied to clipboard");
-    } catch {
-      toast.error("Failed to copy to clipboard");
-    }
+    navigator.clipboard.writeText(content).then(
+      () => {
+        toast.success("Copied to clipboard");
+      },
+      () => {
+        toast.error("Failed to copy to clipboard");
+      },
+    );
   };
 
   return (

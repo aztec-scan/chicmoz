@@ -42,8 +42,9 @@ export type ContractClassSourceResponse = z.infer<
 >;
 
 const verifySourceResponseSchema = z.object({
-  jobId: z.string().uuid(),
+  jobId: z.string().uuid().nullable(),
   status: z.string(),
+  sourceCodeUrl: z.string().optional(),
 });
 
 export type VerifySourceResponse = z.infer<typeof verifySourceResponseSchema>;

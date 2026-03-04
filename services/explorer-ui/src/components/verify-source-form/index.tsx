@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useSubmitSourceVerification } from "~/hooks";
+import { ApiError } from "~/api/client";
 import { JobStatus } from "./job-status";
 
 type VerifySourceFormProps = {
@@ -49,11 +50,17 @@ export const VerifySourceForm: FC<VerifySourceFormProps> = ({
       },
       {
         onSuccess: (data) => {
+          if (data.status === "VERIFIED" && !data.jobId) {
+            // Already verified — skip job tracking and notify success
+            toast.success("Source code is already verified");
+            onSuccess?.();
+            return;
+          }
           setJobId(data.jobId);
           toast.success("Verification request submitted");
         },
         onError: (error) => {
-          if (error.message.includes("429")) {
+          if (error instanceof ApiError && error.status === 429) {
             toast.error(
               "Too many concurrent requests. Please try again later.",
             );

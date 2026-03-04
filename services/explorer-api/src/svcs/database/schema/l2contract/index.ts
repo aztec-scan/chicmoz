@@ -297,6 +297,7 @@ export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   subPath: text("sub_path"),
   aztecVersion: text("aztec_version").notNull(),
   commitHash: text("commit_hash"),
+  clientIp: text("client_ip"),
   status: sourceVerificationStatusEnum("status").notNull().default("PENDING"),
   error: text("error"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

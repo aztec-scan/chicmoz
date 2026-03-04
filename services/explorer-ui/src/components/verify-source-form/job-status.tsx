@@ -1,6 +1,6 @@
 import { type SourceVerificationStatus } from "@chicmoz-pkg/types";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { type FC } from "react";
+import { useEffect, useRef, type FC } from "react";
 import { cn } from "~/lib/utils";
 import { useVerifySourceJob } from "~/hooks";
 import { Button } from "~/components/ui/button";
@@ -42,13 +42,14 @@ export const JobStatus: FC<JobStatusProps> = ({
   const isFailed = status === "FAILED";
   const isVerified = status === "VERIFIED";
   const currentStepIdx = getStepIndex(status);
+  const hasCalledOnVerified = useRef(false);
 
-  if (isVerified && onVerified) {
-    // Delay callback to avoid render-during-render
-    setTimeout(() => {
+  useEffect(() => {
+    if (isVerified && onVerified && !hasCalledOnVerified.current) {
+      hasCalledOnVerified.current = true;
       onVerified();
-    }, 0);
-  }
+    }
+  }, [isVerified, onVerified]);
 
   if (isLoading) {
     return (

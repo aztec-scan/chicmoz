@@ -50,6 +50,10 @@ const activeJobs = new Map<string, JobState>();
 
 const LABEL_APP = "source-compiler";
 const LABEL_JOB_ID = "chicmoz-job-id";
+const ANNOTATION_CONTRACT_CLASS_ID = "chicmoz/contract-class-id";
+const ANNOTATION_VERSION = "chicmoz/version";
+const ANNOTATION_GITHUB_URL = "chicmoz/github-url";
+const ANNOTATION_AZTEC_VERSION = "chicmoz/aztec-version";
 
 // --- Helpers ---
 
@@ -70,7 +74,10 @@ const buildCompileScript = (
   gitRef?: string,
   subPath?: string,
 ): string => {
-  const cloneBranch = gitRef ? `--branch ${gitRef}` : "";
+  // Clone without --branch so commit hashes work too; checkout ref separately
+  const checkoutRef = gitRef
+    ? `git checkout ${gitRef}`
+    : "echo 'Using default branch'";
   const cdSubPath = subPath
     ? `cd /workspace/repo/${subPath}`
     : "cd /workspace/repo";
@@ -78,8 +85,9 @@ const buildCompileScript = (
   return [
     `set -e`,
     `echo "Cloning repository..."`,
-    `git clone --depth 1 ${cloneBranch} "${githubUrl}" /workspace/repo`,
+    `git clone "${githubUrl}" /workspace/repo`,
     `cd /workspace/repo`,
+    checkoutRef,
     `git rev-parse HEAD > /output/commit_hash`,
     cdSubPath,
     `echo "Compiling contract..."`,
@@ -87,9 +95,9 @@ const buildCompileScript = (
     `echo "Copying compiled artifact..."`,
     `mkdir -p /output/artifact`,
     `cp target/*.json /output/artifact/`,
-    `echo "Copying source files..."`,
+    `echo "Copying source files (excluding .git)..."`,
     `mkdir -p /output/source`,
-    `cp -r . /output/source/`,
+    `find . -not -path './.git/*' -not -name '.git' | cpio -pdm /output/source/ 2>/dev/null || cp -r . /output/source/ && rm -rf /output/source/.git`,
     `echo "Done."`,
   ].join(" && ");
 };
@@ -108,8 +116,9 @@ echo "===ARTIFACT_END==="
 echo "===SOURCES_START==="
 cd /output/source
 find . -type f \\( -name "*.nr" -o -name "Nargo.toml" \\) | sort | while read f; do
+  clean_path=$(echo "$f" | sed 's|^\\./||')
   content=$(cat "$f" | sed 's/\\\\/\\\\\\\\/g' | sed 's/"/\\\\"/g' | sed ':a;N;$!ba;s/\\n/\\\\n/g')
-  echo "{\\"path\\":\\"$f\\",\\"content\\":\\"$content\\"}"
+  echo "{\\"path\\":\\"$clean_path\\",\\"content\\":\\"$content\\"}"
 done
 echo "===SOURCES_END==="
 `;
@@ -132,6 +141,12 @@ const createCompileJob = async (state: JobState): Promise<void> => {
       labels: {
         app: LABEL_APP,
         [LABEL_JOB_ID]: state.jobId,
+      },
+      annotations: {
+        [ANNOTATION_CONTRACT_CLASS_ID]: state.contractClassId,
+        [ANNOTATION_VERSION]: String(state.version),
+        [ANNOTATION_GITHUB_URL]: state.githubUrl,
+        [ANNOTATION_AZTEC_VERSION]: state.aztecVersion,
       },
     },
     spec: {
@@ -501,13 +516,16 @@ export const recoverActiveJobs = async (): Promise<void> => {
       );
 
       if (!isFinished) {
+        const annotations = job.metadata?.annotations ?? {};
         const state: JobState = {
           jobId,
           k8sJobName: job.metadata?.name ?? jobName(jobId),
-          contractClassId: "unknown-recovery",
-          version: 0,
-          githubUrl: "unknown-recovery",
-          aztecVersion: "unknown-recovery",
+          contractClassId:
+            annotations[ANNOTATION_CONTRACT_CLASS_ID] ?? "unknown-recovery",
+          version: Number(annotations[ANNOTATION_VERSION]) || 0,
+          githubUrl: annotations[ANNOTATION_GITHUB_URL] ?? "unknown-recovery",
+          aztecVersion:
+            annotations[ANNOTATION_AZTEC_VERSION] ?? "unknown-recovery",
           createdAt: job.metadata?.creationTimestamp
             ? new Date(job.metadata.creationTimestamp)
             : new Date(),
