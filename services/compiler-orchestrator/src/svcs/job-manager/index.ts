@@ -644,13 +644,15 @@ export const jobManagerService: MicroserviceBaseSvc = {
   svcId: "JOB_MANAGER",
   getConfigStr: () =>
     `K8S_NAMESPACE=${K8S_NAMESPACE} MAX_CONCURRENT=${MAX_CONCURRENT_JOBS} COMPILER_IMAGE=${COMPILER_IMAGE}`,
-  init: () => {
+  init: (): Promise<void> => {
     initK8sClient();
     logger.info("K8s client initialized");
+    return Promise.resolve();
   },
   health: () => true,
-  shutdown: () => {
+  shutdown: (): Promise<void> => {
     stopJobPoller();
     logger.info("Job manager shut down");
+    return Promise.resolve();
   },
 };
