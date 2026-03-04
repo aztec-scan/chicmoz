@@ -82,6 +82,12 @@ export const aztecExplorer = {
   getTableTxEffects: "/l2/ui/tx-effects-for-table",
   getTableTxEffectsByHeight: (height: bigint) =>
     `/l2/ui/tx-effects-for-table/${height}`,
+  getL2ContractClassSource: (classId: string, version: string) =>
+    `/l2/contract-classes/${classId}/versions/${version}/source`,
+  postL2VerifySource: (classId: string, version: string) =>
+    `/l2/contract-classes/${classId}/versions/${version}/verify-source`,
+  getL2VerifySourceJob: (classId: string, version: string, jobId: string) =>
+    `/l2/contract-classes/${classId}/versions/${version}/verify-source/${jobId}`,
 };
 
 export const APP_NAME = "Aztec-Scan";

@@ -1,6 +1,6 @@
 {
-  "id": "47c8e7ae-44aa-4659-85ec-263608cfb757",
-  "prevId": "ff2330f1-479b-4b70-b1b1-108becd44b60",
+  "id": "47a53954-c762-4baa-b2a6-5d919ff21775",
+  "prevId": "47c8e7ae-44aa-4659-85ec-263608cfb757",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1385,6 +1385,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "source_code_commit_hash": {
+          "name": "source_code_commit_hash",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "source_code": {
           "name": "source_code",
           "type": "jsonb",
@@ -1972,6 +1978,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "commit_hash": {
+          "name": "commit_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "status": {
           "name": "status",

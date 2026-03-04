@@ -99,4 +99,15 @@ export const queryKeyGenerator = {
     page,
     pageSize,
   ],
+  contractClassSource: (classId: string, version: string) => [
+    "contractClassSource",
+    classId,
+    version,
+  ],
+  verifySourceJob: (classId: string, version: string, jobId: string) => [
+    "verifySourceJob",
+    classId,
+    version,
+    jobId,
+  ],
 };

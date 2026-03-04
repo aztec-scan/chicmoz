@@ -96,6 +96,7 @@ export const l2ContractClassRegistered = pgTable(
     standardContractType: varchar("contract_type"),
     standardContractVersion: varchar("contract_version"),
     sourceCodeUrl: varchar("source_code_url"),
+    sourceCodeCommitHash: varchar("source_code_commit_hash"),
     sourceCode:
       jsonb("source_code").$type<Array<{ path: string; content: string }>>(),
   },
@@ -295,6 +296,7 @@ export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   gitRef: text("git_ref"),
   subPath: text("sub_path"),
   aztecVersion: text("aztec_version").notNull(),
+  commitHash: text("commit_hash"),
   status: sourceVerificationStatusEnum("status").notNull().default("PENDING"),
   error: text("error"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

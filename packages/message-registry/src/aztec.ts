@@ -73,6 +73,7 @@ export type CompileSourceResultEvent = {
   status: "success" | "compilation_failed" | "clone_failed" | "timeout";
   artifactJson?: string;
   sourceFiles?: Array<{ path: string; content: string }>;
+  commitHash?: string;
   error?: string;
 };
 

@@ -156,6 +156,7 @@ export const compileSourceResultSchema = z.object({
   status: z.enum(["success", "compilation_failed", "clone_failed", "timeout"]),
   artifactJson: z.string().optional(),
   sourceFiles: sourceCodeEntrySchema.array().optional(),
+  commitHash: z.string().optional(),
   error: z.string().optional(),
 });
 
@@ -169,6 +170,7 @@ export const sourceVerificationJobSchema = z.object({
   gitRef: z.string().nullable().optional(),
   subPath: z.string().nullable().optional(),
   aztecVersion: z.string(),
+  commitHash: z.string().nullable().optional(),
   status: sourceVerificationStatusEnum,
   error: z.string().nullable().optional(),
   createdAt: z.coerce.date(),

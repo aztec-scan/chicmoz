@@ -11,6 +11,7 @@ import { ArtifactJsonTab } from "./tabs/artifact-json-tab";
 import { ContractInstancesTab } from "./tabs/contract-instances";
 import { ContractVersionsTab } from "./tabs/contract-versions";
 import { JsonTab } from "./tabs/json-tab";
+import { SourceCodeTab } from "./tabs/source-code-tab";
 import {
   getArtifactData,
   type SimpleArtifactData,
@@ -67,6 +68,7 @@ export const TabSection: FC<TabSectionProps> = ({
       !!selectedVersion &&
       (!!selectedVersion.artifactJson || isContractArtifactLoading),
     functionJson: !!selectedVersion && !!selectedVersion.artifactJson,
+    sourceCode: true,
   };
 
   const renderTabContent = () => {
@@ -95,6 +97,14 @@ export const TabSection: FC<TabSectionProps> = ({
           <Loader amount={1} />
         ) : (
           <ArtifactExplorerTab data={artifact} />
+        );
+      case "sourceCode":
+        return (
+          <SourceCodeTab
+            classId={contractClassId}
+            version={selectedVersion?.version?.toString() ?? "1"}
+            hasSourceCode={!!selectedVersion?.sourceCodeUrl}
+          />
         );
       default:
         return null;

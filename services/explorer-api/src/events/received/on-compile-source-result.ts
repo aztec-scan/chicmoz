@@ -18,6 +18,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
     status,
     artifactJson,
     sourceFiles,
+    commitHash,
     error,
   } = event;
 
@@ -76,20 +77,34 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         return;
       }
 
+      // Construct source URL with the resolved commit hash (or fall back to
+      // gitRef) so the link always points to an immutable revision on GitHub.
+      let sourceCodeUrl = job.githubUrl;
+      const treeRef = commitHash ?? job.gitRef;
+      if (treeRef) {
+        sourceCodeUrl += `/tree/${treeRef}`;
+        if (job.subPath) {
+          const trimmed = job.subPath.replace(/^\/+/, "");
+          sourceCodeUrl += `/${trimmed}`;
+        }
+      }
+
       // Store source code and URL
       if (sourceFiles && sourceFiles.length > 0) {
         await db.l2Contract.addSourceCode({
           contractClassId,
           version,
           sourceCode: sourceFiles,
-          sourceCodeUrl: job.githubUrl,
+          sourceCodeUrl,
+          sourceCodeCommitHash: commitHash,
         });
       }
 
-      // Mark job as verified
+      // Mark job as verified (also persist the resolved commit hash)
       await db.l2Contract.updateSourceVerificationJobStatus({
         jobId,
         status: "VERIFIED",
+        commitHash,
       });
 
       logger.info(

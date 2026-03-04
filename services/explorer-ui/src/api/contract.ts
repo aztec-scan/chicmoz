@@ -5,11 +5,14 @@ import {
   chicmozL2ContractInstanceDeluxeSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
+  sourceCodeEntrySchema,
+  sourceVerificationJobSchema,
   type ChicmozContractInstanceBalance,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeluxe,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
+  type SourceVerificationJob,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { aztecExplorer } from "~/service/constants";
@@ -25,6 +28,25 @@ const contractInstancesWithAztecScanNotesSchema = z.lazy(() =>
 export type ChicmozL2ContractInstanceWithAztecScanNotes = z.infer<
   typeof contractInstancesWithAztecScanNotesSchema
 >;
+
+const contractClassSourceResponseSchema = z.object({
+  contractClassId: z.string(),
+  version: z.number(),
+  sourceCodeUrl: z.string().nullable().optional(),
+  sourceCodeCommitHash: z.string().nullable().optional(),
+  sourceCode: sourceCodeEntrySchema.array(),
+});
+
+export type ContractClassSourceResponse = z.infer<
+  typeof contractClassSourceResponseSchema
+>;
+
+const verifySourceResponseSchema = z.object({
+  jobId: z.string().uuid(),
+  status: z.string(),
+});
+
+export type VerifySourceResponse = z.infer<typeof verifySourceResponseSchema>;
 
 export const ContractL2API = {
   getContractClass: async ({
@@ -207,5 +229,57 @@ export const ContractL2API = {
       chicmozL2ContractClassRegisteredEventSchema,
       response.data,
     );
+  },
+  getContractClassSource: async ({
+    classId,
+    version,
+  }: {
+    classId: string;
+    version: string;
+  }): Promise<ContractClassSourceResponse> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractClassSource(classId, version),
+    );
+    return validateResponse(contractClassSourceResponseSchema, response.data);
+  },
+  postVerifySource: async ({
+    classId,
+    version,
+    githubUrl,
+    gitRef,
+    subPath,
+    aztecVersion,
+  }: {
+    classId: string;
+    version: string;
+    githubUrl: string;
+    gitRef?: string;
+    subPath?: string;
+    aztecVersion?: string;
+  }): Promise<VerifySourceResponse> => {
+    const response = await client.post(
+      aztecExplorer.postL2VerifySource(classId, version),
+      {
+        githubUrl,
+        gitRef,
+        subPath,
+        aztecVersion,
+      },
+    );
+    return validateResponse(verifySourceResponseSchema, response.data);
+  },
+  getVerifySourceJob: async ({
+    classId,
+    version,
+    jobId,
+  }: {
+    classId: string;
+    version: string;
+    jobId: string;
+  }): Promise<SourceVerificationJob> => {
+    const response = await client.get(
+      aztecExplorer.getL2VerifySourceJob(classId, version, jobId),
+    );
+    return validateResponse(sourceVerificationJobSchema, response.data);
   },
 };

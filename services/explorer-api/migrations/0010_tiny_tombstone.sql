@@ -12,10 +12,12 @@ CREATE TABLE IF NOT EXISTS "source_verification_jobs" (
 	"git_ref" text,
 	"sub_path" text,
 	"aztec_version" text NOT NULL,
+	"commit_hash" text,
 	"status" "source_verification_status" DEFAULT 'PENDING' NOT NULL,
 	"error" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+ALTER TABLE "l2_contract_class_registered" ADD COLUMN "source_code_commit_hash" varchar;--> statement-breakpoint
 ALTER TABLE "l2_contract_class_registered" ADD COLUMN "source_code" jsonb;

@@ -127,6 +127,8 @@ const buildCompileScript = (
     `set -e`,
     `echo "Cloning repository..."`,
     `git clone --depth 1 ${cloneBranch} "${githubUrl}" /workspace/repo`,
+    `cd /workspace/repo`,
+    `git rev-parse HEAD > /output/commit_hash`,
     cdSubPath,
     `echo "Compiling contract..."`,
     `node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile`,
@@ -229,13 +231,18 @@ const readArtifactFromPvc = async (
 ): Promise<{
   artifactJson: string;
   sourceFiles: Array<{ path: string; content: string }>;
+  commitHash?: string;
 }> => {
   const podName = readerPodName(state.jobId);
 
   // The reader pod:
-  // 1. Reads the artifact JSON from /output/artifact/
-  // 2. Reads source files from /output/source/ and outputs them as JSON
+  // 1. Reads the commit hash from /output/commit_hash
+  // 2. Reads the artifact JSON from /output/artifact/
+  // 3. Reads source files from /output/source/ and outputs them as JSON
   const readerScript = `set -e
+echo "===COMMIT_HASH_START==="
+cat /output/commit_hash 2>/dev/null || echo ""
+echo "===COMMIT_HASH_END==="
 ARTIFACT_FILE=$(find /output/artifact -name "*.json" -type f | head -n 1)
 if [ -z "$ARTIFACT_FILE" ]; then echo "NO_ARTIFACT_FOUND"; exit 1; fi
 echo "===ARTIFACT_START==="
@@ -335,6 +342,12 @@ echo "===SOURCES_END==="
 
   const logStr = typeof logs === "string" ? logs : String(logs);
 
+  // Parse commit hash
+  const commitHashMatch = logStr.match(
+    /===COMMIT_HASH_START===\n([\s\S]*?)\n===COMMIT_HASH_END===/,
+  );
+  const commitHash = commitHashMatch ? commitHashMatch[1].trim() : undefined;
+
   // Parse artifact
   const artifactMatch = logStr.match(
     /===ARTIFACT_START===\n([\s\S]*?)\n===ARTIFACT_END===/,
@@ -374,7 +387,7 @@ echo "===SOURCES_END==="
     );
   }
 
-  return { artifactJson, sourceFiles };
+  return { artifactJson, sourceFiles, commitHash };
 };
 
 // --- Job status polling ---
@@ -434,7 +447,8 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
   logger.info(`Job completed successfully: ${state.k8sJobName}`);
 
   try {
-    const { artifactJson, sourceFiles } = await readArtifactFromPvc(state);
+    const { artifactJson, sourceFiles, commitHash } =
+      await readArtifactFromPvc(state);
 
     await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
       jobId: state.jobId,
@@ -443,6 +457,7 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
       status: "success",
       artifactJson,
       sourceFiles,
+      commitHash,
     });
 
     logger.info(`Published success result for jobId=${state.jobId}`);

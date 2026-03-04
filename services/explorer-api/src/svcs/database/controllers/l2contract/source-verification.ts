@@ -67,17 +67,23 @@ export const updateSourceVerificationJobStatus = async ({
   jobId,
   status,
   error,
+  commitHash,
 }: {
   jobId: string;
   status: SourceVerificationStatus;
   error?: string;
+  commitHash?: string;
 }): Promise<void> => {
+  const updateValues: Record<string, unknown> = {
+    status,
+    error: error ?? null,
+  };
+  if (commitHash !== undefined) {
+    updateValues.commitHash = commitHash;
+  }
   await db()
     .update(sourceVerificationJobs)
-    .set({
-      status,
-      error: error ?? null,
-    })
+    .set(updateValues)
     .where(eq(sourceVerificationJobs.id, jobId));
 };
 
@@ -86,17 +92,20 @@ export const addSourceCode = async ({
   version,
   sourceCode,
   sourceCodeUrl,
+  sourceCodeCommitHash,
 }: {
   contractClassId: string;
   version: number;
   sourceCode: Array<{ path: string; content: string }>;
   sourceCodeUrl: string;
+  sourceCodeCommitHash?: string;
 }): Promise<void> => {
   await db()
     .update(l2ContractClassRegistered)
     .set({
       sourceCode,
       sourceCodeUrl,
+      sourceCodeCommitHash: sourceCodeCommitHash ?? null,
     })
     .where(
       and(
@@ -123,10 +132,14 @@ export const getActiveVerificationJobCount = async (): Promise<number> => {
 export const getContractClassSourceCode = async (
   contractClassId: string,
   version: number,
-): Promise<Array<{ path: string; content: string }> | null> => {
+): Promise<{
+  sourceCode: Array<{ path: string; content: string }> | null;
+  sourceCodeCommitHash: string | null;
+}> => {
   const result = await db()
     .select({
       sourceCode: l2ContractClassRegistered.sourceCode,
+      sourceCodeCommitHash: l2ContractClassRegistered.sourceCodeCommitHash,
     })
     .from(l2ContractClassRegistered)
     .where(
@@ -136,6 +149,11 @@ export const getContractClassSourceCode = async (
       ),
     )
     .limit(1);
-  if (result.length === 0) {return null;}
-  return result[0].sourceCode ?? null;
+  if (result.length === 0) {
+    return { sourceCode: null, sourceCodeCommitHash: null };
+  }
+  return {
+    sourceCode: result[0].sourceCode ?? null,
+    sourceCodeCommitHash: result[0].sourceCodeCommitHash ?? null,
+  };
 };

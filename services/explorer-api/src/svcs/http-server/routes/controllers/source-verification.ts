@@ -213,6 +213,7 @@ export const openapi_GET_VERIFY_SOURCE_JOB: OpenAPIObject["paths"] = {
                   contractClassId: { type: "string" },
                   version: { type: "number" },
                   status: { type: "string" },
+                  commitHash: { type: "string", nullable: true },
                   error: { type: "string", nullable: true },
                   createdAt: { type: "string" },
                   updatedAt: { type: "string" },
@@ -246,6 +247,7 @@ export const GET_VERIFY_SOURCE_JOB = asyncHandler(async (req, res) => {
     gitRef: job.gitRef,
     subPath: job.subPath,
     aztecVersion: job.aztecVersion,
+    commitHash: job.commitHash,
     status: job.status,
     error: job.error,
     createdAt: job.createdAt,
@@ -283,6 +285,7 @@ export const openapi_GET_CONTRACT_CLASS_SOURCE: OpenAPIObject["paths"] = {
                   contractClassId: { type: "string" },
                   version: { type: "number" },
                   sourceCodeUrl: { type: "string" },
+                  sourceCodeCommitHash: { type: "string", nullable: true },
                   sourceCode: {
                     type: "array",
                     items: {
@@ -340,7 +343,8 @@ export const GET_CONTRACT_CLASS_SOURCE = asyncHandler(async (req, res) => {
     contractClassId,
     version,
     sourceCodeUrl: contractClass.sourceCodeUrl,
-    sourceCode: sourceData,
+    sourceCodeCommitHash: sourceData.sourceCodeCommitHash,
+    sourceCode: sourceData.sourceCode,
   });
 });
 
