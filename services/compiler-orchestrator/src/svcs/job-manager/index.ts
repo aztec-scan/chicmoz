@@ -4,6 +4,7 @@ import type { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
 import { logger } from "../../logger.js";
 import {
   COMPILER_IMAGE,
+  EMPTYDIR_SIZE_LIMIT,
   JOB_CPU_LIMIT,
   JOB_CPU_REQUEST,
   JOB_MEMORY_LIMIT,
@@ -13,7 +14,6 @@ import {
   JOB_TTL_AFTER_FINISHED_SECONDS,
   K8S_NAMESPACE,
   MAX_CONCURRENT_JOBS,
-  PVC_STORAGE_SIZE,
   READER_POD_IMAGE,
 } from "../../environment.js";
 import { publishMessage } from "../message-bus/index.js";
@@ -23,7 +23,6 @@ import { publishMessage } from "../message-bus/index.js";
 interface JobState {
   jobId: string;
   k8sJobName: string;
-  pvcName: string;
   contractClassId: string;
   version: number;
   githubUrl: string;
@@ -64,53 +63,6 @@ const sanitizeForK8s = (id: string): string => {
 
 const jobName = (jobId: string): string => `compile-${sanitizeForK8s(jobId)}`;
 
-const pvcName = (jobId: string): string =>
-  `compile-out-${sanitizeForK8s(jobId)}`;
-
-const readerPodName = (jobId: string): string =>
-  `reader-${sanitizeForK8s(jobId)}`;
-
-// --- PVC management ---
-
-const createPvc = async (name: string): Promise<void> => {
-  const pvc: k8s.V1PersistentVolumeClaim = {
-    apiVersion: "v1",
-    kind: "PersistentVolumeClaim",
-    metadata: {
-      name,
-      namespace: K8S_NAMESPACE,
-      labels: {
-        app: LABEL_APP,
-      },
-    },
-    spec: {
-      accessModes: ["ReadWriteOnce"],
-      resources: {
-        requests: {
-          storage: PVC_STORAGE_SIZE,
-        },
-      },
-    },
-  };
-  await coreApi.createNamespacedPersistentVolumeClaim({
-    namespace: K8S_NAMESPACE,
-    body: pvc,
-  });
-  logger.info(`Created PVC: ${name}`);
-};
-
-const deletePvc = async (name: string): Promise<void> => {
-  try {
-    await coreApi.deleteNamespacedPersistentVolumeClaim({
-      name,
-      namespace: K8S_NAMESPACE,
-    });
-    logger.info(`Deleted PVC: ${name}`);
-  } catch (e) {
-    logger.warn(`Failed to delete PVC ${name}: ${(e as Error).message}`);
-  }
-};
-
 // --- K8s Job creation ---
 
 const buildCompileScript = (
@@ -142,12 +94,34 @@ const buildCompileScript = (
   ].join(" && ");
 };
 
+const buildReaderScript = (): string => {
+  return `set -e
+echo "===COMMIT_HASH_START==="
+cat /output/commit_hash 2>/dev/null || echo ""
+echo "===COMMIT_HASH_END==="
+ARTIFACT_FILE=$(find /output/artifact -name "*.json" -type f | head -n 1)
+if [ -z "$ARTIFACT_FILE" ]; then echo "NO_ARTIFACT_FOUND"; exit 1; fi
+echo "===ARTIFACT_START==="
+cat "$ARTIFACT_FILE"
+echo ""
+echo "===ARTIFACT_END==="
+echo "===SOURCES_START==="
+cd /output/source
+find . -type f \\( -name "*.nr" -o -name "Nargo.toml" \\) | sort | while read f; do
+  content=$(cat "$f" | sed 's/\\\\/\\\\\\\\/g' | sed 's/"/\\\\"/g' | sed ':a;N;$!ba;s/\\n/\\\\n/g')
+  echo "{\\"path\\":\\"$f\\",\\"content\\":\\"$content\\"}"
+done
+echo "===SOURCES_END==="
+`;
+};
+
 const createCompileJob = async (state: JobState): Promise<void> => {
-  const script = buildCompileScript(
+  const compileScript = buildCompileScript(
     state.githubUrl,
     state.gitRef,
     state.subPath,
   );
+  const readerScript = buildReaderScript();
 
   const job: k8s.V1Job = {
     apiVersion: "batch/v1",
@@ -174,12 +148,12 @@ const createCompileJob = async (state: JobState): Promise<void> => {
         spec: {
           restartPolicy: "Never",
           automountServiceAccountToken: false,
-          containers: [
+          initContainers: [
             {
               name: "compiler",
               image: COMPILER_IMAGE,
               command: ["/bin/sh", "-c"],
-              args: [script],
+              args: [compileScript],
               env: [
                 {
                   name: "NARGO_HOME",
@@ -204,11 +178,26 @@ const createCompileJob = async (state: JobState): Promise<void> => {
               },
             },
           ],
+          containers: [
+            {
+              name: "reader",
+              image: READER_POD_IMAGE,
+              command: ["/bin/sh", "-c"],
+              args: [readerScript],
+              volumeMounts: [
+                {
+                  name: "output",
+                  mountPath: "/output",
+                  readOnly: true,
+                },
+              ],
+            },
+          ],
           volumes: [
             {
               name: "output",
-              persistentVolumeClaim: {
-                claimName: state.pvcName,
+              emptyDir: {
+                sizeLimit: EMPTYDIR_SIZE_LIMIT,
               },
             },
           ],
@@ -224,116 +213,29 @@ const createCompileJob = async (state: JobState): Promise<void> => {
   logger.info(`Created K8s Job: ${state.k8sJobName}`);
 };
 
-// --- Reader pod ---
+// --- Read results from Job pod logs ---
 
-const readArtifactFromPvc = async (
+const readResultsFromJobPod = async (
   state: JobState,
 ): Promise<{
   artifactJson: string;
   sourceFiles: Array<{ path: string; content: string }>;
   commitHash?: string;
 }> => {
-  const podName = readerPodName(state.jobId);
-
-  // The reader pod:
-  // 1. Reads the commit hash from /output/commit_hash
-  // 2. Reads the artifact JSON from /output/artifact/
-  // 3. Reads source files from /output/source/ and outputs them as JSON
-  const readerScript = `set -e
-echo "===COMMIT_HASH_START==="
-cat /output/commit_hash 2>/dev/null || echo ""
-echo "===COMMIT_HASH_END==="
-ARTIFACT_FILE=$(find /output/artifact -name "*.json" -type f | head -n 1)
-if [ -z "$ARTIFACT_FILE" ]; then echo "NO_ARTIFACT_FOUND"; exit 1; fi
-echo "===ARTIFACT_START==="
-cat "$ARTIFACT_FILE"
-echo ""
-echo "===ARTIFACT_END==="
-echo "===SOURCES_START==="
-cd /output/source
-find . -type f \\( -name "*.nr" -o -name "Nargo.toml" \\) | sort | while read f; do
-  content=$(cat "$f" | sed 's/\\\\/\\\\\\\\/g' | sed 's/"/\\\\"/g' | sed ':a;N;$!ba;s/\\n/\\\\n/g')
-  echo "{\\"path\\":\\"$f\\",\\"content\\":\\"$content\\"}"
-done
-echo "===SOURCES_END==="
-`;
-
-  const pod: k8s.V1Pod = {
-    apiVersion: "v1",
-    kind: "Pod",
-    metadata: {
-      name: podName,
-      namespace: K8S_NAMESPACE,
-      labels: {
-        app: LABEL_APP,
-        [LABEL_JOB_ID]: state.jobId,
-        role: "reader",
-      },
-    },
-    spec: {
-      restartPolicy: "Never",
-      automountServiceAccountToken: false,
-      containers: [
-        {
-          name: "reader",
-          image: READER_POD_IMAGE,
-          command: ["/bin/sh", "-c"],
-          args: [readerScript],
-          volumeMounts: [
-            {
-              name: "output",
-              mountPath: "/output",
-              readOnly: true,
-            },
-          ],
-        },
-      ],
-      volumes: [
-        {
-          name: "output",
-          persistentVolumeClaim: {
-            claimName: state.pvcName,
-          },
-        },
-      ],
-    },
-  };
-
-  // Create reader pod
-  await coreApi.createNamespacedPod({
+  // Find the pod created by the Job
+  const pods = await coreApi.listNamespacedPod({
     namespace: K8S_NAMESPACE,
-    body: pod,
+    labelSelector: `${LABEL_JOB_ID}=${state.jobId}`,
   });
-  logger.info(`Created reader pod: ${podName}`);
 
-  // Wait for reader pod to complete
-  const maxWaitMs = 60_000;
-  const pollMs = 2_000;
-  let elapsed = 0;
-
-  while (elapsed < maxWaitMs) {
-    await new Promise((resolve) => setTimeout(resolve, pollMs));
-    elapsed += pollMs;
-
-    const podStatus = await coreApi.readNamespacedPod({
-      name: podName,
-      namespace: K8S_NAMESPACE,
-    });
-    const phase = podStatus.status?.phase;
-
-    if (phase === "Succeeded") {
-      break;
-    }
-    if (phase === "Failed") {
-      throw new Error("Reader pod failed");
-    }
+  const podName = pods.items[0]?.metadata?.name;
+  if (!podName) {
+    throw new Error(
+      `No pod found for job ${state.k8sJobName} (jobId=${state.jobId})`,
+    );
   }
 
-  if (elapsed >= maxWaitMs) {
-    throw new Error("Reader pod timed out");
-  }
-
-  // Read logs from reader pod
+  // Read logs from the reader (main) container
   const logs = await coreApi.readNamespacedPodLog({
     name: podName,
     namespace: K8S_NAMESPACE,
@@ -353,7 +255,7 @@ echo "===SOURCES_END==="
     /===ARTIFACT_START===\n([\s\S]*?)\n===ARTIFACT_END===/,
   );
   if (!artifactMatch) {
-    throw new Error("Could not parse artifact from reader pod logs");
+    throw new Error("Could not parse artifact from job pod logs");
   }
   const artifactJson = artifactMatch[1].trim();
 
@@ -372,19 +274,6 @@ echo "===SOURCES_END==="
         logger.warn(`Failed to parse source file line: ${line}`);
       }
     }
-  }
-
-  // Cleanup reader pod
-  try {
-    await coreApi.deleteNamespacedPod({
-      name: podName,
-      namespace: K8S_NAMESPACE,
-    });
-    logger.info(`Deleted reader pod: ${podName}`);
-  } catch (e) {
-    logger.warn(
-      `Failed to delete reader pod ${podName}: ${(e as Error).message}`,
-    );
   }
 
   return { artifactJson, sourceFiles, commitHash };
@@ -448,7 +337,7 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
 
   try {
     const { artifactJson, sourceFiles, commitHash } =
-      await readArtifactFromPvc(state);
+      await readResultsFromJobPod(state);
 
     await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
       jobId: state.jobId,
@@ -474,9 +363,6 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
       error: `Failed to read compiled artifact: ${(e as Error).message}`,
     });
   }
-
-  // Cleanup
-  await deletePvc(state.pvcName);
 };
 
 const handleJobFailure = async (state: JobState): Promise<void> => {
@@ -497,9 +383,6 @@ const handleJobFailure = async (state: JobState): Promise<void> => {
     status,
     error: reason,
   });
-
-  // Cleanup
-  await deletePvc(state.pvcName);
 };
 
 // --- Poll loop ---
@@ -549,8 +432,6 @@ export const handleCompileRequest = async (
     logger.warn(
       `Max concurrent jobs (${MAX_CONCURRENT_JOBS}) reached, rejecting jobId=${event.jobId}`,
     );
-    // Don't publish failure -- let Kafka backpressure handle it by not committing offset
-    // Actually, we need to reject explicitly since we consumed the message
     await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
       jobId: event.jobId,
       contractClassId: event.contractClassId,
@@ -562,12 +443,10 @@ export const handleCompileRequest = async (
   }
 
   const jName = jobName(event.jobId);
-  const pName = pvcName(event.jobId);
 
   const state: JobState = {
     jobId: event.jobId,
     k8sJobName: jName,
-    pvcName: pName,
     contractClassId: event.contractClassId,
     version: event.version,
     githubUrl: event.githubUrl,
@@ -578,8 +457,6 @@ export const handleCompileRequest = async (
   };
 
   try {
-    // Create PVC first, then the Job
-    await createPvc(pName);
     await createCompileJob(state);
     activeJobs.set(event.jobId, state);
     logger.info(`Started compile job: jobId=${event.jobId} k8sJob=${jName}`);
@@ -587,9 +464,6 @@ export const handleCompileRequest = async (
     logger.error(
       `Failed to create compile job for jobId=${event.jobId}: ${(e as Error).message}`,
     );
-
-    // Clean up PVC if it was created
-    await deletePvc(pName);
 
     await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
       jobId: event.jobId,
@@ -630,7 +504,6 @@ export const recoverActiveJobs = async (): Promise<void> => {
         const state: JobState = {
           jobId,
           k8sJobName: job.metadata?.name ?? jobName(jobId),
-          pvcName: pvcName(jobId),
           contractClassId: "unknown-recovery",
           version: 0,
           githubUrl: "unknown-recovery",

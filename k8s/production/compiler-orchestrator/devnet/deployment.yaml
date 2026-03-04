@@ -18,7 +18,7 @@ spec:
     spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
-      serviceAccountName: compiler-orchestrator
+      serviceAccountName: compiler-orchestrator-devnet
       containers:
         - image: registry.digitalocean.com/aztlan-containers/compiler-orchestrator-devnet:latest
           name: compiler-orchestrator

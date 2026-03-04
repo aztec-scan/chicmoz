@@ -55,10 +55,10 @@ export const JOB_MEMORY_LIMIT = z
   .default("4Gi")
   .parse(process.env.JOB_MEMORY_LIMIT);
 
-export const PVC_STORAGE_SIZE = z
+export const EMPTYDIR_SIZE_LIMIT = z
   .string()
   .default("1Gi")
-  .parse(process.env.PVC_STORAGE_SIZE);
+  .parse(process.env.EMPTYDIR_SIZE_LIMIT);
 
 export const READER_POD_IMAGE = z
   .string()
@@ -78,4 +78,4 @@ JOB_CPU_REQUEST:              ${JOB_CPU_REQUEST}
 JOB_CPU_LIMIT:                ${JOB_CPU_LIMIT}
 JOB_MEMORY_REQUEST:           ${JOB_MEMORY_REQUEST}
 JOB_MEMORY_LIMIT:             ${JOB_MEMORY_LIMIT}
-PVC_STORAGE_SIZE:             ${PVC_STORAGE_SIZE}`;
+EMPTYDIR_SIZE_LIMIT:          ${EMPTYDIR_SIZE_LIMIT}`;
