@@ -23,6 +23,9 @@ spec:
               containerPort: 3000
               protocol: TCP
           resources:
+            requests:
+              memory: 64Mi
+              cpu: 10m
             limits:
               memory: 300Mi
               cpu: 500m

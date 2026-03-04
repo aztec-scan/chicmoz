@@ -19,6 +19,9 @@ spec:
       containers:
         - image: auth:latest
           resources:
+            requests:
+              memory: 64Mi
+              cpu: 10m
             limits:
               memory: 1000Mi
               cpu: 500m

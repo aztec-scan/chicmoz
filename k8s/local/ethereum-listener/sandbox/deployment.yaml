@@ -31,6 +31,9 @@ spec:
       containers:
         - image: ethereum-listener:latest
           resources:
+            requests:
+              memory: 64Mi
+              cpu: 10m
             limits:
               memory: 300Mi
               cpu: 500m

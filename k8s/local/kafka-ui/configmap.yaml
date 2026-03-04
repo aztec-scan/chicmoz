@@ -8,7 +8,7 @@ data:
     kafka:
       clusters:
         - name: yaml
-          bootstrapServers: kafka-cluster-broker-endpoints:9092
+          bootstrapServers: kafka:9092
     auth:
       type: disabled
     management:

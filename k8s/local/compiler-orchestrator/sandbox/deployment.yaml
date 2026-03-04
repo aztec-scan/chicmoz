@@ -20,6 +20,9 @@ spec:
         - image: compiler-orchestrator:latest
           name: compiler-orchestrator
           resources:
+            requests:
+              memory: 32Mi
+              cpu: 10m
             limits:
               memory: 256Mi
               cpu: 250m

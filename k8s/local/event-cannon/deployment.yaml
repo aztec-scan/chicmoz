@@ -19,6 +19,9 @@ spec:
       containers:
         - image: event-cannon:latest
           resources:
+            requests:
+              memory: 128Mi
+              cpu: 10m
             limits:
               memory: 2Gi
               cpu: 500m
