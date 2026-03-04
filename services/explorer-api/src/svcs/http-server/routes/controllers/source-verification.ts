@@ -12,9 +12,6 @@ import {
 
 const MAX_CONCURRENT_JOBS_PER_IP = 3;
 
-// Simple in-memory rate limiting by IP
-const activeJobsByIp = new Map<string, number>();
-
 const getClientIp = (req: { ip?: string }): string => {
   return req.ip ?? "unknown";
 };
@@ -98,9 +95,9 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
     body: { githubUrl, gitRef, subPath, aztecVersion },
   } = postVerifySourceSchema.parse(req);
 
-  // Rate limit by IP
+  // Rate limit by IP (DB-backed — survives restarts and self-cleans as jobs complete)
   const clientIp = getClientIp(req);
-  const currentCount = activeJobsByIp.get(clientIp) ?? 0;
+  const currentCount = await db.l2Contract.getActiveJobCountByIp(clientIp);
   if (currentCount >= MAX_CONCURRENT_JOBS_PER_IP) {
     res.status(429).json({
       error:
@@ -129,8 +126,9 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
     return;
   }
 
-  // Validate GitHub URL format
-  const githubUrlPattern = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\/.*)?$/;
+  // Validate GitHub URL format — only allow https://github.com/<owner>/<repo> (optional .git / trailing slash)
+  const githubUrlPattern =
+    /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\.git)?\/?$/;
   if (!githubUrlPattern.test(githubUrl)) {
     res.status(400).json({
       error: "Invalid GitHub URL. Must be a public GitHub repository URL.",
@@ -151,9 +149,6 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
     aztecVersion,
     clientIp,
   });
-
-  // Track active jobs per IP
-  activeJobsByIp.set(clientIp, currentCount + 1);
 
   // Publish compile request to Kafka
   try {
@@ -181,10 +176,6 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
       status: "FAILED",
       error: "Failed to submit compilation request",
     });
-    activeJobsByIp.set(
-      clientIp,
-      Math.max(0, (activeJobsByIp.get(clientIp) ?? 1) - 1),
-    );
     res.status(500).json({ error: "Failed to submit compilation request" });
     return;
   }
@@ -235,6 +226,10 @@ export const openapi_GET_VERIFY_SOURCE_JOB: OpenAPIObject["paths"] = {
                   id: { type: "string" },
                   contractClassId: { type: "string" },
                   version: { type: "number" },
+                  githubUrl: { type: "string" },
+                  gitRef: { type: "string", nullable: true },
+                  subPath: { type: "string", nullable: true },
+                  aztecVersion: { type: "string" },
                   status: { type: "string" },
                   commitHash: { type: "string", nullable: true },
                   error: { type: "string", nullable: true },
@@ -253,11 +248,17 @@ export const openapi_GET_VERIFY_SOURCE_JOB: OpenAPIObject["paths"] = {
 
 export const GET_VERIFY_SOURCE_JOB = asyncHandler(async (req, res) => {
   const {
-    params: { jobId },
+    params: { contractClassId, version, jobId },
   } = getVerifySourceJobSchema.parse(req);
 
   const job = await db.l2Contract.getSourceVerificationJob(jobId);
   if (!job) {
+    res.status(404).json({ error: "Verification job not found" });
+    return;
+  }
+
+  // Validate that the job belongs to the contract class/version in the URL
+  if (job.contractClassId !== contractClassId || job.version !== version) {
     res.status(404).json({ error: "Verification job not found" });
     return;
   }
@@ -370,16 +371,3 @@ export const GET_CONTRACT_CLASS_SOURCE = asyncHandler(async (req, res) => {
     sourceCode: sourceData.sourceCode,
   });
 });
-
-/**
- * Decrement active job count for an IP when a job completes.
- * Called from the Kafka result handler.
- */
-export const decrementActiveJobCount = (ip: string) => {
-  const current = activeJobsByIp.get(ip) ?? 0;
-  if (current <= 1) {
-    activeJobsByIp.delete(ip);
-  } else {
-    activeJobsByIp.set(ip, current - 1);
-  }
-};

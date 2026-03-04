@@ -9,7 +9,6 @@ import { L2_NETWORK_ID } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { controllers as db } from "../../svcs/database/index.js";
 import { verifyArtifact } from "../../svcs/http-server/routes/controllers/contract-classes.js";
-import { decrementActiveJobCount } from "../../svcs/http-server/routes/controllers/source-verification.js";
 
 const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
   const {
@@ -26,18 +25,6 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
   logger.info(
     `Received compile source result for job ${jobId}: status=${status}`,
   );
-
-  // Decrement the active job count for the IP that submitted this job
-  try {
-    const job = await db.l2Contract.getSourceVerificationJob(jobId);
-    if (job?.clientIp) {
-      decrementActiveJobCount(job.clientIp);
-    }
-  } catch (e) {
-    logger.warn(
-      `Failed to decrement active job count for job ${jobId}: ${(e as Error).message}`,
-    );
-  }
 
   try {
     if (status !== "success") {
@@ -103,15 +90,23 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
       }
 
       // Store source code and URL
-      if (sourceFiles && sourceFiles.length > 0) {
-        await db.l2Contract.addSourceCode({
-          contractClassId,
-          version,
-          sourceCode: sourceFiles,
-          sourceCodeUrl,
-          sourceCodeCommitHash: commitHash,
+      if (!sourceFiles || sourceFiles.length === 0) {
+        await db.l2Contract.updateSourceVerificationJobStatus({
+          jobId,
+          status: "FAILED",
+          error:
+            "Verification succeeded but no source files were produced (reader may have failed to parse output)",
         });
+        return;
       }
+
+      await db.l2Contract.addSourceCode({
+        contractClassId,
+        version,
+        sourceCode: sourceFiles,
+        sourceCodeUrl,
+        sourceCodeCommitHash: commitHash,
+      });
 
       // Mark job as verified (also persist the resolved commit hash)
       await db.l2Contract.updateSourceVerificationJobStatus({

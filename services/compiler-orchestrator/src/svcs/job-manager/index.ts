@@ -67,25 +67,41 @@ const sanitizeForK8s = (id: string): string => {
 
 const jobName = (jobId: string): string => `compile-${sanitizeForK8s(jobId)}`;
 
+/**
+ * Validate that a git ref (branch, tag, commit hash) is safe.
+ * Allows alphanumeric, '.', '-', '_', '/' (for branch names like feature/foo).
+ */
+const isValidGitRef = (ref: string): boolean =>
+  /^[\w.\-/]+$/.test(ref) && !ref.includes("..");
+
+/**
+ * Validate that a sub-path within a repository is safe.
+ * Allows alphanumeric, '.', '-', '_', '/' (no '..' to prevent traversal).
+ */
+const isValidSubPath = (path: string): boolean =>
+  /^[\w.\-/]+$/.test(path) && !path.includes("..");
+
 // --- K8s Job creation ---
 
 const buildCompileScript = (
-  githubUrl: string,
-  gitRef?: string,
-  subPath?: string,
+  _githubUrl: string,
+  _gitRef?: string,
+  _subPath?: string,
 ): string => {
-  // Clone without --branch so commit hashes work too; checkout ref separately
-  const checkoutRef = gitRef
-    ? `git checkout ${gitRef}`
+  // Arguments are passed via env vars (GIT_URL, GIT_REF, SUB_PATH) to avoid
+  // shell injection — this script only references those env vars, never
+  // interpolated user input.
+  const checkoutRef = _gitRef
+    ? `git checkout "$GIT_REF"`
     : "echo 'Using default branch'";
-  const cdSubPath = subPath
-    ? `cd /workspace/repo/${subPath}`
+  const cdSubPath = _subPath
+    ? `cd "/workspace/repo/$SUB_PATH"`
     : "cd /workspace/repo";
 
   return [
     `set -e`,
     `echo "Cloning repository..."`,
-    `git clone "${githubUrl}" /workspace/repo`,
+    `git clone "$GIT_URL" /workspace/repo`,
     `cd /workspace/repo`,
     checkoutRef,
     `git rev-parse HEAD > /output/commit_hash`,
@@ -174,6 +190,16 @@ const createCompileJob = async (state: JobState): Promise<void> => {
                   name: "NARGO_HOME",
                   value: "/root/nargo",
                 },
+                {
+                  name: "GIT_URL",
+                  value: state.githubUrl,
+                },
+                ...(state.gitRef
+                  ? [{ name: "GIT_REF", value: state.gitRef }]
+                  : []),
+                ...(state.subPath
+                  ? [{ name: "SUB_PATH", value: state.subPath }]
+                  : []),
               ],
               volumeMounts: [
                 {
@@ -453,6 +479,33 @@ export const handleCompileRequest = async (
       version: event.version,
       status: "compilation_failed",
       error: "Server at maximum compilation capacity. Please try again later.",
+    });
+    return;
+  }
+
+  // Validate gitRef and subPath to prevent shell injection / path traversal
+  if (event.gitRef && !isValidGitRef(event.gitRef)) {
+    logger.warn(`Invalid gitRef for jobId=${event.jobId}: ${event.gitRef}`);
+    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+      jobId: event.jobId,
+      contractClassId: event.contractClassId,
+      version: event.version,
+      status: "compilation_failed",
+      error:
+        "Invalid git ref. Only alphanumeric characters, '.', '-', '_', and '/' are allowed.",
+    });
+    return;
+  }
+
+  if (event.subPath && !isValidSubPath(event.subPath)) {
+    logger.warn(`Invalid subPath for jobId=${event.jobId}: ${event.subPath}`);
+    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+      jobId: event.jobId,
+      contractClassId: event.contractClassId,
+      version: event.version,
+      status: "compilation_failed",
+      error:
+        "Invalid sub-path. Only alphanumeric characters, '.', '-', '_', and '/' are allowed (no '..').",
     });
     return;
   }

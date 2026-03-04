@@ -13,7 +13,8 @@ type VerifySourceFormProps = {
   onSuccess?: () => void;
 };
 
-const GITHUB_URL_PATTERN = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\/.*)?$/;
+const GITHUB_URL_PATTERN =
+  /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\.git)?\/?$/;
 
 export const VerifySourceForm: FC<VerifySourceFormProps> = ({
   classId,

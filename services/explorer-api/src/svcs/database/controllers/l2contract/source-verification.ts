@@ -132,6 +132,25 @@ export const getActiveVerificationJobCount = async (): Promise<number> => {
   return result.length;
 };
 
+export const getActiveJobCountByIp = async (
+  clientIp: string,
+): Promise<number> => {
+  const result = await db()
+    .select()
+    .from(sourceVerificationJobs)
+    .where(
+      and(
+        eq(sourceVerificationJobs.clientIp, clientIp),
+        inArray(sourceVerificationJobs.status, [
+          "PENDING",
+          "COMPILING",
+          "VERIFYING",
+        ]),
+      ),
+    );
+  return result.length;
+};
+
 export const getContractClassSourceCode = async (
   contractClassId: string,
   version: number,

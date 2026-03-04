@@ -83,7 +83,9 @@ export async function run() {
   const submitBody = JSON.parse(submitRes.data) as Record<string, unknown>;
 
   if (submitRes.statusCode === 200) {
-    logger.info(`Source already verified: ${submitBody.message as string}`);
+    logger.info(
+      `Source already verified (status=${submitBody.status as string}, sourceCodeUrl=${submitBody.sourceCodeUrl as string})`,
+    );
     return;
   }
 
