@@ -37,7 +37,7 @@ spec:
           name: explorer-api-devnet
           resources:
             limits:
-              memory: 300Mi
+              memory: 1000Mi
               cpu: 500m
           ports:
             - name: http-app-port
