@@ -8,4 +8,5 @@ export const contractClassSchema = z.object({
   version: z.number(),
   artifactHash: z.string(),
   privateFunctionsRoot: z.string(),
+  sourceCodeUrl: z.string().nullable().optional(),
 });

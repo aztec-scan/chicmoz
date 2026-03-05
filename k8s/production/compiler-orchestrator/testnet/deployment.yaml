@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: compiler-orchestrator-testnet-label
+  name: compiler-orchestrator-testnet-deployment
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compiler-orchestrator-testnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: compiler-orchestrator-testnet-label
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      serviceAccountName: compiler-orchestrator
+      containers:
+        - image: registry.digitalocean.com/aztlan-containers/compiler-orchestrator-testnet:latest
+          name: compiler-orchestrator
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 250m
+          env:
+            - name: INSTANCE_NAME
+              value: "testnet_compiler-orchestrator"
+            - name: NODE_ENV
+              value: "production"
+            - name: L2_NETWORK_ID
+              value: "TESTNET"
+            - name: K8S_NAMESPACE
+              value: "chicmoz-prod"
+            - name: COMPILER_IMAGE
+              value: "registry.digitalocean.com/aztlan-containers/contract-compiler:4.0.3"
+            - name: MAX_CONCURRENT_JOBS
+              value: "3"
+            - name: JOB_TIMEOUT_SECONDS
+              value: "300"
+status: {}

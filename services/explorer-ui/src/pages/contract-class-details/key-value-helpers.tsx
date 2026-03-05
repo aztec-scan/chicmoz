@@ -12,15 +12,32 @@ export const getContractClassKeyValueData = (
 ) => {
   const sourceCode = data.sourceCodeUrl
     ? {
-        label: "SOURCE CODE URL",
-        value: "View source code",
-        extLink: data.sourceCodeUrl,
-      }
-    : {
-        label: "SOURCE CODE URL",
+        label: "SOURCE CODE",
         value: "CUSTOM",
         customValue: (
-          <div className="text-gray-400 dark:text-gray-500">Not available</div>
+          <div className="flex items-center gap-2 justify-end">
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-800 dark:text-green-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              Verified
+            </span>
+            <a
+              href={data.sourceCodeUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary hover:underline text-sm"
+            >
+              View source
+            </a>
+          </div>
+        ),
+      }
+    : {
+        label: "SOURCE CODE",
+        value: "CUSTOM",
+        customValue: (
+          <div className="text-gray-400 dark:text-gray-500 text-sm">
+            Not verified
+          </div>
         ),
       };
 

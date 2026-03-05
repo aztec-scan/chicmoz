@@ -16,6 +16,7 @@
 # workaround for wildcards not working in exclusions (requires docker engine >23 https://docs.docker.com/engine/release-notes/23.0/#bug-fixes-and-enhancements-1)
 # find . -name 'package.json' -not -path './.yarn/*' -not -path './packages/*' -maxdepth 3 | sed -e 's/^.\//!/'
 !services/auth/package.json
+!services/compiler-orchestrator/package.json
 !services/event-cannon/package.json
 !services/aztec-listener/package.json
 !services/ethereum-listener/package.json

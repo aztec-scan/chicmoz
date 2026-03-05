@@ -11,3 +11,5 @@ requires:
   - path: ./websocket-event-publisher/skaffold.sandbox.yaml
   - path: ./event-cannon/skaffold.yaml
   - path: ./auth/skaffold.yaml
+  - path: ./contract-compiler/skaffold.yaml
+  - path: ./compiler-orchestrator/skaffold.sandbox.yaml

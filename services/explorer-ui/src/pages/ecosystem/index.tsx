@@ -1,15 +1,29 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+} from "lucide-react";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
 import { InfoCard } from "~/components/info-card";
-import { useContractInstancesWithAztecScanNotes, useSubTitle } from "~/hooks";
+import {
+  useContractClasses,
+  useContractInstancesWithAztecScanNotes,
+  useSubTitle,
+} from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 
 export const Ecosystem: FC = () => {
   const { data, isLoading, error } = useContractInstancesWithAztecScanNotes();
+  const {
+    data: contractClasses,
+    isLoading: isLoadingClasses,
+    error: classesError,
+  } = useContractClasses();
   useSubTitle("Ecosystem");
   const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
 
@@ -34,6 +48,14 @@ export const Ecosystem: FC = () => {
       };
     });
   }, [data]);
+
+  const verifiedSourceContracts = useMemo(() => {
+    if (!contractClasses) {
+      return [];
+    }
+    return contractClasses.filter((cc) => !!cc.sourceCodeUrl);
+  }, [contractClasses]);
+
   const sdkLink = (
     <>
       Please refer to{" "}
@@ -103,10 +125,11 @@ export const Ecosystem: FC = () => {
               )}
             </button>
             <div
-              className={`overflow-hidden transition-all duration-300 ${isMetadataExpanded
-                ? "max-h-[1000px] opacity-100 mt-3"
-                : "max-h-0 opacity-0"
-                }`}
+              className={`overflow-hidden transition-all duration-300 ${
+                isMetadataExpanded
+                  ? "max-h-[1000px] opacity-100 mt-3"
+                  : "max-h-0 opacity-0"
+              }`}
             >
               <h3>Contract Metadata</h3>
               <p className="mb-4">
@@ -208,6 +231,79 @@ export const Ecosystem: FC = () => {
                   isLoading={isLoading}
                   error={error}
                 />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Verified Source Code Section */}
+        <h2 className="mt-10 mb-4">Verified Source Code</h2>
+        <div className="flex flex-wrap md:w-2/3 mb-6">
+          <p className="text-sm text-gray-600 mb-4 px-4">
+            Contract classes with verified source code. The source code has been
+            compiled and its bytecode matched against the on-chain contract
+            class.
+          </p>
+        </div>
+
+        {isLoadingClasses && (
+          <div className="text-center">Loading verified contracts...</div>
+        )}
+
+        {classesError && (
+          <div className="text-center text-red-500">
+            Error loading verified contracts: {classesError.message}
+          </div>
+        )}
+
+        {!isLoadingClasses &&
+          !classesError &&
+          verifiedSourceContracts.length === 0 && (
+            <div className="text-center text-gray-500">
+              No contracts with verified source code found yet.
+            </div>
+          )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full md:w-2/3">
+          {verifiedSourceContracts.map((cc) => {
+            const classUrl = `${routes.contracts.route}${routes.contracts.children.classes.route}/${cc.contractClassId}/versions/${cc.version}`;
+
+            return (
+              <div
+                key={`${cc.contractClassId}-${cc.version}`}
+                className="relative"
+              >
+                <InfoCard
+                  title={
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 size={14} className="text-green-500" />
+                      <Link to={classUrl} className="hover:no-underline">
+                        {truncateHashString(cc.contractClassId)}
+                      </Link>
+                      <span className="text-gray-400 text-[10px]">
+                        v{cc.version}
+                      </span>
+                    </span>
+                  }
+                  header={
+                    <Link to={classUrl} className="hover:no-underline">
+                      {cc.artifactContractName ?? "Unknown Contract"}
+                    </Link>
+                  }
+                  details={cc.sourceCodeUrl ?? undefined}
+                  isLoading={isLoadingClasses}
+                  error={classesError}
+                />
+                {cc.sourceCodeUrl && (
+                  <a
+                    href={cc.sourceCodeUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="absolute top-3 right-3 text-gray-400 hover:text-purple-light"
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                )}
               </div>
             );
           })}

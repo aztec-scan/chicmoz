@@ -19,6 +19,9 @@ spec:
       containers:
         - image: event-cannon:latest
           resources:
+            requests:
+              memory: 128Mi
+              cpu: 10m
             limits:
               memory: 2Gi
               cpu: 500m
@@ -43,12 +46,14 @@ spec:
             - name: SCENARIO_SIMPLE_LOG
               value: "true"
             - name: SCENARIO_L1L2_PUBLIC_MESSAGING
-              value: "true"
+              value: "false"
             - name: SCENARIO_L1L2_PRIVATE_MESSAGING
-              value: "true"
+              value: "false"
             #TODO: https://github.com/aztec-scan/chicmoz/issues/375
             - name: SCENARIO_DEPLOY_AND_UPDATE
-              value: "true"
+              value: "false"
             - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT
+              value: "true"
+            - name: SCENARIO_VERIFY_SOURCE_CODE
               value: "true"
 status: {}

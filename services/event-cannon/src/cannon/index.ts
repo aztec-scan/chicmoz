@@ -10,6 +10,7 @@ import {
   SCENARIO_SIMPLE_DEFAULT_ACCOUNT,
   SCENARIO_SIMPLE_LOG,
   SCENARIO_TOKEN_CONTRACT,
+  SCENARIO_VERIFY_SOURCE_CODE,
 } from "../environment.js";
 import { logger } from "../logger.js";
 import { setup } from "./pxe.js";
@@ -85,6 +86,13 @@ export async function init() {
     });
   }
 
+  if (SCENARIO_VERIFY_SOURCE_CODE) {
+    scenariosToRun.push({
+      envVar: "SCENARIO_VERIFY_SOURCE_CODE",
+      scenario: scenarios.verifySourceCode,
+    });
+  }
+
   logger.info(`
 SCENARIO_DELAY:                  ${SCENARIO_DELAY / 1000} seconds
 INIFINITE_LOOP:                  ${INIFINITE_LOOP ? "✅" : "❌"}
@@ -100,6 +108,7 @@ SCENARIO_SIMPLE_LOG:                    ${SCENARIO_SIMPLE_LOG ? "✅" : "❌"}
 SCENARIO_L1L2_PUBLIC_MESSAGING:         ${SCENARIO_L1L2_PUBLIC_MESSAGING ? "✅" : "❌"}
 SCENARIO_L1L2_PRIVATE_MESSAGING:        ${SCENARIO_L1L2_PRIVATE_MESSAGING ? "✅" : "❌"}
 SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT ? "✅" : "❌"}
+SCENARIO_VERIFY_SOURCE_CODE:            ${SCENARIO_VERIFY_SOURCE_CODE ? "✅" : "❌"}
 `);
 
   await setup();

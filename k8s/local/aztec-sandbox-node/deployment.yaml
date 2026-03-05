@@ -29,6 +29,9 @@ spec:
         - image: aztecprotocol/aztec:4.0.3
           name: aztec-sandbox-node
           resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
             limits:
               memory: 4Gi
               cpu: 2000m

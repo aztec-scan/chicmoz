@@ -10,3 +10,5 @@ requires:
   - path: ./aztec-listener/skaffold.testnet.yaml
   - path: ./ethereum-listener/skaffold.testnet.yaml
   - path: ./websocket-event-publisher/skaffold.testnet.yaml
+  - path: ./contract-compiler/skaffold.yaml
+  - path: ./compiler-orchestrator/skaffold.testnet.yaml

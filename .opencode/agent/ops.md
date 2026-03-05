@@ -1,6 +1,6 @@
 ---
 description: Chicmoz infrastructure, Kubernetes, deployment, and operational tasks. Use for anything related to K8s manifests, Skaffold configs, scaling, database operations, CI/CD, secrets, ingress, or production troubleshooting.
-mode: subagent
+mode: all
 tools:
   write: false
   edit: false

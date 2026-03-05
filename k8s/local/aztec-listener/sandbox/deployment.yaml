@@ -27,6 +27,9 @@ spec:
       containers:
         - image: aztec-listener:latest
           resources:
+            requests:
+              memory: 64Mi
+              cpu: 10m
             limits:
               memory: 750Mi
               cpu: 500m

@@ -3,5 +3,16 @@ FROM aztecprotocol/aztec:4.0.3
 # Put nargo and bb on PATH so `aztec compile` can find them
 ENV PATH="/usr/src/noir/noir-repo/target/release:/usr/src/barretenberg/ts/build/amd64-linux:${PATH}"
 
-# The aztec CLI entrypoint
-ENTRYPOINT ["node", "--no-warnings", "/usr/src/yarn-project/aztec/dest/bin/index.js"]
+# Pre-fetch nargo dependencies so compiles don't need network access
+RUN git clone --depth 1 --branch v4.0.3 \
+      https://github.com/AztecProtocol/aztec-packages.git \
+      /root/nargo/github.com/AztecProtocol/aztec-packages/v4.0.3 && \
+    git clone --depth 1 --branch v0.2.3 \
+      https://github.com/noir-lang/poseidon.git \
+      /root/nargo/github.com/noir-lang/poseidon/v0.2.3 && \
+    git clone --depth 1 --branch v0.3.0 \
+      https://github.com/noir-lang/sha256.git \
+      /root/nargo/github.com/noir-lang/sha256/v0.3.0
+
+# The compilation entrypoint is configured by the K8s Job command/args
+ENTRYPOINT ["/bin/sh", "-c"]

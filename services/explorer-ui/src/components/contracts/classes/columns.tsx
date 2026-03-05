@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
+import { CheckCircle2 } from "lucide-react";
 import { CopyableText } from "~/components/copy-text";
+import { CustomTooltip } from "~/components/custom-tooltip";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
@@ -119,5 +121,28 @@ export const contractsTableColumns: ColumnDef<ContractClass>[] = [
         </div>
       );
     },
+  },
+  {
+    accessorKey: "sourceCodeUrl",
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        className="text-purple-dark text-sm"
+        column={column}
+        title=""
+      />
+    ),
+    cell: ({ row }) => {
+      const sourceCodeUrl = row.getValue("sourceCodeUrl");
+      if (!sourceCodeUrl) {
+        return null;
+      }
+      return (
+        <CustomTooltip content="Source code verified">
+          <CheckCircle2 size={16} className="text-green-500" />
+        </CustomTooltip>
+      );
+    },
+    enableSorting: false,
+    enableHiding: true,
   },
 ];

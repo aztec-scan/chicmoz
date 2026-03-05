@@ -9,3 +9,5 @@ requires:
   - path: ./aztec-listener/skaffold.devnet.yaml
   - path: ./ethereum-listener/skaffold.devnet.yaml
   - path: ./websocket-event-publisher/skaffold.devnet.yaml
+  - path: ./contract-compiler/skaffold.yaml
+  - path: ./compiler-orchestrator/skaffold.devnet.yaml
