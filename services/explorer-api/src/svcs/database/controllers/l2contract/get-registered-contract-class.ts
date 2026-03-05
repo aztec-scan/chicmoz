@@ -68,6 +68,11 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
       artifactHash: l2ContractClassRegistered.artifactHash,
       privateFunctionsRoot: l2ContractClassRegistered.privateFunctionsRoot,
       packedBytecode: l2ContractClassRegistered.packedBytecode,
+      artifactContractName: l2ContractClassRegistered.artifactContractName,
+      standardContractType: l2ContractClassRegistered.standardContractType,
+      standardContractVersion:
+        l2ContractClassRegistered.standardContractVersion,
+      sourceCodeUrl: l2ContractClassRegistered.sourceCodeUrl,
     })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))

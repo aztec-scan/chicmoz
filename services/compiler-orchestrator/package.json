@@ -1,0 +1,36 @@
+{
+  "name": "@chicmoz/compiler-orchestrator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@chicmoz-pkg/logger-server": "workspace:^",
+    "@chicmoz-pkg/message-bus": "workspace:^",
+    "@chicmoz-pkg/message-registry": "workspace:^",
+    "@chicmoz-pkg/microservice-base": "workspace:^",
+    "@chicmoz-pkg/types": "workspace:^",
+    "@kubernetes/client-node": "1.0.0",
+    "tslib": "2.6.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.5.0",
+    "@typescript-eslint/eslint-plugin": "6.11.0",
+    "@typescript-eslint/parser": "6.11.0",
+    "eslint": "8.53.0",
+    "eslint-config-prettier": "9.0.0",
+    "eslint-plugin-import": "2.29.0",
+    "typescript": "5.8.3"
+  },
+  "scripts": {
+    "prebuild": "rm -rf build; mkdir build",
+    "build": "yarn tsc",
+    "postbuild": "test -d public && ln -s ../public build/public || true",
+    "predev": "yarn build",
+    "dev": "yarn node build/src/index.js",
+    "start": "yarn node build/src/index.js",
+    "lint": "yarn run lint-base --ext .ts .",
+    "lint-base": "yarn run g:lint"
+  },
+  "type": "module"
+}

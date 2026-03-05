@@ -103,3 +103,46 @@ export const callExplorerApi = async ({
 
   return res;
 };
+
+export const getExplorerApi = async ({
+  urlStr,
+  loggingString,
+}: {
+  urlStr: string;
+  loggingString: string;
+}) => {
+  const url = new URL(urlStr);
+  const request = url.protocol === "https:" ? https.request : http.request;
+
+  logger.info(`📲📡 "${loggingString}" GET ${urlStr}`);
+
+  const res: {
+    statusCode: number | undefined;
+    statusMessage: string | undefined;
+    data: string;
+  } = await new Promise((resolve, reject) => {
+    const req = request(url, { method: "GET" }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+      res.on("end", () => {
+        resolve({
+          statusCode: res.statusCode,
+          statusMessage: res.statusMessage,
+          data,
+        });
+      });
+    });
+    req.on("error", (error) => {
+      logger.error(`📲❌ "${loggingString}" GET FAILED! rejecting...`);
+      reject(error);
+    });
+    req.setTimeout(30000, () => {
+      reject(new Error("GET request timed out after 30s"));
+    });
+    req.end();
+  });
+
+  return res;
+};
