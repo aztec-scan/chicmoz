@@ -5,6 +5,7 @@ import { logger } from "../../logger.js";
 import {
   COMPILER_IMAGE,
   EMPTYDIR_SIZE_LIMIT,
+  IMAGE_PULL_SECRET,
   JOB_CPU_LIMIT,
   JOB_CPU_REQUEST,
   JOB_MEMORY_LIMIT,
@@ -177,6 +178,9 @@ const createCompileJob = async (state: JobState): Promise<void> => {
           },
         },
         spec: {
+          ...(IMAGE_PULL_SECRET
+            ? { imagePullSecrets: [{ name: IMAGE_PULL_SECRET }] }
+            : {}),
           restartPolicy: "Never",
           automountServiceAccountToken: false,
           initContainers: [
@@ -396,13 +400,19 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
       `Failed to read artifact for jobId=${state.jobId}: ${(e as Error).message}`,
     );
 
-    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
-      jobId: state.jobId,
-      contractClassId: state.contractClassId,
-      version: state.version,
-      status: "compilation_failed",
-      error: `Failed to read compiled artifact: ${(e as Error).message}`,
-    });
+    try {
+      await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+        jobId: state.jobId,
+        contractClassId: state.contractClassId,
+        version: state.version,
+        status: "compilation_failed",
+        error: `Failed to read compiled artifact: ${(e as Error).message}`,
+      });
+    } catch (publishError) {
+      logger.error(
+        `Failed to publish failure result for jobId=${state.jobId}: ${(publishError as Error).message}`,
+      );
+    }
   }
 };
 
@@ -417,13 +427,19 @@ const handleJobFailure = async (state: JobState): Promise<void> => {
 
   logger.warn(`Job failed: ${state.k8sJobName}, reason: ${reason}`);
 
-  await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
-    jobId: state.jobId,
-    contractClassId: state.contractClassId,
-    version: state.version,
-    status,
-    error: reason,
-  });
+  try {
+    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+      jobId: state.jobId,
+      contractClassId: state.contractClassId,
+      version: state.version,
+      status,
+      error: reason,
+    });
+  } catch (e) {
+    logger.error(
+      `Failed to publish failure result for jobId=${state.jobId}: ${(e as Error).message}`,
+    );
+  }
 };
 
 // --- Poll loop ---
@@ -473,40 +489,59 @@ export const handleCompileRequest = async (
     logger.warn(
       `Max concurrent jobs (${MAX_CONCURRENT_JOBS}) reached, rejecting jobId=${event.jobId}`,
     );
-    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
-      jobId: event.jobId,
-      contractClassId: event.contractClassId,
-      version: event.version,
-      status: "compilation_failed",
-      error: "Server at maximum compilation capacity. Please try again later.",
-    });
+    try {
+      await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+        jobId: event.jobId,
+        contractClassId: event.contractClassId,
+        version: event.version,
+        status: "compilation_failed",
+        error:
+          "Server at maximum compilation capacity. Please try again later.",
+      });
+    } catch (e) {
+      logger.error(
+        `Failed to publish rejection for jobId=${event.jobId}: ${(e as Error).message}`,
+      );
+    }
     return;
   }
 
   // Validate gitRef and subPath to prevent shell injection / path traversal
   if (event.gitRef && !isValidGitRef(event.gitRef)) {
     logger.warn(`Invalid gitRef for jobId=${event.jobId}: ${event.gitRef}`);
-    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
-      jobId: event.jobId,
-      contractClassId: event.contractClassId,
-      version: event.version,
-      status: "compilation_failed",
-      error:
-        "Invalid git ref. Only alphanumeric characters, '.', '-', '_', and '/' are allowed.",
-    });
+    try {
+      await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+        jobId: event.jobId,
+        contractClassId: event.contractClassId,
+        version: event.version,
+        status: "compilation_failed",
+        error:
+          "Invalid git ref. Only alphanumeric characters, '.', '-', '_', and '/' are allowed.",
+      });
+    } catch (e) {
+      logger.error(
+        `Failed to publish rejection for jobId=${event.jobId}: ${(e as Error).message}`,
+      );
+    }
     return;
   }
 
   if (event.subPath && !isValidSubPath(event.subPath)) {
     logger.warn(`Invalid subPath for jobId=${event.jobId}: ${event.subPath}`);
-    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
-      jobId: event.jobId,
-      contractClassId: event.contractClassId,
-      version: event.version,
-      status: "compilation_failed",
-      error:
-        "Invalid sub-path. Only alphanumeric characters, '.', '-', '_', and '/' are allowed (no '..').",
-    });
+    try {
+      await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+        jobId: event.jobId,
+        contractClassId: event.contractClassId,
+        version: event.version,
+        status: "compilation_failed",
+        error:
+          "Invalid sub-path. Only alphanumeric characters, '.', '-', '_', and '/' are allowed (no '..').",
+      });
+    } catch (e) {
+      logger.error(
+        `Failed to publish rejection for jobId=${event.jobId}: ${(e as Error).message}`,
+      );
+    }
     return;
   }
 
@@ -533,13 +568,19 @@ export const handleCompileRequest = async (
       `Failed to create compile job for jobId=${event.jobId}: ${(e as Error).message}`,
     );
 
-    await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
-      jobId: event.jobId,
-      contractClassId: event.contractClassId,
-      version: event.version,
-      status: "compilation_failed",
-      error: `Failed to create compile job: ${(e as Error).message}`,
-    });
+    try {
+      await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+        jobId: event.jobId,
+        contractClassId: event.contractClassId,
+        version: event.version,
+        status: "compilation_failed",
+        error: `Failed to create compile job: ${(e as Error).message}`,
+      });
+    } catch (publishError) {
+      logger.error(
+        `Failed to publish failure result for jobId=${event.jobId}: ${(publishError as Error).message}`,
+      );
+    }
   }
 };
 

@@ -65,6 +65,11 @@ export const READER_POD_IMAGE = z
   .default("alpine:3.19")
   .parse(process.env.READER_POD_IMAGE);
 
+export const IMAGE_PULL_SECRET = z
+  .string()
+  .optional()
+  .parse(process.env.IMAGE_PULL_SECRET);
+
 export const SERVICE_NAME = "compiler-orchestrator";
 
 export const getConfigStr = () => `COMPILER ORCHESTRATOR
@@ -78,4 +83,5 @@ JOB_CPU_REQUEST:              ${JOB_CPU_REQUEST}
 JOB_CPU_LIMIT:                ${JOB_CPU_LIMIT}
 JOB_MEMORY_REQUEST:           ${JOB_MEMORY_REQUEST}
 JOB_MEMORY_LIMIT:             ${JOB_MEMORY_LIMIT}
-EMPTYDIR_SIZE_LIMIT:          ${EMPTYDIR_SIZE_LIMIT}`;
+EMPTYDIR_SIZE_LIMIT:          ${EMPTYDIR_SIZE_LIMIT}
+IMAGE_PULL_SECRET:            ${IMAGE_PULL_SECRET ?? "(none)"}`;
