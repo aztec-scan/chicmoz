@@ -108,10 +108,21 @@ const buildCompileScript = (
     `git rev-parse HEAD > /output/commit_hash`,
     cdSubPath,
     `echo "Compiling contract..."`,
+    `ARTIFACT_MARKER_FILE="$(mktemp)"`,
+    `touch "$ARTIFACT_MARKER_FILE"`,
     `node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile`,
-    `echo "Copying compiled artifact..."`,
+    `echo "Discovering compiled artifact..."`,
     `mkdir -p /output/artifact`,
-    `cp target/*.json /output/artifact/`,
+    `CONTRACT_DIR_NAME="$(basename "$PWD")"`,
+    `ARTIFACT_PATHS="$(find /workspace/repo -type f -path "*/target/*.json" -newer "$ARTIFACT_MARKER_FILE" | sort)"`,
+    `printf "%s\\n" "$ARTIFACT_PATHS" | sed '/^$/d' > /tmp/artifact-paths.txt`,
+    `if [ ! -s /tmp/artifact-paths.txt ]; then echo "No compiled artifact found after compile (searched: /workspace/repo/**/target/*.json newer than marker)"; exit 1; fi`,
+    `echo "Discovered artifact paths:"`,
+    `cat /tmp/artifact-paths.txt`,
+    `SELECTED_ARTIFACT_PATH="$(grep "/target/$CONTRACT_DIR_NAME" /tmp/artifact-paths.txt | head -n 1 || true)"`,
+    `if [ -z "$SELECTED_ARTIFACT_PATH" ]; then SELECTED_ARTIFACT_PATH="$(head -n 1 /tmp/artifact-paths.txt)"; fi`,
+    `cp "$SELECTED_ARTIFACT_PATH" /output/artifact/`,
+    `rm -f "$ARTIFACT_MARKER_FILE"`,
     `echo "Copying source files (excluding .git)..."`,
     `mkdir -p /output/source`,
     `find . -not -path './.git/*' -not -name '.git' | cpio -pdm /output/source/ 2>/dev/null || cp -r . /output/source/ && rm -rf /output/source/.git`,
@@ -124,7 +135,7 @@ const buildReaderScript = (): string => {
 echo "===COMMIT_HASH_START==="
 cat /output/commit_hash 2>/dev/null || echo ""
 echo "===COMMIT_HASH_END==="
-ARTIFACT_FILE=$(find /output/artifact -name "*.json" -type f | head -n 1)
+ARTIFACT_FILE=$(find /output/artifact -name "*.json" -type f | sort | head -n 1)
 if [ -z "$ARTIFACT_FILE" ]; then echo "NO_ARTIFACT_FOUND"; exit 1; fi
 echo "===ARTIFACT_START==="
 cat "$ARTIFACT_FILE"
