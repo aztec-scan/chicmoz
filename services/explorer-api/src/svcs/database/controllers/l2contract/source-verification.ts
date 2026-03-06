@@ -1,6 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import type { SourceVerificationStatus } from "@chicmoz-pkg/types";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   sourceVerificationJobs,
@@ -120,7 +120,7 @@ export const addSourceCode = async ({
 
 export const getActiveVerificationJobCount = async (): Promise<number> => {
   const result = await db()
-    .select()
+    .select({ count: sql<number>`count(*)` })
     .from(sourceVerificationJobs)
     .where(
       inArray(sourceVerificationJobs.status, [
@@ -129,14 +129,14 @@ export const getActiveVerificationJobCount = async (): Promise<number> => {
         "VERIFYING",
       ]),
     );
-  return result.length;
+  return result[0]?.count ?? 0;
 };
 
 export const getActiveJobCountByIp = async (
   clientIp: string,
 ): Promise<number> => {
   const result = await db()
-    .select()
+    .select({ count: sql<number>`count(*)` })
     .from(sourceVerificationJobs)
     .where(
       and(
@@ -148,7 +148,7 @@ export const getActiveJobCountByIp = async (
         ]),
       ),
     );
-  return result.length;
+  return result[0]?.count ?? 0;
 };
 
 export const getContractClassSourceCode = async (

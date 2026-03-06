@@ -26,6 +26,16 @@ spec:
             limits:
               memory: 256Mi
               cpu: 250m
+          livenessProbe:
+            exec:
+              command: ["node", "-e", "process.exit(0)"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["node", "-e", "process.exit(0)"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
           env:
             - name: INSTANCE_NAME
               value: "devnet_compiler-orchestrator"
@@ -41,4 +51,6 @@ spec:
               value: "3"
             - name: JOB_TIMEOUT_SECONDS
               value: "300"
+            - name: IMAGE_PULL_SECRET
+              value: "registry-aztlan-containers"
 status: {}

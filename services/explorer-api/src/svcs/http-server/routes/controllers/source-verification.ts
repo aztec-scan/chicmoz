@@ -186,7 +186,7 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
 
   res.status(202).json({
     jobId,
-    status: "PENDING",
+    status: "COMPILING",
   });
 });
 
