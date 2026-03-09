@@ -116,12 +116,16 @@ export async function run() {
     additionalInfo: "Cast vote 3 - candidate B",
   });
 
-  const votesA = (await votingContractAlice.methods
-    .get_tally(electionId, candidateA)
-    .simulate({ from: deployerWallet.address })) as bigint;
-  const votesB = (await votingContractAlice.methods
-    .get_tally(electionId, candidateB)
-    .simulate({ from: deployerWallet.address })) as bigint;
+  const votesA = (
+    await votingContractAlice.methods
+      .get_tally(electionId, candidateA)
+      .simulate({ from: deployerWallet.address })
+  ).result as bigint;
+  const votesB = (
+    await votingContractAlice.methods
+      .get_tally(electionId, candidateB)
+      .simulate({ from: deployerWallet.address })
+  ).result as bigint;
 
   logger.info(`  Votes for candidate 1: ${votesA}`);
   logger.info(`  Votes for candidate 2: ${votesB}`);

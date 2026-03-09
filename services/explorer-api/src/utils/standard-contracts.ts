@@ -15,7 +15,7 @@ const contracts: Record<
   ContractStandardVersion,
   Record<ContractStandardName<ContractStandardVersion>, NoirCompiledContract>
 > = {
-  "4.0.3": {
+  "4.1.0-rc.2": {
     // TODO: these types are not actually checked
     token: TokenContractJson as NoirCompiledContract,
     dripper: DripperContractJson as NoirCompiledContract,

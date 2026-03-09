@@ -118,7 +118,7 @@ export type ChicmozL2UtilityFunctionBroadcastedEvent = z.infer<
 >;
 
 export const CONTRACT_STANDARDS = {
-  "4.0.3": [
+  "4.1.0-rc.2": [
     "token",
     "dripper",
     "escrow",

@@ -208,18 +208,19 @@ export const run = async () => {
   });
 
   if (
-    (await token.methods
-      .get_admin()
-      .simulate({ from: account.getAddress() })) !== owner.toBigInt()
+    (await token.methods.get_admin().simulate({ from: account.getAddress() }))
+      .result !== owner.toBigInt()
   ) {
     throw new Error(`Token admin is not ${owner.toString()}`);
   }
 
   if (
     !(
-      (await bridge.methods
-        .get_config()
-        .simulate({ from: account.getAddress() })) as { token: AztecAddress }
+      (
+        await bridge.methods
+          .get_config()
+          .simulate({ from: account.getAddress() })
+      ).result as { token: AztecAddress }
     ).token.equals(token.address)
   ) {
     throw new Error(`Bridge token is not ${token.address.toString()}`);
@@ -231,9 +232,11 @@ export const run = async () => {
       .send({ from: account.getAddress() }),
     "setting minter",
   );
-  const isMinterResult = (await token.methods
-    .is_minter(bridge.address)
-    .simulate({ from: account.getAddress() })) as boolean;
+  const isMinterResult = (
+    await token.methods
+      .is_minter(bridge.address)
+      .simulate({ from: account.getAddress() })
+  ).result as boolean;
   logger.info(
     `is_minter result: ${JSON.stringify(isMinterResult)} (type: ${typeof isMinterResult})`,
   );
@@ -297,7 +300,7 @@ export const run = async () => {
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-    l1TokenBalance - bridgeAmount,
+      l1TokenBalance - bridgeAmount,
   );
   const msgHash = Fr.fromString(claim.messageHash);
 
@@ -333,9 +336,11 @@ export const run = async () => {
     "claiming private tokens",
   );
 
-  const l2TokenBalance = (await l2Token.methods
-    .balance_of_private(ownerAddress)
-    .simulate({ from: account.getAddress() })) as bigint;
+  const l2TokenBalance = (
+    await l2Token.methods
+      .balance_of_private(ownerAddress)
+      .simulate({ from: account.getAddress() })
+  ).result as bigint;
   assert(l2TokenBalance === bridgeAmount);
 
   logger.info("🐰 4. withdrawing funds from L2");
@@ -384,14 +389,16 @@ export const run = async () => {
   });
 
   assert(
-    (await l2Token.methods
-      .balance_of_private(ownerAddress)
-      .simulate({ from: account.getAddress() })) ===
-    bridgeAmount - withdrawAmount,
+    (
+      await l2Token.methods
+        .balance_of_private(ownerAddress)
+        .simulate({ from: account.getAddress() })
+    ).result ===
+      bridgeAmount - withdrawAmount,
   );
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-    l1TokenBalance - bridgeAmount,
+      l1TokenBalance - bridgeAmount,
   );
 
   const l2ToL1MessageWitness =
@@ -404,7 +411,8 @@ export const run = async () => {
 
   const wait = 10000;
   logger.info(
-    `waiting ${wait / 1000
+    `waiting ${
+      wait / 1000
     } seconds for the message to be available for consumption...`,
   );
   await new Promise((resolve) => setTimeout(resolve, wait));
@@ -419,6 +427,6 @@ export const run = async () => {
 
   assert(
     (await l1TokenManager.getL1TokenBalance(ethAccount.toString())) ===
-    l1TokenBalance - bridgeAmount + withdrawAmount,
+      l1TokenBalance - bridgeAmount + withdrawAmount,
   );
 };

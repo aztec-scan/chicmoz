@@ -17,9 +17,8 @@ import { callExplorerApi } from "./explorer-api.js";
 import {
   Contract,
   type ContractInstanceWithAddress,
-  type DeployTxReceipt,
   DeployMethod,
-} from "@aztec/aztec.js/contracts";
+ TxSendResultMined } from "@aztec/aztec.js/contracts";
 import { FunctionType, NoirCompiledContract } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
@@ -38,11 +37,13 @@ export const truncateHashString = (value: string) => {
 };
 
 export const logAndWaitForTx = async (
-  txReceiptPromise: Promise<TxReceipt>,
+  txReceiptPromise: Promise<TxReceipt> | Promise<TxSendResultMined<TxReceipt>>,
   additionalInfo: string,
 ) => {
   logger.info(`📫 TX (${additionalInfo}) waiting...`);
-  const receipt = await txReceiptPromise;
+  const receipt = await txReceiptPromise.then((result) =>
+    "receipt" in result ? result.receipt : result,
+  );
   const hash = receipt.txHash.toString();
   logger.info(
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
@@ -57,7 +58,9 @@ export const simulateThenSend = async ({
 }: {
   method: {
     simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
-    send: (opts: { from: AztecAddress }) => Promise<TxReceipt>;
+    send: (opts: {
+      from: AztecAddress;
+    }) => Promise<TxSendResultMined<TxReceipt>>;
   };
   from: AztecAddress;
   additionalInfo: string;
@@ -74,7 +77,7 @@ export const simulateThenSend = async ({
     throw err;
   }
 
-  const receipt = await method.send({ from });
+  const { receipt } = await method.send({ from });
   const hash = receipt.txHash.toString();
   logger.info(
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
@@ -116,7 +119,7 @@ export const getNewSchnorrAccount = async ({
   // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
   // but fails in devnet/testnet where it has no balance.
   const feePayer = getAccounts().alice.address;
-  const deployReceipt = await deployFunction.send({
+  const { receipt: deployReceipt } = await deployFunction.send({
     from: feePayer,
     wait: { returnReceipt: true },
   });
@@ -197,7 +200,7 @@ export const deployContract = async <T extends Contract>({
   const feePayer = from ?? getAccounts().alice.address;
 
   logger.info(`📫 ${contractLoggingName} (Deploying contract)`);
-  const deployResult: DeployTxReceipt<T> = await deployMethod.send({
+  const { receipt: deployResult } = await deployMethod.send({
     from: feePayer,
     wait: { returnReceipt: true },
   });

@@ -1,4 +1,4 @@
-FROM aztecprotocol/aztec:4.0.3
+FROM aztecprotocol/aztec:4.1.0-rc.2
 
 # Put nargo and bb on PATH so `aztec compile` can find them
 ENV PATH="/usr/src/noir/noir-repo/target/release:/usr/src/barretenberg/ts/build/amd64-linux:${PATH}"
