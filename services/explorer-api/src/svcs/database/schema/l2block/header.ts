@@ -1,12 +1,13 @@
 import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
-import { bigint, index, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
+import { index, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import {
   generateEthAddressColumn,
   generateFrColumn,
   generateFrNumberColumn,
   generateTimestampColumn,
   generateTreeTable,
+  generateUint256Column,
 } from "../utils.js";
 import { l2Block } from "./root.js";
 
@@ -18,8 +19,8 @@ export const header = pgTable(
       .notNull()
       .$type<HexString>()
       .references(() => l2Block.hash, { onDelete: "cascade" }),
-    totalFees: bigint("total_fees", { mode: "bigint" }).notNull(),
-    totalManaUsed: bigint("total_mana_used", { mode: "bigint" }).notNull(),
+    totalFees: generateUint256Column("total_fees").notNull(),
+    totalManaUsed: generateUint256Column("total_mana_used").notNull(),
     spongeBlobHash: generateFrColumn("sponge_blob_hash").notNull(),
   },
   (t) => ({
