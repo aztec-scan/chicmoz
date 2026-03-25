@@ -48,8 +48,9 @@ export const store = async (
     await dbTx.insert(header).values({
       id: headerId,
       blockHash: block.hash,
-      totalFees: block.header.totalFees,
-      totalManaUsed: block.header.totalManaUsed,
+      totalFees: block.header.totalFees.toString(),
+      totalManaUsed: block.header.totalManaUsed.toString(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       spongeBlobHash: block.header.spongeBlobHash,
     });
 
