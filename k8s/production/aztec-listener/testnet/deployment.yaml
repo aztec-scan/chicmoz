@@ -62,5 +62,9 @@ spec:
                 secretKeyRef:
                   name: testnet-config
                   key: AZTEC_RPC_NODES_TESTNET
+            - name: AZTEC_DISABLE_ETERNAL_CATCHUP
+              value: "false"
+            - name: NODE_OPTIONS
+              value: "--max-old-space-size=1536"
 
 status: {}
