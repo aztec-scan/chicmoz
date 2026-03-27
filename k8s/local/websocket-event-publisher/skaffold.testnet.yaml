@@ -12,4 +12,5 @@ manifests:
   rawYaml:
     - ./testnet/service.yaml
     - ./testnet/deployment.yaml
-    - ./testnet/ingress.yaml
+    - ./testnet/httproute.yaml
+    - ./testnet/clienttrafficpolicy.yaml

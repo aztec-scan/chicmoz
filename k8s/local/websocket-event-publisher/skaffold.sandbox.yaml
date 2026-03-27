@@ -12,4 +12,5 @@ manifests:
   rawYaml:
     - ./sandbox/service.yaml
     - ./sandbox/deployment.yaml
-    - ./sandbox/ingress.yaml
+    - ./sandbox/httproute.yaml
+    - ./sandbox/clienttrafficpolicy.yaml

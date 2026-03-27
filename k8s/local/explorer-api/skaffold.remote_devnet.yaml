@@ -10,5 +10,7 @@ manifests:
   rawYaml:
     - ./remote_devnet/postgres-config.yaml
     - ./remote_devnet/service.yaml
-    - ./remote_devnet/ingress.yaml
+    - ./remote_devnet/http-filter.yaml
+    - ./remote_devnet/securitypolicy.yaml
+    - ./remote_devnet/httproute.yaml
     - ./remote_devnet/deployment.yaml

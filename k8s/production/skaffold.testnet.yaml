@@ -3,6 +3,7 @@ kind: Config
 metadata:
   name: chicmoz-prod-testnet
 requires:
+  - path: ./gateways/skaffold.beta.yaml
   - path: ./common/skaffold.manifests.yaml
   - path: ./explorer-ui/skaffold.testnet.yaml
   - path: ./explorer-api/skaffold.testnet.yaml
