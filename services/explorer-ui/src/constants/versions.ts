@@ -10,9 +10,10 @@ export const v4_0_3 = 4181870535;
 export const v4_0_0_devnet_2_patch_0 = 615022430;
 export const sandbox_v4_0_0_devnet_2_patch_1 = 126353417;
 export const v4_1_0_testnet_rc_2 = 4127419662;
+export const v4_1_1 = 2934756905;
 
 // Current active version to use for comparison
 export const CURRENT_ROLLUP_VERSION =
   import.meta.env.VITE_L2_NETWORK_ID === "SANDBOX"
     ? sandbox_v4_0_0_devnet_2_patch_1
-    : v4_1_0_testnet_rc_2;
+    : v4_1_1;
