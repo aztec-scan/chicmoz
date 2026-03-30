@@ -29,19 +29,19 @@ import { logger } from "../../../../../logger.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
-  let schema = {};
-  // logger.info(`Generating schema for ${name}`);
+  let schema: unknown = {};
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     schema = generateSchema(zodSchema);
-    // logger.info(
-    //   `Generated schema for ${name}: ${JSON.stringify(schema, null, 2)}`,
-    // );
   } catch (e) {
-    // NOTE: this catch never happens
     logger.error(
-      `Failed to generate schema for ${name}: ${(e as Error).stack}`,
+      `Failed to generate OpenAPI schema for ${name}: ${(e as Error).stack}`,
     );
+    schema = {
+      type: "object",
+      description:
+        "Schema generation failed (likely bigint). Response is still JSON.",
+    };
   }
 
   return {
@@ -58,6 +58,26 @@ const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
 
 const cleanedBlockSchema = chicmozL2BlockLightSchema.extend({
   height: z.string(), // Convert height from BigInt to string
+  proposedOnL1: z
+    .object({
+      l1ContractAddress: z.string(),
+      l1BlockNumber: z.string(), // Convert BigInt to string
+      l1BlockTimestamp: z.number().optional().nullable(),
+      l1BlockHash: z.string(),
+      isFinalized: z.boolean(),
+      archive: z.string(),
+    })
+    .optional(),
+  proofVerifiedOnL1: z
+    .object({
+      l1ContractAddress: z.string(),
+      l1BlockNumber: z.string(), // Convert BigInt to string
+      l1BlockTimestamp: z.number().optional().nullable(),
+      l1BlockHash: z.string(),
+      isFinalized: z.boolean(),
+      proverId: z.string(),
+    })
+    .optional(),
   header: chicmozL2BlockLightSchema.shape.header.extend({
     totalFees: z.string(),
     totalManaUsed: z.string(), // Convert manaUsed from BigInt to string
@@ -147,23 +167,28 @@ export const contractInstanceResponseArray = getResponse(
   "contractInstanceArray",
 );
 
+const cleanedContractInstanceBalanceSchema =
+  chicmozContractInstanceBalanceSchema.extend({
+    balance: z.string(), // Convert BigInt to string
+  });
+
 export const contractInstanceBalanceResponse = getResponse(
-  chicmozContractInstanceBalanceSchema,
+  cleanedContractInstanceBalanceSchema,
   "contractInstanceBalance",
 );
 
 export const contractInstanceWithBalanceResponse = getResponse(
-  chicmozContractInstanceBalanceSchema,
+  cleanedContractInstanceBalanceSchema,
   "contractInstanceWithBalance",
 );
 
 export const contractInstanceBalanceHistoryResponse = getResponse(
-  z.array(chicmozContractInstanceBalanceSchema),
+  z.array(cleanedContractInstanceBalanceSchema),
   "contractInstanceBalanceHistory",
 );
 
 export const contractInstanceBalanceResponseArray = getResponse(
-  z.array(chicmozContractInstanceBalanceSchema),
+  z.array(cleanedContractInstanceBalanceSchema),
   "contractInstanceBalanceArray",
 );
 

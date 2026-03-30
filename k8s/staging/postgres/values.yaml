@@ -2,12 +2,20 @@ primary:
   initdb:
     scripts:
       init.sql: |
+        SELECT 'CREATE DATABASE aztec_listener_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_devnet')\gexec
+        SELECT 'CREATE DATABASE explorer_api_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_devnet')\gexec
+        SELECT 'CREATE DATABASE ethereum_listener_devnet'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_devnet')\gexec
+
         SELECT 'CREATE DATABASE aztec_listener_testnet'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_testnet')\gexec
         SELECT 'CREATE DATABASE explorer_api_testnet'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_testnet')\gexec
         SELECT 'CREATE DATABASE ethereum_listener_testnet'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_testnet')\gexec
+
         SELECT 'CREATE DATABASE auth'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'auth')\gexec
         \c auth

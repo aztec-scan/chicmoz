@@ -1,5 +1,4 @@
-import { L2Block } from "@aztec/aztec.js";
-import { blockFromString, parseBlock } from "@chicmoz-pkg/backend-utils";
+import { blockFromBuffer, parseBlock } from "@chicmoz-pkg/backend-utils";
 import { EventHandler } from "@chicmoz-pkg/message-bus";
 import {
   generateL2TopicName,
@@ -16,12 +15,14 @@ import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { onRollupVersion } from "../../../svcs/database/controllers/l2/chain-info/rollup-version-cache.js";
 import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
+import { unOrphanBlock } from "../../../svcs/database/controllers/l2block/orphan.js";
 import { ensureFinalizationStatusStored } from "../../../svcs/database/controllers/l2block/store.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
 import { storeContracts } from "./contracts.js";
 import { detectReorg, handleReorg } from "./reorg-handler.js";
+import { L2Block } from "@aztec/aztec.js/block";
 
 const truncateString = (value: string) => {
   const startHash = value.substring(0, 100);
@@ -62,7 +63,7 @@ const onBlock = async ({
     return;
   }
   logger.info(`👓 Parsing block ${blockNumber}`);
-  const b = blockFromString(block);
+  const b = blockFromBuffer(block);
   let parsedBlock;
   try {
     parsedBlock = await parseBlock(b, finalizationStatus);
@@ -117,6 +118,16 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
             `Deleting block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
           );
           await deleteL2BlockByHeight(parsedBlock.height);
+        },
+        async () => {
+          // The block hash already exists but is orphaned — un-orphan it
+          // since the node is serving it as the canonical block.
+          await unOrphanBlock(parsedBlock.hash);
+          await ensureFinalizationStatusStored(
+            parsedBlock.hash,
+            parsedBlock.height,
+            parsedBlock.finalizationStatus,
+          );
         },
       );
 

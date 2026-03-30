@@ -125,6 +125,22 @@ export const handleReorgOrphaning = async (
   });
 };
 
+/**
+ * Un-orphan a block by clearing its orphan_timestamp and orphan_hasOrphanedParent fields.
+ * This is used when we receive a block with the same hash as an already-orphaned block,
+ * meaning the orphaned block is actually the canonical one.
+ */
+export const unOrphanBlock = async (blockHash: HexString): Promise<void> => {
+  logger.info(`Un-orphaning block ${blockHash}`);
+  await db()
+    .update(l2Block)
+    .set({
+      orphan_timestamp: null,
+      orphan_hasOrphanedParent: false,
+    })
+    .where(eq(l2Block.hash, blockHash));
+};
+
 type DB = ReturnType<typeof db>;
 type DBTransactionFunction = DB["transaction"];
 type DBTransactionFunctionCallback = Parameters<DBTransactionFunction>[0];

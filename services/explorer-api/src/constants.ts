@@ -24,7 +24,23 @@ export const AZTEC_SCAN_NOTES: Record<
       ],
     },
   },
-  DEVNET: {},
+  DEVNET: {
+    "0x0299fbace3b22cb92f77105cf0858fa28cb81fdde8224bd9f547103b62549015": {
+      name: "GregoCoin",
+      origin: "Example token on devnet",
+      comment: "Used to swap for GregoCoin Premium on https://gregoswap.anothercoffeefor.me"
+    },
+    "0x2c183370da7ba6ec38eae88e741d3784924f3705e83fd21db38f22b8b35d4761": {
+      name: "GregoCoin Premium",
+      origin: "Example token on devnet",
+      comment: "Used to swap for GregoCoin on https://gregoswap.anothercoffeefor.me"
+    },
+    "0x27a055c07cf0149068f3acff87a31c9cbd019a810d3f6f49d068c323bc506719": {
+      name: "Train",
+      origin: "Train Protocol – https://github.com/TrainProtocol/contracts",
+      comment: "Trustless, permissionless cross-chain bridge using improved HTLCs. Enables asset transfers across chains without oracles or 3rd parties."
+    }
+  },
   TESTNET: {
     "0x0fb5144f2518c5501dfde73723cad1d1ac7f5a3ab15486ae4d444d228a205448": {
       name: "DAI test token",
@@ -42,8 +58,8 @@ export const AZTEC_SCAN_MANUAL_SOURCE_CODE_URLS: Record<
   MAINNET: {},
   SANDBOX: {},
   TESTNET: {
-  //  "0x1848f4a84947391632f106de66335b649b8356b05f64feed80889d899ee82187":
-  //    "https://github.com/defi-wonderland/aztec-standards/tree/9fcc5cabca6054053e54b1b48798e37b4bb0f685/src/token_contract",
+    //  "0x1848f4a84947391632f106de66335b649b8356b05f64feed80889d899ee82187":
+    //    "https://github.com/defi-wonderland/aztec-standards/tree/9fcc5cabca6054053e54b1b48798e37b4bb0f685/src/token_contract",
   },
   DEVNET: {},
 };

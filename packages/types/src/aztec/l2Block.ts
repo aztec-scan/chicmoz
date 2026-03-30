@@ -10,12 +10,7 @@ import {
 } from "../index.js";
 import { deepPartial } from "../utils.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
-import {
-  bufferSchema,
-  frNumberSchema,
-  frSchema,
-  frTimestampSchema,
-} from "./utils.js";
+import { frNumberSchema, frSchema, frTimestampSchema } from "./utils.js";
 
 export enum ChicmozL2BlockFinalizationStatus {
   L2_NODE_SEEN_PROPOSED = 0,
@@ -61,11 +56,7 @@ export const chicmozL2BlockSchema = z.object({
       root: frSchema,
       nextAvailableLeafIndex: z.number(),
     }),
-    contentCommitment: z.object({
-      blobsHash: bufferSchema,
-      inHash: bufferSchema,
-      outHash: bufferSchema,
-    }),
+    spongeBlobHash: frSchema,
     state: z.object({
       l1ToL2MessageTree: z.object({
         root: frSchema,

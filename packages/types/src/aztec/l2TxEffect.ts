@@ -41,7 +41,6 @@ export const chicmozL2TxEffectSchema = z.object({
     z.object({
       contractAddress: aztecAddressSchema,
       fields: z.array(frSchema),
-      emittedLength: z.number(),
     }),
   ),
   contractClassLogs: z.array(

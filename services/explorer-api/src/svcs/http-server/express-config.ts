@@ -11,6 +11,25 @@ import { genereateOpenApiSpec } from "./open-api-spec.js";
 import { init as initApiRoutes } from "./routes/index.js";
 import { paths } from "./routes/paths_and_validation.js";
 
+const safeJsonStringify = (value: unknown) => {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "<unserializable>";
+  }
+};
+
+const requestLogger: express.ErrorRequestHandler = (err, req, _res, next) => {
+  logger.error(
+    `Request error: ${req.method} ${req.originalUrl} err=${safeJsonStringify({
+      name: (err as Error | undefined)?.name,
+      message: (err as Error | undefined)?.message,
+      cause: (err as { cause?: unknown } | undefined)?.cause,
+    })}`,
+  );
+  next(err);
+};
+
 type ExpressOptions = {
   BODY_LIMIT: string;
   PARAMETER_LIMIT: number;
@@ -96,6 +115,7 @@ export function setup(
   initApiRoutes({ router });
   app.use(router);
 
+  app.use(requestLogger);
   const errorMiddleware = createErrorMiddleware(logger);
   app.use(errorMiddleware);
   return app;

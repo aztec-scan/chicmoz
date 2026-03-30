@@ -7,6 +7,16 @@ import {
 import { ZodError } from "zod";
 import { CHICMOZ_ERRORS } from "./errors.js";
 
+const getErrDetails = (err: unknown) => {
+  const maybeErr = err as Partial<Error> & { cause?: unknown };
+  return {
+    name: maybeErr?.name,
+    message: maybeErr?.message,
+    stack: maybeErr?.stack,
+    cause: maybeErr?.cause,
+  };
+};
+
 export const createErrorMiddleware = (logger: Logger): ErrorRequestHandler => {
   return (err, _req, res, _next) => {
     if ((err as Error).name === "PayloadTooLargeError") {
@@ -37,9 +47,22 @@ export const createErrorMiddleware = (logger: Logger): ErrorRequestHandler => {
     }
 
     if (err instanceof Error) {
+      const errDetails = getErrDetails(err);
       logger.error(
         `Error-handler: name: ${err.name}, message: ${err.message} (for route: ${_req.originalUrl})`,
       );
+      if (errDetails.cause instanceof Error) {
+        logger.error(
+          `Error-handler: cause name: ${errDetails.cause.name}, message: ${errDetails.cause.message}`,
+        );
+        if (errDetails.cause.stack) {
+          logger.error(`Error-handler: cause stack: ${errDetails.cause.stack}`);
+        }
+      } else if (errDetails.cause !== undefined) {
+        logger.error(
+          `Error-handler: cause: ${JSON.stringify(errDetails.cause)}`,
+        );
+      }
       if (err.stack) {
         logger.error(`Error-handler: stack: ${err.stack}`);
       } else {

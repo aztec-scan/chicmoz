@@ -27,6 +27,7 @@ import {
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
 import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { getExistingRollupVersion } from "../l2block/get-latest.js";
 
 type GetBlocksByRange = {
   from: bigint | undefined;
@@ -38,6 +39,9 @@ export const getBlocksForUiTable = async ({
   to,
 }: GetBlocksByRange): Promise<UiBlockTable[]> => {
   const whereRange = getBlocksWhereRange({ from, to });
+
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
 
   // Initial query to get basic block information
   const dbRes = await db()
@@ -55,7 +59,7 @@ export const getBlocksForUiTable = async ({
       and(
         whereRange,
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, rollupVersion),
       ),
     )
     .orderBy(desc(l2Block.height))
@@ -163,6 +167,9 @@ type GetTableTxEffectsByBlockHeightRange = {
 export const getTxEffectForUiTable = async (
   args: GetTableTxEffectByBlockHeight | GetTableTxEffectsByBlockHeightRange,
 ): Promise<UiTxEffectTable[]> => {
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+
   const joinQuery = db()
     .select({
       height: getTableColumns(l2Block).height,
@@ -187,7 +194,7 @@ export const getTxEffectForUiTable = async (
             and(
               getBlocksWhereRange({ from: args.from, to: args.to }),
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+              eq(l2Block.version, rollupVersion),
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
@@ -197,7 +204,7 @@ export const getTxEffectForUiTable = async (
           .where(
             and(
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+              eq(l2Block.version, rollupVersion),
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
@@ -208,7 +215,7 @@ export const getTxEffectForUiTable = async (
       whereQuery = joinQuery.where(
         and(
           eq(l2Block.height, args.blockHeight),
-          eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+          eq(l2Block.version, rollupVersion),
         ),
       );
       break;

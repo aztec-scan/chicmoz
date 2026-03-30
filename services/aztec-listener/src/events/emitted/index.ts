@@ -1,4 +1,3 @@
-import { L2Block } from "@aztec/aztec.js";
 import {
   ChicmozChainInfo,
   ChicmozL2BlockFinalizationStatus,
@@ -14,6 +13,7 @@ import {
   publishMessageSync,
 } from "../../svcs/message-bus/index.js";
 import { onL2RpcNodeAlive } from "./on-node-alive.js";
+import { L2Block } from "@aztec/stdlib/block";
 
 export const onBlock = async (
   block: L2Block,
@@ -30,7 +30,8 @@ export const onBlock = async (
       await block.hash()
     ).toString()})...`,
   );
-  const blockStr = block.toString();
+  const blockBuffer = block.toBuffer() as Uint8Array;
+  const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("NEW_BLOCK_EVENT", {
     block: blockStr,
     finalizationStatus,
@@ -64,7 +65,8 @@ export const onCatchupBlock = async (
   block: L2Block,
   finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ) => {
-  const blockStr = block.toString();
+  const blockBuffer = block.toBuffer() as Uint8Array;
+  const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("CATCHUP_BLOCK_EVENT", {
     block: blockStr,
     finalizationStatus,
