@@ -6,7 +6,7 @@ RUN yarn workspaces focus @chicmoz/aztec-listener
 COPY . .
 RUN yarn build
 
-FROM node:20-alpine
+FROM node:22-trixie-slim
 WORKDIR /usr/main/services/aztec-listener
 COPY --from=BUILD /usr/main /usr/main
 

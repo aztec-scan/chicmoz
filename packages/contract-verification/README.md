@@ -1,1 +1,1 @@
-# message-registry
+# contract verification

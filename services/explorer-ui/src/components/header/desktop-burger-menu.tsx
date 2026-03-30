@@ -58,7 +58,7 @@ export const DesktopBurgerMenu = ({
             {groups.map((group, groupIndex) => (
               <div key={group}>
                 {groupIndex > 0 && (
-                  <hr className="my-1 mx-[8%] border-t border-gray-400/30" />
+                  <hr className="my-1 mx-[8%] border-t border-gray-4.1.0-rc.20" />
                 )}
                 {groupedLinks[group].map((link) =>
                   link.external ? (

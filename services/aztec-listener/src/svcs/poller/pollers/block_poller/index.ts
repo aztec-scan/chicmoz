@@ -63,8 +63,8 @@ const recursivePolling = async (isFirstRun = false) => {
       await Promise.all([getLatestProposedHeight(), getLatestProvenHeight()]);
     let heights = {
       ...(await getBlockHeights()),
-      chainProposedBlockHeight,
-      chainProvenBlockHeight,
+      chainProposedBlockHeight: Number(chainProposedBlockHeight),
+      chainProvenBlockHeight: Number(chainProvenBlockHeight),
     };
 
     heights = await ensureSaneValues(heights);

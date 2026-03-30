@@ -116,7 +116,7 @@ export const getEarliestRollupBlockNumber = async () => {
         functionName: "getTips",
         blockNumber: BigInt(blockNbr),
       });
-      if (res.provenBlockNumber === 0n) {
+      if (res.proven === 0n) {
         start = BigInt(blockNbr);
         foundL2ProvenBlockNumber = BigInt(blockNbr);
       }
@@ -160,6 +160,11 @@ const hardcodedRollupGenesisBlocks = (
     rollupAddress.toLowerCase() === "0xebd99ff0ff6677205509ae73f93d0ca52ac85d67"
   ) {
     return 8125387n;
+  } else if (
+    networkId === "DEVNET" &&
+    rollupAddress.toLowerCase() === "0xcd1a7be18501092f3ba8d80ce5629501ba178de0"
+  ) {
+    return 10286799n;
   }
   return 0n;
 };

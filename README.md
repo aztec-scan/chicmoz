@@ -39,8 +39,6 @@ Default settings is to set up a sandbox in the local cluster.
 
 ⚠️ _Make sure you have .chicmoz.env file in the root_
 
-TODO
-
 ## Pro tip
 
 ### 1

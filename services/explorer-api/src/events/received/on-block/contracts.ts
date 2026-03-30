@@ -1,4 +1,3 @@
-import { L2Block } from "@aztec/aztec.js";
 import {
   ContractClassPublishedEvent,
   PrivateFunctionBroadcastedEvent,
@@ -24,6 +23,7 @@ import { z } from "zod";
 import { logger } from "../../../logger.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateError } from "../utils.js";
+import { L2Block } from "@aztec/aztec.js/block";
 
 const parseObjs = <ParsedType, AztecType>(
   blockHash: string,

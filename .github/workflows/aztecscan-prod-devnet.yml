@@ -62,6 +62,14 @@ jobs:
       - set-up
 
     steps:
+      - name: Free up disk space
+        run: |
+          docker system prune -af --volumes
+          rm -rf ~/.npm ~/.yarn ~/.cache
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get clean
+          df -h
+
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -90,19 +98,25 @@ jobs:
       - name: Log in to DigitalOcean Container Registry
         run: doctl registry login --expiry-seconds 3600
 
+      - name: Ensure DigitalOcean registry credentials exist in cluster
+        run: |
+          doctl registry kubernetes-manifest | sed 's/namespace: kube-system/namespace: chicmoz-prod/' | kubectl apply -f -
+
       - name: Deploy to cluster with Skaffold
         env:
           DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
           DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
           AZTEC_RPC_NODES_DEVNET: ${{ vars.AZTEC_RPC_NODES_DEVNET }}
+          ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL: ${{ vars.ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL }}
         run: |
           MAX_RETRIES=3
           RETRY_DELAY=10
 
-          kubectl create secret generic global \
+          kubectl create secret generic devnet-config \
             --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
             --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
             --from-literal=AZTEC_RPC_NODES_DEVNET=$AZTEC_RPC_NODES_DEVNET \
+            --from-literal=ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL=$ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL \
             -n chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
 
           for i in $(seq 1 $MAX_RETRIES); do

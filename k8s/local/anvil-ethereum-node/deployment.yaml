@@ -19,21 +19,19 @@ spec:
       containers:
         - image: aztecprotocol/foundry
           name: anvil-ethereum-node
-          env:
-            - name: ARCH_TAG
-              valueFrom:
-                configMapKeyRef:
-                  name: arch-config
-                  key: arch_tag
           resources:
             limits:
               memory: 300Mi
               cpu: 250m
           command:
-            - /bin/sh
-            - -c
-            - |
-              anvil -p 8545 --host 0.0.0.0 --chain-id 31337
+            - /opt/foundry/bin/anvil
+          args:
+            - -p
+            - "8545"
+            - --host
+            - "0.0.0.0"
+            - --chain-id
+            - "31337"
           ports:
             - name: anvil-port
               containerPort: 8545

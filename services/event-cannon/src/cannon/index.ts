@@ -37,12 +37,12 @@ export async function init() {
     });
   }
 
-  if (SCENARIO_DEPLOY_AND_UPDATE) {
-    scenariosToRun.push({
-      envVar: "SCENARIO_DEPLOY_AND_UPDATE",
-      scenario: scenarios.deployAndUpdateSimpleContract,
-    });
-  }
+  // if (SCENARIO_DEPLOY_AND_UPDATE) {
+  //   scenariosToRun.push({
+  //     envVar: "SCENARIO_DEPLOY_AND_UPDATE",
+  //     scenario: scenarios.deployAndUpdateSimpleContract,
+  //   });
+  // }
   if (SCENARIO_FUNCTIONS_VOTE) {
     scenariosToRun.push({
       envVar: "SCENARIO_FUNCTIONS_VOTE",
