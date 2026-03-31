@@ -24,6 +24,27 @@ data:
       - job_name: kube-state-metrics
         static_configs:
           - targets: ["kube-state-metrics.chicmoz-prod.svc.cluster.local:8080"]
+        metric_relabel_configs:
+          - source_labels: [pod]
+            action: replace
+            target_label: network
+            regex: .*(mainnet).*
+            replacement: $1
+          - source_labels: [pod]
+            action: replace
+            target_label: network
+            regex: .*(testnet).*
+            replacement: $1
+          - source_labels: [pod]
+            action: replace
+            target_label: network
+            regex: .*(devnet).*
+            replacement: $1
+          - source_labels: [network]
+            action: replace
+            target_label: network
+            regex: ^$
+            replacement: infra
 
       - job_name: kubernetes-services
         kubernetes_sd_configs:
@@ -169,6 +190,22 @@ data:
             replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
           - target_label: network
             replacement: infra
+        metric_relabel_configs:
+          - source_labels: [pod]
+            action: replace
+            target_label: network
+            regex: .*(mainnet).*
+            replacement: $1
+          - source_labels: [pod]
+            action: replace
+            target_label: network
+            regex: .*(testnet).*
+            replacement: $1
+          - source_labels: [pod]
+            action: replace
+            target_label: network
+            regex: .*(devnet).*
+            replacement: $1
 
     remote_write:
       - url: __REMOTE_WRITE_URL__
