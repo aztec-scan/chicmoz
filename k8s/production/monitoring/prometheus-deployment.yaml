@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: chicmoz-prod
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+      initContainers:
+        - name: render-config
+          image: alpine:3.20
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              REMOTE_WRITE_URL_ESCAPED=$(printf '%s\n' "$REMOTE_WRITE_URL" | sed 's/[&]/\\&/g')
+              sed "s|__REMOTE_WRITE_URL__|${REMOTE_WRITE_URL_ESCAPED}|g" /etc/prometheus/template/prometheus.yml.tmpl > /etc/prometheus/config/prometheus.yml
+          env:
+            - name: REMOTE_WRITE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: prom-remote-write
+                  key: REMOTE_WRITE_URL
+          volumeMounts:
+            - name: config-template
+              mountPath: /etc/prometheus/template
+              readOnly: true
+            - name: generated-config
+              mountPath: /etc/prometheus/config
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.53.5
+          args:
+            - --config.file=/etc/prometheus/config/prometheus.yml
+            - --storage.tsdb.path=/prometheus
+            - --storage.tsdb.retention.time=15d
+            - --web.enable-lifecycle
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          volumeMounts:
+            - name: generated-config
+              mountPath: /etc/prometheus/config
+              readOnly: true
+            - name: storage
+              mountPath: /prometheus
+            - name: remote-write
+              mountPath: /etc/prometheus/remote-write
+              readOnly: true
+      volumes:
+        - name: config-template
+          configMap:
+            name: prometheus-config-template
+            items:
+              - key: prometheus.yml.tmpl
+                path: prometheus.yml.tmpl
+        - name: generated-config
+          emptyDir: {}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: prometheus-storage
+        - name: remote-write
+          secret:
+            secretName: prom-remote-write
+            items:
+              - key: REMOTE_WRITE_TOKEN
+                path: REMOTE_WRITE_TOKEN
