@@ -265,27 +265,27 @@ const ensureParentBlocksFinalizationStatusStored = async (
     const blocksWithMissingStatus = await blocksOnOtherStatus
       .except(allBlocksOnSameStatus)
       .orderBy(asc(l2BlockFinalizationStatusTable.l2BlockNumber));
-    let counter = 0;
-    if (blocksWithMissingStatus.length > 0) {
-      logger.info(
-        `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
-      );
+
+    if (blocksWithMissingStatus.length === 0) {
+      return;
     }
-    for (const block of blocksWithMissingStatus) {
-      if (blocksWithMissingStatus.length < 25) {
-        logger.info(
-          `Ensuring status ${ChicmozL2BlockFinalizationStatus[status]} for block ${block.blockNumber} (${block.hash})`,
-        );
-      } else if (counter++ % 100 === 0) {
-        logger.info(
-          `Ensuring status ${ChicmozL2BlockFinalizationStatus[status]} for block ${block.blockNumber} (${counter} of ${blocksWithMissingStatus.length} processed)`,
-        );
-      }
-      await _ensureFinalizationStatusStored(
-        block.hash,
-        block.blockNumber,
-        status,
-      );
-    }
+
+    logger.info(
+      `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
+    );
+
+    // Bulk INSERT all missing finalization status rows in a single statement
+    // instead of a serial loop, to avoid stalling the Kafka consumer heartbeat
+    // when there are tens of thousands of ancestor blocks to backfill.
+    await tx
+      .insert(l2BlockFinalizationStatusTable)
+      .values(
+        blocksWithMissingStatus.map((block) => ({
+          l2BlockHash: block.hash,
+          l2BlockNumber: block.blockNumber,
+          status,
+        })),
+      )
+      .onConflictDoNothing();
   });
 };
