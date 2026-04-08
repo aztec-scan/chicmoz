@@ -275,18 +275,23 @@ const ensureParentBlocksFinalizationStatusStored = async (
       `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
     );
 
-    // Bulk INSERT all missing finalization status rows in a single statement
-    // instead of a serial loop, to avoid stalling the Kafka consumer heartbeat
-    // when there are tens of thousands of ancestor blocks to backfill.
-    await tx
-      .insert(l2BlockFinalizationStatusTable)
-      .values(
-        blocksWithMissingStatus.map((block) => ({
-          l2BlockHash: block.hash,
-          l2BlockNumber: block.blockNumber,
-          status,
-        })),
-      )
-      .onConflictDoNothing();
+    const rowsToInsert = blocksWithMissingStatus.map((block) => ({
+      l2BlockHash: block.hash,
+      l2BlockNumber: block.blockNumber,
+      status,
+    }));
+
+    // Batch the INSERTs so each statement stays below PostgreSQL's
+    // 65,535 bind-parameter limit. We insert 3 columns per row.
+    const insertedColumnCount = 3;
+    const maxBindParameters = 65_535;
+    const batchSize = Math.floor(maxBindParameters / insertedColumnCount);
+
+    for (let i = 0; i < rowsToInsert.length; i += batchSize) {
+      await tx
+        .insert(l2BlockFinalizationStatusTable)
+        .values(rowsToInsert.slice(i, i + batchSize))
+        .onConflictDoNothing();
+    }
   });
 };
