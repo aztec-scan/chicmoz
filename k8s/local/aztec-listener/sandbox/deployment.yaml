@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: aztec-listener-sandbox-label
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -27,6 +29,9 @@ spec:
       containers:
         - image: aztec-listener:latest
           resources:
+            requests:
+              memory: 750Mi
+              cpu: 100m
             limits:
               memory: 750Mi
               cpu: 500m
