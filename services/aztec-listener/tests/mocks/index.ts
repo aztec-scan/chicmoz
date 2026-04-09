@@ -59,6 +59,7 @@ export const createMockL2Block = (
   hash: vi
     .fn()
     .mockResolvedValue({ toString: () => `block-${blockNumber}-hash` }),
+  toBuffer: vi.fn().mockReturnValue(Buffer.alloc(0)),
   toString: vi.fn().mockReturnValue(`mock-block-${blockNumber}`),
 });
 
