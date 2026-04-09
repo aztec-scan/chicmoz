@@ -265,27 +265,32 @@ const ensureParentBlocksFinalizationStatusStored = async (
     const blocksWithMissingStatus = await blocksOnOtherStatus
       .except(allBlocksOnSameStatus)
       .orderBy(asc(l2BlockFinalizationStatusTable.l2BlockNumber));
-    let counter = 0;
-    if (blocksWithMissingStatus.length > 0) {
-      logger.info(
-        `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
-      );
+
+    if (blocksWithMissingStatus.length === 0) {
+      return;
     }
-    for (const block of blocksWithMissingStatus) {
-      if (blocksWithMissingStatus.length < 25) {
-        logger.info(
-          `Ensuring status ${ChicmozL2BlockFinalizationStatus[status]} for block ${block.blockNumber} (${block.hash})`,
-        );
-      } else if (counter++ % 100 === 0) {
-        logger.info(
-          `Ensuring status ${ChicmozL2BlockFinalizationStatus[status]} for block ${block.blockNumber} (${counter} of ${blocksWithMissingStatus.length} processed)`,
-        );
-      }
-      await _ensureFinalizationStatusStored(
-        block.hash,
-        block.blockNumber,
-        status,
-      );
+
+    logger.info(
+      `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
+    );
+
+    const rowsToInsert = blocksWithMissingStatus.map((block) => ({
+      l2BlockHash: block.hash,
+      l2BlockNumber: block.blockNumber,
+      status,
+    }));
+
+    // Batch the INSERTs so each statement stays below PostgreSQL's
+    // 65,535 bind-parameter limit. We insert 3 columns per row.
+    const insertedColumnCount = 3;
+    const maxBindParameters = 65_535;
+    const batchSize = Math.floor(maxBindParameters / insertedColumnCount);
+
+    for (let i = 0; i < rowsToInsert.length; i += batchSize) {
+      await tx
+        .insert(l2BlockFinalizationStatusTable)
+        .values(rowsToInsert.slice(i, i + batchSize))
+        .onConflictDoNothing();
     }
   });
 };
