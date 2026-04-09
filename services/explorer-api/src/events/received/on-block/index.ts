@@ -133,14 +133,10 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
 
       if (shouldRetry) {
         return storeBlock(parsedBlock, true);
-      } else {
-        await ensureFinalizationStatusStored(
-          // NOTE: this is currently assuming that the error is a duplicate error
-          parsedBlock.hash,
-          parsedBlock.height,
-          parsedBlock.finalizationStatus,
-        );
       }
+      // When shouldRetry is false and the un-orphan path was taken,
+      // ensureFinalizationStatusStored was already called inside unOrphanCallback.
+      // No additional call needed here.
     });
 
   await emit.l2BlockFinalizationUpdate(storeRes?.finalizationUpdate ?? null);

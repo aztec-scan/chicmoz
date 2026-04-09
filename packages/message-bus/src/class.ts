@@ -178,7 +178,7 @@ export class MessageBus {
 
     await this.#consumers[groupId]!.consumer.run({
       // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
-      eachMessage: async ({ topic, message }) => {
+      eachMessage: async ({ topic, message, heartbeat }) => {
         // Yield the event loop between messages so that other consumers sharing
         // this Node.js process get a chance to fetch and process their messages.
         // Without this, a consumer with a large backlog (e.g. catchup) can
@@ -202,6 +202,12 @@ export class MessageBus {
         const data = deserializedObj.data as object;
         const cb = this.#consumers[groupId]?.topicCallbacks[topic];
         if (cb) {
+          // Send a heartbeat before invoking the handler so the broker knows
+          // the consumer is still alive during long-running DB operations.
+          // Without this, the broker may consider the consumer dead after the
+          // session timeout, trigger a group rebalance, and reset the offset —
+          // causing the same messages to be replayed indefinitely.
+          await heartbeat();
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await cb(data);

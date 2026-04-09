@@ -8,6 +8,15 @@ manifests:
     - k8s/production/postgres/postgres.yaml
     - k8s/production/redis/redis.yaml
     - k8s/production/kafka/kafka.yaml
+    - k8s/production/monitoring/prometheus-rbac.yaml
+    - k8s/production/monitoring/kube-state-metrics.yaml
+    - k8s/production/monitoring/prometheus-config.yaml
+    - k8s/production/monitoring/prometheus-pvc.yaml
+    - k8s/production/monitoring/prometheus-deployment.yaml
+    - k8s/production/monitoring/prometheus-service.yaml
+    - k8s/production/monitoring/otel-collector-config.yaml
+    - k8s/production/monitoring/otel-collector-deployment.yaml
+    - k8s/production/monitoring/otel-collector-service.yaml
   helm:
     releases:
       - name: envoy-gateway
