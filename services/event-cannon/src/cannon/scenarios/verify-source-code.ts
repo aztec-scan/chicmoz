@@ -14,7 +14,7 @@ import { EXPLORER_API_URL } from "../../environment.js";
 const GITHUB_URL = "https://github.com/aztec-scan/chicmoz";
 const GIT_REF = "production-devnet";
 const SUB_PATH = "services/event-cannon/src/contract-projects/SimpleLogging";
-const AZTEC_VERSION = "4.0.3";
+const AZTEC_VERSION = "4.2.0-aztecnr-rc.2";
 
 const POLL_INTERVAL_MS = 10_000;
 const MAX_POLL_ATTEMPTS = 60; // 10 minutes max

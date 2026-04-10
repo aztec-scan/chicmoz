@@ -106,9 +106,9 @@ export async function run() {
       .balance_of_public(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() }),
   ]);
-  logger.info(`Alice balance: ${balanceAlice}`);
-  logger.info(`Bob balance: ${balanceBob}`);
-  logger.info(`Charlie balance: ${balanceCharlie}`);
+  logger.info(`Alice balance: ${balanceAlice.result}`);
+  logger.info(`Bob balance: ${balanceBob.result}`);
+  logger.info(`Charlie balance: ${balanceCharlie.result}`);
 
   const aliceContract = Contract.at(
     tokenContract.address,
@@ -148,11 +148,11 @@ export async function run() {
     tokenContract.methods
       .balance_of_public(namedAccounts.alice.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
     tokenContract.methods
       .balance_of_public(namedAccounts.bob.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
   ]);
 
   logger.info(`Alice balance after: ${balanceAliceAfter}`);
@@ -190,27 +190,27 @@ export async function run() {
     tokenContract.methods
       .balance_of_private(namedAccounts.alice.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
     tokenContract.methods
       .balance_of_public(namedAccounts.alice.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
     tokenContract.methods
       .balance_of_private(namedAccounts.bob.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
     tokenContract.methods
       .balance_of_public(namedAccounts.bob.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
     tokenContract.methods
       .balance_of_private(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
     tokenContract.methods
       .balance_of_public(namedAccounts.charlie.address)
       .simulate({ from: deployerWallet.getAddress() })
-      .then((balance) => balance as bigint),
+      .then((r) => r.result as bigint),
   ]);
   logger.info(`Alice private balance: ${balancePrivateAlice}`);
   logger.info(`Alice public balance: ${balancePublicAlice}`);

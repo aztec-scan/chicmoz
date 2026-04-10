@@ -36,6 +36,6 @@ export async function run() {
     contractInstance.currentContractClassId.toString(),
     contractInstance.version,
     "token",
-    "4.0.3",
+    "4.2.0-aztecnr-rc.2",
   );
 }

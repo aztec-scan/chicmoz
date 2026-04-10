@@ -135,7 +135,7 @@ export const run = async () => {
   if (
     (await token.methods
       .get_admin()
-      .simulate({ from: account.getAddress() })) !== owner.toBigInt()
+      .simulate({ from: account.getAddress() })).result !== owner.toBigInt()
   ) {
     throw new Error(`Token admin is not ${owner.toString()}`);
   }
@@ -144,7 +144,7 @@ export const run = async () => {
     !(
       (await bridge.methods
         .get_config()
-        .simulate({ from: account.getAddress() })) as { token: AztecAddress }
+        .simulate({ from: account.getAddress() })).result as { token: AztecAddress }
     ).token.equals(token.address)
   ) {
     throw new Error(`Bridge token is not ${token.address.toString()}`);
@@ -159,7 +159,7 @@ export const run = async () => {
   if (
     (await token.methods
       .is_minter(bridge.address)
-      .simulate({ from: account.getAddress() })) === 1n
+      .simulate({ from: account.getAddress() })).result === 1n
   ) {
     // `is_minter` returns 1n when true.
   } else {
@@ -256,7 +256,7 @@ export const run = async () => {
 
   const l2TokenBalance = (await l2Token.methods
     .balance_of_public(ownerAddress)
-    .simulate({ from: account.getAddress() })) as bigint;
+    .simulate({ from: account.getAddress() })).result as bigint;
 
   assert(l2TokenBalance === bridgeAmount);
 
@@ -306,7 +306,7 @@ export const run = async () => {
   assert(
     (await l2Token.methods
       .balance_of_public(ownerAddress)
-      .simulate({ from: account.getAddress() })) ===
+      .simulate({ from: account.getAddress() })).result ===
     bridgeAmount - withdrawAmount,
   );
   assert(

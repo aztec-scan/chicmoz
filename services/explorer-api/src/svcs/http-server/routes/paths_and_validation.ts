@@ -288,7 +288,7 @@ export const postVerifySourceSchema = z.object({
     githubUrl: z.string().url(),
     gitRef: z.string().optional(),
     subPath: z.string().optional(),
-    aztecVersion: z.string().default("4.0.3"),
+    aztecVersion: z.string().default("4.2.0-aztecnr-rc.2"),
   }),
 });
 
