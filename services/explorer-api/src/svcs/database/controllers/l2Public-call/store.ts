@@ -21,6 +21,7 @@ export const storePublicCallRequests = async (
     contractAddress: request.contractAddress,
     isStaticCall: request.isStaticCall,
     calldataHash: request.calldataHash,
+    callType: request.callType,
   }));
 
   await db().insert(l2TxPublicCallRequest).values(values);

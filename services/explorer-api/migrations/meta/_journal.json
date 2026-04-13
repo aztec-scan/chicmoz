@@ -78,6 +78,13 @@
       "when": 1774872000000,
       "tag": "0010_total_fees_mana_numeric",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1776090601306,
+      "tag": "0011_flippant_thunderbolt",
+      "breakpoints": true
     }
   ]
 }

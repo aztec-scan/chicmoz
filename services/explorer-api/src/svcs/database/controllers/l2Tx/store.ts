@@ -26,6 +26,22 @@ export const storeOrUpdateL2Tx = async (
       set: {
         birthTimestamp: tx.birthTimestamp,
         feePayer: tx.feePayer,
+        expirationTimestamp: tx.expirationTimestamp,
+        gasLimitDa: tx.gasLimitDa,
+        gasLimitL2: tx.gasLimitL2,
+        teardownGasLimitDa: tx.teardownGasLimitDa,
+        teardownGasLimitL2: tx.teardownGasLimitL2,
+        maxFeePerDaGas: tx.maxFeePerDaGas,
+        maxFeePerL2Gas: tx.maxFeePerL2Gas,
+        maxPriorityFeePerDaGas: tx.maxPriorityFeePerDaGas,
+        maxPriorityFeePerL2Gas: tx.maxPriorityFeePerL2Gas,
+        gasUsedDa: tx.gasUsedDa,
+        gasUsedL2: tx.gasUsedL2,
+        feePaymentMethod: tx.feePaymentMethod,
+        noteHashCount: tx.noteHashCount,
+        nullifierCount: tx.nullifierCount,
+        l2ToL1MsgCount: tx.l2ToL1MsgCount,
+        privateLogCount: tx.privateLogCount,
       },
     })
     .returning();

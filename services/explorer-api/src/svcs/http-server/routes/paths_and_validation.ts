@@ -132,7 +132,7 @@ export const getTxEffectsByTxHashSchema = z.object({
   }),
 });
 
-export const getPublicCallRequessByAddressSchema = z.object({
+export const getPublicCallRequestsByAddressSchema = z.object({
   params: z.object({
     [address]: hexStringSchema,
   }),

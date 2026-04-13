@@ -1,8 +1,20 @@
 import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { l2Tx } from "../l2tx/index.js";
+
+export const callTypeEnum = pgEnum("call_type", [
+  "non_revertible",
+  "revertible",
+  "teardown",
+]);
 
 export const l2TxPublicCallRequest = pgTable(
   "tx_public_call_request",
@@ -12,6 +24,7 @@ export const l2TxPublicCallRequest = pgTable(
     contractAddress: generateAztecAddressColumn("contract_address").notNull(),
     isStaticCall: boolean("is_static_call").notNull(),
     calldataHash: varchar("calldata_hash").notNull().$type<HexString>(),
+    callType: callTypeEnum("call_type").notNull().default("revertible"),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.txHash, table.calldataHash] }),

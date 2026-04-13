@@ -3,55 +3,46 @@ import { HexString, type PublicCallRequest } from "@chicmoz-pkg/types";
 import { desc, eq } from "drizzle-orm";
 import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
 
+const selectColumns = {
+  txHash: l2TxPublicCallRequest.txHash,
+  msgSender: l2TxPublicCallRequest.msgSender,
+  contractAddress: l2TxPublicCallRequest.contractAddress,
+  isStaticCall: l2TxPublicCallRequest.isStaticCall,
+  calldataHash: l2TxPublicCallRequest.calldataHash,
+  callType: l2TxPublicCallRequest.callType,
+};
+
 export const getPublicCallRequestsByTxHash = async (
   txHash: HexString,
 ): Promise<PublicCallRequest[]> => {
   const res = await db()
-    .select({
-      txHash: l2TxPublicCallRequest.txHash,
-      msgSender: l2TxPublicCallRequest.msgSender,
-      contractAddress: l2TxPublicCallRequest.contractAddress,
-      isStaticCall: l2TxPublicCallRequest.isStaticCall,
-      calldataHash: l2TxPublicCallRequest.calldataHash,
-    })
+    .select(selectColumns)
     .from(l2TxPublicCallRequest)
     .where(eq(l2TxPublicCallRequest.txHash, txHash));
 
-  return res;
+  return res as PublicCallRequest[];
 };
 
 export const getPublicCallRequestsByContractAddress = async (
   contractAddress: HexString,
 ): Promise<PublicCallRequest[]> => {
   const res = await db()
-    .select({
-      txHash: l2TxPublicCallRequest.txHash,
-      msgSender: l2TxPublicCallRequest.msgSender,
-      contractAddress: l2TxPublicCallRequest.contractAddress,
-      isStaticCall: l2TxPublicCallRequest.isStaticCall,
-      calldataHash: l2TxPublicCallRequest.calldataHash,
-    })
+    .select(selectColumns)
     .from(l2TxPublicCallRequest)
     .where(eq(l2TxPublicCallRequest.contractAddress, contractAddress))
     .orderBy(desc(l2TxPublicCallRequest.txHash));
 
-  return res;
+  return res as PublicCallRequest[];
 };
 
 export const getPublicCallRequestsBySenderAddress = async (
   msgSender: HexString,
 ): Promise<PublicCallRequest[]> => {
   const res = await db()
-    .select({
-      txHash: l2TxPublicCallRequest.txHash,
-      msgSender: l2TxPublicCallRequest.msgSender,
-      contractAddress: l2TxPublicCallRequest.contractAddress,
-      isStaticCall: l2TxPublicCallRequest.isStaticCall,
-      calldataHash: l2TxPublicCallRequest.calldataHash,
-    })
+    .select(selectColumns)
     .from(l2TxPublicCallRequest)
     .where(eq(l2TxPublicCallRequest.msgSender, msgSender))
     .orderBy(desc(l2TxPublicCallRequest.txHash));
 
-  return res;
+  return res as PublicCallRequest[];
 };

@@ -21,12 +21,7 @@ export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
     return [];
   }
 
-  return z.array(chicmozL2PendingTxSchema).parse(
-    res.map((tx) => ({
-      ...tx,
-      birthTimestamp: tx.birthTimestamp,
-    })),
-  );
+  return z.array(chicmozL2PendingTxSchema).parse(res);
 };
 
 export const getTxByHash = async (
@@ -45,9 +40,9 @@ export const getTxByHash = async (
   const tx = res[0];
   const publicCallRequests = await getPublicCallRequestsByTxHash(hash);
 
-  return {
+  return chicmozL2PendingTxSchema.parse({
     ...tx,
     publicCallRequests:
       publicCallRequests.length > 0 ? publicCallRequests : undefined,
-  };
+  });
 };

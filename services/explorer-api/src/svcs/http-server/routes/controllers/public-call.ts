@@ -2,10 +2,25 @@ import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
 import {
-  getPublicCallRequessByAddressSchema,
+  getPublicCallRequestsByAddressSchema,
   getTxEffectsByTxHashSchema,
 } from "../paths_and_validation.js";
 import { dbWrapper } from "./utils/index.js";
+
+const publicCallRequestSchema = {
+  type: "object",
+  properties: {
+    txHash: { type: "string" },
+    msgSender: { type: "string" },
+    contractAddress: { type: "string" },
+    isStaticCall: { type: "boolean" },
+    calldataHash: { type: "string" },
+    callType: {
+      type: "string",
+      enum: ["non_revertible", "revertible", "teardown"],
+    },
+  },
+};
 
 export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH: OpenAPIObject["paths"] =
   {
@@ -31,15 +46,7 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH: OpenAPIObject["paths"]
               "application/json": {
                 schema: {
                   type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      msgSender: { type: "string" },
-                      contractAddress: { type: "string" },
-                      isStaticCall: { type: "boolean" },
-                      calldataHash: { type: "string" },
-                    },
-                  },
+                  items: publicCallRequestSchema,
                 },
               },
             },
@@ -84,15 +91,7 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS: OpenAPIObject
               "application/json": {
                 schema: {
                   type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      msgSender: { type: "string" },
-                      contractAddress: { type: "string" },
-                      isStaticCall: { type: "boolean" },
-                      calldataHash: { type: "string" },
-                    },
-                  },
+                  items: publicCallRequestSchema,
                 },
               },
             },
@@ -104,7 +103,7 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS: OpenAPIObject
 
 export const GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS = asyncHandler(
   async (req, res) => {
-    const { address } = getPublicCallRequessByAddressSchema.parse(req).params;
+    const { address } = getPublicCallRequestsByAddressSchema.parse(req).params;
     const publicCallRequests = await dbWrapper.getLatest(
       ["l2", "public-call-requests", "contract", address],
       () => db.l2PublicCall.getPublicCallRequestsByContractAddress(address),
@@ -137,15 +136,7 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS: OpenAPIObject["
               "application/json": {
                 schema: {
                   type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      msgSender: { type: "string" },
-                      contractAddress: { type: "string" },
-                      isStaticCall: { type: "boolean" },
-                      calldataHash: { type: "string" },
-                    },
-                  },
+                  items: publicCallRequestSchema,
                 },
               },
             },
@@ -157,7 +148,7 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS: OpenAPIObject["
 
 export const GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS = asyncHandler(
   async (req, res) => {
-    const { address } = getPublicCallRequessByAddressSchema.parse(req).params;
+    const { address } = getPublicCallRequestsByAddressSchema.parse(req).params;
     const publicCallRequests = await dbWrapper.getLatest(
       ["l2", "public-call-requests", "sender", address],
       () => db.l2PublicCall.getPublicCallRequestsBySenderAddress(address),
