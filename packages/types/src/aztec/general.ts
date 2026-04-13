@@ -2,7 +2,7 @@ import { z } from "zod";
 import { aztecAddressSchema } from "../index.js";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
-export const CHICMOZ_TYPES_AZTEC_VERSION = "1.1.2";
+export const CHICMOZ_TYPES_AZTEC_VERSION = "4.0.0-devnet0-patch-1";
 
 export const L1ContractAddressesSchema = z.object({
   rollupAddress: z.string().startsWith("0x"),
@@ -16,13 +16,12 @@ export const L1ContractAddressesSchema = z.object({
   governanceProposerAddress: z.string().startsWith("0x"),
   governanceAddress: z.string().startsWith("0x"),
   stakingAssetAddress: z.string().startsWith("0x"),
-  slashFactoryAddress: z.string().startsWith("0x"),
 });
 
 export const ProtocolContractAddressesSchema = z.object({
-  classRegisterer: z.string().startsWith("0x"),
+  classRegistry: z.string().startsWith("0x"),
   feeJuice: z.string().startsWith("0x"),
-  instanceDeployer: z.string().startsWith("0x"),
+  instanceRegistry: z.string().startsWith("0x"),
   multiCallEntrypoint: z.string().startsWith("0x"),
 });
 

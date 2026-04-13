@@ -1,12 +1,11 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: chicmoz-prod-sp
+  name: chicmoz-prod-testnet
 requires:
   - path: ./common/skaffold.manifests.yaml
   - path: ./explorer-ui/skaffold.testnet.yaml
   - path: ./explorer-api/skaffold.testnet.yaml
-  - path: ./auth/skaffold.yaml
   - path: ./aztec-listener/skaffold.testnet.yaml
   - path: ./ethereum-listener/skaffold.testnet.yaml
   - path: ./websocket-event-publisher/skaffold.testnet.yaml

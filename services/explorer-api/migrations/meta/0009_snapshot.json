@@ -1,5 +1,5 @@
 {
-  "id": "94cd2493-d377-4325-b156-a45e8770e5f1",
+  "id": "ff2330f1-479b-4b70-b1b1-108becd44b60",
   "prevId": "40c0147f-071a-4809-af9d-42362fbdf326",
   "version": "7",
   "dialect": "postgresql",
@@ -147,52 +147,6 @@
         "dropped_at": {
           "name": "dropped_at",
           "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.tx_public_call_request": {
-      "name": "tx_public_call_request",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "tx_hash": {
-          "name": "tx_hash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "msg_sender": {
-          "name": "msg_sender",
-          "type": "varchar(66)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "contract_address": {
-          "name": "contract_address",
-          "type": "varchar(66)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_static_call": {
-          "name": "is_static_call",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "calldata_hash": {
-          "name": "calldata_hash",
-          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         }
@@ -514,73 +468,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.content_commitment": {
-      "name": "content_commitment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "header_id": {
-          "name": "header_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "blobs_hash": {
-          "name": "blobs_hash",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "in_hash": {
-          "name": "in_hash",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "out_hash": {
-          "name": "out_hash",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "content_commitment_header_id_idx": {
-          "name": "content_commitment_header_id_idx",
-          "columns": [
-            {
-              "expression": "header_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "content_commitment_header_id_header_id_fk": {
-          "name": "content_commitment_header_id_header_id_fk",
-          "tableFrom": "content_commitment",
-          "tableTo": "header",
-          "columnsFrom": ["header_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "public.gas_fees": {
       "name": "gas_fees",
       "schema": "",
@@ -774,6 +661,12 @@
         "total_mana_used": {
           "name": "total_mana_used",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sponge_blob_hash": {
+          "name": "sponge_blob_hash",
+          "type": "varchar(66)",
           "primaryKey": false,
           "notNull": true
         }

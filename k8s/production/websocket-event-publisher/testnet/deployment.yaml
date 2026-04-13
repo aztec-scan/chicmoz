@@ -16,8 +16,10 @@ spec:
       labels:
         app: websocket-event-publisher-testnet-label
     spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher:latest
+        - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet:latest
           name: websocket-event-publisher
           resources:
             limits:
@@ -27,6 +29,25 @@ spec:
             - name: websocket-port
               containerPort: 3000
               protocol: TCP
+            - name: health-port
+              containerPort: 3001
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
           env:
             - name: INSTANCE_NAME
               value: "testnet_websocket-event-publisher"

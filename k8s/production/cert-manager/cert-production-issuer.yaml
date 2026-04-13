@@ -15,5 +15,8 @@ spec:
     # Enable the HTTP-01 challenge provider
     solvers:
       - http01:
-          ingress:
-            class: nginx
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: aztecscan-gateway
+                namespace: chicmoz-prod
+                kind: Gateway

@@ -53,12 +53,12 @@ export const ValidatorHistoryTable: FC<Props> = ({
         <p className="text-sm text-gray-500">
           Psst!{" "}
           <a
-            href={`https://aztec.0xph.site/?tab=performance&address=${attesterAddress}`}
+            href={`https://dashtec.xyz/sequencers/${attesterAddress}`}
             target="_blank"
             rel="noreferrer"
             className="hover:font-bold hover:text-purple-light"
           >
-            Check out 0xpH's dashboard for even more detailed stats.
+            Check out Dashtec's dashboard for even more detailed stats.
           </a>
         </p>
 

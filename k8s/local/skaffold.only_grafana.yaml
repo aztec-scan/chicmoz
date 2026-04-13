@@ -8,7 +8,7 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - k8s/local/grafana/ingress.yaml
+    - k8s/local/grafana/httproute.yaml
     - k8s/local/grafana/datasources_secret.yaml
     - k8s/local/grafana/dashboards/sandbox_overview.yaml
   helm:

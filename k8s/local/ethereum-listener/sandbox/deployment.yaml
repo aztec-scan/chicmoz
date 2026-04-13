@@ -10,7 +10,8 @@ spec:
   selector:
     matchLabels:
       app: ethereum-listener-sandbox-label
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -31,6 +32,9 @@ spec:
       containers:
         - image: ethereum-listener:latest
           resources:
+            requests:
+              memory: 300Mi
+              cpu: 100m
             limits:
               memory: 300Mi
               cpu: 500m
@@ -47,8 +51,6 @@ spec:
               value: "SANDBOX"
             - name: LISTENER_DISABLED
               value: "false"
-            - name: GENESIS_CATCHUP
-              value: "true"
             - name: LISTEN_FOR_BLOCKS
               value: "true"
             - name: ETHEREUM_HTTP_RPC_URL

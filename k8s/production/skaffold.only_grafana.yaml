@@ -6,25 +6,25 @@ deploy:
   kubectl:
     flags:
       apply: ["--force"]
-manifests:
-  rawYaml:
-    - ./grafana/ingress.yaml
-    - ./grafana/datasources_secret.yaml
-  helm:
-    releases:
-      - name: grafana
-        version: 11.3.26
-        remoteChart: grafana
-        repo: https://charts.bitnami.com/bitnami
-        namespace: chicmoz-prod
-        createNamespace: false
-        recreatePods: true
-        skipBuildDependencies: false
-        useHelmSecrets: false
-        wait: true
-        setValues:
-          admin.user: "admin123"
-          admin.password: "abc123"
-          persistence.enabled: false # should we use this perhaps?
-          dashboardsProvider.enabled: true # remove?
-          datasources.secretName: grafana-datasources
+  manifests:
+    rawYaml:
+      - ./grafana/httproute.yaml
+      - ./grafana/datasources_secret.yaml
+    helm:
+      releases:
+        - name: grafana
+          version: 11.3.26
+          remoteChart: grafana
+          repo: https://charts.bitnami.com/bitnami
+          namespace: chicmoz-prod
+          createNamespace: false
+          recreatePods: true
+          skipBuildDependencies: false
+          useHelmSecrets: false
+          wait: true
+          setValues:
+            admin.user: "admin123"
+            admin.password: "abc123"
+            persistence.enabled: false # should we use this perhaps?
+            dashboardsProvider.enabled: true # remove?
+            datasources.secretName: grafana-datasources

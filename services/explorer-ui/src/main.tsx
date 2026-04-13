@@ -1,7 +1,11 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import "~/styles/global.css";
-import { QueryProvider, TanstackRouterProvider, ThemeProvider } from "./providers";
+import {
+  QueryProvider,
+  TanstackRouterProvider,
+  ThemeProvider,
+} from "./providers";
 
 // NOTE: these two lines are necessary for proper parsing of ChicmozL2Block
 import { Buffer } from "buffer";
@@ -17,7 +21,9 @@ if (!rootElement.innerHTML) {
     <StrictMode>
       <ThemeProvider>
         <QueryProvider>
-          <TanstackRouterProvider />
+          <Suspense fallback={null}>
+            <TanstackRouterProvider />
+          </Suspense>
           <Toaster
             icons={{
               success: <SuccessIcon />,

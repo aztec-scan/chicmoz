@@ -14,7 +14,7 @@ export async function getL1Contracts() {
     .where(eq(l1ContractAddressesTable.networkId, L2_NETWORK_ID))
     .limit(1);
   if (!res.length || !res[0].addresses)
-    throw new Error("L1 contracts not initialized");
+    {throw new Error("L1 contracts not initialized");}
   return L1ContractAddressesSchema.parse(res[0].addresses);
 }
 

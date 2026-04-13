@@ -3,6 +3,7 @@ import { databaseService } from "./database/index.js";
 import { messageBusService } from "./message-bus/index.js";
 import { ethereumNetworkClientService } from "./network-client/index.js";
 import { finalizedEventsPollerService } from "./poller-finalized-events/index.js";
+import { attesterPollerService } from "./poller-attester-updates/index.js";
 import { eventsWatcherService } from "./events-watcher/index.js";
 
 export const services: MicroserviceBaseSvc[] = [
@@ -11,4 +12,5 @@ export const services: MicroserviceBaseSvc[] = [
   ethereumNetworkClientService,
   eventsWatcherService,
   finalizedEventsPollerService,
+  attesterPollerService,
 ];

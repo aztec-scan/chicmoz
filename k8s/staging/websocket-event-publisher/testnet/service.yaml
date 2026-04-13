@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-event-publisher-testnet-service
+  namespace: chicmoz-staging
+spec:
+  selector:
+    app: websocket-event-publisher-testnet-label
+  ports:
+    - name: websocket
+      protocol: TCP
+      port: 80
+      targetPort: websocket-port

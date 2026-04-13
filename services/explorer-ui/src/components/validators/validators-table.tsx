@@ -1,16 +1,23 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
 import { ValidatorsTableColumns } from "./validators-columns";
-import { type ValidatorTableSchema } from "./validators-schema";
+import { type ChicmozL1L2Validator } from "@chicmoz-pkg/types";
 
 interface Props {
   title?: string;
-  validators?: ValidatorTableSchema[];
-  isLoading: boolean;
-  error?: Error | null;
+  validators?: ChicmozL1L2Validator[];
+  isLoading?: boolean;
+  error?: Error;
   disableSizeSelector?: boolean;
   disablePagination?: boolean;
   maxEntries?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  useReactQueryPagination?: boolean;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
+  totalCount?: number;
 }
 
 export const ValidatorsTable: FC<Props> = ({
@@ -21,6 +28,13 @@ export const ValidatorsTable: FC<Props> = ({
   disableSizeSelector,
   disablePagination = false,
   maxEntries = 10,
+  currentPage,
+  onPageChange,
+  onPageSizeChange,
+  useReactQueryPagination = false,
+  hasNextPage,
+  hasPreviousPage,
+  totalCount,
 }) => {
   if (!validators) {
     return <div>No data</div>;
@@ -43,6 +57,13 @@ export const ValidatorsTable: FC<Props> = ({
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}
+          currentPage={currentPage}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          useReactQueryPagination={useReactQueryPagination}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalCount={totalCount}
         />
       </div>
     </section>

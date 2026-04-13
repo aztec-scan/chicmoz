@@ -9,7 +9,7 @@ export const newRouter = (deps: { db: DB; core: Core; logger: Logger }) => {
 
   const controller = new Controller(deps);
 
-  router.get(`/_external-auth-*`, controller.GET_EXISTS);
+  router.all(`/_external-auth-*`, controller.GET_EXISTS);
   router.get(`/health`, controller.GET_HEALTH);
 
   return router;

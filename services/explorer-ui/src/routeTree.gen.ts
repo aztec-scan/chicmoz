@@ -18,7 +18,9 @@ import { Route as NetworkHealthImport } from './routes/network-health'
 
 // Create Virtual Routes
 
+const StakingLazyImport = createFileRoute('/staking')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
+const IncidentsLazyImport = createFileRoute('/incidents')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const EcosystemLazyImport = createFileRoute('/ecosystem')()
 const DevLazyImport = createFileRoute('/dev')()
@@ -48,12 +50,22 @@ const ContractsClassesIdVersionsVersionSubmitStandardContractLazyImport =
 
 // Create/Update Routes
 
+const StakingLazyRoute = StakingLazyImport.update({
+  path: '/staking',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/staking.lazy').then((d) => d.Route))
+
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
   import('./routes/privacy-policy.lazy').then((d) => d.Route),
 )
+
+const IncidentsLazyRoute = IncidentsLazyImport.update({
+  path: '/incidents',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/incidents.lazy').then((d) => d.Route))
 
 const FeeRecipientsLazyRoute = FeeRecipientsLazyImport.update({
   path: '/fee-recipients',
@@ -242,11 +254,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeeRecipientsLazyImport
       parentRoute: typeof rootRoute
     }
+    '/incidents': {
+      id: '/incidents'
+      path: '/incidents'
+      fullPath: '/incidents'
+      preLoaderRoute: typeof IncidentsLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/privacy-policy': {
       id: '/privacy-policy'
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/staking': {
+      id: '/staking'
+      path: '/staking'
+      fullPath: '/staking'
+      preLoaderRoute: typeof StakingLazyImport
       parentRoute: typeof rootRoute
     }
     '/blocks/$blockNumber': {
@@ -340,7 +366,9 @@ export const routeTree = rootRoute.addChildren({
   DevLazyRoute,
   EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
+  IncidentsLazyRoute,
   PrivacyPolicyLazyRoute,
+  StakingLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
   TxEffectsHashLazyRoute,
@@ -372,7 +400,9 @@ export const routeTree = rootRoute.addChildren({
         "/dev",
         "/ecosystem",
         "/fee-recipients",
+        "/incidents",
         "/privacy-policy",
+        "/staking",
         "/blocks/$blockNumber",
         "/l1/contract-events",
         "/tx-effects/$hash",
@@ -409,8 +439,14 @@ export const routeTree = rootRoute.addChildren({
     "/fee-recipients": {
       "filePath": "fee-recipients.lazy.tsx"
     },
+    "/incidents": {
+      "filePath": "incidents.lazy.tsx"
+    },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
+    },
+    "/staking": {
+      "filePath": "staking.lazy.tsx"
     },
     "/blocks/$blockNumber": {
       "filePath": "blocks/$blockNumber.lazy.tsx"

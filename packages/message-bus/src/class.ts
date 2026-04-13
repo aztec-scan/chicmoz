@@ -111,7 +111,6 @@ export class MessageBus {
     await this.#producer!.send({ topic, messages: kafkaMessages });
   }
 
-  // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
   async subscribe<T>(
     groupId: string,
     topic: string,
@@ -178,12 +177,15 @@ export class MessageBus {
     this.nonRetriableWrapper(groupId);
 
     await this.#consumers[groupId]!.consumer.run({
-      eachMessage: async ({ topic, message }) => {
-        // this.logger.info(
-        //   `Kafka: received message from topic ${topic} in group ${groupId}`
-        // );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        // Convert Buffer to Uint8Array before deserializing
+      // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
+      eachMessage: async ({ topic, message, heartbeat }) => {
+        // Yield the event loop between messages so that other consumers sharing
+        // this Node.js process get a chance to fetch and process their messages.
+        // Without this, a consumer with a large backlog (e.g. catchup) can
+        // starve other consumers (e.g. tip-of-chain block handler) by
+        // monopolizing the event loop with back-to-back await chains.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         const messageValue = message.value!;
         const valueAsUint8Array =
           messageValue instanceof Buffer
@@ -191,7 +193,6 @@ export class MessageBus {
             : typeof messageValue === "string"
               ? new TextEncoder().encode(messageValue)
               : new Uint8Array(0);
-        // Add proper type assertion to satisfy the linter
         const deserializedObj = BSON.deserialize(valueAsUint8Array);
         if (typeof deserializedObj?.data !== "object") {
           throw new Error(
@@ -201,6 +202,12 @@ export class MessageBus {
         const data = deserializedObj.data as object;
         const cb = this.#consumers[groupId]?.topicCallbacks[topic];
         if (cb) {
+          // Send a heartbeat before invoking the handler so the broker knows
+          // the consumer is still alive during long-running DB operations.
+          // Without this, the broker may consider the consumer dead after the
+          // session timeout, trigger a group rebalance, and reset the offset —
+          // causing the same messages to be replayed indefinitely.
+          await heartbeat();
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await cb(data);

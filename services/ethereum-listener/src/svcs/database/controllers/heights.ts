@@ -37,10 +37,14 @@ export const inMemoryHeightTracker = async ({
     ? latestFinalizedHeight
     : latestPendingHeight;
 
-  let memoryHeight = lastProcessedHeight;
+  const genesisBlock = await getEarliestRollupBlockNumber();
+  let memoryHeight =
+    lastProcessedHeight < genesisBlock ? genesisBlock : lastProcessedHeight;
+  const lastProcessedHeightClamped =
+    lastProcessedHeight < genesisBlock ? genesisBlock : lastProcessedHeight;
   const finalizedString = isFinalized ? "✅" : "💤";
   logger.info(
-    `START ${lastProcessedHeight} ${finalizedString} ${contractName} ${eventName}`,
+    `START ${lastProcessedHeightClamped} ${finalizedString} ${contractName} ${eventName}`,
   );
   const updateMemory = (newHeight: bigint) => {
     if (newHeight > memoryHeight) {
@@ -64,7 +68,10 @@ export const inMemoryHeightTracker = async ({
   return {
     updateHeight: updateMemory,
     storeHeight: updateDb,
-    fromBlock: lastProcessedHeight + 1n,
+    fromBlock:
+      lastProcessedHeight < genesisBlock
+        ? genesisBlock
+        : lastProcessedHeight + 1n,
     getMemoryHeight,
     setOverrideStoreHeight,
   };

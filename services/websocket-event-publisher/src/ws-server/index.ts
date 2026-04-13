@@ -7,12 +7,13 @@ import {
 import { WebSocket, WebSocketServer } from "ws";
 import { PORT } from "../environment.js";
 import { logger } from "../logger.js";
+import { closeHealthCheckServer, createHealthCheckServer } from "./health.js";
 
 let wss: WebSocketServer;
 
 const sendUpdateToClients = (update: WebsocketUpdateMessageSender) => {
   const stringifiedUpdate = jsonStringify(update);
-  if (!wss) throw new Error("WebSocket server is not initialized");
+  if (!wss) {throw new Error("WebSocket server is not initialized");}
   const clientStatuses: {
     sent: number;
     failed: number;
@@ -28,13 +29,13 @@ const sendUpdateToClients = (update: WebsocketUpdateMessageSender) => {
       } catch (e) {
         logger.warn(
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `Encountered error while sending block: ${e}, continuing...`
+          `Encountered error while sending block: ${e}, continuing...`,
         );
         clientStatuses.failed++;
       }
     } else {
       logger.warn(
-        `Client is not open, skipping... (readyState: ${client.readyState})`
+        `Client is not open, skipping... (readyState: ${client.readyState})`,
       );
       clientStatuses.failed++;
     }
@@ -47,7 +48,7 @@ export const sendPendingTxsToClients = (txs: ChicmozL2PendingTx[]) => {
   const update: WebsocketUpdateMessageSender = { txs };
   const { clientStatuses, totalClients } = sendUpdateToClients(update);
   logger.info(
-    `📡 Sent ${txs.length} pending txs to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`
+    `📡 Sent ${txs.length} pending txs to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
   );
 };
 
@@ -62,7 +63,7 @@ export const sendBlockToClients = (block: ChicmozL2Block) => {
     },
   });
   logger.info(
-    `📡 Sent block ${block.header.globalVariables.blockNumber} to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`
+    `📡 Sent block ${block.header.globalVariables.blockNumber} to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
   );
 };
 
@@ -87,6 +88,9 @@ export const init = async () => {
 
   await initPromise;
 
+  // Start health check server
+  createHealthCheckServer(PORT);
+
   return {
     id: "WS",
     shutdownCb: async () => {
@@ -95,6 +99,7 @@ export const init = async () => {
         resolveShutdown = resolve;
       });
       logger.info(`Shutting down WebSocket server...`);
+      await closeHealthCheckServer();
       wss.close(() => {
         logger.info(`WebSocket server closed`);
         resolveShutdown();

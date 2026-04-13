@@ -1,10 +1,5 @@
 import { RollupAbi } from "@aztec/l1-artifacts";
-import {
-  ChicmozL1L2Validator,
-  L2NetworkId,
-  chicmozL1L2ValidatorSchema,
-  getL1NetworkId,
-} from "@chicmoz-pkg/types";
+import { L2NetworkId, getL1NetworkId } from "@chicmoz-pkg/types";
 import {
   PublicClient,
   createPublicClient,
@@ -15,19 +10,19 @@ import {
 } from "viem";
 import { foundry, mainnet, sepolia } from "viem/chains";
 import {
+  ETHEREUM_ALCHEMY_HTTP_URL,
   ETHEREUM_HTTP_RPC_URL,
   ETHEREUM_WS_RPC_URL,
   L2_NETWORK_ID,
 } from "../../environment.js";
-import { emit } from "../../events/index.js";
 import { logger } from "../../logger.js";
 import { getL1Contracts } from "../contracts/index.js";
-import { AztecContracts } from "../contracts/utils.js";
 import { getCachedBlockTimestamp } from "./cached-block-timestamps.js";
 export { startContractWatchers as watchContractsEvents } from "../contracts/index.js";
 
 let publicWsClient: PublicClient | undefined = undefined;
 let publicHttpClient: PublicClient | undefined = undefined;
+let publicHttpBackupClient: PublicClient | undefined = undefined;
 
 export const getPublicWsClient = () => {
   if (!publicWsClient) {
@@ -42,6 +37,8 @@ export const getPublicHttpClient = () => {
   }
   return publicHttpClient;
 };
+
+export const getPublicHttpBackupClient = () => publicHttpBackupClient;
 
 export const initClient = () => {
   let chainConf;
@@ -69,6 +66,12 @@ export const initClient = () => {
     transport: webSocket(),
   });
   publicHttpClient = createPublicClient({ chain, transport: http() });
+  if (ETHEREUM_ALCHEMY_HTTP_URL) {
+    publicHttpBackupClient = createPublicClient({
+      chain,
+      transport: http(ETHEREUM_ALCHEMY_HTTP_URL),
+    });
+  }
 };
 
 export const getLatestFinalizedHeight = async () => {
@@ -113,7 +116,7 @@ export const getEarliestRollupBlockNumber = async () => {
         functionName: "getTips",
         blockNumber: BigInt(blockNbr),
       });
-      if (res.provenBlockNumber === 0n) {
+      if (res.proven === 0n) {
         start = BigInt(blockNbr);
         foundL2ProvenBlockNumber = BigInt(blockNbr);
       }
@@ -154,67 +157,14 @@ const hardcodedRollupGenesisBlocks = (
   );
   if (
     networkId === "TESTNET" &&
-    rollupAddress.toLowerCase() === "0xee6d4e937f0493fb461f28a75cf591f1dba8704e"
+    rollupAddress.toLowerCase() === "0xebd99ff0ff6677205509ae73f93d0ca52ac85d67"
   ) {
     return 8125387n;
+  } else if (
+    networkId === "DEVNET" &&
+    rollupAddress.toLowerCase() === "0xcd1a7be18501092f3ba8d80ce5629501ba178de0"
+  ) {
+    return 10286799n;
   }
   return 0n;
-};
-
-let latestPublishedHeight = 0n;
-
-export const queryStakingStateAndEmitUpdates = async ({
-  contracts,
-  latestHeight,
-}: {
-  contracts: AztecContracts;
-  latestHeight: bigint;
-}) => {
-  if (latestHeight <= latestPublishedHeight) {
-    logger.info(
-      `Latest height ${latestHeight} <= latest published height ${latestPublishedHeight}`,
-    );
-    return;
-  }
-  const attesterCount = await getPublicHttpClient().readContract({
-    address: contracts.rollup.address,
-    abi: RollupAbi,
-    blockNumber: latestHeight,
-    functionName: "getActiveAttesterCount",
-  });
-  const attesters = await getPublicHttpClient().readContract({
-    address: contracts.rollup.address,
-    abi: RollupAbi,
-    functionName: "getAttesters",
-    args: [],
-  });
-  logger.info(
-    `Active attester count: ${attesterCount.toString()} (${attesters.length})`,
-  );
-  const attesterInfos: ChicmozL1L2Validator[] = [];
-  for (const attester of attesters) {
-    const attesterView = await getPublicHttpClient().readContract({
-      address: contracts.rollup.address,
-      abi: RollupAbi,
-      functionName: "getAttesterView",
-      args: [attester],
-    });
-
-    if (attesterView === undefined) {
-      logger.warn(`Attester ${attester} not found`);
-      continue;
-    }
-    attesterInfos.push(
-      chicmozL1L2ValidatorSchema.parse({
-        rollupAddress: contracts.rollup.address,
-        attester: attester,
-        stake: attesterView.effectiveBalance,
-        withdrawer: attesterView.config.withdrawer,
-        proposer: attesterView.config.withdrawer, // Note: proposer appears to be the same as withdrawer in the new structure
-        status: attesterView.status,
-      }),
-    );
-  }
-  await emit.l1Validator(attesterInfos);
-  latestPublishedHeight = latestHeight;
 };

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: explorer-ui-devnet-service
+  namespace: chicmoz-prod
+spec:
+  selector:
+    app: explorer-ui-devnet-label
+  ports:
+    - name: http-app
+      protocol: TCP
+      port: 80
+      targetPort: http-app-port

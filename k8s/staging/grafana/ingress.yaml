@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-grafana
+  namespace: chicmoz-staging
+  annotations:
+    cert-manager.io/cluster-issuer: "aztecscan-issuer-staging"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: aztecscan-grafana-tls
+      hosts:
+        - staging-dashboard.aztecscan.xyz
+  rules:
+    - host: staging-dashboard.aztecscan.xyz
+      http:
+        paths:
+          - backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
+            path: /
+            pathType: Prefix
+status:
+  loadBalancer: {}

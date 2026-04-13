@@ -26,7 +26,7 @@ const init = async () => {
       .catch((e) => {
         logger.error(`🐻 error running catchup: ${(e as Error).stack}`);
       });
-  }, 5000);
+  }, 10000);
 };
 
 let isCatchupStarted = false;

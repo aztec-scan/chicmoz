@@ -1,13 +1,12 @@
-import { L2Block } from "@aztec/aztec.js";
 import {
-  ContractClassRegisteredEvent,
+  ContractClassPublishedEvent,
   PrivateFunctionBroadcastedEvent,
   UtilityFunctionBroadcastedEvent,
-} from "@aztec/protocol-contracts/class-registerer";
+} from "@aztec/protocol-contracts/class-registry";
 import {
-  ContractInstanceDeployedEvent,
+  ContractInstancePublishedEvent,
   ContractInstanceUpdatedEvent,
-} from "@aztec/protocol-contracts/instance-deployer";
+} from "@aztec/protocol-contracts/instance-registry";
 import {
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
@@ -24,6 +23,7 @@ import { z } from "zod";
 import { logger } from "../../../logger.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateError } from "../utils.js";
+import { L2Block } from "@aztec/aztec.js/block";
 
 const parseObjs = <ParsedType, AztecType>(
   blockHash: string,
@@ -72,9 +72,9 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
 
   const contractInstanceDeployed = privateLogs
     .filter((log) =>
-      ContractInstanceDeployedEvent.isContractInstanceDeployedEvent(log),
+      ContractInstancePublishedEvent.isContractInstancePublishedEvent(log),
     )
-    .map((log) => ContractInstanceDeployedEvent.fromLog(log))
+    .map((log) => ContractInstancePublishedEvent.fromLog(log))
     .map((e) => e.toContractInstance());
 
   const contractInstanceUpdated = publicLogs
@@ -90,9 +90,9 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
 
   const contractClassRegisteredEvents = contractClassLogs
     .filter((log) =>
-      ContractClassRegisteredEvent.isContractClassRegisteredEvent(log),
+      ContractClassPublishedEvent.isContractClassPublishedEvent(log),
     )
-    .map((log) => ContractClassRegisteredEvent.fromLog(log));
+    .map((log) => ContractClassPublishedEvent.fromLog(log));
 
   const contractClasses = await Promise.all(
     contractClassRegisteredEvents.map((e) => e.toContractClassPublic()),

@@ -24,10 +24,10 @@ minikube start --kubernetes-version=v1.25.3 --cpus max --memory max && skaffold 
 ./scripts/miscellaneous.sh
 ```
 
-Now you can access the explorer at http://sandbox.chicmoz.localhost and also...
+Now you can access the explorer at <http://sandbox.chicmoz.localhost> and also...
 
-- API: http://api.sandbox.chicmoz.localhost
-- index of API: http://api.sandbox.chicmoz.localhost/v1/dev-api-key/l2/index
+- API: <http://api.sandbox.chicmoz.localhost>
+- index of API: <http://api.sandbox.chicmoz.localhost/v1/dev-api-key/l2/index>
 
 ### Different Aztec-setups
 
@@ -38,8 +38,6 @@ Default settings is to set up a sandbox in the local cluster.
 #### Option 1 - connect to your already running sandbox or to public devnet
 
 ⚠️ _Make sure you have .chicmoz.env file in the root_
-
-TODO
 
 ## Pro tip
 
@@ -54,6 +52,37 @@ yarn
 yarn build
 yarn dev
 ```
+
+You can also keep the backend stack on another machine and tunnel the sandbox gateway over SSH.
+
+Run the backend machine as usual:
+
+```sh
+skaffold run --filename k8s/local/skaffold.sandbox_no_ui.yaml
+./scripts/miscellaneous.sh
+```
+
+Then, on the UI machine, forward a local port to the backend machine's current gateway NodePort and keep using the existing sandbox hostname locally:
+
+```sh
+ssh -N -L 8080:<remote-minikube-ip>:<remote-gateway-nodeport> <remote-host>
+```
+
+You can discover those values on the backend machine with:
+
+```sh
+minikube ip
+kubectl get svc -n envoy-gateway-system -o wide
+```
+
+```sh
+VITE_L2_NETWORK_ID=SANDBOX \
+VITE_API_KEY=dev-api-key \
+VITE_API_URL=http://api.sandbox.chicmoz.localhost:8080/v1 \
+yarn dev
+```
+
+If websocket forwarding is not set up yet, leave `VITE_WS_URL` unset.
 
 ## Code Overview
 
@@ -329,7 +358,6 @@ The architecture follows an event-driven pattern:
 | `ETHEREUM_WS_RPC_URL`    | WebSocket URL of the Ethereum node          | `ws://anvil-ethereum-node:8545`   |
 | `BLOCK_POLL_INTERVAL_MS` | Polling interval for blocks in milliseconds | `500`                             |
 | `LISTEN_FOR_BLOCKS`      | Whether to listen for blocks                | `true`                            |
-| `GENESIS_CATCHUP`        | Whether to catch up from genesis            | `false`                           |
 | `LISTENER_DISABLED`      | Disable the listener entirely               | `false`                           |
 | `L2_NETWORK_ID`          | Identifier for the L2 network               | Required                          |
 
@@ -744,6 +772,7 @@ For production deployment, the process involves:
    ```
 
 4. **Deploy services**:
+
    ```sh
    skaffold run -f k8s/production/skaffold.testnet.yaml
    ```

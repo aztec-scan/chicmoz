@@ -1,0 +1,14 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+requires:
+  - path: ./common/skaffold.base.yaml
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./testnet/postgres-config.yaml
+    - ./testnet/service.yaml
+    - ./testnet/nodeport.yaml
+    - ./testnet/deployment.yaml

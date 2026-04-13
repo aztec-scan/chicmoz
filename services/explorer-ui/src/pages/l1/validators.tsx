@@ -1,27 +1,46 @@
-import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
-import { type FC } from "react";
+import { type FC, useState } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { ValidatorsTable } from "~/components/validators/validators-table";
 import { useSubTitle } from "~/hooks";
-import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import {
+  usePaginatedValidators,
+  useValidatorTotals,
+} from "~/hooks/api/l1-l2-validator";
 import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 
 export const ValidatorsPage: FC = () => {
   useSubTitle(routes.validators.title);
-  const { data, isLoading, error } = useL1L2Validators();
 
-  const validatingCount =
-    data?.filter(
-      (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
-    ).length ?? 0;
+  // State for React Query pagination
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(20);
 
-  const exitingCount =
-    data?.filter(
-      (validator) => validator.status !== L1L2ValidatorStatus.VALIDATING,
-    ).length ?? 0;
+  const { data, isLoading, error } = usePaginatedValidators(
+    currentPage,
+    pageSize,
+  );
+
+  const { data: totalsData } = useValidatorTotals();
+
+  // Determine if there's a next page based on data length
+  const hasNextPage = data ? data.length === pageSize : true;
+  const hasPreviousPage = currentPage > 0;
+
+  const validatingCount = totalsData?.validating ?? 0;
+  const exitingCount = totalsData?.nonValidating ?? 0;
+  const totalCount = validatingCount + exitingCount;
 
   const validatorsData = data;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(0); // Reset to first page
+  };
 
   const sortedValidatorsData = validatorsData?.sort((a, b) => {
     const stakeDiff = Number(b.stake - a.stake);
@@ -62,7 +81,15 @@ export const ValidatorsPage: FC = () => {
           title="All Validators"
           validators={sortedValidatorsData}
           isLoading={isLoading}
-          error={error}
+          error={error || undefined}
+          maxEntries={pageSize}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          useReactQueryPagination={true}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          totalCount={totalCount}
         />
       </div>
     </BaseLayout>

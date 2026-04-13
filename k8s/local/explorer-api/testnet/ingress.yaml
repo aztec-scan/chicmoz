@@ -5,6 +5,7 @@ metadata:
   namespace: chicmoz
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://swagger.chicmoz.localhost,http://localhost:5173"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"

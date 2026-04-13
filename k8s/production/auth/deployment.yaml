@@ -38,7 +38,7 @@ spec:
             - name: POSTGRES_DB_NAME
               value: "auth"
             - name: REDIS_HOST
-              value: "redis-master"
+              value: "redis-cache"
             - name: REDIS_PORT
               value: "6379"
             - name: NODE_ENV

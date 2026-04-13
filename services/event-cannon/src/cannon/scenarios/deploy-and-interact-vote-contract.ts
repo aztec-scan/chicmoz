@@ -1,50 +1,58 @@
-import { Contract, DeploySentTx, Fr, waitForPXE } from "@aztec/aztec.js";
 import {
-  EasyPrivateVotingContract,
-  EasyPrivateVotingContractArtifact,
-} from "@aztec/noir-contracts.js/EasyPrivateVoting";
-import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/easy_private_voting_contract-EasyPrivateVoting" with { type: "json" };
+  PrivateVotingContract,
+  PrivateVotingContractArtifact,
+} from "@aztec/noir-contracts.js/PrivateVoting";
+import * as contractArtifactJson from "@aztec/noir-contracts.js/artifacts/private_voting_contract-PrivateVoting" with { type: "json" };
 import { logger } from "../../logger.js";
-import { getAztecNodeClient, getPxe, getWallets } from "../pxe.js";
+import { getAccounts, getAztecNodeClient, getWallet } from "../pxe.js";
 import {
   deployContract,
-  logAndWaitForTx,
+  registerContractClassArtifact,
+  simulateThenSend,
   verifyContractInstanceDeployment,
 } from "./utils/index.js";
+import { Contract, DeployMethod } from "@aztec/aztec.js/contracts";
+import { Fr } from "@aztec/aztec.js/fields";
 
 const contractId = "VotingContract";
 
 export async function run() {
   logger.info(`===== ${contractId} =====`);
-  const pxe = getPxe();
-  await waitForPXE(pxe);
-  const namedWallets = getWallets();
+  const namedWallets = getAccounts();
+  const wallet = getWallet();
 
   const deployerWallet = namedWallets.alice;
-  const votingAdmin = namedWallets.alice.getAddress();
+  const votingAdmin = namedWallets.alice.address;
 
   const contractLoggingName = contractId;
   const constructorArgs = [votingAdmin];
 
-  const contract = await deployContract({
+  const { contract, instance: contractInstance } = await deployContract({
     contractLoggingName,
-    deployFn: (): DeploySentTx<EasyPrivateVotingContract> =>
-      EasyPrivateVotingContract.deploy(
-        deployerWallet,
-        constructorArgs[0],
-      ).send(),
-    broadcastWithWallet: deployerWallet, // NOTE: comment this out to not broadcast
+    deployFn: (): DeployMethod<PrivateVotingContract> =>
+      PrivateVotingContract.deploy(wallet, constructorArgs[0]),
+    broadcastWithWallet: wallet, // NOTE: comment this out to not broadcast
+    from: deployerWallet.address,
     node: getAztecNodeClient(),
   });
 
-  verifyContractInstanceDeployment({
+  // Register the artifact first, then verify the instance.
+  // The verify endpoint requires the artifact to exist, so we must await this.
+  await registerContractClassArtifact(
+    contractLoggingName,
+    contractArtifactJson,
+    contractInstance.currentContractClassId.toString(),
+    contractInstance.version,
+  );
+
+  // Fire-and-forget verification; do not block scenario execution.
+  void verifyContractInstanceDeployment({
     contractLoggingName,
     contractInstanceAddress: contract.address.toString(),
     verifyArgs: {
-      artifactObj: contractArtifactJson,
-      publicKeysString: contract.instance.publicKeys.toString(),
-      deployer: contract.instance.deployer.toString(),
-      salt: contract.instance.salt.toString(),
+      publicKeysString: contractInstance.publicKeys.toString(),
+      deployer: contractInstance.deployer.toString(),
+      salt: contractInstance.salt.toString(),
       constructorArgs: constructorArgs.map((arg) => arg.toString()),
     },
     deployerMetadata: {
@@ -57,52 +65,67 @@ export async function run() {
       repoUrl: "https://github.com/AztecProtocol/aztec-packages",
       reviewedAt: new Date(),
     },
-  }).catch((err) => {
-    logger.error(
-      `Failed to verify contract instance deployment: ${(err as Error).stack}`,
-    );
   });
 
-  const votingContractAlice = await Contract.at(
+  const votingContractAlice = Contract.at(
     contract.address,
-    EasyPrivateVotingContractArtifact,
-    namedWallets.alice,
+    PrivateVotingContractArtifact,
+    wallet,
   );
-  const votingContractBob = await Contract.at(
+  const votingContractBob = Contract.at(
     contract.address,
-    EasyPrivateVotingContractArtifact,
-    namedWallets.bob,
+    PrivateVotingContractArtifact,
+    wallet,
   );
-  const votingContractCharlie = await Contract.at(
+  const votingContractCharlie = Contract.at(
     contract.address,
-    EasyPrivateVotingContractArtifact,
-    namedWallets.charlie,
+    PrivateVotingContractArtifact,
+    wallet,
   );
 
+  // Ensure the contract instance is registered with the PXE/wallet before
+  // attempting private interactions (cast_vote is private).
+  await wallet.registerContract(contractInstance);
+
+  const electionId = { id: new Fr(1) };
   const candidateA = new Fr(1);
   const candidateB = new Fr(2);
 
-  await Promise.all([
-    logAndWaitForTx(
-      votingContractAlice.methods.cast_vote(candidateA).send(),
-      "Cast vote 1 - candidate A",
-    ),
-    logAndWaitForTx(
-      votingContractBob.methods.cast_vote(candidateA).send(),
-      "Cast vote 2 - candidate A",
-    ),
-    await logAndWaitForTx(
-      votingContractCharlie.methods.cast_vote(candidateB).send(),
-      "Cast vote 3 - candidate B",
-    ),
-  ]);
+  // Start the election before casting votes.
+  await simulateThenSend({
+    method: votingContractAlice.methods.start_vote(electionId),
+    from: namedWallets.alice.address,
+    additionalInfo: "Start vote",
+  });
 
-  const votesA = (await contract.methods
-    .get_vote(candidateA)
-    .simulate()) as bigint;
-  const votesB = (await contract.methods
-    .get_vote(candidateB)
-    .simulate()) as bigint;
+  // Initialize election before casting votes.
+  // Run sequentially: PXE does not support concurrent job processing.
+  await simulateThenSend({
+    method: votingContractAlice.methods.cast_vote(electionId, candidateA),
+    from: namedWallets.alice.address,
+    additionalInfo: "Cast vote 1 - candidate A",
+  });
+  await simulateThenSend({
+    method: votingContractBob.methods.cast_vote(electionId, candidateA),
+    from: namedWallets.bob.address,
+    additionalInfo: "Cast vote 2 - candidate A",
+  });
+  await simulateThenSend({
+    method: votingContractCharlie.methods.cast_vote(electionId, candidateB),
+    from: namedWallets.charlie.address,
+    additionalInfo: "Cast vote 3 - candidate B",
+  });
+
+  const votesA = (
+    await votingContractAlice.methods
+      .get_tally(electionId, candidateA)
+      .simulate({ from: deployerWallet.address })
+  ).result as bigint;
+  const votesB = (
+    await votingContractAlice.methods
+      .get_tally(electionId, candidateB)
+      .simulate({ from: deployerWallet.address })
+  ).result as bigint;
 
   logger.info(`  Votes for candidate 1: ${votesA}`);
   logger.info(`  Votes for candidate 2: ${votesB}`);

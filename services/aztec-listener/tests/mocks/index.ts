@@ -35,7 +35,7 @@ export const createMockAztecTx = (
   txHash: string,
   feePayer = "0x1234567890abcdef",
 ) => ({
-  getTxHash: vi.fn().mockResolvedValue({ toString: () => txHash }),
+  getTxHash: vi.fn().mockReturnValue({ toString: () => txHash }),
   data: {
     feePayer: { toString: () => feePayer },
   },
@@ -59,6 +59,7 @@ export const createMockL2Block = (
   hash: vi
     .fn()
     .mockResolvedValue({ toString: () => `block-${blockNumber}-hash` }),
+  toBuffer: vi.fn().mockReturnValue(Buffer.alloc(0)),
   toString: vi.fn().mockReturnValue(`mock-block-${blockNumber}`),
 });
 
@@ -108,4 +109,3 @@ export const resetAllMocks = () => {
   Object.values(mockNetworkClient).forEach((mock) => mock.mockReset());
   Object.values(mockLogger).forEach((mock) => mock.mockReset());
 };
-

@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { startTransition } from "react";
 
 interface AdjacentBlockButtonsProps {
   blockNumber: number;
@@ -10,9 +11,11 @@ export const AdjecentBlockButtons: React.FC<AdjacentBlockButtonsProps> = ({
   const navigate = useNavigate();
 
   const navigateToBlock = (blockNum: number) => {
-    void navigate({
-      to: "/blocks/$blockNumber",
-      params: { blockNumber: blockNum.toString() },
+    startTransition(() => {
+      void navigate({
+        to: "/blocks/$blockNumber",
+        params: { blockNumber: blockNum.toString() },
+      });
     });
   };
   return (

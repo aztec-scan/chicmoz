@@ -19,7 +19,7 @@ spec:
       imagePullSecrets:
         - name: registry-aztlan-containers
       initContainers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-api:latest
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
           name: run-migrations
           command: ["yarn", run, "migrate"]
           envFrom:
@@ -33,11 +33,11 @@ spec:
             - name: TOTAL_DB_RESET
               value: "false"
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-api:latest
+        - image: registry.digitalocean.com/aztlan-containers/explorer-api-testnet:latest
           name: explorer-api
           resources:
             limits:
-              memory: 300Mi
+              memory: 512Mi
               cpu: 500m
           ports:
             - name: http-app-port
@@ -59,7 +59,10 @@ spec:
               value: "temporary-api-key"
           readinessProbe:
             httpGet:
-              path: /health
+              # /health is a strict composite health check (DB + CACHE + MB) and
+              # can return 500 even when the HTTP server and DB are usable.
+              # For readiness we only need the pod to accept traffic.
+              path: /open-api-specification
               port: 80
             initialDelaySeconds: 15
             periodSeconds: 10

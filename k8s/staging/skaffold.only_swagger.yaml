@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: only-swagger-staging
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./swagger/deployment.yaml
+    - ./swagger/service.yaml
+    - ./swagger/nodeport.yaml

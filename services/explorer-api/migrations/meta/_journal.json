@@ -68,8 +68,15 @@
     {
       "idx": 9,
       "version": "7",
-      "when": 1755085817298,
-      "tag": "0009_huge_spot",
+      "when": 1771257085127,
+      "tag": "0009_luxuriant_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774872000000,
+      "tag": "0010_total_fees_mana_numeric",
       "breakpoints": true
     }
   ]

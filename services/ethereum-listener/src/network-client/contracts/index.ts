@@ -9,11 +9,11 @@ import { controllers as dbControllers } from "../../svcs/database/index.js";
 import {
   getLatestFinalizedHeight,
   getPublicHttpClient,
-  queryStakingStateAndEmitUpdates,
 } from "../client/index.js";
 import { getAllContractsEvents } from "./get-events.js";
 import { AztecContracts, UnwatchCallback, getTypedContract } from "./utils.js";
 import { watchAllContractsEvents } from "./watch-events.js";
+import { queryStakingStateAndEmitUpdates } from "../client/get-attester-view.js";
 
 export const getL1Contracts = async (): Promise<AztecContracts> => {
   const dbContracts = await dbControllers.getL1Contracts();
@@ -56,16 +56,18 @@ export const startContractWatchers = async (): Promise<UnwatchCallback> => {
 export const getFinalizedContractEvents = async () => {
   const contracts = await getL1Contracts();
   const latestHeight = await getLatestFinalizedHeight();
-  const [, allContractsEventsRes] = await Promise.all([
-    queryStakingStateAndEmitUpdates({
-      contracts,
-      latestHeight,
-    }),
-    getAllContractsEvents({
-      contracts,
-      latestHeight,
-      toBlock: "finalized",
-    }),
-  ]);
-  return allContractsEventsRes;
+  return getAllContractsEvents({
+    contracts,
+    latestHeight,
+    toBlock: "finalized",
+  });
+};
+
+export const getAttestersView = async () => {
+  const contracts = await getL1Contracts();
+  const latestHeight = await getLatestFinalizedHeight();
+  return queryStakingStateAndEmitUpdates({
+    contracts,
+    latestHeight,
+  });
 };

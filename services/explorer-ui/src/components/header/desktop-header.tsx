@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { SearchInput } from "~/components/ui/input";
-import { MagicDevLink } from "../magic-dev-link";
 import { ChicmozHomeLink } from "../ui/chicmoz-home-link";
 import { DesktopBurgerMenu } from "./desktop-burger-menu";
+import { NetworkSelector } from "./network-selector";
 import { type HeaderLink } from "./types";
 
 interface DesktopHeaderProps {
@@ -41,12 +41,15 @@ export const DesktopHeader = ({
   );
 
   return (
-    <div className="hidden md:flex md:w-full md:items-center md:justify-between">
-      <div className="flex items-center">
-        <ChicmozHomeLink className="-mt-1" textClasses="hidden md:block pr-6" />
-        <MagicDevLink textClasses="hidden md:block self-center" />
+    <div className="hidden lg:flex lg:w-full lg:items-center lg:gap-8">
+      {/* Left section: Logo + Network */}
+      <div className="flex items-center gap-4 shrink-0">
+        <ChicmozHomeLink className="-mt-1" textClasses="hidden lg:block" />
+        <NetworkSelector className="hidden lg:flex" />
       </div>
-      <div className="flex justify-center items-center w-1/2 sm:w-1/3">
+
+      {/* Center section: Search - grows to fill available space */}
+      <div className="flex-1 flex justify-center items-center max-w-md mx-auto">
         <SearchInput
           placeholder="Search"
           onIconClick={handleSearch}
@@ -54,15 +57,17 @@ export const DesktopHeader = ({
           onChange={(e) => handleOnChange(e.target.value)}
           isLoading={isLoading}
           noResults={hasNoResults}
+          className="w-full"
         />
       </div>
 
-      <div className="flex space-x-6 justify-center items-center pr-11">
+      {/* Right section: Nav links + Menu */}
+      <div className="flex items-center gap-6 shrink-0 pr-6">
         {groupedLinks?.main.map((link) => (
           <Link
             key={link.key}
             to={link.to}
-            className="text-white hover:text-secondary-foreground transition-colors"
+            className="text-white hover:text-secondary-foreground transition-colors whitespace-nowrap"
           >
             {link.name}
           </Link>

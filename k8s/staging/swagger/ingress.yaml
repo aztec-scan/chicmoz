@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-swagger
+  namespace: chicmoz-staging
+  annotations:
+    cert-manager.io/cluster-issuer: "aztecscan-issuer-staging"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: aztecscan-swagger-tls
+      hosts:
+        - staging-docs.aztecscan.xyz
+  rules:
+    - host: staging-docs.aztecscan.xyz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: swagger-service
+                port:
+                  name: http

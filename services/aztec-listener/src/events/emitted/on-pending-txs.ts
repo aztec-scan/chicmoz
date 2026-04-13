@@ -1,37 +1,88 @@
-import { Tx } from "@aztec/aztec.js";
+import { Tx } from "@aztec/aztec.js/tx";
 import { ChicmozL2PendingTx, PublicCallRequest } from "@chicmoz-pkg/types";
 import { MEMPOOL_SYNC_GRACE_PERIOD_MS } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
 import { publishMessage } from "../../svcs/message-bus/index.js";
 
+const NULL_ADDRESS =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+const isNonNull = (address: string) => address !== NULL_ADDRESS;
+
 const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
-  const publicCallRequests: PublicCallRequest[] = [];
-  const nullAddress =
-    "0x0000000000000000000000000000000000000000000000000000000000000000";
+  const requests: PublicCallRequest[] = [];
 
-  if (tx.data.forPublic) {
-    const allRequests = [
-      ...tx.data.forPublic.nonRevertibleAccumulatedData.publicCallRequests,
-      ...tx.data.forPublic.revertibleAccumulatedData.publicCallRequests,
-    ];
+  if (!tx.data.forPublic) {return requests;}
 
-    allRequests.forEach((request) => {
-      if (
-        request.msgSender.toString() !== nullAddress &&
-        request.contractAddress.toString() !== nullAddress &&
-        request.calldataHash.toString() !== nullAddress
-      ) {
-        publicCallRequests.push({
-          msgSender: request.msgSender.toString(),
-          contractAddress: request.contractAddress.toString(),
-          isStaticCall: request.isStaticCall,
-          calldataHash: request.calldataHash.toString(),
-        });
-      }
+  const nonRevertible =
+    tx.data.forPublic.nonRevertibleAccumulatedData.publicCallRequests;
+  const revertible =
+    tx.data.forPublic.revertibleAccumulatedData.publicCallRequests;
+  const teardown = tx.data.forPublic.publicTeardownCallRequest;
+
+  for (const req of nonRevertible) {
+    if (
+      isNonNull(req.msgSender.toString()) &&
+      isNonNull(req.contractAddress.toString()) &&
+      isNonNull(req.calldataHash.toString())
+    ) {
+      requests.push({
+        msgSender: req.msgSender.toString(),
+        contractAddress: req.contractAddress.toString(),
+        isStaticCall: req.isStaticCall,
+        calldataHash: req.calldataHash.toString(),
+        callType: "non_revertible",
+      });
+    }
+  }
+
+  for (const req of revertible) {
+    if (
+      isNonNull(req.msgSender.toString()) &&
+      isNonNull(req.contractAddress.toString()) &&
+      isNonNull(req.calldataHash.toString())
+    ) {
+      requests.push({
+        msgSender: req.msgSender.toString(),
+        contractAddress: req.contractAddress.toString(),
+        isStaticCall: req.isStaticCall,
+        calldataHash: req.calldataHash.toString(),
+        callType: "revertible",
+      });
+    }
+  }
+
+  if (
+    teardown &&
+    isNonNull(teardown.msgSender.toString()) &&
+    isNonNull(teardown.contractAddress.toString()) &&
+    isNonNull(teardown.calldataHash.toString())
+  ) {
+    requests.push({
+      msgSender: teardown.msgSender.toString(),
+      contractAddress: teardown.contractAddress.toString(),
+      isStaticCall: teardown.isStaticCall,
+      calldataHash: teardown.calldataHash.toString(),
+      callType: "teardown",
     });
   }
-  return publicCallRequests;
+
+  return requests;
+};
+
+const extractGasSettings = (tx: Tx) => {
+  const gs = tx.data.constants.txContext.gasSettings;
+  return {
+    gasLimitDa: gs.gasLimits.daGas,
+    gasLimitL2: gs.gasLimits.l2Gas,
+    teardownGasLimitDa: gs.teardownGasLimits.daGas,
+    teardownGasLimitL2: gs.teardownGasLimits.l2Gas,
+    maxFeePerDaGas: gs.maxFeesPerGas.feePerDaGas.toString(),
+    maxFeePerL2Gas: gs.maxFeesPerGas.feePerL2Gas.toString(),
+    maxPriorityFeePerDaGas: gs.maxPriorityFeesPerGas.feePerDaGas.toString(),
+    maxPriorityFeePerL2Gas: gs.maxPriorityFeesPerGas.feePerL2Gas.toString(),
+  };
 };
 
 export const onPendingTxs = async (pendingTxs: Tx[]) => {
@@ -39,13 +90,32 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
     const storedTxs = await txsController.getTxs();
 
     const currentPendingTxs: ChicmozL2PendingTx[] = await Promise.all(
-      pendingTxs.map(async (tx) => {
+      pendingTxs.map((tx) => {
         const publicCallRequests = extractPublicCallRequests(tx);
+        const gasSettings = extractGasSettings(tx);
+        const gasUsed = tx.data.gasUsed;
+        const stats = tx.getStats();
 
         return {
-          txHash: (await tx.getTxHash()).toString(),
+          txHash: tx.getTxHash().toString(),
           feePayer: tx.data.feePayer.toString(),
           birthTimestamp: new Date().getTime(),
+          expirationTimestamp: Number(tx.data.expirationTimestamp),
+          gasLimitDa: gasSettings.gasLimitDa,
+          gasLimitL2: gasSettings.gasLimitL2,
+          teardownGasLimitDa: gasSettings.teardownGasLimitDa,
+          teardownGasLimitL2: gasSettings.teardownGasLimitL2,
+          maxFeePerDaGas: gasSettings.maxFeePerDaGas,
+          maxFeePerL2Gas: gasSettings.maxFeePerL2Gas,
+          maxPriorityFeePerDaGas: gasSettings.maxPriorityFeePerDaGas,
+          maxPriorityFeePerL2Gas: gasSettings.maxPriorityFeePerL2Gas,
+          gasUsedDa: gasUsed.daGas,
+          gasUsedL2: gasUsed.l2Gas,
+          feePaymentMethod: stats.feePaymentMethod,
+          noteHashCount: tx.data.getNonEmptyNoteHashes().length,
+          nullifierCount: tx.data.getNonEmptyNullifiers().length,
+          l2ToL1MsgCount: tx.data.getNonEmptyL2ToL1Msgs().length,
+          privateLogCount: tx.data.getNonEmptyPrivateLogs().length,
           publicCallRequests:
             publicCallRequests.length > 0 ? publicCallRequests : undefined,
         };
