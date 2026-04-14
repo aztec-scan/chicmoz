@@ -91,6 +91,11 @@ export const useWebSocketConnection = (): WsReadyStateText => {
 
   // Handle WebSocket connection based on tab visibility
   useEffect(() => {
+    if (!WS_URL) {
+      setReadyState(WebSocket.CLOSED);
+      return;
+    }
+
     // Function to initialize or reconnect WebSocket
     const initializeWebSocket = () => {
       if (!isTabActive) {
@@ -118,7 +123,11 @@ export const useWebSocketConnection = (): WsReadyStateText => {
         !websocketInstance ||
         websocketInstance.readyState === WebSocket.CLOSED
       ) {
-        websocketInstance = createWebSocket(queryClient, setReadyState, isTabActive);
+        websocketInstance = createWebSocket(
+          queryClient,
+          setReadyState,
+          isTabActive,
+        );
       } else {
         // Update readyState to match existing connection
         // If it's open, make sure UI reflects that
