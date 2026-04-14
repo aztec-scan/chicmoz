@@ -63,13 +63,23 @@ export const Ecosystem: FC = () => {
           </p>
           <ul className="list-disc list-inside">
             <li>
+              Bridge funds from Ethereum to Aztec via{" "}
               <a
                 href="https://bridge.human.tech/"
                 target="_blank"
                 rel="noreferrer"
                 className="text-purple-light hover:font-bold"
               >
-                Bridge funds from Ethereum to Aztec
+                Human Tech
+              </a>{" "}
+              or{" "}
+              <a
+                href="https://bridge.ravenhouse.xyz/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-purple-light hover:font-bold"
+              >
+                Raven House
               </a>
             </li>
             <li>
