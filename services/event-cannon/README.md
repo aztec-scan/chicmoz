@@ -53,23 +53,24 @@ yarn build
 
 ## Environment variables
 
-| Variable                                 | Default                                   | Override for local?            | Description                                    |
-| ---------------------------------------- | ----------------------------------------- | ------------------------------ | ---------------------------------------------- |
-| `AZTEC_RPC_URL`                          | `http://aztec.sandbox.chicmoz.localhost`  | No                             | Aztec node RPC endpoint                        |
-| `ETHEREUM_RPC_URL`                       | `http://eth.sandbox.chicmoz.localhost`    | No                             | Anvil L1 node (for L1-L2 scenarios)            |
-| `EXPLORER_API_URL`                       | `http://api.sandbox.chicmoz.localhost/v1` | **Yes** — must include API key | Chicmoz explorer API                           |
-| `SCENARIO_DELAY`                         | `1000`                                    | Optional                       | Delay (ms) between scenarios                   |
-| `INIFINITE_LOOP`                         | `false`                                   | Optional                       | Run scenarios in an infinite loop              |
-| `EXIT_ON_API_ERROR`                      | `false`                                   | Optional                       | Exit process on explorer API errors            |
-| `SCENARIO_SIMPLE_DEFAULT_ACCOUNT`        | `false`                                   | Enable as needed               | Deploy a new Schnorr account                   |
-| `SCENARIO_TOKEN_CONTRACT`                | `false`                                   | Enable as needed               | Deploy Token contract, mint, transfer          |
-| `SCENARIO_FUNCTIONS_VOTE`                | `false`                                   | Enable as needed               | Deploy PrivateVoting, cast votes               |
-| `SCENARIO_SIMPLE_CONTRACT`               | `false`                                   | Enable as needed               | Simple contract deploy + artifact registration |
-| `SCENARIO_SIMPLE_LOG`                    | `false`                                   | Enable as needed               | Deploy SimpleLogging contract                  |
-| `SCENARIO_L1L2_PUBLIC_MESSAGING`         | `false`                                   | Enable as needed               | L1-L2 public bridge flow                       |
-| `SCENARIO_L1L2_PRIVATE_MESSAGING`        | `false`                                   | Enable as needed               | L1-L2 private bridge flow                      |
-| `SCENARIO_DEPLOY_AND_UPDATE`             | `false`                                   | Enable as needed               | Deploy and update contract                     |
-| `SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT` | `false`                                   | Enable as needed               | Deploy and register standard token             |
+| Variable                                         | Default                                   | Override for local?            | Description                                    |
+| ------------------------------------------------ | ----------------------------------------- | ------------------------------ | ---------------------------------------------- |
+| `AZTEC_RPC_URL`                                  | `http://aztec.sandbox.chicmoz.localhost`  | No                             | Aztec node RPC endpoint                        |
+| `ETHEREUM_RPC_URL`                               | `http://eth.sandbox.chicmoz.localhost`    | No                             | Anvil L1 node (for L1-L2 scenarios)            |
+| `EXPLORER_API_URL`                               | `http://api.sandbox.chicmoz.localhost/v1` | **Yes** — must include API key | Chicmoz explorer API                           |
+| `SCENARIO_DELAY`                                 | `1000`                                    | Optional                       | Delay (ms) between scenarios                   |
+| `INIFINITE_LOOP`                                 | `false`                                   | Optional                       | Run scenarios in an infinite loop              |
+| `EXIT_ON_API_ERROR`                              | `false`                                   | Optional                       | Exit process on explorer API errors            |
+| `SCENARIO_SIMPLE_DEFAULT_ACCOUNT`                | `false`                                   | Enable as needed               | Deploy a new Schnorr account                   |
+| `SCENARIO_TOKEN_CONTRACT`                        | `false`                                   | Enable as needed               | Deploy Token contract, mint, transfer          |
+| `SCENARIO_FUNCTIONS_VOTE`                        | `false`                                   | Enable as needed               | Deploy PrivateVoting, cast votes               |
+| `SCENARIO_SIMPLE_CONTRACT`                       | `false`                                   | Enable as needed               | Simple contract deploy + artifact registration |
+| `SCENARIO_SIMPLE_LOG`                            | `false`                                   | Enable as needed               | Deploy SimpleLogging contract                  |
+| `SCENARIO_L1L2_PUBLIC_MESSAGING`                 | `false`                                   | Enable as needed               | L1-L2 public bridge flow                       |
+| `SCENARIO_L1L2_PRIVATE_MESSAGING`                | `false`                                   | Enable as needed               | L1-L2 private bridge flow                      |
+| `SCENARIO_DEPLOY_AND_UPDATE`                     | `false`                                   | Enable as needed               | Deploy and update contract                     |
+| `SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY`  | `false`                                   | Enable as needed               | Deploy and register legacy standard token      |
+| `SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT` | `false`                                   | Enable as needed               | Deploy and register current standard token     |
 
 The `EXPLORER_API_URL` requires the API key in the path because the ingress uses the URL pattern `/v1/<api-key>/<path>`. The auth service validates the key and the ingress rewrites the URL to strip it before forwarding to the backend. Use `dev-api-key` for local development.
 
@@ -91,7 +92,8 @@ SCENARIO_SIMPLE_LOG=true
 SCENARIO_L1L2_PUBLIC_MESSAGING=true
 SCENARIO_L1L2_PRIVATE_MESSAGING=true
 SCENARIO_DEPLOY_AND_UPDATE=true
-SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT=true
+SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY=true
+SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT=true
 ```
 
 Then run with:

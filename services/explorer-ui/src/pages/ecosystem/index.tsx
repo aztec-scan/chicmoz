@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
+import { CustomTooltip } from "~/components/custom-tooltip";
 import { InfoCard } from "~/components/info-card";
 import { useContractInstancesWithAztecScanNotes, useSubTitle } from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
@@ -31,6 +32,7 @@ export const Ecosystem: FC = () => {
         name,
         address,
         comment: contract.aztecScanNotes.comment,
+        isStandardContract: Boolean(contract.standardContractType),
       };
     });
   }, [data]);
@@ -103,10 +105,11 @@ export const Ecosystem: FC = () => {
               )}
             </button>
             <div
-              className={`overflow-hidden transition-all duration-300 ${isMetadataExpanded
-                ? "max-h-[1000px] opacity-100 mt-3"
-                : "max-h-0 opacity-0"
-                }`}
+              className={`overflow-hidden transition-all duration-300 ${
+                isMetadataExpanded
+                  ? "max-h-[1000px] opacity-100 mt-3"
+                  : "max-h-0 opacity-0"
+              }`}
             >
               <h3>Contract Metadata</h3>
               <p className="mb-4">
@@ -207,6 +210,15 @@ export const Ecosystem: FC = () => {
                   details={contract.comment}
                   isLoading={isLoading}
                   error={error}
+                  topRightAdornment={
+                    contract.isStandardContract ? (
+                      <CustomTooltip content="standard contract">
+                        <span className="cursor-default text-lg leading-none">
+                          📜
+                        </span>
+                      </CustomTooltip>
+                    ) : undefined
+                  }
                 />
               </div>
             );
