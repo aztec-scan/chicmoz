@@ -3,26 +3,41 @@ import {
   ContractStandardName,
   ContractStandardVersion,
 } from "@chicmoz-pkg/types";
-import DripperContractJson from "@defi-wonderland/aztec-standards/target/dripper-Dripper.json" with { type: "json" };
-import TokenContractJson from "@defi-wonderland/aztec-standards/target/token_contract-Token.json" with { type: "json" };
-import EscrowContractJson from "@defi-wonderland/aztec-standards/target/escrow_contract-Escrow.json" with { type: "json" };
-import NftContractJson from "@defi-wonderland/aztec-standards/target/nft_contract-NFT.json" with { type: "json" };
-import GenericProxyContractJson from "@defi-wonderland/aztec-standards/target/generic_proxy-GenericProxy.json" with { type: "json" };
-import TestLogicContractJson from "@defi-wonderland/aztec-standards/target/test_logic_contract-TestLogic.json" with { type: "json" };
 import { NoirCompiledContract } from "@aztec/aztec.js/abi";
+import DripperContractJsonLegacy from "@defi-wonderland/aztec-standards-v410/target/dripper-Dripper.json" with { type: "json" };
+import EscrowContractJsonLegacy from "@defi-wonderland/aztec-standards-v410/target/escrow_contract-Escrow.json" with { type: "json" };
+import GenericProxyContractJsonLegacy from "@defi-wonderland/aztec-standards-v410/target/generic_proxy-GenericProxy.json" with { type: "json" };
+import NftContractJsonLegacy from "@defi-wonderland/aztec-standards-v410/target/nft_contract-NFT.json" with { type: "json" };
+import TestLogicContractJsonLegacy from "@defi-wonderland/aztec-standards-v410/target/test_logic_contract-TestLogic.json" with { type: "json" };
+import TokenContractJsonLegacy from "@defi-wonderland/aztec-standards-v410/target/token_contract-Token.json" with { type: "json" };
+import DripperContractJsonCurrent from "@defi-wonderland/aztec-standards-v420/target/dripper-Dripper.json" with { type: "json" };
+import EscrowContractJsonCurrent from "@defi-wonderland/aztec-standards-v420/target/escrow_contract-Escrow.json" with { type: "json" };
+import GenericProxyContractJsonCurrent from "@defi-wonderland/aztec-standards-v420/target/generic_proxy-GenericProxy.json" with { type: "json" };
+import NftContractJsonCurrent from "@defi-wonderland/aztec-standards-v420/target/nft_contract-NFT.json" with { type: "json" };
+import TestLogicContractJsonCurrent from "@defi-wonderland/aztec-standards-v420/target/test_logic_contract-TestLogic.json" with { type: "json" };
+import TokenContractJsonCurrent from "@defi-wonderland/aztec-standards-v420/target/token_contract-Token.json" with { type: "json" };
 
 const contracts: Record<
   ContractStandardVersion,
   Record<ContractStandardName<ContractStandardVersion>, NoirCompiledContract>
 > = {
-  "4.1.0-rc.2": {
+  "4.1.0-rc.4": {
     // TODO: these types are not actually checked
-    token: TokenContractJson as NoirCompiledContract,
-    dripper: DripperContractJson as NoirCompiledContract,
-    escrow: EscrowContractJson as NoirCompiledContract,
-    nft: NftContractJson as NoirCompiledContract,
-    generic_proxy: GenericProxyContractJson as NoirCompiledContract,
-    test_logic: TestLogicContractJson as NoirCompiledContract,
+    token: TokenContractJsonLegacy as NoirCompiledContract,
+    dripper: DripperContractJsonLegacy as NoirCompiledContract,
+    escrow: EscrowContractJsonLegacy as NoirCompiledContract,
+    nft: NftContractJsonLegacy as NoirCompiledContract,
+    generic_proxy: GenericProxyContractJsonLegacy as NoirCompiledContract,
+    test_logic: TestLogicContractJsonLegacy as NoirCompiledContract,
+  },
+  "4.2.0-aztecnr-rc.2": {
+    // TODO: these types are not actually checked
+    token: TokenContractJsonCurrent as NoirCompiledContract,
+    dripper: DripperContractJsonCurrent as NoirCompiledContract,
+    escrow: EscrowContractJsonCurrent as NoirCompiledContract,
+    nft: NftContractJsonCurrent as NoirCompiledContract,
+    generic_proxy: GenericProxyContractJsonCurrent as NoirCompiledContract,
+    test_logic: TestLogicContractJsonCurrent as NoirCompiledContract,
   },
 };
 

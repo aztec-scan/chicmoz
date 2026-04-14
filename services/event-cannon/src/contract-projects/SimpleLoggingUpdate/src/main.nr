@@ -30,13 +30,13 @@ contract SimpleLoggingUpdate {
 
     #[external("public")]
     fn decrease_counter_public(counter_id: Field){
-      self.context.emit_public_log(/*message=*/ "pub log");
+      self.context.emit_public_log_unsafe(0, /*message=*/ "pub log");
       self.internal.remove_from_counter_internal(counter_id);
     }
 
     #[external("public")]
     fn increase_counter_public(counter_id: Field) {
-      self.context.emit_public_log(/*message=*/ "pub log");
+      self.context.emit_public_log_unsafe(0, /*message=*/ "pub log");
       self.internal.add_to_counter_internal(counter_id);
     }
 

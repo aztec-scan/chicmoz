@@ -19,7 +19,8 @@
     "@chicmoz-pkg/contract-verification": "workspace:^",
     "@chicmoz-pkg/logger-server": "workspace:^",
     "@chicmoz-pkg/types": "workspace:^",
-    "@defi-wonderland/aztec-standards": "4.0.0-devnet.2-patch.1",
+    "@defi-wonderland/aztec-standards-v410": "npm:@defi-wonderland/aztec-standards@4.1.0-rc.4",
+    "@defi-wonderland/aztec-standards-v420": "npm:@defi-wonderland/aztec-standards@4.2.0-aztecnr-rc.2",
     "viem": "2.20.0"
   },
   "devDependencies": {
