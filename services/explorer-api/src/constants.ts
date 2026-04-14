@@ -33,9 +33,17 @@ export const AZTEC_SCAN_NOTES: Record<
       comment: "Available at: https://bridge.ravenhouse.xyz",
       relatedL1ContractAddresses: [
         {
-          address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          note: "This is an example note for the L1-contract",
+          address: "0x3c7E4990F18bd36029CC562B336022C657427c6A",
+          note: "Bridge router address",
         },
+        {
+          address: "0xf98F4dd494833e0C686BA80454923D916C71CeC4",
+          note: "Raven House mocked 'USDC'"
+        },
+        {
+          address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+          note: "USDC"
+        }
       ],
     },
   },
