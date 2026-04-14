@@ -138,7 +138,7 @@ These are non-obvious decisions already made in this codebase. Do not deviate fr
   ```ts
   import { something } from "./utils.js"; // correct — even for .ts source
   ```
-- **No default exports** — enforced by ESLint (`import/no-default-export`). Always use named exports.
+- **Prefer named exports; default exports are not repo-wide forbidden** — backend/shared packages enforce `import/no-default-export`, so use named exports there. `services/explorer-ui` is an explicit exception and may use default exports where the local ESLint config allows them.
 - **`type` imports** — use the `type` keyword for type-only imports to keep bundles clean:
   ```ts
   import { type ChicmozL2Block } from "@chicmoz-pkg/types";

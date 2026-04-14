@@ -50,9 +50,8 @@ When adding new features that differ per network, use `VITE_L2_NETWORK_ID` to br
 
 Follow all project-wide rules, plus these UI-specific ones:
 
-- **No default exports**: Named exports everywhere (`import/no-default-export` ESLint rule is enforced)
-- **Named imports**: Always `import { Foo } from '...'`, never default imports
-- **`.js` extensions**: Use `.js` in TypeScript import paths
+- **Exports/imports**: Prefer named exports and named imports in new code, but `services/explorer-ui` still contains default exports today; do not churn existing files just to remove them unless you are already refactoring that area
+- **Import path style**: Follow the existing local convention in `services/explorer-ui`; relative TypeScript imports are currently extension-less, so do not introduce `.js` suffixes unless you are doing a deliberate broader refactor
 - **`type` over `interface`**: `type Props = { ... }` not `interface Props { ... }`
 - **No `console.log`**: Use structured logging or omit debug logs in UI code before committing
 - **TailwindCSS**: Use utility classes; avoid inline `style={{}}` unless for dynamic values that cannot be expressed as Tailwind classes

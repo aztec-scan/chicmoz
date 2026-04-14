@@ -2,9 +2,10 @@
 name: react-best-practices
 description: React best practices for the Chicmoz explorer-ui (React + Vite + TanStack Router/Query + shadcn/ui). Use when writing, reviewing, or refactoring frontend code — components, hooks, data fetching, WebSocket handling, or performance optimisation.
 license: MIT
+compatibility: opencode
 metadata:
-  author: chicmoz
-  version: "2.0.0"
+  audience: developers
+  workflow: frontend
 ---
 
 # React Best Practices — Chicmoz `explorer-ui`
@@ -68,7 +69,7 @@ All query keys live in `src/hooks/api/utils.ts` via the `queryKeyGenerator` fact
 useQuery({ queryKey: ["blocks", height], queryFn: ... })
 
 // Good
-useQuery({ queryKey: queryKeyGenerator.block(height), queryFn: ... })
+useQuery({ queryKey: queryKeyGenerator.blockByHeight(height), queryFn: ... })
 ```
 
 ### Hook structure — one file per domain
@@ -76,11 +77,11 @@ useQuery({ queryKey: queryKeyGenerator.block(height), queryFn: ... })
 ```ts
 // src/hooks/api/block.ts
 export const useGetBlock = (
-  height: number,
+  height: string,
 ): UseQueryResult<ChicmozL2Block, Error> =>
   useQuery({
-    queryKey: queryKeyGenerator.block(height),
-    queryFn: () => BlockAPI.getBlock(height),
+    queryKey: queryKeyGenerator.blockByHeight(height),
+    queryFn: () => BlockAPI.getBlockByHeight(height),
   });
 ```
 
@@ -95,8 +96,8 @@ Use `useQueries` for fan-out patterns (e.g. fetching multiple block heights):
 ```ts
 const results = useQueries({
   queries: heights.map((h) => ({
-    queryKey: queryKeyGenerator.block(h),
-    queryFn: () => BlockAPI.getBlock(h),
+    queryKey: queryKeyGenerator.blockByHeight(String(h)),
+    queryFn: () => BlockAPI.getBlockByHeight(String(h)),
   })),
 });
 ```
@@ -110,7 +111,11 @@ Use `placeholderData: (prev) => prev` on paginated queries to avoid loading flic
 Disable queries by default when the trigger is user-driven (e.g. search). Use `enabled: false` + call `refetch()` in the event handler:
 
 ```ts
-const { refetch } = useQuery({ queryKey: [...], queryFn: ..., enabled: false });
+const { refetch } = useQuery({
+  queryKey: queryKeyGenerator.blockByHeight(heightOrHash),
+  queryFn: () => BlockAPI.getBlockByHeight(heightOrHash),
+  enabled: false,
+});
 // in handler:
 await refetch();
 ```

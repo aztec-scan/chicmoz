@@ -42,18 +42,26 @@ metadata:
 
 ### 1. Define the message type in `@chicmoz-pkg/message-registry`
 
-Navigate to `packages/message-registry/src/` and find the appropriate subdirectory (group by domain, e.g., `l2-blocks/`, `l1-contracts/`, `txs/`).
+Navigate to `packages/message-registry/src/` and update the correct network file:
 
-Create or extend a type file:
+- `aztec.ts` for L2 message types (`L2_MESSAGES`)
+- `ethereum.ts` for L1 message types (`L1_MESSAGES`)
+
+Create a new event payload type and add it to the corresponding message map:
 
 ```typescript
-// packages/message-registry/src/my-domain/my-event.ts
+// packages/message-registry/src/aztec.ts
 
 // Use `type`, not `interface`
 export type MyEventMessage = {
   networkId: string;
   blockNumber: bigint;
   // ... your fields
+};
+
+export type L2_MESSAGES = {
+  // ...
+  MY_EVENT: MyEventMessage;
 };
 ```
 
@@ -66,25 +74,26 @@ export type MyEventMessage = {
 
 ### 2. Register the topic name
 
-In `packages/message-registry/src/topics.ts` (or equivalent index), add a const for the topic name:
+Topics are generated from the message-map keys; do not create ad-hoc topic constants.
 
 ```typescript
-// Follow the naming pattern: <domain>-<event-name>
-// Use lowercase kebab-case
-export const MY_EVENT_TOPIC = "my-domain-my-event" as const;
+import { generateL2TopicName } from "@chicmoz-pkg/message-registry";
+
+const topic = generateL2TopicName(L2_NETWORK_ID, "MY_EVENT");
 ```
 
-**Topic naming convention**: `<domain>-<event>` in lowercase kebab-case.
+For L1 topics use `generateL1TopicName(L2_NETWORK_ID, L1_NETWORK_ID, "MY_EVENT")`.
 
-- Examples: `l2-block-proven`, `l1-contract-deployed`, `tx-effect-added`
-- The topic name is prefixed at runtime with the network ID by the message-bus layer — do not include network in the topic string itself
+**Topic naming convention is code-generated**:
+
+- L2: `${L2NetworkId}__${EventType}`
+- L1: `${L2NetworkId}_${L1NetworkId}__${EventType}`
 
 ### 3. Export from the package index
 
 ```typescript
 // packages/message-registry/src/index.ts
-export type { MyEventMessage } from "./my-domain/my-event.js";
-export { MY_EVENT_TOPIC } from "./topics.js";
+export type { MyEventMessage } from "./aztec.js";
 ```
 
 **Use `.js` extensions** in TypeScript import paths (ES modules project-wide rule).
@@ -104,25 +113,23 @@ The producer is typically in `services/aztec-listener`, `services/ethereum-liste
 
 ```typescript
 import {
-  MY_EVENT_TOPIC,
+  generateL2TopicName,
+  type L2_MESSAGES,
   type MyEventMessage,
 } from "@chicmoz-pkg/message-registry";
-import { getProducer } from "@chicmoz-pkg/message-bus";
+import { L2_NETWORK_ID } from "../environment.js";
+import { publishMessage } from "../svcs/message-bus/index.js";
 
 // Produce a message
-const producer = getProducer();
-await producer.send<MyEventMessage>({
-  topic: MY_EVENT_TOPIC,
-  messages: [
-    {
-      value: {
-        networkId: process.env.L2_NETWORK_ID!,
-        blockNumber: block.number,
-        // ... your fields
-      },
-    },
-  ],
-});
+const eventType: keyof L2_MESSAGES = "MY_EVENT";
+// topic resolves to `${L2_NETWORK_ID}__MY_EVENT`
+generateL2TopicName(L2_NETWORK_ID, eventType);
+
+await publishMessage(eventType, {
+  networkId: L2_NETWORK_ID,
+  blockNumber: BigInt(block.number),
+  // ... your fields
+} satisfies MyEventMessage);
 ```
 
 Check existing producers in `services/aztec-listener/src/` for the exact `message-bus` API shape — follow those patterns exactly.
@@ -133,40 +140,61 @@ The consumer is typically in `services/explorer-api` or `services/websocket-even
 
 ```typescript
 import {
-  MY_EVENT_TOPIC,
-  type MyEventMessage,
+  generateL2TopicName,
+  getConsumerGroupId,
 } from "@chicmoz-pkg/message-registry";
-import { getConsumer } from "@chicmoz-pkg/message-bus";
+import { type EventHandler } from "@chicmoz-pkg/message-bus";
+import { L2_NETWORK_ID } from "../../environment.js";
+import { SERVICE_NAME } from "../../constants.js";
+import { startSubscribe } from "../../svcs/message-bus/index.js";
 
-// Subscribe to topic
-const consumer = getConsumer({ groupId: "explorer-api-my-event-consumer" });
-await consumer.subscribe({ topic: MY_EVENT_TOPIC });
-
-await consumer.run({
-  eachMessage: async ({ message }) => {
-    const parsed = JSON.parse(
-      message.value?.toString() ?? "{}",
-    ) as MyEventMessage;
-    // handle the message
-    // Use @chicmoz-pkg/logger-server for logging, not console.log
+const handler: EventHandler = {
+  groupId: getConsumerGroupId({
+    serviceName: SERVICE_NAME,
+    networkId: L2_NETWORK_ID,
+    handlerName: "myEventHandler",
+  }),
+  topic: generateL2TopicName(L2_NETWORK_ID, "MY_EVENT"),
+  cb: async (payload) => {
+    // payload is already deserialized by @chicmoz-pkg/message-bus (BSON)
+    await handleMyEvent(payload);
   },
+};
+
+await startSubscribe(handler);
+```
+
+If you need event-specific typing inside `cb`, narrow/assert at the handler boundary:
+
+```typescript
+cb: async (payload) => {
+  const event = payload as MyEventMessage;
+  await handleMyEvent(event);
+},
+```
+
+**Consumer group ID naming** must use `getConsumerGroupId()`:
+
+```typescript
+getConsumerGroupId({
+  serviceName: "explorer-api",
+  networkId: L2_NETWORK_ID,
+  handlerName: "myEventHandler",
 });
 ```
 
-**Consumer group ID naming**: `<service-name>-<topic-short-name>-consumer` in kebab-case.
-
 ### 7. Handle deserialization errors
 
-Always wrap message parsing in a try/catch — a malformed message should not crash the consumer process:
+Message payloads are already BSON-deserialized before `cb` runs. Handle validation/processing errors in the callback so one bad event does not crash the consumer:
 
 ```typescript
-eachMessage: async ({ message, topic, partition }) => {
+cb: async (payload) => {
   try {
-    const parsed = JSON.parse(message.value?.toString() ?? "") as MyEventMessage;
-    await handleMyEvent(parsed);
+    const event = payload as MyEventMessage;
+    await handleMyEvent(event);
   } catch (err) {
-    logger.error({ err, topic, partition }, "Failed to process Kafka message");
-    // Do NOT re-throw — this would stop the consumer
+    logger.error({ err }, "Failed to process Kafka message");
+    // Do not throw if you intentionally want to keep consuming
   }
 },
 ```
@@ -186,11 +214,12 @@ yarn test    # verify nothing broke
 ## Checklist
 
 - [ ] Message type defined with `type` (not `interface`) in `packages/message-registry/src/`
-- [ ] Topic constant added in `topics.ts`, lowercase kebab-case, no network prefix
-- [ ] Both exported from `packages/message-registry/src/index.ts` with `.js` extensions
+- [ ] Event key added to `L2_MESSAGES` (`aztec.ts`) or `L1_MESSAGES` (`ethereum.ts`)
+- [ ] Topic generated with `generateL2TopicName(...)` or `generateL1TopicName(...)` (no raw topic strings)
+- [ ] New payload types exported from `packages/message-registry/src/index.ts` with `.js` extensions
 - [ ] `yarn build:packages` passes cleanly
-- [ ] Producer uses `@chicmoz-pkg/message-bus` — no raw `kafkajs` calls in service code
-- [ ] Consumer has a unique `groupId` following `<service>-<topic>-consumer` naming
-- [ ] Deserialization errors are caught and logged, not re-thrown
+- [ ] Producer uses service `publishMessage(...)` wrappers built on `@chicmoz-pkg/message-bus` (no raw `kafkajs` calls)
+- [ ] Consumer uses `startSubscribe(...)` with `EventHandler` and `getConsumerGroupId(...)`
+- [ ] Callback handles validation/processing errors; do not manually `JSON.parse` Kafka payloads
 - [ ] `yarn build && yarn test` passes
 - [ ] Logging uses `@chicmoz-pkg/logger-server`, not `console.log`
