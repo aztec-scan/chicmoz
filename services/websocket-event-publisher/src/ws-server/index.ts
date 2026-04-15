@@ -13,7 +13,7 @@ let wss: WebSocketServer;
 
 const sendUpdateToClients = (update: WebsocketUpdateMessageSender) => {
   const stringifiedUpdate = jsonStringify(update);
-  if (!wss) throw new Error("WebSocket server is not initialized");
+  if (!wss) {throw new Error("WebSocket server is not initialized");}
   const clientStatuses: {
     sent: number;
     failed: number;

@@ -5,6 +5,7 @@ export const REDIS_HOST = z
   .string()
   .default("redis-cache")
   .parse(process.env.REDIS_HOST);
+
 export const REDIS_PORT = z
   .number()
   .default(6379)

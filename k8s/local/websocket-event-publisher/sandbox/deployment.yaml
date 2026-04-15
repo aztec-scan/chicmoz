@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: websocket-event-publisher-sandbox-label
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -23,6 +25,9 @@ spec:
               containerPort: 3000
               protocol: TCP
           resources:
+            requests:
+              memory: 300Mi
+              cpu: 100m
             limits:
               memory: 300Mi
               cpu: 500m

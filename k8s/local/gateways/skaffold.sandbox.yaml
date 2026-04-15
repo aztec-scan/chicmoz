@@ -1,0 +1,11 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: gateway-sandbox
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./sandbox/gateway.yaml

@@ -2084,7 +2084,8 @@ __metadata:
     "@chicmoz-pkg/contract-verification": "workspace:^"
     "@chicmoz-pkg/logger-server": "workspace:^"
     "@chicmoz-pkg/types": "workspace:^"
-    "@defi-wonderland/aztec-standards": "npm:4.0.0-devnet.2-patch.1"
+    "@defi-wonderland/aztec-standards-v410": "npm:@defi-wonderland/aztec-standards@4.1.0-rc.4"
+    "@defi-wonderland/aztec-standards-v420": "npm:@defi-wonderland/aztec-standards@4.2.0-aztecnr-rc.2"
     "@types/node": "npm:20.5.0"
     "@typescript-eslint/eslint-plugin": "npm:6.11.0"
     "@typescript-eslint/parser": "npm:6.11.0"
@@ -2117,7 +2118,8 @@ __metadata:
     "@chicmoz-pkg/postgres-helper": "workspace:^"
     "@chicmoz-pkg/redis-helper": "workspace:^"
     "@chicmoz-pkg/types": "workspace:^"
-    "@defi-wonderland/aztec-standards": "npm:4.0.0-devnet.2-patch.1"
+    "@defi-wonderland/aztec-standards-v410": "npm:@defi-wonderland/aztec-standards@4.1.0-rc.4"
+    "@defi-wonderland/aztec-standards-v420": "npm:@defi-wonderland/aztec-standards@4.2.0-aztecnr-rc.2"
     "@types/auto-bind": "npm:2.1.0"
     "@types/body-parser": "npm:1.19.5"
     "@types/cors": "npm:2.8.13"
@@ -2335,10 +2337,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@defi-wonderland/aztec-standards@npm:4.0.0-devnet.2-patch.1":
-  version: 4.0.0-devnet.2-patch.1
-  resolution: "@defi-wonderland/aztec-standards@npm:4.0.0-devnet.2-patch.1"
-  checksum: f2547bd2778321baabdde50acfd86a7028ec7e6955828e36e5cf0ed1a772e74b4ea36eac3158cac4a1073b04fabbf7195a95aa2f822e7239bb23c04ce72aabe3
+"@defi-wonderland/aztec-standards-v410@npm:@defi-wonderland/aztec-standards@4.1.0-rc.4":
+  version: 4.1.0-rc.4
+  resolution: "@defi-wonderland/aztec-standards@npm:4.1.0-rc.4"
+  checksum: 52db2d13aeaabde6f818b6f206df2b770e2bb8f58ca8e57b5d4980495c76798ebcdc0a5231a8fcf43d121d664e23e6c1c1cbdbd08c5c170ff63275b1633b01b3
+  languageName: node
+  linkType: hard
+
+"@defi-wonderland/aztec-standards-v420@npm:@defi-wonderland/aztec-standards@4.2.0-aztecnr-rc.2":
+  version: 4.2.0-aztecnr-rc.2
+  resolution: "@defi-wonderland/aztec-standards@npm:4.2.0-aztecnr-rc.2"
+  checksum: 6e25e6130b4bcb0aa52b53fc2994943b280f97caff6546dbd96807ea6ebe0931e1402e16acc9eed46d582940cbc8835a60447612494ffe70ae7fb1cbd08901d9
   languageName: node
   linkType: hard
 

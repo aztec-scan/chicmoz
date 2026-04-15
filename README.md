@@ -53,6 +53,37 @@ yarn build
 yarn dev
 ```
 
+You can also keep the backend stack on another machine and tunnel the sandbox gateway over SSH.
+
+Run the backend machine as usual:
+
+```sh
+skaffold run --filename k8s/local/skaffold.sandbox_no_ui.yaml
+./scripts/miscellaneous.sh
+```
+
+Then, on the UI machine, forward a local port to the backend machine's current gateway NodePort and keep using the existing sandbox hostname locally:
+
+```sh
+ssh -N -L 8080:<remote-minikube-ip>:<remote-gateway-nodeport> <remote-host>
+```
+
+You can discover those values on the backend machine with:
+
+```sh
+minikube ip
+kubectl get svc -n envoy-gateway-system -o wide
+```
+
+```sh
+VITE_L2_NETWORK_ID=SANDBOX \
+VITE_API_KEY=dev-api-key \
+VITE_API_URL=http://api.sandbox.chicmoz.localhost:8080/v1 \
+yarn dev
+```
+
+If websocket forwarding is not set up yet, leave `VITE_WS_URL` unset.
+
 ## Code Overview
 
 ### services/aztec-listener

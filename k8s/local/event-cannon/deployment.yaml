@@ -10,7 +10,8 @@ spec:
   selector:
     matchLabels:
       app: event-cannon-label
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -19,6 +20,9 @@ spec:
       containers:
         - image: event-cannon:latest
           resources:
+            requests:
+              memory: 2Gi
+              cpu: 100m
             limits:
               memory: 2Gi
               cpu: 500m
@@ -49,6 +53,8 @@ spec:
             #TODO: https://github.com/aztec-scan/chicmoz/issues/375
             - name: SCENARIO_DEPLOY_AND_UPDATE
               value: "true"
-            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT
+            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY
+              value: "true"
+            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT
               value: "true"
 status: {}

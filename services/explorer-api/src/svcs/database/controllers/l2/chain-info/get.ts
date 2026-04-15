@@ -2,6 +2,8 @@ import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   ChicmozChainInfo,
   L2NetworkId,
+  NODE_ENV,
+  NodeEnv,
   chicmozChainInfoSchema,
 } from "@chicmoz-pkg/types";
 import { and, desc, eq } from "drizzle-orm";
@@ -23,19 +25,40 @@ export async function getL2ChainInfo(
     .orderBy(desc(l2ChainInfoTable.updatedAt))
     .limit(1);
 
-  if (result.length === 0) {
-    return null;
+  if (result.length > 0) {
+    const chainInfo = result[0];
+
+    return chicmozChainInfoSchema.parse({
+      l2NetworkId: chainInfo.l2NetworkId,
+      l1ChainId: chainInfo.l1ChainId,
+      rollupVersion: chainInfo.rollupVersion,
+      l1ContractAddresses: chainInfo.l1ContractAddresses,
+      protocolContractAddresses: chainInfo.protocolContractAddresses,
+    });
   }
 
-  const chainInfo = result[0];
+  if (result.length === 0 && NODE_ENV === NodeEnv.DEV) {
+    const anyResult = await db()
+      .select()
+      .from(l2ChainInfoTable)
+      .where(eq(l2ChainInfoTable.l2NetworkId, l2NetworkId))
+      .orderBy(desc(l2ChainInfoTable.updatedAt))
+      .limit(1);
 
-  return chicmozChainInfoSchema.parse({
-    l2NetworkId: chainInfo.l2NetworkId,
-    l1ChainId: chainInfo.l1ChainId,
-    rollupVersion: chainInfo.rollupVersion,
-    l1ContractAddresses: chainInfo.l1ContractAddresses,
-    protocolContractAddresses: chainInfo.protocolContractAddresses,
-  });
+    if (anyResult.length > 0) {
+      const chainInfo = anyResult[0];
+
+      return chicmozChainInfoSchema.parse({
+        l2NetworkId: chainInfo.l2NetworkId,
+        l1ChainId: chainInfo.l1ChainId,
+        rollupVersion: chainInfo.rollupVersion,
+        l1ContractAddresses: chainInfo.l1ContractAddresses,
+        protocolContractAddresses: chainInfo.protocolContractAddresses,
+      });
+
+    }
+  }
+  return null;
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
