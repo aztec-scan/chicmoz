@@ -17,7 +17,7 @@ import {
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import {
   archive,
   body,
@@ -72,6 +72,10 @@ export interface BlockQueryOptions {
   includeOrphaned?: boolean;
   rollupVersion?: number;
 }
+
+const getSelectedRollupVersion = (rollupVersion?: number): number => {
+  return rollupVersion ?? CURRENT_ROLLUP_VERSION_NUMBER;
+};
 
 export const getBlocks = async (
   {
@@ -268,12 +272,12 @@ const _getBlocks = async (
           whereQuery = whereQuery.where(
             and(
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+              eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
             ),
           );
         } else {
           whereQuery = whereQuery.where(
-            eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
           );
         }
         whereQuery = whereQuery.orderBy(desc(l2Block.height)).limit(1);
@@ -286,7 +290,7 @@ const _getBlocks = async (
               includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
               eq(
                 l2Block.version,
-                options.rollupVersion ?? parseInt(CURRENT_ROLLUP_VERSION),
+                getSelectedRollupVersion(options.rollupVersion),
               ),
             ),
           )
@@ -305,7 +309,7 @@ const _getBlocks = async (
             includeOrphaned
               ? whereRange
               : and(whereRange, isNull(l2Block.orphan_timestamp)),
-            eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
           ),
         )
         .orderBy(desc(l2Block.height))

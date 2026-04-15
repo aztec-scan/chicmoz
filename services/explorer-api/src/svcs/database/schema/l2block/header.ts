@@ -2,9 +2,9 @@ import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import { index, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import {
+  generateBoundedIntegerColumn,
   generateEthAddressColumn,
   generateFrColumn,
-  generateFrNumberColumn,
   generateLargeIntegerColumn,
   generateTimestampColumn,
   generateTreeTable,
@@ -97,10 +97,10 @@ export const globalVariables = pgTable(
     headerId: uuid("header_id")
       .notNull()
       .references(() => header.id, { onDelete: "cascade" }),
-    chainId: generateFrNumberColumn("chain_id").notNull(),
-    version: generateFrNumberColumn("version").notNull(),
-    blockNumber: generateFrNumberColumn("block_number").notNull(),
-    slotNumber: generateFrNumberColumn("slot_number").notNull(),
+    chainId: generateBoundedIntegerColumn("chain_id").notNull(),
+    version: generateBoundedIntegerColumn("version").notNull(),
+    blockNumber: generateBoundedIntegerColumn("block_number").notNull(),
+    slotNumber: generateBoundedIntegerColumn("slot_number").notNull(),
     timestamp: generateTimestampColumn("timestamp").notNull(),
     coinbase: generateEthAddressColumn("coinbase").notNull(),
     feeRecipient: generateAztecAddressColumn("fee_recipient").notNull(),

@@ -6,7 +6,7 @@ import {
   l2Block,
   l2ContractClassRegistered,
 } from "../../../database/schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 
 export const getTotalContracts = async (): Promise<number> => {
   const dbRes = await db()
@@ -16,7 +16,7 @@ export const getTotalContracts = async (): Promise<number> => {
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();
@@ -37,7 +37,7 @@ export const getTotalContractsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();

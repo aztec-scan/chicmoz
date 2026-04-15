@@ -9,7 +9,7 @@ import {
   isNotNull,
   isNull,
 } from "drizzle-orm";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { globalVariables, header, l2Block } from "../../schema/index.js";
 import {
@@ -159,7 +159,7 @@ export const getL2DeployedContractInstances = async ({
       and(
         whereRange,
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .orderBy(DEFAULT_SORT)
