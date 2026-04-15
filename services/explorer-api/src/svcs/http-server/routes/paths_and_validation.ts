@@ -23,6 +23,7 @@ export const contractClassId = "contractClassId";
 export const version = "version";
 export const functionSelector = "functionSelector";
 export const artifactHash = "artifactHash";
+export const jobId = "jobId";
 
 export const paths = {
   latestHeight: "/l2/latest-height",
@@ -48,6 +49,10 @@ export const paths = {
   contractClassesByClassId: `/l2/contract-classes/:${contractClassId}`,
   contractClasses: `/l2/contract-classes`,
   contrctClassStandardArtifact: `/l2/contract-classes/:${contractClassId}/versions/:${version}/standard-artifact`,
+
+  verifySource: `/l2/contract-classes/:${contractClassId}/versions/:${version}/verify-source`,
+  verifySourceJob: `/l2/contract-classes/:${contractClassId}/versions/:${version}/verify-source/:${jobId}`,
+  contractClassSource: `/l2/contract-classes/:${contractClassId}/versions/:${version}/source`,
 
   artifactsByArtifactHash: `/l2/artifacts/:${artifactHash}`,
 
@@ -272,4 +277,32 @@ export const getContractInstanceBalanceSchema = z.object({
 
 export const getContractInstancesWithAztecScanNotesSchema = z.object({
   query: contractIncludeArtifactJson,
+});
+
+export const postVerifySourceSchema = z.object({
+  params: z.object({
+    [contractClassId]: hexStringSchema,
+    [version]: z.coerce.number().nonnegative(),
+  }),
+  body: z.object({
+    githubUrl: z.string().url(),
+    gitRef: z.string().optional(),
+    subPath: z.string().optional(),
+    aztecVersion: z.string().default("4.0.3"),
+  }),
+});
+
+export const getVerifySourceJobSchema = z.object({
+  params: z.object({
+    [contractClassId]: hexStringSchema,
+    [version]: z.coerce.number().nonnegative(),
+    [jobId]: z.string().uuid(),
+  }),
+});
+
+export const getContractClassSourceSchema = z.object({
+  params: z.object({
+    [contractClassId]: hexStringSchema,
+    [version]: z.coerce.number().nonnegative(),
+  }),
 });

@@ -1,6 +1,7 @@
 import { startSubscribe } from "../../svcs/message-bus/index.js";
 import { blockHandler, catchupHandler } from "./on-block/index.js";
 import { chainInfoHandler } from "./on-chain-info.js";
+import { compileSourceResultHandler } from "./on-compile-source-result.js";
 import { contractInstanceBalanceHandler } from "./on-contract-instance-balance.js";
 import { droppedTxHandler } from "./on-dropped-txs.js";
 import { l1L2ValidatorHandler } from "./on-l1-l2-validator.js";
@@ -27,6 +28,7 @@ export const subscribeHandlers = async () => {
     startSubscribe(pendingTxHandler),
     startSubscribe(droppedTxHandler),
     startSubscribe(contractInstanceBalanceHandler),
+    startSubscribe(compileSourceResultHandler),
     startSubscribe(l1L2ValidatorHandler),
     startSubscribe(l1L2BlockProposedHandler),
     startSubscribe(l1L2ProofVerifiedHandler),
