@@ -14,6 +14,7 @@ import {
   JOB_TIMEOUT_SECONDS,
   JOB_TTL_AFTER_FINISHED_SECONDS,
   K8S_NAMESPACE,
+  L2_NETWORK_ID,
   MAX_CONCURRENT_JOBS,
   READER_POD_IMAGE,
 } from "../../environment.js";
@@ -51,10 +52,12 @@ const activeJobs = new Map<string, JobState>();
 
 const LABEL_APP = "source-compiler";
 const LABEL_JOB_ID = "chicmoz-job-id";
+const LABEL_NETWORK_ID = "chicmoz-l2-network";
 const ANNOTATION_CONTRACT_CLASS_ID = "chicmoz/contract-class-id";
 const ANNOTATION_VERSION = "chicmoz/version";
 const ANNOTATION_GITHUB_URL = "chicmoz/github-url";
 const ANNOTATION_AZTEC_VERSION = "chicmoz/aztec-version";
+const NETWORK_LABEL_VALUE = L2_NETWORK_ID.toLowerCase();
 
 // --- Helpers ---
 
@@ -171,6 +174,7 @@ const createCompileJob = async (state: JobState): Promise<void> => {
       labels: {
         app: LABEL_APP,
         [LABEL_JOB_ID]: state.jobId,
+        [LABEL_NETWORK_ID]: NETWORK_LABEL_VALUE,
       },
       annotations: {
         [ANNOTATION_CONTRACT_CLASS_ID]: state.contractClassId,
@@ -188,6 +192,7 @@ const createCompileJob = async (state: JobState): Promise<void> => {
           labels: {
             app: LABEL_APP,
             [LABEL_JOB_ID]: state.jobId,
+            [LABEL_NETWORK_ID]: NETWORK_LABEL_VALUE,
           },
         },
         spec: {
@@ -605,7 +610,7 @@ export const recoverActiveJobs = async (): Promise<void> => {
   try {
     const jobList = await batchApi.listNamespacedJob({
       namespace: K8S_NAMESPACE,
-      labelSelector: `app=${LABEL_APP}`,
+      labelSelector: `app=${LABEL_APP},${LABEL_NETWORK_ID}=${NETWORK_LABEL_VALUE}`,
     });
 
     let recovered = 0;
