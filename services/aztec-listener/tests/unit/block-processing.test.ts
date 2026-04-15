@@ -58,7 +58,7 @@ describe("onBlock Function", () => {
     expect(mockMessageBus.publishMessage).toHaveBeenCalledWith(
       "NEW_BLOCK_EVENT",
       expect.objectContaining({
-        blockNumber: 100,
+        blockNumber: 100n,
         finalizationStatus:
           ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
       }),

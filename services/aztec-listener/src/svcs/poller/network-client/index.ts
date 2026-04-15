@@ -207,12 +207,12 @@ export const getLatestProvenHeight = async () => {
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");
 
 export const getBalanceOf = async (
-  blockNumber: number | "latest",
+  blockNumber: bigint | "latest",
   address: AztecAddress,
 ) => {
   const slot = await deriveStorageSlotInMap(new Fr(1), address);
   const blockParam =
-    blockNumber === "latest" ? "latest" : BlockNumber(blockNumber);
+    blockNumber === "latest" ? "latest" : BlockNumber(Number(blockNumber));
   return callNodeFunction("getPublicStorageAt", [
     blockParam,
     ProtocolContractAddress.FeeJuice,

@@ -15,11 +15,22 @@ import {
 import { onL2RpcNodeAlive } from "./on-node-alive.js";
 import { L2Block } from "@aztec/stdlib/block";
 
+const toSafeBlockNumber = (value: bigint): number => {
+  const blockNumber = Number(value);
+
+  if (!Number.isSafeInteger(blockNumber) || blockNumber < 0) {
+    throw new Error(`Block number ${value.toString()} is not a safe integer`);
+  }
+
+  return blockNumber;
+};
+
 export const onBlock = async (
   block: L2Block,
   finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ) => {
-  const height = Number(block.header.globalVariables.blockNumber);
+  const height = BigInt(block.header.globalVariables.blockNumber.toString());
+  const heightNumber = toSafeBlockNumber(height);
   const finalizationStatusStr =
     finalizationStatus ===
     ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
@@ -35,7 +46,7 @@ export const onBlock = async (
   await publishMessage("NEW_BLOCK_EVENT", {
     block: blockStr,
     finalizationStatus,
-    blockNumber: height,
+    blockNumber: heightNumber,
   });
   const potentiallyIncludedTxs = await txsController.getTxs([
     "pending",
@@ -65,12 +76,16 @@ export const onCatchupBlock = async (
   block: L2Block,
   finalizationStatus: ChicmozL2BlockFinalizationStatus,
 ) => {
+  const blockNumber = BigInt(
+    block.header.globalVariables.blockNumber.toString(),
+  );
+  const blockNumberSafe = toSafeBlockNumber(blockNumber);
   const blockBuffer = block.toBuffer() as Uint8Array;
   const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("CATCHUP_BLOCK_EVENT", {
     block: blockStr,
     finalizationStatus,
-    blockNumber: Number(block.header.globalVariables.blockNumber),
+    blockNumber: blockNumberSafe,
   });
 };
 // TODO: onCatchupRequestFromExplorerApi

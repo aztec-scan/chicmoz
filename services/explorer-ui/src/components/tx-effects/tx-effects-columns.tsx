@@ -102,14 +102,14 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
       />
     ),
     cell: ({ row }) => {
-      const blockNumber = Number(row.getValue("blockNumber"));
-      if (typeof blockNumber !== "number") {
+      const blockNumber = row.getValue("blockNumber");
+      if (typeof blockNumber !== "bigint") {
         return null;
       }
       const r = `${routes.blocks.route}/${blockNumber}`;
       return (
         <div className="text-purple-light font-mono">
-          <Link to={r}>{blockNumber}</Link>
+          <Link to={r}>{blockNumber.toString()}</Link>
         </div>
       );
     },

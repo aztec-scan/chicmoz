@@ -4,7 +4,7 @@ export const statsKey = "stats";
 export const queryKeyGenerator = {
   txEffectsByBlockHeight: (height: string | number | bigint | undefined) => [
     "txEffectsByBlockHeight",
-    Number(height),
+    height?.toString(),
   ],
   txEffectByHash: (hash: string) => ["txEffectByHash", hash],
   latestTxEffects: ["latestTxEffects"],
