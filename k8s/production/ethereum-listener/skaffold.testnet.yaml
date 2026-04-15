@@ -5,7 +5,7 @@ requires:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/ethereum-listener-testnet
-      context: ../../../../services/ethereum-listener
+      context: ../../../services/ethereum-listener
       docker:
         dockerfile: Dockerfile
       requires:
