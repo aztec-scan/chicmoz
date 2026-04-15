@@ -23,6 +23,9 @@ export const generateConcatFrPointColumn = (name: string) =>
 export const generateUint256Column = (name: string) =>
   numeric(name, { precision: 77, scale: 0 });
 
+export const generateLargeIntegerColumn = (name: string) =>
+  numeric(name, { precision: 77, scale: 0 });
+
 export const generateTimestampColumn = (name: string) =>
   bigint(name, { mode: "number" });
 

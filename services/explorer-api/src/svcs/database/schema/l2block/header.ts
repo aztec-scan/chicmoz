@@ -5,6 +5,7 @@ import {
   generateEthAddressColumn,
   generateFrColumn,
   generateFrNumberColumn,
+  generateLargeIntegerColumn,
   generateTimestampColumn,
   generateTreeTable,
   generateUint256Column,
@@ -117,8 +118,8 @@ export const gasFees = pgTable(
     globalVariablesId: uuid("global_variables_id")
       .notNull()
       .references(() => globalVariables.id, { onDelete: "cascade" }),
-    feePerDaGas: generateFrNumberColumn("fee_per_da_gas"),
-    feePerL2Gas: generateFrNumberColumn("fee_per_l2_gas"),
+    feePerDaGas: generateLargeIntegerColumn("fee_per_da_gas"),
+    feePerL2Gas: generateLargeIntegerColumn("fee_per_l2_gas"),
   },
   (t) => ({
     globalVariablesIdIdx: index("gas_fees_global_variables_id_idx").on(

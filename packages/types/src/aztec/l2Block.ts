@@ -10,7 +10,12 @@ import {
 } from "../index.js";
 import { deepPartial } from "../utils.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
-import { frNumberSchema, frSchema, frTimestampSchema } from "./utils.js";
+import {
+  frDecimalStringSchema,
+  frSchema,
+  frSmallIntSchema,
+  frTimestampSchema,
+} from "./utils.js";
 
 export enum ChicmozL2BlockFinalizationStatus {
   L2_NODE_SEEN_PROPOSED = 0,
@@ -78,16 +83,16 @@ export const chicmozL2BlockSchema = z.object({
       }),
     }),
     globalVariables: z.object({
-      chainId: frNumberSchema,
-      version: frNumberSchema,
-      blockNumber: frNumberSchema,
-      slotNumber: frNumberSchema,
+      chainId: frSmallIntSchema,
+      version: frSmallIntSchema,
+      blockNumber: frSmallIntSchema,
+      slotNumber: frSmallIntSchema,
       timestamp: frTimestampSchema,
       coinbase: ethAddressSchema,
       feeRecipient: aztecAddressSchema,
       gasFees: z.object({
-        feePerDaGas: frNumberSchema,
-        feePerL2Gas: frNumberSchema,
+        feePerDaGas: frDecimalStringSchema,
+        feePerL2Gas: frDecimalStringSchema,
       }),
     }),
     totalFees: z.coerce.bigint(),
