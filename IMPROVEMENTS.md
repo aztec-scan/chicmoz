@@ -163,7 +163,7 @@ was verified to align exactly with migration 0010 + 0011:
 
 The compiler-orchestrator creates Kubernetes Jobs to compile contracts. The Job pod
 template spec is missing `imagePullSecrets`. The compiler image
-(`registry.digitalocean.com/aztlan-containers/contract-compiler:4.0.3`) is hosted in a
+(`registry.digitalocean.com/aztlan-containers/contract-compiler:4.2.0-aztecnr-rc.2`) is hosted in a
 **private** DigitalOcean Container Registry, so every spawned Job fails with
 `ImagePullBackOff`.
 

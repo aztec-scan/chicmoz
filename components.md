@@ -213,7 +213,7 @@ type VerifySourceFormProps = {
 │                                                           │
 │  Aztec Version                                            │
 │  ┌─────────────────────────┐                             │
-│  │ 4.0.3                   │                             │
+│  │ 4.2.0-aztecnr-rc.2      │                             │
 │  └─────────────────────────┘                             │
 │                                                           │
 │                              [ Verify Source Code ]       │
@@ -225,7 +225,7 @@ type VerifySourceFormProps = {
 - GitHub URL: required, must match `https://github.com/<owner>/<repo>` pattern
 - Git ref: optional string
 - Sub-path: optional string
-- Aztec version: defaults to "4.0.3"
+- Aztec version: defaults to "4.2.0-aztecnr-rc.2"
 
 **Error states:**
 

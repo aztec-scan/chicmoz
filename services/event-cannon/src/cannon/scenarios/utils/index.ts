@@ -17,8 +17,9 @@ import { callExplorerApi } from "./explorer-api.js";
 import {
   Contract,
   type ContractInstanceWithAddress,
-  type DeployTxReceipt,
   DeployMethod,
+  type TxSendResultMined,
+  type SimulationResult,
 } from "@aztec/aztec.js/contracts";
 import { FunctionType, NoirCompiledContract } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
@@ -27,7 +28,7 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-import { Wallet } from "@aztec/aztec.js/wallet";
+import { Wallet, ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
@@ -38,11 +39,11 @@ export const truncateHashString = (value: string) => {
 };
 
 export const logAndWaitForTx = async (
-  txReceiptPromise: Promise<TxReceipt>,
+  txSendPromise: Promise<TxSendResultMined<TxReceipt>>,
   additionalInfo: string,
 ) => {
   logger.info(`📫 TX (${additionalInfo}) waiting...`);
-  const receipt = await txReceiptPromise;
+  const { receipt } = await txSendPromise;
   const hash = receipt.txHash.toString();
   logger.info(
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
@@ -56,8 +57,8 @@ export const simulateThenSend = async ({
   additionalInfo,
 }: {
   method: {
-    simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
-    send: (opts: { from: AztecAddress }) => Promise<TxReceipt>;
+    simulate: (opts: { from: AztecAddress }) => Promise<SimulationResult>;
+    send: (opts: { from: AztecAddress }) => Promise<TxSendResultMined>;
   };
   from: AztecAddress;
   additionalInfo: string;
@@ -74,7 +75,7 @@ export const simulateThenSend = async ({
     throw err;
   }
 
-  const receipt = await method.send({ from });
+  const { receipt } = await method.send({ from });
   const hash = receipt.txHash.toString();
   logger.info(
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
@@ -121,7 +122,7 @@ export const getNewSchnorrAccount = async ({
     wait: { returnReceipt: true },
   });
   logger.info(
-    `    Account deployed (${accountName}) block ${deployReceipt.blockNumber}`,
+    `    Account deployed (${accountName}) block ${deployReceipt.receipt.blockNumber}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
   logger.info(
@@ -197,22 +198,22 @@ export const deployContract = async <T extends Contract>({
   const feePayer = from ?? getAccounts().alice.address;
 
   logger.info(`📫 ${contractLoggingName} (Deploying contract)`);
-  const deployResult: DeployTxReceipt<T> = await deployMethod.send({
+  const deployResult = await deployMethod.send({
     from: feePayer,
     wait: { returnReceipt: true },
   });
 
-  const { contract: deployedContract, instance } = deployResult;
+  const { contract: deployedContract, instance } = deployResult.receipt;
   const addressString = deployedContract.address.toString();
   const newClassId = await getNewContractClassId(
     node,
-    deployResult.blockNumber,
+    deployResult.receipt.blockNumber,
   );
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
     : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
-    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.blockNumber} ${classIdString}`,
+    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.receipt.blockNumber} ${classIdString}`,
   );
   if (broadcastWithWallet) {
     await broadcastFunctions({
@@ -264,7 +265,10 @@ export const publicDeployAccounts = async (
       return contractMetadata;
     }),
   ).then((results) =>
-    results.filter((result) => !result.isContractInitialized),
+    results.filter(
+      (result) =>
+        result.initializationStatus !== ContractInitializationStatus.INITIALIZED,
+    ),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
@@ -277,7 +281,7 @@ export const publicDeployAccounts = async (
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
       logger.warn(
-        `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
+        `🚨 Contract instance not found for contract initializationStatus: ${contractMetadata.initializationStatus}`,
       );
       continue;
     }

@@ -12,4 +12,4 @@ build:
           DOCKER_DEFAULT_PLATFORM: "linux/amd64"
   tagPolicy:
     customTemplate:
-      template: "4.0.3"
+      template: "4.2.0-aztecnr-rc.2"

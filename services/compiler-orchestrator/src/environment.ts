@@ -7,7 +7,7 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
 
 export const COMPILER_IMAGE = z
   .string()
-  .default("contract-compiler:4.0.3")
+  .default("contract-compiler:4.2.0-aztecnr-rc.2")
   .parse(process.env.COMPILER_IMAGE);
 
 export const K8S_NAMESPACE = z

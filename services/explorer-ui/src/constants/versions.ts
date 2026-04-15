@@ -9,9 +9,10 @@ export const v3_0_3 = 2500495677;
 export const v4_0_0_devnet_2_patch_0 = 615022430;
 export const sandbox_v4_0_0_devnet_2_patch_1 = 126353417;
 export const sandbox_v4_0_3 = 3370493154;
+export const v4_2_0_aztecnr_rc_2 = 903641544;
 
 // Current active version to use for comparison
 export const CURRENT_ROLLUP_VERSION =
   import.meta.env.VITE_L2_NETWORK_ID === "SANDBOX"
     ? sandbox_v4_0_3
-    : v4_0_0_devnet_2_patch_0;
+    : v4_2_0_aztecnr_rc_2;
