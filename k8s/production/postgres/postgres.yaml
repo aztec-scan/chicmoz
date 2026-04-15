@@ -132,17 +132,23 @@ spec:
               mountPath: /var/lib/postgresql/data
             - name: init-scripts
               mountPath: /docker-entrypoint-initdb.d
+            - name: dshm
+              mountPath: /dev/shm
           resources:
             limits:
+              memory: "8Gi"
+              cpu: "4000m"
+            requests:
               memory: "2Gi"
               cpu: "1000m"
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
       volumes:
         - name: init-scripts
           configMap:
             name: postgres-init-scripts
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
   volumeClaimTemplates:
     - metadata:
         name: data
