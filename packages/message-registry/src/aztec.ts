@@ -56,6 +56,27 @@ export type ChicmozL2BlockFinalizationUpdateEvent = {
   status: ChicmozL2BlockFinalizationStatus;
 };
 
+export type CompileSourceRequestEvent = {
+  jobId: string;
+  contractClassId: string;
+  version: number;
+  githubUrl: string;
+  gitRef?: string;
+  subPath?: string;
+  aztecVersion: string;
+};
+
+export type CompileSourceResultEvent = {
+  jobId: string;
+  contractClassId: string;
+  version: number;
+  status: "success" | "compilation_failed" | "clone_failed" | "timeout";
+  artifactJson?: string;
+  sourceFiles?: Array<{ path: string; content: string }>;
+  commitHash?: string;
+  error?: string;
+};
+
 export function generateL2TopicName(
   networkId: L2NetworkId,
   topic: keyof L2_MESSAGES,
@@ -74,6 +95,8 @@ export type L2_MESSAGES = {
   SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;
   CHAIN_INFO_EVENT: ChicmozChainInfoEvent;
   L2_BLOCK_FINALIZATION_UPDATE_EVENT: ChicmozL2BlockFinalizationUpdateEvent;
+  COMPILE_SOURCE_REQUEST_EVENT: CompileSourceRequestEvent;
+  COMPILE_SOURCE_RESULT_EVENT: CompileSourceResultEvent;
 };
 
 export type L2Topic = `${L2NetworkId}__${keyof L2_MESSAGES}`;

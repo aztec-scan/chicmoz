@@ -36,7 +36,9 @@ export const handleProvenTransactions = async (block: L2Block) => {
       return;
     }
 
-    const blockNumber = Number(block.header.globalVariables.blockNumber);
+    const blockNumber = BigInt(
+      block.header.globalVariables.blockNumber.toString(),
+    );
     logger.info(
       `🎯 Found ${provenPendingTxs.length} proven pending txs in block ${blockNumber}`,
     );

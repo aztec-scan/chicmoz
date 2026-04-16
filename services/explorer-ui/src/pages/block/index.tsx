@@ -35,7 +35,7 @@ export const Blocks: FC = () => {
       startBlock === undefined &&
       endBlock === undefined
     ) {
-      const latestHeight = Number(latestBlocksData[0].height);
+      const latestHeight = Number(latestBlocksData[0].height.toString());
       setEndBlock(latestHeight);
       setStartBlock(Math.max(1, latestHeight - 19)); // Show 20 blocks by default
     }

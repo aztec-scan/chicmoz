@@ -6,8 +6,10 @@ import {
   foreignKey,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   primaryKey,
+  text,
   timestamp,
   uuid,
   varchar,
@@ -94,6 +96,9 @@ export const l2ContractClassRegistered = pgTable(
     standardContractType: varchar("contract_type"),
     standardContractVersion: varchar("contract_version"),
     sourceCodeUrl: varchar("source_code_url"),
+    sourceCodeCommitHash: varchar("source_code_commit_hash"),
+    sourceCode:
+      jsonb("source_code").$type<Array<{ path: string; content: string }>>(),
   },
   (t) => ({
     primaryKey: primaryKey({
@@ -277,3 +282,27 @@ export const l2UtilityFunctionRelations = relations(
     contractClass: many(l2ContractClassRegistered),
   }),
 );
+
+export const sourceVerificationStatusEnum = pgEnum(
+  "source_verification_status",
+  ["PENDING", "COMPILING", "VERIFYING", "VERIFIED", "FAILED"],
+);
+
+export const sourceVerificationJobs = pgTable("source_verification_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  contractClassId: text("contract_class_id").notNull(),
+  version: integer("version").notNull(),
+  githubUrl: text("github_url").notNull(),
+  gitRef: text("git_ref"),
+  subPath: text("sub_path"),
+  aztecVersion: text("aztec_version").notNull(),
+  commitHash: text("commit_hash"),
+  clientIp: text("client_ip"),
+  status: sourceVerificationStatusEnum("status").notNull().default("PENDING"),
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

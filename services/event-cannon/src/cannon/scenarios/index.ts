@@ -8,3 +8,4 @@ export { run as l1L2PrivateMessaging } from "./l1-l2-private-messaging.js";
 // export { run as deployAndUpdateSimpleContract } from "./deploy-and-update-simple-contract.ts.old";
 export { run as deployAztecStandardTokenContractCurrent } from "./deploy-aztec-standard-token-contract-current.js";
 export { run as deployAztecStandardTokenContractLegacy } from "./deploy-aztec-standard-token-contract-legacy.js";
+export { run as verifySourceCode } from "./verify-source-code.js";

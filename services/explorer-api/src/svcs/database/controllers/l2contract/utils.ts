@@ -63,13 +63,13 @@ export const parseDeluxe = ({
     blockHash: instance.blockHash,
     // Ensure we have a Buffer as required by the schema
     packedBytecode: Buffer.isBuffer(contractClass.packedBytecode)
-      ? contractClass.packedBytecode 
+      ? contractClass.packedBytecode
       : Buffer.from(
           ArrayBuffer.isView(contractClass.packedBytecode)
-            ? contractClass.packedBytecode 
-            : typeof contractClass.packedBytecode === 'string'
+            ? contractClass.packedBytecode
+            : typeof contractClass.packedBytecode === "string"
               ? contractClass.packedBytecode
-              : JSON.stringify(contractClass.packedBytecode)
+              : JSON.stringify(contractClass.packedBytecode),
         ),
     address: instance.address,
     version: instance.version,
@@ -90,9 +90,9 @@ export const parseDeluxe = ({
 export const getContractClassRegisteredColumns = (
   includeArtifactJson?: boolean,
 ) => {
-  const { artifactJson, ...columns } = getTableColumns(
-    l2ContractClassRegistered,
-  );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { artifactJson, sourceCode, sourceCodeCommitHash, ...columns } =
+    getTableColumns(l2ContractClassRegistered);
   return {
     ...columns,
     ...(includeArtifactJson ? { artifactJson } : {}),

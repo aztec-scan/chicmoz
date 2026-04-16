@@ -3,8 +3,8 @@ import { bigint, boolean, index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import {
+  generateBoundedIntegerColumn,
   generateTreeTable,
-  generateFrNumberColumn,
   generateTimestampColumn,
 } from "../utils.js";
 
@@ -13,7 +13,7 @@ export const l2Block = pgTable(
   {
     hash: varchar("hash").primaryKey().notNull().$type<HexString>(),
     height: bigint("height", { mode: "bigint" }).notNull(),
-    version: generateFrNumberColumn("version").notNull(),
+    version: generateBoundedIntegerColumn("version").notNull(),
     orphan_timestamp: generateTimestampColumn("orphan_timestamp"),
     orphan_hasOrphanedParent: boolean("orphan_hasOrphanedParent"),
   },

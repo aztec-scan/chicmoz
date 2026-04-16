@@ -1,17 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
+import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 import { CustomTooltip } from "../custom-tooltip";
 import { TimeAgoCell } from "../formated-time-cell";
-import { type UiTxEffectTable } from "@chicmoz-pkg/types";
 
 const text = {
   txHash: "HASH",
   transactionFee: "FEE (FJ)",
   blockHeight: "HEIGHT",
   timeSince: "AGE",
+};
+
+const compareDecimalStrings = (left: string, right: string): number => {
+  const leftValue = BigInt(left);
+  const rightValue = BigInt(right);
+
+  if (leftValue === rightValue) {
+    return 0;
+  }
+
+  return leftValue > rightValue ? 1 : -1;
 };
 
 export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
@@ -68,6 +79,16 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
         <div className="font-mono">{row.getValue("transactionFee")}</div>
       </CustomTooltip>
     ),
+    sortingFn: (rowA, rowB, columnId) => {
+      const left = rowA.getValue(columnId);
+      const right = rowB.getValue(columnId);
+
+      if (typeof left !== "string" || typeof right !== "string") {
+        return 0;
+      }
+
+      return compareDecimalStrings(left, right);
+    },
     enableSorting: true,
     enableHiding: false,
   },
@@ -81,14 +102,14 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
       />
     ),
     cell: ({ row }) => {
-      const blockNumber = Number(row.getValue("blockNumber"));
-      if (typeof blockNumber !== "number") {
+      const blockNumber = row.getValue("blockNumber");
+      if (typeof blockNumber !== "bigint") {
         return null;
       }
       const r = `${routes.blocks.route}/${blockNumber}`;
       return (
         <div className="text-purple-light font-mono">
-          <Link to={r}>{blockNumber}</Link>
+          <Link to={r}>{blockNumber.toString()}</Link>
         </div>
       );
     },

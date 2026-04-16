@@ -15,7 +15,7 @@ import {
   l2Block,
 } from "../../schema/index.js";
 import { ensureFinalizationStatusStored } from "./store.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 
 export const addL1L2BlockProposed = async (
   proposedData: ChicmozL1L2BlockProposed,
@@ -48,7 +48,7 @@ export const addL1L2BlockProposed = async (
     .where(
       and(
         eq(l2Block.height, proposedData.l2BlockNumber),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .limit(1);
@@ -171,7 +171,7 @@ export const addL1L2ProofVerified = async (
       and(
         isNull(l2Block.orphan_timestamp),
         eq(l2Block.height, proofVerifiedData.l2BlockNumber),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     );
   let l2BlockHash;

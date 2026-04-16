@@ -26,7 +26,7 @@ export const getABlock = async () => {
     return null;
   }
   return {
-    height: Number(res[0].height),
+    height: res[0].height,
     hash: res[0].hash,
   };
 };
@@ -60,7 +60,7 @@ export const getABlockWithTxEffects = async () => {
   const result = dbRes[0];
   return {
     block: {
-      height: Number(result.block.height),
+      height: result.block.height,
       hash: result.block.hash,
     },
     txEffects: (
@@ -127,7 +127,7 @@ export const getABlockWithContractInstances = async () => {
   }
   return {
     block: {
-      height: Number(dbRes[0].l2Block.height),
+      height: dbRes[0].l2Block.height,
       hash: dbRes[0].l2Block.hash,
     },
     contractInstance: {

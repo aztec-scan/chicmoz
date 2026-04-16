@@ -2,9 +2,10 @@ import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import { index, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import {
+  generateBoundedIntegerColumn,
   generateEthAddressColumn,
   generateFrColumn,
-  generateFrNumberColumn,
+  generateLargeIntegerColumn,
   generateTimestampColumn,
   generateTreeTable,
   generateUint256Column,
@@ -96,10 +97,10 @@ export const globalVariables = pgTable(
     headerId: uuid("header_id")
       .notNull()
       .references(() => header.id, { onDelete: "cascade" }),
-    chainId: generateFrNumberColumn("chain_id").notNull(),
-    version: generateFrNumberColumn("version").notNull(),
-    blockNumber: generateFrNumberColumn("block_number").notNull(),
-    slotNumber: generateFrNumberColumn("slot_number").notNull(),
+    chainId: generateBoundedIntegerColumn("chain_id").notNull(),
+    version: generateBoundedIntegerColumn("version").notNull(),
+    blockNumber: generateBoundedIntegerColumn("block_number").notNull(),
+    slotNumber: generateBoundedIntegerColumn("slot_number").notNull(),
     timestamp: generateTimestampColumn("timestamp").notNull(),
     coinbase: generateEthAddressColumn("coinbase").notNull(),
     feeRecipient: generateAztecAddressColumn("fee_recipient").notNull(),
@@ -117,8 +118,8 @@ export const gasFees = pgTable(
     globalVariablesId: uuid("global_variables_id")
       .notNull()
       .references(() => globalVariables.id, { onDelete: "cascade" }),
-    feePerDaGas: generateFrNumberColumn("fee_per_da_gas"),
-    feePerL2Gas: generateFrNumberColumn("fee_per_l2_gas"),
+    feePerDaGas: generateLargeIntegerColumn("fee_per_da_gas"),
+    feePerL2Gas: generateLargeIntegerColumn("fee_per_l2_gas"),
   },
   (t) => ({
     globalVariablesIdIdx: index("gas_fees_global_variables_id_idx").on(
