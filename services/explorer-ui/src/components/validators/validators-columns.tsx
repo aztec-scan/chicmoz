@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { formatCompactUnits } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import { EtherscanAddressLink } from "../etherscan-address-link";
 import { TimeAgoCell } from "../formated-time-cell";
@@ -30,10 +31,6 @@ type CreateValidatorsTableColumnsArgs = {
   stakingAssetAddress?: string;
   stakingAssetDecimals?: number;
   stakingAssetSymbol?: string;
-};
-
-const formatStake = (rawStake: bigint, decimals = 18): string => {
-  return (Number(rawStake) / 10 ** decimals).toFixed(2);
 };
 
 export const createValidatorsTableColumns = ({
@@ -119,7 +116,7 @@ export const createValidatorsTableColumns = ({
         return null;
       }
 
-      const stake = formatStake(rawStake, stakingAssetDecimals);
+      const stake = formatCompactUnits(rawStake, stakingAssetDecimals);
       const symbol = stakingAssetSymbol ?? "STK";
 
       return (
@@ -130,6 +127,7 @@ export const createValidatorsTableColumns = ({
               content={symbol}
               endpoint={`/token/${stakingAssetAddress}`}
               showExternalLinkIcon={false}
+              tooltipContent="View token address on Etherscan"
             />
           ) : (
             <span>{symbol}</span>

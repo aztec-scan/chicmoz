@@ -10,6 +10,7 @@ import { ValidatorStatusBadge } from "~/components/validator-status-badge";
 import { ValidatorHistoryTable } from "~/components/validators/validator-history-table";
 import { useSubTitle } from "~/hooks";
 import { useChainInfo } from "~/hooks/api";
+import { formatCompactUnits } from "~/lib/utils";
 import {
   useL1L2Validator,
   useL1L2ValidatorHistory,
@@ -24,15 +25,11 @@ type StakingAssetInfo = {
   stakingAssetSymbol?: string;
 };
 
-const formatStake = (stake: bigint, decimals = 18): string => {
-  return (Number(stake) / 10 ** decimals).toFixed(2);
-};
-
 const getValidatorData = (
   validator: ChicmozL1L2Validator,
   stakingAssetInfo: StakingAssetInfo,
 ): DetailItem[] => {
-  const stakeValue = formatStake(
+  const stakeValue = formatCompactUnits(
     validator.stake,
     stakingAssetInfo.stakingAssetDecimals,
   );
@@ -48,17 +45,19 @@ const getValidatorData = (
       label: "Stake",
       value: "CUSTOM",
       customValue: (
-        <div className="font-mono flex items-center gap-1">
+        <span className="inline-flex w-full items-center justify-end gap-1 font-mono">
           <span>{stakeValue}</span>
           {stakingAssetInfo.stakingAssetAddress ? (
             <EtherscanAddressLink
               content={stakingAssetSymbol}
               endpoint={`/token/${stakingAssetInfo.stakingAssetAddress}`}
+              showExternalLinkIcon={false}
+              tooltipContent="View token address on Etherscan"
             />
           ) : (
             <span>{stakingAssetSymbol}</span>
           )}
-        </div>
+        </span>
       ),
     },
     {

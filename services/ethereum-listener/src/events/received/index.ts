@@ -4,6 +4,7 @@ import {
   generateL2TopicName,
 } from "@chicmoz-pkg/message-registry";
 import { type ChicmozChainInfo } from "@chicmoz-pkg/types";
+import { isAddress } from "viem";
 import { getPublicHttpClient } from "../../network-client/client/index.js";
 import { SERVICE_NAME } from "../../constants.js";
 import { L2_NETWORK_ID } from "../../environment.js";
@@ -33,8 +34,15 @@ const erc20MetadataAbi = [
 const publishStakingAssetInfo = async (
   chainInfo: ChicmozChainInfo,
 ): Promise<void> => {
-  const stakingAssetAddress = chainInfo.l1ContractAddresses
-    .stakingAssetAddress as `0x${string}`;
+  const { stakingAssetAddress } = chainInfo.l1ContractAddresses;
+
+  if (!stakingAssetAddress || !isAddress(stakingAssetAddress)) {
+    logger.warn(
+      `Skipping staking asset metadata publish due to invalid address: ${stakingAssetAddress}`,
+    );
+    return;
+  }
+
   const [stakingAssetSymbol, stakingAssetDecimals] = await Promise.all([
     getPublicHttpClient().readContract({
       address: stakingAssetAddress,
@@ -60,7 +68,13 @@ const publishStakingAssetInfo = async (
 export const onChainInfo = async (event: ChicmozChainInfoEvent) => {
   logger.info(`🔗 chain info event ${JSON.stringify(event)}`);
   await storeL1ContractAddresses(event.chainInfo.l1ContractAddresses);
-  await publishStakingAssetInfo(event.chainInfo);
+
+  try {
+    await publishStakingAssetInfo(event.chainInfo);
+  } catch (e) {
+    logger.error(`Failed to publish staking asset info: ${(e as Error).stack}`);
+  }
+
   await ensureStarted();
 };
 

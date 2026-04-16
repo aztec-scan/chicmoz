@@ -9,6 +9,7 @@ type EtherscanAddressLinkProps = {
   endpoint: string;
   className?: string;
   showExternalLinkIcon?: boolean;
+  tooltipContent?: string;
 };
 
 const ETHERSCAN_URL =
@@ -24,12 +25,13 @@ export const EtherscanAddressLink: React.FC<EtherscanAddressLinkProps> = ({
   endpoint,
   className,
   showExternalLinkIcon = true,
+  tooltipContent = "View on Etherscan",
 }) => {
   if (!ETHERSCAN_URL) {
     return <div className={cn("font-mono", className)}>{content}</div>;
   }
   return (
-    <CustomTooltip content={`View on Etherscan`}>
+    <CustomTooltip content={tooltipContent}>
       <a
         href={`${ETHERSCAN_URL}${endpoint}`}
         target="_blank"
