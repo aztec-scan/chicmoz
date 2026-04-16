@@ -1,4 +1,5 @@
 import {
+  ChicmozChainInfo,
   ChicmozL1GenericContractEvent,
   ChicmozL1L2BlockProposed,
   ChicmozL1L2ProofVerified,
@@ -22,6 +23,10 @@ export type L1L2ValidatorEvent = {
   validators: (Omit<ChicmozL1L2Validator, "stake"> & { stake: string })[];
 };
 
+export type StakingAssetInfoEvent = {
+  chainInfo: ChicmozChainInfo;
+};
+
 export type L1Topic = `${L2NetworkId}_${L1NetworkId}__${keyof L1_MESSAGES}`;
 
 export function generateL1TopicName(
@@ -39,6 +44,7 @@ export type L1_MESSAGES = {
   L1_L2_BLOCK_PROPOSED_EVENT: ChicmozL1L2BlockProposed;
   L1_L2_PROOF_VERIFIED_EVENT: ChicmozL1L2ProofVerified;
   L1_GENERIC_CONTRACT_EVENT: ChicmozL1GenericContractEvent;
+  STAKING_ASSET_INFO_EVENT: StakingAssetInfoEvent;
 };
 
 export type L1Payload = L1_MESSAGES[keyof L1_MESSAGES];

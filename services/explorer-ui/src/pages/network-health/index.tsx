@@ -1,9 +1,8 @@
-import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { useMemo, type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { useGetLatestTxEffects, useSubTitle } from "~/hooks";
 import { useBlocksByFinalizationStatus, useReorgs } from "~/hooks/api/blocks";
-import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { useValidatorTotals } from "~/hooks/api/l1-l2-validator";
 import { BaseLayout } from "~/layout/base-layout";
 import { BlockProductionSection } from "./block-production-section";
 import { FinalizationStatusSection } from "./finalization-status-section";
@@ -21,10 +20,10 @@ export const NetworkHealth: FC = () => {
   } = useReorgs();
 
   const {
-    data: validators,
-    isLoading: validatorsLoading,
-    error: validatorsError,
-  } = useL1L2Validators();
+    data: validatorTotals,
+    isLoading: validatorTotalsLoading,
+    error: validatorTotalsError,
+  } = useValidatorTotals();
 
   const {
     data: blocksByFinalizationStatus,
@@ -83,19 +82,20 @@ export const NetworkHealth: FC = () => {
     let title = "Number of Validators";
     let data = "0";
 
-    if (validators) {
-      const validatingValidatorsCount = validators.filter(
-        (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
-      ).length;
-      const validatingValidatorsPercentage = Math.round(
-        (validatingValidatorsCount / validators.length) * 100,
-      );
+    if (validatorTotals) {
+      const totalValidators =
+        validatorTotals.validating + validatorTotals.nonValidating;
+      const validatingValidatorsPercentage =
+        totalValidators > 0
+          ? Math.round((validatorTotals.validating / totalValidators) * 100)
+          : 0;
+
       title = `Number of Validators (${validatingValidatorsPercentage}%)`;
-      data = `${validatingValidatorsCount}`;
+      data = `${totalValidators}`;
     }
 
     return { validatorsTitle: title, validatorsData: data };
-  }, [validators]);
+  }, [validatorTotals]);
 
   const blocksByFinalizationStatusData = useMemo(() => {
     if (!blocksByFinalizationStatus) {
@@ -133,8 +133,8 @@ export const NetworkHealth: FC = () => {
         />
         <InfoBadge
           title={validatorsTitle}
-          isLoading={validatorsLoading}
-          error={validatorsError}
+          isLoading={validatorTotalsLoading}
+          error={validatorTotalsError}
           data={validatorsData}
         />
         <InfoBadge

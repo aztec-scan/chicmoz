@@ -9,6 +9,7 @@ import {
 import { ValidatorStatusBadge } from "~/components/validator-status-badge";
 import { ValidatorHistoryTable } from "~/components/validators/validator-history-table";
 import { useSubTitle } from "~/hooks";
+import { useChainInfo } from "~/hooks/api";
 import {
   useL1L2Validator,
   useL1L2ValidatorHistory,
@@ -17,7 +18,26 @@ import { BaseLayout } from "~/layout/base-layout";
 import { routes } from "~/routes/__root";
 import { API_URL, aztecExplorer } from "~/service/constants";
 
-const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
+type StakingAssetInfo = {
+  stakingAssetAddress?: string;
+  stakingAssetDecimals?: number;
+  stakingAssetSymbol?: string;
+};
+
+const formatStake = (stake: bigint, decimals = 18): string => {
+  return (Number(stake) / 10 ** decimals).toFixed(2);
+};
+
+const getValidatorData = (
+  validator: ChicmozL1L2Validator,
+  stakingAssetInfo: StakingAssetInfo,
+): DetailItem[] => {
+  const stakeValue = formatStake(
+    validator.stake,
+    stakingAssetInfo.stakingAssetDecimals,
+  );
+  const stakingAssetSymbol = stakingAssetInfo.stakingAssetSymbol ?? "STK";
+
   return [
     {
       label: "STATUS",
@@ -26,7 +46,20 @@ const getValidatorData = (validator: ChicmozL1L2Validator): DetailItem[] => {
     },
     {
       label: "Stake",
-      value: (Number(validator.stake) / 10 ** 18).toFixed(2),
+      value: "CUSTOM",
+      customValue: (
+        <div className="font-mono flex items-center gap-1">
+          <span>{stakeValue}</span>
+          {stakingAssetInfo.stakingAssetAddress ? (
+            <EtherscanAddressLink
+              content={stakingAssetSymbol}
+              endpoint={`/token/${stakingAssetInfo.stakingAssetAddress}`}
+            />
+          ) : (
+            <span>{stakingAssetSymbol}</span>
+          )}
+        </div>
+      ),
     },
     {
       label: "ATTESTER",
@@ -84,6 +117,7 @@ export const ValidatorDetailsPage: FC = () => {
     from: "/l1/validators/$attesterAddress",
   });
   const { data, isLoading, error } = useL1L2Validator(attesterAddress);
+  const { data: chainInfo } = useChainInfo();
   const {
     data: historyData,
     isLoading: isHistoryLoading,
@@ -106,7 +140,14 @@ export const ValidatorDetailsPage: FC = () => {
             ) : error ? (
               <p className="text-red-500">Error: {error.message}</p>
             ) : data ? (
-              <KeyValueDisplay data={getValidatorData(data)} />
+              <KeyValueDisplay
+                data={getValidatorData(data, {
+                  stakingAssetAddress:
+                    chainInfo?.l1ContractAddresses.stakingAssetAddress,
+                  stakingAssetDecimals: chainInfo?.stakingAssetDecimals,
+                  stakingAssetSymbol: chainInfo?.stakingAssetSymbol,
+                })}
+              />
             ) : (
               <p>No validator data found</p>
             )}

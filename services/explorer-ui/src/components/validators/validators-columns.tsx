@@ -1,4 +1,3 @@
-import { type L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "~/components/data-table";
@@ -23,10 +22,25 @@ const getLinkCell = (content: string, endpoint: string) => (
   <EtherscanAddressLink
     content={truncateHashString(content)}
     endpoint={endpoint}
+    showExternalLinkIcon={false}
   />
 );
 
-export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
+type CreateValidatorsTableColumnsArgs = {
+  stakingAssetAddress?: string;
+  stakingAssetDecimals?: number;
+  stakingAssetSymbol?: string;
+};
+
+const formatStake = (rawStake: bigint, decimals = 18): string => {
+  return (Number(rawStake) / 10 ** decimals).toFixed(2);
+};
+
+export const createValidatorsTableColumns = ({
+  stakingAssetAddress,
+  stakingAssetDecimals,
+  stakingAssetSymbol,
+}: CreateValidatorsTableColumnsArgs): ColumnDef<ValidatorTableSchema>[] => [
   {
     accessorKey: "attester",
     header: ({ column }) => (
@@ -101,9 +115,27 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
     ),
     cell: ({ row }) => {
       const rawStake = row.getValue("stake");
-      const stake = (Number(rawStake) / 10 ** 18).toFixed(2);
+      if (typeof rawStake !== "bigint") {
+        return null;
+      }
 
-      return <div className="font-mono flex items-center">{stake} STK</div>; // TODO: 1. use Viem to get the decimals 2. use Viem to get the symbol
+      const stake = formatStake(rawStake, stakingAssetDecimals);
+      const symbol = stakingAssetSymbol ?? "STK";
+
+      return (
+        <div className="font-mono flex items-center gap-1">
+          <span>{stake}</span>
+          {stakingAssetAddress ? (
+            <EtherscanAddressLink
+              content={symbol}
+              endpoint={`/token/${stakingAssetAddress}`}
+              showExternalLinkIcon={false}
+            />
+          ) : (
+            <span>{symbol}</span>
+          )}
+        </div>
+      );
     },
     enableSorting: true,
     enableHiding: false,
@@ -118,7 +150,10 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status") as L1L2ValidatorStatus;
+      const status = row.getValue("status");
+      if (typeof status !== "number") {
+        return null;
+      }
       return <ValidatorStatusBadge status={status} />;
     },
     enableSorting: true,

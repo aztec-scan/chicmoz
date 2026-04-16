@@ -1,13 +1,15 @@
 import { getL1NetworkId } from "@chicmoz-pkg/types";
 import { ExternalLink } from "lucide-react";
+import { cn } from "~/lib/utils";
 import { L2_NETWORK_ID } from "~/service/constants";
 import { CustomTooltip } from "./custom-tooltip";
 
-interface EtherscanAddressLinkProps {
+type EtherscanAddressLinkProps = {
   content: string;
   endpoint: string;
   className?: string;
-}
+  showExternalLinkIcon?: boolean;
+};
 
 const ETHERSCAN_URL =
   getL1NetworkId(L2_NETWORK_ID) === "ETH_SEPOLIA" ||
@@ -20,9 +22,11 @@ const ETHERSCAN_URL =
 export const EtherscanAddressLink: React.FC<EtherscanAddressLinkProps> = ({
   content,
   endpoint,
+  className,
+  showExternalLinkIcon = true,
 }) => {
   if (!ETHERSCAN_URL) {
-    return <div className="font-mono">{content}</div>;
+    return <div className={cn("font-mono", className)}>{content}</div>;
   }
   return (
     <CustomTooltip content={`View on Etherscan`}>
@@ -30,10 +34,15 @@ export const EtherscanAddressLink: React.FC<EtherscanAddressLinkProps> = ({
         href={`${ETHERSCAN_URL}${endpoint}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-purple-light font-mono inline-flex items-center gap-1"
+        className={cn(
+          "text-purple-light font-mono inline-flex items-center gap-1",
+          className,
+        )}
       >
         {content}
-        <ExternalLink size={14} className="text-purple-light" />
+        {showExternalLinkIcon ? (
+          <ExternalLink size={14} className="text-purple-light" />
+        ) : null}
       </a>
     </CustomTooltip>
   );
