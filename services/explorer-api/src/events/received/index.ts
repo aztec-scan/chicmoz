@@ -16,6 +16,7 @@ import {
 } from "./on-l2-rpc-node.js";
 import { pendingTxHandler } from "./on-pending-txs.js";
 import { sequencerInfoHandler } from "./on-sequencer-info.js";
+import { stakingAssetInfoHandler } from "./on-staking-asset-info.js";
 
 export const subscribeHandlers = async () => {
   await Promise.all([
@@ -33,5 +34,6 @@ export const subscribeHandlers = async () => {
     startSubscribe(l1L2BlockProposedHandler),
     startSubscribe(l1L2ProofVerifiedHandler),
     startSubscribe(l1GenericContractEventHandler),
+    startSubscribe(stakingAssetInfoHandler),
   ]);
 };

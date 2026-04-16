@@ -130,3 +130,43 @@ export const formatFees = (fees: string | undefined) => {
     value: feesNumber.toFixed(2),
   };
 };
+
+const formatRoundedUnits = (
+  value: bigint,
+  decimals: number,
+  displayDecimals: number,
+) => {
+  const base = 10n ** BigInt(decimals);
+  const scale = 10n ** BigInt(displayDecimals);
+  const roundedScaledValue = (value * scale + base / 2n) / base;
+  const integerPart = roundedScaledValue / scale;
+
+  if (displayDecimals === 0) {
+    return integerPart.toString();
+  }
+
+  const fractionalPart = (roundedScaledValue % scale)
+    .toString()
+    .padStart(displayDecimals, "0");
+
+  return `${integerPart.toString()}.${fractionalPart}`;
+};
+
+export const formatCompactUnits = (value: bigint, decimals = 18): string => {
+  const isNegative = value < 0n;
+  const absoluteValue = isNegative ? -value : value;
+  const base = 10n ** BigInt(decimals);
+  const oneThousand = 1_000n * base;
+
+  let formattedValue: string;
+
+  if (absoluteValue < oneThousand) {
+    formattedValue = formatRoundedUnits(absoluteValue, decimals, 0);
+  } else if (absoluteValue <= 999_999n * base) {
+    formattedValue = `${formatRoundedUnits(absoluteValue, decimals + 3, 0)}K`;
+  } else {
+    formattedValue = `${formatRoundedUnits(absoluteValue, decimals + 6, 2)}M`;
+  }
+
+  return isNegative ? `-${formattedValue}` : formattedValue;
+};

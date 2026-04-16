@@ -31,6 +31,8 @@ export const chicmozChainInfoSchema = z.object({
   rollupVersion: z.coerce.bigint().nonnegative(),
   l1ContractAddresses: L1ContractAddressesSchema,
   protocolContractAddresses: ProtocolContractAddressesSchema,
+  stakingAssetSymbol: z.string().optional(),
+  stakingAssetDecimals: z.number().int().nonnegative().optional(),
   createdAt: z.coerce.date().optional(),
   latestUpdateAt: z.coerce.date().optional(),
 });

@@ -1,7 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  ChicmozChainInfo,
-  L2NetworkId,
+  type ChicmozChainInfo,
+  type L2NetworkId,
   NODE_ENV,
   NodeEnv,
   chicmozChainInfoSchema,
@@ -9,6 +9,11 @@ import {
 import { and, desc, eq } from "drizzle-orm";
 import { CURRENT_ROLLUP_VERSION_BIGINT } from "../../../../../constants/versions.js";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
+
+type ChicmozChainInfoWithStakingAsset = ChicmozChainInfo & {
+  stakingAssetSymbol?: string;
+  stakingAssetDecimals?: number;
+};
 
 export async function getL2ChainInfo(
   l2NetworkId: L2NetworkId,
@@ -26,7 +31,10 @@ export async function getL2ChainInfo(
     .limit(1);
 
   if (result.length > 0) {
-    const chainInfo = result[0];
+    const chainInfo = result[0] as (typeof result)[number] & {
+      stakingAssetSymbol?: string | null;
+      stakingAssetDecimals?: number | null;
+    };
 
     return chicmozChainInfoSchema.parse({
       l2NetworkId: chainInfo.l2NetworkId,
@@ -34,7 +42,9 @@ export async function getL2ChainInfo(
       rollupVersion: chainInfo.rollupVersion,
       l1ContractAddresses: chainInfo.l1ContractAddresses,
       protocolContractAddresses: chainInfo.protocolContractAddresses,
-    });
+      stakingAssetSymbol: chainInfo.stakingAssetSymbol ?? undefined,
+      stakingAssetDecimals: chainInfo.stakingAssetDecimals ?? undefined,
+    }) as ChicmozChainInfoWithStakingAsset;
   }
 
   if (result.length === 0 && NODE_ENV === NodeEnv.DEV) {
@@ -46,7 +56,10 @@ export async function getL2ChainInfo(
       .limit(1);
 
     if (anyResult.length > 0) {
-      const chainInfo = anyResult[0];
+      const chainInfo = anyResult[0] as (typeof anyResult)[number] & {
+        stakingAssetSymbol?: string | null;
+        stakingAssetDecimals?: number | null;
+      };
 
       return chicmozChainInfoSchema.parse({
         l2NetworkId: chainInfo.l2NetworkId,
@@ -54,7 +67,9 @@ export async function getL2ChainInfo(
         rollupVersion: chainInfo.rollupVersion,
         l1ContractAddresses: chainInfo.l1ContractAddresses,
         protocolContractAddresses: chainInfo.protocolContractAddresses,
-      });
+        stakingAssetSymbol: chainInfo.stakingAssetSymbol ?? undefined,
+        stakingAssetDecimals: chainInfo.stakingAssetDecimals ?? undefined,
+      }) as ChicmozChainInfoWithStakingAsset;
     }
   }
   return null;
