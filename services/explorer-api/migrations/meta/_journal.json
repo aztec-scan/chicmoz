@@ -92,6 +92,13 @@
       "when": 1776253200000,
       "tag": "0012_fuzzy_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1776335842441,
+      "tag": "0014_classy_xavin",
+      "breakpoints": true
     }
   ]
 }
