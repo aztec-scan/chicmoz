@@ -28,13 +28,16 @@ export const updateBlock = (
       }
       const maxKnownHeight =
         oldData.length > 0
-          ? Math.max(...oldData.map((b) => Number(b.height)))
-          : 0;
+          ? oldData.reduce<bigint>(
+              (maxHeight, currentBlock) =>
+                currentBlock.height > maxHeight
+                  ? currentBlock.height
+                  : maxHeight,
+              oldData[0].height,
+            )
+          : 0n;
 
       if (block.height < maxKnownHeight) {
-        console.log(
-          `Reorg detected: incoming block ${block.height} < max known ${maxKnownHeight}`,
-        );
         void Promise.all([
           queryClient.invalidateQueries({
             queryKey: queryKeyGenerator.latestTableBlocks,
@@ -53,9 +56,13 @@ export const updateBlock = (
         timestamp: block.header.globalVariables.timestamp,
         blockStatus: block.finalizationStatus,
       };
-      return [...oldData, mapedWebsockketBlock].sort((a, b) =>
-        Number(b.height - a.height),
-      );
+      return [...oldData, mapedWebsockketBlock].sort((a, b) => {
+        if (b.height === a.height) {
+          return 0;
+        }
+
+        return b.height > a.height ? 1 : -1;
+      });
     },
   );
 };

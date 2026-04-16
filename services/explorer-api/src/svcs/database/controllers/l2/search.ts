@@ -17,7 +17,7 @@ import {
   l2Tx,
   txEffect,
 } from "../../schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
 
 const getBlockHashByHeight = async (
@@ -32,7 +32,7 @@ const getBlockHashByHeight = async (
       and(
         eq(l2Block.height, height),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();

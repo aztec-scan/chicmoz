@@ -5,12 +5,12 @@ import {
   header,
   l2Block,
 } from "../../../database/schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { getExistingRollupVersion } from "./get-latest.js";
 
 export const getAverageFees = async (): Promise<string> => {
   const rollupVersion =
-    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
 
   const dbRes = await db()
     .select({
@@ -33,7 +33,7 @@ export const getAverageFees = async (): Promise<string> => {
 
 export const getAverageBlockTime = async (): Promise<string> => {
   const rollupVersion =
-    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
 
   const dbRes = await db()
     .select({

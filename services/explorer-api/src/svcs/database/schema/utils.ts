@@ -23,11 +23,13 @@ export const generateConcatFrPointColumn = (name: string) =>
 export const generateUint256Column = (name: string) =>
   numeric(name, { precision: 77, scale: 0 });
 
-export const generateTimestampColumn = (name: string) =>
+export const generateLargeIntegerColumn = (name: string) =>
+  numeric(name, { precision: 77, scale: 0 });
+
+export const generateBoundedIntegerColumn = (name: string) =>
   bigint(name, { mode: "number" });
 
-// NOTE: remove this function and replace with generateFrColumn. Beware of summarizing operations etc!
-export const generateFrNumberColumn = (name: string) =>
+export const generateTimestampColumn = (name: string) =>
   bigint(name, { mode: "number" });
 
 export const generateEthAddressColumn = (name: string) =>

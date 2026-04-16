@@ -33,7 +33,7 @@ export const init = async () => {
   nodeInfo = {
     nodeVersion: "unknown",
     l1ChainId: initResult.chainInfo.l1ChainId,
-    rollupVersion: Number(initResult.chainInfo.rollupVersion), // Convert bigint to number
+    rollupVersion: Number(initResult.chainInfo.rollupVersion.toString()),
     l1ContractAddresses: initResult.chainInfo
       .l1ContractAddresses as unknown as NodeInfo["l1ContractAddresses"],
     protocolContractAddresses: initResult.chainInfo

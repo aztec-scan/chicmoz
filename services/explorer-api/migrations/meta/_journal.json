@@ -85,6 +85,13 @@
       "when": 1776245962409,
       "tag": "0011_good_rocket_raccoon",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1776253200000,
+      "tag": "0012_fuzzy_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }

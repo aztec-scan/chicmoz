@@ -100,6 +100,18 @@ const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+const toSafeAztecBlockNumber = (value: bigint): number => {
+  const blockNumber = Number(value);
+
+  if (!Number.isSafeInteger(blockNumber) || blockNumber < 0) {
+    throw new Error(
+      `Block number ${value.toString()} cannot be represented safely as a number`,
+    );
+  }
+
+  return blockNumber;
+};
+
 export const init = async () => {
   initPool();
   await sleep(1000);
@@ -207,12 +219,14 @@ export const getLatestProvenHeight = async () => {
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");
 
 export const getBalanceOf = async (
-  blockNumber: number | "latest",
+  blockNumber: bigint | "latest",
   address: AztecAddress,
 ) => {
   const slot = await deriveStorageSlotInMap(new Fr(1), address);
   const blockParam =
-    blockNumber === "latest" ? "latest" : BlockNumber(blockNumber);
+    blockNumber === "latest"
+      ? "latest"
+      : BlockNumber(toSafeAztecBlockNumber(blockNumber));
   return callNodeFunction("getPublicStorageAt", [
     blockParam,
     ProtocolContractAddress.FeeJuice,
