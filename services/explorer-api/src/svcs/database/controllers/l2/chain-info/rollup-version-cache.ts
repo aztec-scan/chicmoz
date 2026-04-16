@@ -1,5 +1,5 @@
 import { ChicmozChainInfo } from "@chicmoz-pkg/types";
-import { CURRENT_ROLLUP_VERSION } from "../../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_BIGINT } from "../../../../../constants/versions.js";
 import { logger } from "../../../../../logger.js";
 
 // TODO: This should maybe use Redis for caching instead of in-memory.
@@ -11,7 +11,7 @@ export function onRollupVersion(
   rollupVersion: ChicmozChainInfo["rollupVersion"],
 ): void {
   // Only update if it's the current expected version
-  if (rollupVersion === BigInt(CURRENT_ROLLUP_VERSION)) {
+  if (rollupVersion === CURRENT_ROLLUP_VERSION_BIGINT) {
     currentRollupVersion = rollupVersion;
   }
 }
@@ -21,7 +21,7 @@ export async function getLatestRollupVersion(): Promise<
   ChicmozChainInfo["rollupVersion"]
 > {
   // Always return the current rollup version since version numbers don't increase numerically
-  return BigInt(CURRENT_ROLLUP_VERSION);
+  return CURRENT_ROLLUP_VERSION_BIGINT;
 }
 
 export async function initializeRollupVersionCache(): Promise<void> {

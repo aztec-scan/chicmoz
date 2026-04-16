@@ -31,6 +31,10 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASSES_ALL_VERSIONS,
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASSES,
 
+  ...controller.openapi_POST_VERIFY_SOURCE,
+  ...controller.openapi_GET_VERIFY_SOURCE_JOB,
+  ...controller.openapi_GET_CONTRACT_CLASS_SOURCE,
+
   ...controller.openapi_GET_L2_ARTIFACTS_BY_ARTIFACT_HASH,
 
   ...controller.openapi_GET_L2_CONTRACT_CLASS_PRIVATE_FUNCTIONS,
@@ -203,6 +207,10 @@ export const init = ({ router }: { router: Router }) => {
     }),
     controller.POST_L2_REGISTERED_CONTRACT_CLASS_ARTIFACT,
   );
+
+  router.post(paths.verifySource, controller.POST_VERIFY_SOURCE);
+  router.get(paths.verifySourceJob, controller.GET_VERIFY_SOURCE_JOB);
+  router.get(paths.contractClassSource, controller.GET_CONTRACT_CLASS_SOURCE);
 
   router.post(
     paths.contractInstance,

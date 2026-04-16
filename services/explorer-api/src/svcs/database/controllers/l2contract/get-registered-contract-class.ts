@@ -6,7 +6,7 @@ import {
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
 import { z } from "zod";
@@ -68,13 +68,18 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
       artifactHash: l2ContractClassRegistered.artifactHash,
       privateFunctionsRoot: l2ContractClassRegistered.privateFunctionsRoot,
       packedBytecode: l2ContractClassRegistered.packedBytecode,
+      artifactContractName: l2ContractClassRegistered.artifactContractName,
+      standardContractType: l2ContractClassRegistered.standardContractType,
+      standardContractVersion:
+        l2ContractClassRegistered.standardContractVersion,
+      sourceCodeUrl: l2ContractClassRegistered.sourceCodeUrl,
     })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height))

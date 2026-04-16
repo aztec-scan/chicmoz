@@ -8,7 +8,7 @@ import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractInstanceDeployed } from "../../schema/l2contract/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 
 export const getLatestContractInstanceBalance = async (
   contractAddress: HexString,
@@ -49,7 +49,7 @@ export const getCotractInstacesWithBalance = async (): Promise<
       and(
         gt(contractInstanceBalance.balance, "0"),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .orderBy(

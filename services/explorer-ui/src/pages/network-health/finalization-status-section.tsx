@@ -34,7 +34,10 @@ export const FinalizationStatusSection: FC = () => {
       if (statusDiff !== 0) {
         return statusDiff;
       }
-      return Number(b.height) - Number(a.height);
+      if (b.height === a.height) {
+        return 0;
+      }
+      return b.height > a.height ? 1 : -1;
     });
 
     const result: BlockWithStatuses[] = [];

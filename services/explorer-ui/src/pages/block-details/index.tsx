@@ -100,15 +100,15 @@ export const BlockDetails: FC = () => {
           {!block.orphan &&
           block?.header.globalVariables.version &&
           chainInfo?.rollupVersion &&
-          block.header.globalVariables.version !==
-            Number(chainInfo.rollupVersion) ? (
+          BigInt(block.header.globalVariables.version) !==
+            chainInfo.rollupVersion ? (
             <OlderVersionBanner
               blockVersion={block.header.globalVariables.version}
               chainVersion={chainInfo.rollupVersion}
             />
           ) : null}
           {!block.orphan && block.height > 0n && (
-            <AdjecentBlockButtons blockNumber={Number(block.height)} />
+            <AdjecentBlockButtons blockNumber={block.height} />
           )}
           <div className="bg-white rounded-lg shadow-md p-4">
             <KeyValueDisplay data={getBlockDetails(block)} />

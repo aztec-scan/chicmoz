@@ -1,0 +1,15 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: contract-compiler-image-prod
+build:
+  artifacts:
+    - image: registry.digitalocean.com/aztlan-containers/contract-compiler
+      context: ../../../services/event-cannon
+      docker:
+        dockerfile: Dockerfile.compile-contracts
+        buildArgs:
+          DOCKER_DEFAULT_PLATFORM: "linux/amd64"
+  tagPolicy:
+    customTemplate:
+      template: "4.0.3"

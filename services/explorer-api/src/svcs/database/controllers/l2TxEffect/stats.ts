@@ -7,7 +7,7 @@ import {
   l2Block,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 
 export const getTotalTxEffects = async (): Promise<number> => {
   const dbRes = await db()
@@ -18,7 +18,7 @@ export const getTotalTxEffects = async (): Promise<number> => {
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();
@@ -39,7 +39,7 @@ export const getTotalTxEffectsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();
