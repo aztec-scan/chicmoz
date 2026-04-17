@@ -130,6 +130,23 @@ export type SourceVerificationStatus = z.infer<
   typeof sourceVerificationStatusEnum
 >;
 
+export const sourceVerificationFailureStageEnum = z.enum([
+  "INPUT_VALIDATION",
+  "CLONE",
+  "CHECKOUT",
+  "COMPILE",
+  "TRANSPILATION",
+  "ARTIFACT_DISCOVERY",
+  "ARTIFACT_VERIFICATION",
+  "SOURCE_EXTRACTION",
+  "TIMEOUT",
+  "INTERNAL",
+]);
+
+export type SourceVerificationFailureStage = z.infer<
+  typeof sourceVerificationFailureStageEnum
+>;
+
 export const sourceCodeEntrySchema = z.object({
   path: z.string(),
   content: z.string(),
@@ -158,6 +175,8 @@ export const compileSourceResultSchema = z.object({
   sourceFiles: sourceCodeEntrySchema.array().optional(),
   commitHash: z.string().optional(),
   error: z.string().optional(),
+  failureStage: sourceVerificationFailureStageEnum.optional(),
+  compileOutput: z.string().optional(),
 });
 
 export type CompileSourceResult = z.infer<typeof compileSourceResultSchema>;
@@ -173,6 +192,8 @@ export const sourceVerificationJobSchema = z.object({
   commitHash: z.string().nullable().optional(),
   status: sourceVerificationStatusEnum,
   error: z.string().nullable().optional(),
+  failureStage: sourceVerificationFailureStageEnum.nullable().optional(),
+  compileOutput: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

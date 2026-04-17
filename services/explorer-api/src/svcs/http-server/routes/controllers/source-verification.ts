@@ -175,6 +175,8 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
       jobId,
       status: "FAILED",
       error: "Failed to submit compilation request",
+      failureStage: "INTERNAL",
+      compileOutput: "Failed to submit compilation request",
     });
     res.status(500).json({ error: "Failed to submit compilation request" });
     return;
@@ -233,6 +235,8 @@ export const openapi_GET_VERIFY_SOURCE_JOB: OpenAPIObject["paths"] = {
                   status: { type: "string" },
                   commitHash: { type: "string", nullable: true },
                   error: { type: "string", nullable: true },
+                  failureStage: { type: "string", nullable: true },
+                  compileOutput: { type: "string", nullable: true },
                   createdAt: { type: "string" },
                   updatedAt: { type: "string" },
                 },
@@ -274,6 +278,8 @@ export const GET_VERIFY_SOURCE_JOB = asyncHandler(async (req, res) => {
     commitHash: job.commitHash,
     status: job.status,
     error: job.error,
+    failureStage: job.failureStage,
+    compileOutput: job.compileOutput,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
   });

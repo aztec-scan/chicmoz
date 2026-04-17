@@ -20,6 +20,8 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
     sourceFiles,
     commitHash,
     error,
+    failureStage,
+    compileOutput,
   } = event;
 
   logger.info(
@@ -33,6 +35,8 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: errorMessage,
+        failureStage,
+        compileOutput,
       });
       logger.warn(`Source verification job ${jobId} failed: ${errorMessage}`);
       return;
@@ -43,6 +47,8 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: "Compilation succeeded but no artifact was produced",
+        failureStage: "ARTIFACT_DISCOVERY",
+        compileOutput,
       });
       return;
     }
@@ -66,6 +72,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
           jobId,
           status: "FAILED",
           error: "Artifact verification failed: bytecode mismatch",
+          failureStage: "ARTIFACT_VERIFICATION",
         });
         return;
       }
@@ -96,6 +103,8 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
           status: "FAILED",
           error:
             "Verification succeeded but no source files were produced (reader may have failed to parse output)",
+          failureStage: "SOURCE_EXTRACTION",
+          compileOutput,
         });
         return;
       }
@@ -113,6 +122,8 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "VERIFIED",
         commitHash,
+        failureStage: undefined,
+        compileOutput: undefined,
       });
 
       logger.info(
@@ -127,6 +138,8 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: `Verification failed: ${errorMsg}`,
+        failureStage: "ARTIFACT_VERIFICATION",
+        compileOutput,
       });
       logger.error(
         `Source verification job ${jobId} verification error: ${errorMsg}`,
@@ -142,6 +155,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: "Internal error processing compilation result",
+        failureStage: "INTERNAL",
       });
     } catch (updateError) {
       logger.error(

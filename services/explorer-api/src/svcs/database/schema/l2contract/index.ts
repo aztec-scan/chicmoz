@@ -288,6 +288,22 @@ export const sourceVerificationStatusEnum = pgEnum(
   ["PENDING", "COMPILING", "VERIFYING", "VERIFIED", "FAILED"],
 );
 
+export const sourceVerificationFailureStageEnum = pgEnum(
+  "source_verification_failure_stage",
+  [
+    "INPUT_VALIDATION",
+    "CLONE",
+    "CHECKOUT",
+    "COMPILE",
+    "TRANSPILATION",
+    "ARTIFACT_DISCOVERY",
+    "ARTIFACT_VERIFICATION",
+    "SOURCE_EXTRACTION",
+    "TIMEOUT",
+    "INTERNAL",
+  ],
+);
+
 export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   id: uuid("id").primaryKey().defaultRandom(),
   contractClassId: text("contract_class_id").notNull(),
@@ -300,6 +316,8 @@ export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   clientIp: text("client_ip"),
   status: sourceVerificationStatusEnum("status").notNull().default("PENDING"),
   error: text("error"),
+  failureStage: sourceVerificationFailureStageEnum("failure_stage"),
+  compileOutput: text("compile_output"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()

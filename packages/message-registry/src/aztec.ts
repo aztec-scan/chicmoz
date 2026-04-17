@@ -1,4 +1,4 @@
-import {
+import type {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
@@ -9,6 +9,7 @@ import {
   ChicmozL2RpcNodeError,
   ChicmozL2Sequencer,
   L2NetworkId,
+  SourceVerificationFailureStage,
 } from "@chicmoz-pkg/types";
 
 export type NewBlockEvent = {
@@ -75,6 +76,8 @@ export type CompileSourceResultEvent = {
   sourceFiles?: Array<{ path: string; content: string }>;
   commitHash?: string;
   error?: string;
+  failureStage?: SourceVerificationFailureStage;
+  compileOutput?: string;
 };
 
 export function generateL2TopicName(

@@ -1,6 +1,6 @@
 {
-  "id": "d335544a-c63e-448f-88c5-cadf469afefd",
-  "prevId": "8fdd931a-557d-4eac-ae24-d70ea4d9f8a4",
+  "id": "7eabaea3-3bdd-4bbb-b909-93bba37a097f",
+  "prevId": "d335544a-c63e-448f-88c5-cadf469afefd",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2083,6 +2083,19 @@
           "primaryKey": false,
           "notNull": false
         },
+        "failure_stage": {
+          "name": "failure_stage",
+          "type": "source_verification_failure_stage",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "compile_output": {
+          "name": "compile_output",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -2694,6 +2707,22 @@
     }
   },
   "enums": {
+    "public.source_verification_failure_stage": {
+      "name": "source_verification_failure_stage",
+      "schema": "public",
+      "values": [
+        "INPUT_VALIDATION",
+        "CLONE",
+        "CHECKOUT",
+        "COMPILE",
+        "TRANSPILATION",
+        "ARTIFACT_DISCOVERY",
+        "ARTIFACT_VERIFICATION",
+        "SOURCE_EXTRACTION",
+        "TIMEOUT",
+        "INTERNAL"
+      ]
+    },
     "public.source_verification_status": {
       "name": "source_verification_status",
       "schema": "public",

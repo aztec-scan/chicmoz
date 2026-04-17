@@ -1,6 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 import type { CompileSourceRequestEvent } from "@chicmoz-pkg/message-registry";
 import type { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
+import type { SourceVerificationFailureStage } from "@chicmoz-pkg/types";
 import { logger } from "../../logger.js";
 import {
   COMPILER_IMAGE,
@@ -22,7 +23,7 @@ import { publishMessage } from "../message-bus/index.js";
 
 // --- Types ---
 
-interface JobState {
+type JobState = {
   jobId: string;
   k8sJobName: string;
   contractClassId: string;
@@ -32,7 +33,12 @@ interface JobState {
   subPath?: string;
   aztecVersion: string;
   createdAt: Date;
-}
+};
+
+type JobLogs = {
+  compileLog?: string;
+  readerLog?: string;
+};
 
 // --- K8s client ---
 
@@ -58,6 +64,7 @@ const ANNOTATION_VERSION = "chicmoz/version";
 const ANNOTATION_GITHUB_URL = "chicmoz/github-url";
 const ANNOTATION_AZTEC_VERSION = "chicmoz/aztec-version";
 const NETWORK_LABEL_VALUE = L2_NETWORK_ID.toLowerCase();
+const MAX_COMPILE_OUTPUT_CHARS = 16 * 1024;
 
 // --- Helpers ---
 
@@ -84,6 +91,141 @@ const isValidGitRef = (ref: string): boolean =>
  */
 const isValidSubPath = (path: string): boolean =>
   /^[\w.\-/]+$/.test(path) && !path.includes("..");
+
+const trimCompileOutput = (output?: string): string | undefined => {
+  const normalizedOutput = output?.trim();
+  if (!normalizedOutput) {
+    return undefined;
+  }
+
+  if (normalizedOutput.length <= MAX_COMPILE_OUTPUT_CHARS) {
+    return normalizedOutput;
+  }
+
+  return `[truncated to last ${MAX_COMPILE_OUTPUT_CHARS} chars]\n${normalizedOutput.slice(-MAX_COMPILE_OUTPUT_CHARS)}`;
+};
+
+const getLastStageMarker = (compileLog?: string): string | undefined => {
+  if (!compileLog) {
+    return undefined;
+  }
+
+  const matches = Array.from(compileLog.matchAll(/===STAGE:([A-Z_]+)===/g));
+
+  return matches.length > 0 ? matches[matches.length - 1]?.[1] : undefined;
+};
+
+const detectFailureStage = ({
+  reason,
+  compileLog,
+  readerLog,
+  fallbackStage,
+}: {
+  reason?: string;
+  compileLog?: string;
+  readerLog?: string;
+  fallbackStage?: SourceVerificationFailureStage;
+}): SourceVerificationFailureStage => {
+  const combinedOutput = [compileLog, readerLog, reason]
+    .filter(Boolean)
+    .join("\n");
+
+  if (reason === "timeout") {
+    return "TIMEOUT";
+  }
+
+  if (/Invalid git ref|Invalid sub-path/i.test(combinedOutput)) {
+    return "INPUT_VALIDATION";
+  }
+
+  if (
+    /Selected artifact is not transpiled|Compiled artifact is still not transpiled|Transpiler doesn't know how to process|thread '\s*<unnamed>' panicked at .*transpile/i.test(
+      combinedOutput,
+    )
+  ) {
+    return "TRANSPILATION";
+  }
+
+  if (
+    /No compiled artifact found after compile|No compiled artifact found after workspace compile|NO_ARTIFACT_FOUND|Could not parse artifact from job pod logs/i.test(
+      combinedOutput,
+    )
+  ) {
+    return "ARTIFACT_DISCOVERY";
+  }
+
+  if (
+    /pathspec|reference is not a tree|did not match any file\(s\) known to git|can't cd to/i.test(
+      combinedOutput,
+    )
+  ) {
+    return "CHECKOUT";
+  }
+
+  if (
+    /fatal: repository|repository .* not found|Could not resolve host|unable to access|Authentication failed/i.test(
+      combinedOutput,
+    )
+  ) {
+    return "CLONE";
+  }
+
+  const stageMarker = getLastStageMarker(compileLog);
+  if (stageMarker === "CLONE") {
+    return "CLONE";
+  }
+  if (stageMarker === "CHECKOUT") {
+    return "CHECKOUT";
+  }
+  if (stageMarker === "ARTIFACT_DISCOVERY") {
+    return "ARTIFACT_DISCOVERY";
+  }
+  if (stageMarker === "SOURCE_EXTRACTION") {
+    return "SOURCE_EXTRACTION";
+  }
+  if (stageMarker === "COMPILE") {
+    return "COMPILE";
+  }
+
+  if (
+    /Compiling contract|Running compile command|bb exited with code|nargo|compile/i.test(
+      combinedOutput,
+    )
+  ) {
+    return "COMPILE";
+  }
+
+  return fallbackStage ?? "INTERNAL";
+};
+
+const summarizeFailure = (
+  failureStage: SourceVerificationFailureStage,
+): string => {
+  switch (failureStage) {
+    case "INPUT_VALIDATION":
+      return "Compilation request validation failed";
+    case "CLONE":
+      return "Repository clone failed";
+    case "CHECKOUT":
+      return "Repository checkout failed";
+    case "COMPILE":
+      return "Compilation failed";
+    case "TRANSPILATION":
+      return "Compilation failed during transpilation";
+    case "ARTIFACT_DISCOVERY":
+      return "Compiled artifact could not be found";
+    case "ARTIFACT_VERIFICATION":
+      return "Artifact verification failed";
+    case "SOURCE_EXTRACTION":
+      return "Compiled source extraction failed";
+    case "TIMEOUT":
+      return "Compilation job timed out";
+    case "INTERNAL":
+      return "Internal compilation error";
+  }
+
+  return "Internal compilation error";
+};
 
 // --- K8s Job creation ---
 
@@ -113,14 +255,17 @@ const buildCompileScript = (
     `echo "NARGO_HOME=$NARGO_HOME"`,
     `echo "RUST_BACKTRACE=$RUST_BACKTRACE"`,
     `echo "===INPUTS_END==="`,
+    `echo "===STAGE:CLONE==="`,
     `echo "Cloning repository..."`,
     `git clone "$GIT_URL" /workspace/repo`,
     `cd /workspace/repo`,
+    `echo "===STAGE:CHECKOUT==="`,
     `echo "Checking out git ref: ${_gitRef ?? "(default branch)"}"`,
     checkoutRef,
     `echo "Resolved HEAD: $(git rev-parse HEAD)"`,
     `git rev-parse HEAD > /output/commit_hash`,
     cdSubPath,
+    `echo "===STAGE:COMPILE==="`,
     `echo "Compile working directory: $PWD"`,
     `echo "Detected package name before compile: $(awk -F'"' '/^name[[:space:]]*=[[:space:]]*"/ { print $2; exit }' Nargo.toml 2>/dev/null || true)"`,
     `echo "Compiling contract..."`,
@@ -128,6 +273,7 @@ const buildCompileScript = (
     `touch "$ARTIFACT_MARKER_FILE"`,
     `echo "Running compile command: node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile"`,
     `node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile`,
+    `echo "===STAGE:ARTIFACT_DISCOVERY==="`,
     `echo "Discovering compiled artifact..."`,
     `mkdir -p /output/artifact`,
     `CONTRACT_DIR_NAME="$(basename "$PWD")"`,
@@ -145,6 +291,7 @@ const buildCompileScript = (
     `if ! jq -e '.transpiled == true' "$SELECTED_ARTIFACT_PATH" >/dev/null 2>&1; then echo "Compiled artifact is still not transpiled: $SELECTED_ARTIFACT_PATH"; exit 1; fi`,
     `cp "$SELECTED_ARTIFACT_PATH" /output/artifact/`,
     `rm -f "$ARTIFACT_MARKER_FILE"`,
+    `echo "===STAGE:SOURCE_EXTRACTION==="`,
     `echo "Copying source files (excluding .git)..."`,
     `mkdir -p /output/source`,
     `find . -not -path './.git/*' -not -name '.git' | cpio -pdm /output/source/ 2>/dev/null || cp -r . /output/source/ && rm -rf /output/source/.git`,
@@ -303,14 +450,7 @@ const createCompileJob = async (state: JobState): Promise<void> => {
 
 // --- Read results from Job pod logs ---
 
-const readResultsFromJobPod = async (
-  state: JobState,
-): Promise<{
-  artifactJson: string;
-  sourceFiles: Array<{ path: string; content: string }>;
-  commitHash?: string;
-}> => {
-  // Find the pod created by the Job
+const getJobPodName = async (state: JobState): Promise<string> => {
   const pods = await coreApi.listNamespacedPod({
     namespace: K8S_NAMESPACE,
     labelSelector: `${LABEL_JOB_ID}=${state.jobId}`,
@@ -323,14 +463,74 @@ const readResultsFromJobPod = async (
     );
   }
 
-  // Read logs from the reader (main) container
-  const logs = await coreApi.readNamespacedPodLog({
-    name: podName,
-    namespace: K8S_NAMESPACE,
-    container: "reader",
-  });
+  return podName;
+};
 
-  const logStr = typeof logs === "string" ? logs : String(logs);
+const readPodContainerLog = async ({
+  podName,
+  container,
+}: {
+  podName: string;
+  container: string;
+}): Promise<string | undefined> => {
+  try {
+    const logs = await coreApi.readNamespacedPodLog({
+      name: podName,
+      namespace: K8S_NAMESPACE,
+      container,
+    });
+
+    return typeof logs === "string" ? logs : String(logs);
+  } catch (error) {
+    logger.warn(
+      `Failed to read ${container} logs for pod ${podName}: ${(error as Error).message}`,
+    );
+    return undefined;
+  }
+};
+
+const readJobLogs = async (state: JobState): Promise<JobLogs> => {
+  try {
+    const podName = await getJobPodName(state);
+
+    const [compileLog, readerLog] = await Promise.all([
+      readPodContainerLog({ podName, container: "compiler" }),
+      readPodContainerLog({ podName, container: "reader" }),
+    ]);
+
+    return { compileLog, readerLog };
+  } catch (error) {
+    logger.warn(
+      `Failed to read job logs for jobId=${state.jobId}: ${(error as Error).message}`,
+    );
+    return {};
+  }
+};
+
+const buildCompileOutput = ({
+  compileLog,
+  readerLog,
+}: JobLogs): string | undefined => {
+  const sections = [
+    compileLog ? `=== compiler log ===\n${compileLog.trim()}` : undefined,
+    readerLog ? `=== reader log ===\n${readerLog.trim()}` : undefined,
+  ].filter(Boolean);
+
+  return trimCompileOutput(sections.join("\n\n"));
+};
+
+const readResultsFromJobPod = async (
+  state: JobState,
+): Promise<{
+  artifactJson: string;
+  sourceFiles: Array<{ path: string; content: string }>;
+  commitHash?: string;
+}> => {
+  const podName = await getJobPodName(state);
+
+  // Read logs from the reader (main) container
+  const logStr =
+    (await readPodContainerLog({ podName, container: "reader" })) ?? "";
 
   // Parse commit hash
   const commitHashMatch = logStr.match(
@@ -443,13 +643,22 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
       `Failed to read artifact for jobId=${state.jobId}: ${(e as Error).message}`,
     );
 
+    const logs = await readJobLogs(state);
+    const failureStage = detectFailureStage({
+      compileLog: logs.compileLog,
+      readerLog: logs.readerLog,
+      fallbackStage: "SOURCE_EXTRACTION",
+    });
+
     try {
       await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
         jobId: state.jobId,
         contractClassId: state.contractClassId,
         version: state.version,
         status: "compilation_failed",
-        error: `Failed to read compiled artifact: ${(e as Error).message}`,
+        error: summarizeFailure(failureStage),
+        failureStage,
+        compileOutput: buildCompileOutput(logs),
       });
     } catch (publishError) {
       logger.error(
@@ -463,10 +672,18 @@ const handleJobFailure = async (state: JobState): Promise<void> => {
   // Remove from active jobs immediately to prevent duplicate handling on next poll
   activeJobs.delete(state.jobId);
   const reason = await getJobFailureReason(state);
+  const logs = await readJobLogs(state);
+  const failureStage = detectFailureStage({
+    reason,
+    compileLog: logs.compileLog,
+    readerLog: logs.readerLog,
+  });
   const status =
-    reason === "timeout"
+    failureStage === "TIMEOUT"
       ? ("timeout" as const)
-      : ("compilation_failed" as const);
+      : failureStage === "CLONE"
+        ? ("clone_failed" as const)
+        : ("compilation_failed" as const);
 
   logger.warn(`Job failed: ${state.k8sJobName}, reason: ${reason}`);
 
@@ -476,7 +693,9 @@ const handleJobFailure = async (state: JobState): Promise<void> => {
       contractClassId: state.contractClassId,
       version: state.version,
       status,
-      error: reason,
+      error: summarizeFailure(failureStage),
+      failureStage,
+      compileOutput: buildCompileOutput(logs),
     });
   } catch (e) {
     logger.error(
@@ -538,7 +757,9 @@ export const handleCompileRequest = async (
         contractClassId: event.contractClassId,
         version: event.version,
         status: "compilation_failed",
-        error:
+        error: summarizeFailure("INTERNAL"),
+        failureStage: "INTERNAL",
+        compileOutput:
           "Server at maximum compilation capacity. Please try again later.",
       });
     } catch (e) {
@@ -558,7 +779,9 @@ export const handleCompileRequest = async (
         contractClassId: event.contractClassId,
         version: event.version,
         status: "compilation_failed",
-        error:
+        error: summarizeFailure("INPUT_VALIDATION"),
+        failureStage: "INPUT_VALIDATION",
+        compileOutput:
           "Invalid git ref. Only alphanumeric characters, '.', '-', '_', and '/' are allowed.",
       });
     } catch (e) {
@@ -577,7 +800,9 @@ export const handleCompileRequest = async (
         contractClassId: event.contractClassId,
         version: event.version,
         status: "compilation_failed",
-        error:
+        error: summarizeFailure("INPUT_VALIDATION"),
+        failureStage: "INPUT_VALIDATION",
+        compileOutput:
           "Invalid sub-path. Only alphanumeric characters, '.', '-', '_', and '/' are allowed (no '..').",
       });
     } catch (e) {
@@ -617,7 +842,11 @@ export const handleCompileRequest = async (
         contractClassId: event.contractClassId,
         version: event.version,
         status: "compilation_failed",
-        error: `Failed to create compile job: ${(e as Error).message}`,
+        error: summarizeFailure("INTERNAL"),
+        failureStage: "INTERNAL",
+        compileOutput: trimCompileOutput(
+          `Failed to create compile job: ${(e as Error).message}`,
+        ),
       });
     } catch (publishError) {
       logger.error(

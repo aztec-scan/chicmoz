@@ -1,5 +1,8 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import type { SourceVerificationStatus } from "@chicmoz-pkg/types";
+import type {
+  SourceVerificationFailureStage,
+  SourceVerificationStatus,
+} from "@chicmoz-pkg/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
@@ -71,15 +74,21 @@ export const updateSourceVerificationJobStatus = async ({
   status,
   error,
   commitHash,
+  failureStage,
+  compileOutput,
 }: {
   jobId: string;
   status: SourceVerificationStatus;
   error?: string;
   commitHash?: string;
+  failureStage?: SourceVerificationFailureStage;
+  compileOutput?: string;
 }): Promise<void> => {
   const updateValues: Record<string, unknown> = {
     status,
     error: error ?? null,
+    failureStage: failureStage ?? null,
+    compileOutput: compileOutput ?? null,
   };
   if (commitHash !== undefined) {
     updateValues.commitHash = commitHash;
