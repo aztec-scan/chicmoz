@@ -3,6 +3,7 @@ import {
   type ChicmozL2TxEffectDeluxe,
 } from "@chicmoz-pkg/types";
 import { createElement } from "react";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { EtherscanAddressLink } from "~/components/etherscan-address-link";
 import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
@@ -47,11 +48,10 @@ export const getTxEffectData = (
           className:
             "inline-flex w-full items-center justify-end gap-1 font-mono",
         },
-        createElement(
-          "span",
-          undefined,
-          `${formattedFee.value}${formattedFee.denomination}`,
-        ),
+        createElement(CopyableAmount, {
+          displayAmount: `${formattedFee.value}${formattedFee.denomination}`,
+          rawAmount: data.transactionFee.toString(),
+        }),
         feeJuiceAddress
           ? createElement(EtherscanAddressLink, {
               content: symbol,

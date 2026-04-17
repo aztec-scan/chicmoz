@@ -1,5 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type ChicmozFeeRecipient } from "@chicmoz-pkg/types";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { DataTableColumnHeader } from "../data-table";
@@ -51,9 +52,10 @@ export const createFeeRecipientColumns = ({
 
       return (
         <div className="font-mono flex items-center gap-1">
-          <CustomTooltip content={`The amount of ${symbol} received`}>
-            <span>{formattedValue}</span>
-          </CustomTooltip>
+          <CopyableAmount
+            displayAmount={formattedValue}
+            rawAmount={String(row.getValue("feesReceived"))}
+          />
           {feeJuiceAddress ? (
             <EtherscanAddressLink
               content={symbol}

@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { type UiTxEffectTable } from "@chicmoz-pkg/types";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { CustomTooltip } from "../custom-tooltip";
 import { EtherscanAddressLink } from "../etherscan-address-link";
 import { TimeAgoCell } from "../formated-time-cell";
 
@@ -96,11 +96,10 @@ export const createTxEffectsTableColumns = ({
 
       return (
         <div className="font-mono flex items-center gap-1">
-          <CustomTooltip
-            content={`The amount of ${symbol} paid for this transaction`}
-          >
-            <span>{formattedValue}</span>
-          </CustomTooltip>
+          <CopyableAmount
+            displayAmount={formattedValue}
+            rawAmount={String(row.getValue("transactionFee"))}
+          />
           {feeJuiceAddress ? (
             <EtherscanAddressLink
               content={symbol}
