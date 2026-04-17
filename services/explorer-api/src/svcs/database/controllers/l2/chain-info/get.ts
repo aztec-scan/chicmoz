@@ -10,9 +10,11 @@ import { and, desc, eq } from "drizzle-orm";
 import { CURRENT_ROLLUP_VERSION_BIGINT } from "../../../../../constants/versions.js";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
 
-type ChicmozChainInfoWithStakingAsset = ChicmozChainInfo & {
+type ChicmozChainInfoWithTokenMetadata = ChicmozChainInfo & {
   stakingAssetSymbol?: string;
   stakingAssetDecimals?: number;
+  feeJuiceSymbol?: string;
+  feeJuiceDecimals?: number;
 };
 
 export async function getL2ChainInfo(
@@ -34,6 +36,8 @@ export async function getL2ChainInfo(
     const chainInfo = result[0] as (typeof result)[number] & {
       stakingAssetSymbol?: string | null;
       stakingAssetDecimals?: number | null;
+      feeJuiceSymbol?: string | null;
+      feeJuiceDecimals?: number | null;
     };
 
     return chicmozChainInfoSchema.parse({
@@ -44,7 +48,9 @@ export async function getL2ChainInfo(
       protocolContractAddresses: chainInfo.protocolContractAddresses,
       stakingAssetSymbol: chainInfo.stakingAssetSymbol ?? undefined,
       stakingAssetDecimals: chainInfo.stakingAssetDecimals ?? undefined,
-    }) as ChicmozChainInfoWithStakingAsset;
+      feeJuiceSymbol: chainInfo.feeJuiceSymbol ?? undefined,
+      feeJuiceDecimals: chainInfo.feeJuiceDecimals ?? undefined,
+    }) as ChicmozChainInfoWithTokenMetadata;
   }
 
   if (result.length === 0 && NODE_ENV === NodeEnv.DEV) {
@@ -59,6 +65,8 @@ export async function getL2ChainInfo(
       const chainInfo = anyResult[0] as (typeof anyResult)[number] & {
         stakingAssetSymbol?: string | null;
         stakingAssetDecimals?: number | null;
+        feeJuiceSymbol?: string | null;
+        feeJuiceDecimals?: number | null;
       };
 
       return chicmozChainInfoSchema.parse({
@@ -69,7 +77,9 @@ export async function getL2ChainInfo(
         protocolContractAddresses: chainInfo.protocolContractAddresses,
         stakingAssetSymbol: chainInfo.stakingAssetSymbol ?? undefined,
         stakingAssetDecimals: chainInfo.stakingAssetDecimals ?? undefined,
-      }) as ChicmozChainInfoWithStakingAsset;
+        feeJuiceSymbol: chainInfo.feeJuiceSymbol ?? undefined,
+        feeJuiceDecimals: chainInfo.feeJuiceDecimals ?? undefined,
+      }) as ChicmozChainInfoWithTokenMetadata;
     }
   }
   return null;

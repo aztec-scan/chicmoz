@@ -16,6 +16,8 @@ export const l2ChainInfoTable = pgTable("l2_chain_info", {
   }).notNull(),
   stakingAssetSymbol: varchar("staking_asset_symbol"),
   stakingAssetDecimals: integer("staking_asset_decimals"),
+  feeJuiceSymbol: varchar("fee_juice_symbol"),
+  feeJuiceDecimals: integer("fee_juice_decimals"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   l1ContractAddresses: jsonb("l1_contract_addresses").notNull(),

@@ -1,4 +1,4 @@
-import { ChicmozContractInstanceBalance } from "@chicmoz-pkg/types";
+import { type ChicmozContractInstanceBalance } from "@chicmoz-pkg/types";
 import { type FC, useState } from "react";
 import { BalanceAreaChart } from "~/components/charts/balance-area-chart";
 import { BalanceHeader } from "./components/balance-header";
@@ -9,9 +9,15 @@ import { useBalanceChartData } from "./hooks/use-balance-chart-data";
 
 interface FeeJuiceBalanceProps {
   historyData: ChicmozContractInstanceBalance[];
+  feeJuiceDecimals?: number;
+  feeJuiceSymbol?: string;
 }
 
-export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
+export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({
+  historyData,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
+}) => {
   // State for date filtering and UI
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -32,7 +38,7 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
     formatTooltipLabel,
     minDateForInput,
     maxDateForInput,
-  } = useBalanceChartData(historyData, startDate, endDate);
+  } = useBalanceChartData(historyData, startDate, endDate, feeJuiceSymbol);
 
   // Event handlers
   const clearDateRange = () => {
@@ -57,8 +63,10 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({ historyData }) => {
     <div className="space-y-4 md:space-y-6">
       {/* Current Balance Display */}
       <BalanceHeader
-        currentBalance={Number(latestBalance.balance)}
+        currentBalance={latestBalance.balance}
+        feeJuiceDecimals={feeJuiceDecimals}
         lastUpdated={latestBalance.timestamp.toString()}
+        feeJuiceSymbol={feeJuiceSymbol}
       />
 
       {/* Chart */}

@@ -1,4 +1,4 @@
-import { formatTimeSince } from "~/lib/utils";
+import { formatTimeSince, getFeeJuiceSymbol } from "~/lib/utils";
 
 export const getEmptyTxEffectData = (hash?: string, date?: Date) => [
   {
@@ -10,7 +10,7 @@ export const getEmptyTxEffectData = (hash?: string, date?: Date) => [
     value: date ? `${formatTimeSince(date.getTime())} ago` : undefined,
   },
   {
-    label: "TRANSACTION FEE (FJ)",
+    label: "TRANSACTION FEE",
     value: undefined,
   },
   {
@@ -23,7 +23,11 @@ export const getEmptyTxEffectData = (hash?: string, date?: Date) => [
     value: undefined,
   },
 ];
-export const getEmptyBlockData = (hash?: string, timestamp?: number) => [
+export const getEmptyBlockData = (
+  feeJuiceSymbol?: string,
+  hash?: string,
+  timestamp?: number,
+) => [
   {
     label: "Block Hash",
     value: hash,
@@ -46,7 +50,7 @@ export const getEmptyBlockData = (hash?: string, timestamp?: number) => [
     value: undefined,
   },
   {
-    label: "totalFees (FJ)",
+    label: `totalFees (${getFeeJuiceSymbol(feeJuiceSymbol)})`,
     value: undefined,
   },
   {
@@ -90,7 +94,7 @@ export const getEmptyContractInstanceData = () => [
   { label: "VERSION", value: undefined },
   { label: "DEPLOYER", value: undefined },
   {
-    label: "FEE JUICE BALANCE",
+    label: "TOKEN BALANCE",
     value: undefined,
   },
   {
