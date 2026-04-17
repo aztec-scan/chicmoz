@@ -62,6 +62,7 @@ export const TabsSection: FC<PillSectionProps> = ({
         ) : (
           <FeeJuiceBalance
             historyData={balanceHistoryRes.data ?? []}
+            feeJuiceDecimals={chainInfo?.feeJuiceDecimals}
             feeJuiceSymbol={chainInfo?.feeJuiceSymbol}
           />
         );

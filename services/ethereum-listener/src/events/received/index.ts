@@ -53,20 +53,26 @@ const getTokenMetadata = async ({
   try {
     const [symbol, decimals] = await Promise.all([
       getPublicHttpClient().readContract({
-        address: address ,
+        address: address,
         abi: erc20MetadataAbi,
         functionName: "symbol",
       }),
       getPublicHttpClient().readContract({
-        address: address ,
+        address: address,
         abi: erc20MetadataAbi,
         functionName: "decimals",
       }),
     ]);
 
+    if (decimals > 255n) {
+      throw new Error(
+        `Invalid ${tokenName} decimals for ${address}: ${decimals}`,
+      );
+    }
+
     return {
       symbol,
-      decimals,
+      decimals: Number(decimals),
     };
   } catch (error) {
     logger.error(

@@ -150,7 +150,7 @@ export const Landing: FC = () => {
               data={totalAmountOfContracts}
             />
             <InfoBadge
-              title={`Average fees (${formattedFees.denomination} ${getFeeJuiceSymbol(
+              title={`Average fees (${getFeeJuiceSymbol(
                 chainInfo?.feeJuiceSymbol,
               )})`}
               isLoading={loadingAvarageFees}

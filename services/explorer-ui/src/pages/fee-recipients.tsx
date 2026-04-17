@@ -5,7 +5,7 @@ import { useSubTitle } from "~/hooks";
 import { useChainInfo } from "~/hooks/api";
 import { useFeeRecipients } from "~/hooks/api/fee-recipient";
 import { BaseLayout } from "~/layout/base-layout";
-import { getFeeJuiceSymbol } from "~/lib/utils";
+import { formatCompactUnits, getFeeJuiceSymbol } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 
 export const FeeRecipientPage: FC = () => {
@@ -13,11 +13,17 @@ export const FeeRecipientPage: FC = () => {
   const { data, isLoading, error } = useFeeRecipients();
   const { data: chainInfo } = useChainInfo();
 
-  const getTotalReceived = data
+  const totalReceived = data
     ? data.reduce((acc, cur) => {
-        return acc + Number(cur.feesReceived);
-      }, 0)
-    : 0;
+        return acc + cur.feesReceived;
+      }, 0n)
+    : 0n;
+
+  const formattedTotalReceived = formatCompactUnits(
+    totalReceived,
+    chainInfo?.feeJuiceDecimals,
+  );
+
   return (
     <BaseLayout>
       <div className="flex flex-wrap m-5">
@@ -41,7 +47,7 @@ export const FeeRecipientPage: FC = () => {
           )})`}
           isLoading={isLoading}
           error={error}
-          data={getTotalReceived.toString()}
+          data={formattedTotalReceived}
         />
       </div>
       <div className="rounded-lg shadow-lg">

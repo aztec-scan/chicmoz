@@ -9,11 +9,13 @@ import { useBalanceChartData } from "./hooks/use-balance-chart-data";
 
 interface FeeJuiceBalanceProps {
   historyData: ChicmozContractInstanceBalance[];
+  feeJuiceDecimals?: number;
   feeJuiceSymbol?: string;
 }
 
 export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({
   historyData,
+  feeJuiceDecimals,
   feeJuiceSymbol,
 }) => {
   // State for date filtering and UI
@@ -61,7 +63,8 @@ export const FeeJuiceBalance: FC<FeeJuiceBalanceProps> = ({
     <div className="space-y-4 md:space-y-6">
       {/* Current Balance Display */}
       <BalanceHeader
-        currentBalance={Number(latestBalance.balance)}
+        currentBalance={latestBalance.balance}
+        feeJuiceDecimals={feeJuiceDecimals}
         lastUpdated={latestBalance.timestamp.toString()}
         feeJuiceSymbol={feeJuiceSymbol}
       />

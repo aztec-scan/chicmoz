@@ -1,14 +1,16 @@
 import { type FC } from "react";
-import { getFeeJuiceSymbol } from "~/lib/utils";
+import { formatCompactUnits, getFeeJuiceSymbol } from "~/lib/utils";
 
 interface BalanceHeaderProps {
-  currentBalance: number;
+  currentBalance: bigint;
+  feeJuiceDecimals?: number;
   lastUpdated: string;
   feeJuiceSymbol?: string;
 }
 
 export const BalanceHeader: FC<BalanceHeaderProps> = ({
   currentBalance,
+  feeJuiceDecimals,
   lastUpdated,
   feeJuiceSymbol,
 }) => {
@@ -19,7 +21,7 @@ export const BalanceHeader: FC<BalanceHeaderProps> = ({
           Current {getFeeJuiceSymbol(feeJuiceSymbol)} Balance
         </h3>
         <div className="text-sm md:text-3xl font-bold text-primary">
-          {currentBalance.toLocaleString()}
+          {formatCompactUnits(currentBalance, feeJuiceDecimals)}
         </div>
         <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
           Last updated: {new Date(lastUpdated).toLocaleString()}
