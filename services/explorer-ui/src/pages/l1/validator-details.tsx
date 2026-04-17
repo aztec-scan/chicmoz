@@ -1,6 +1,7 @@
 import { type ChicmozL1L2Validator } from "@chicmoz-pkg/types";
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { EtherscanAddressLink } from "~/components/etherscan-address-link";
 import {
   KeyValueDisplay,
@@ -33,7 +34,7 @@ const getValidatorData = (
     validator.stake,
     stakingAssetInfo.stakingAssetDecimals,
   );
-  const stakingAssetSymbol = stakingAssetInfo.stakingAssetSymbol ?? "STK";
+  const stakingAssetSymbol = stakingAssetInfo.stakingAssetSymbol ?? "AZTEC";
 
   return [
     {
@@ -46,7 +47,10 @@ const getValidatorData = (
       value: "CUSTOM",
       customValue: (
         <span className="inline-flex w-full items-center justify-end gap-1 font-mono">
-          <span>{stakeValue}</span>
+          <CopyableAmount
+            displayAmount={stakeValue}
+            rawAmount={validator.stake.toString()}
+          />
           {stakingAssetInfo.stakingAssetAddress ? (
             <EtherscanAddressLink
               content={stakingAssetSymbol}

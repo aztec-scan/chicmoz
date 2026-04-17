@@ -6,6 +6,7 @@ import { LoadingDetails } from "~/components/loading/loading-details";
 import { getEmptyTxEffectData } from "~/components/loading/util";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import {
+  useChainInfo,
   useGetDroppedTxByHash,
   useGetTxEffectByHash,
   usePendingTxsByHash,
@@ -28,6 +29,7 @@ export const TxEffectDetails: FC = () => {
     error: txEffectsError,
   } = useGetTxEffectByHash(hash);
   const tick = useTimeTick();
+  const { data: chainInfo } = useChainInfo();
 
   const { data: pendingTx, isLoading: isPendingTxLoading } =
     usePendingTxsByHash(hash);
@@ -106,7 +108,15 @@ export const TxEffectDetails: FC = () => {
             <OrphanedBanner type="tx-effect" />
           ) : null}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay key={tick} data={getTxEffectData(txEffects)} />
+            <KeyValueDisplay
+              key={tick}
+              data={getTxEffectData(
+                txEffects,
+                chainInfo?.l1ContractAddresses.feeJuiceAddress,
+                chainInfo?.feeJuiceDecimals,
+                chainInfo?.feeJuiceSymbol,
+              )}
+            />
           </div>
           <TabsSection txEffects={txEffects} />
         </div>

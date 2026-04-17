@@ -31,36 +31,81 @@ const erc20MetadataAbi = [
   },
 ] as const;
 
-const publishStakingAssetInfo = async (
-  chainInfo: ChicmozChainInfo,
-): Promise<void> => {
-  const { stakingAssetAddress } = chainInfo.l1ContractAddresses;
+type TokenMetadata = {
+  symbol?: string;
+  decimals?: number;
+};
 
-  if (!stakingAssetAddress || !isAddress(stakingAssetAddress)) {
+const getTokenMetadata = async ({
+  address,
+  tokenName,
+}: {
+  address: string;
+  tokenName: string;
+}): Promise<TokenMetadata> => {
+  if (!address || !isAddress(address)) {
     logger.warn(
-      `Skipping staking asset metadata publish due to invalid address: ${stakingAssetAddress}`,
+      `Skipping ${tokenName} metadata publish due to invalid address: ${address}`,
     );
-    return;
+    return {};
   }
 
-  const [stakingAssetSymbol, stakingAssetDecimals] = await Promise.all([
-    getPublicHttpClient().readContract({
+  try {
+    const [symbol, decimals] = await Promise.all([
+      getPublicHttpClient().readContract({
+        address: address,
+        abi: erc20MetadataAbi,
+        functionName: "symbol",
+      }),
+      getPublicHttpClient().readContract({
+        address: address,
+        abi: erc20MetadataAbi,
+        functionName: "decimals",
+      }),
+    ]);
+
+    if (decimals > 255n) {
+      throw new Error(
+        `Invalid ${tokenName} decimals for ${address}: ${decimals}`,
+      );
+    }
+
+    return {
+      symbol,
+      decimals: Number(decimals),
+    };
+  } catch (error) {
+    logger.error(
+      `Failed to fetch ${tokenName} metadata for ${address}: ${(error as Error).stack}`,
+    );
+    return {};
+  }
+};
+
+const publishChainInfoTokenMetadata = async (
+  chainInfo: ChicmozChainInfo,
+): Promise<void> => {
+  const { stakingAssetAddress, feeJuiceAddress } =
+    chainInfo.l1ContractAddresses;
+
+  const [stakingAssetMetadata, feeJuiceMetadata] = await Promise.all([
+    getTokenMetadata({
       address: stakingAssetAddress,
-      abi: erc20MetadataAbi,
-      functionName: "symbol",
+      tokenName: "staking asset",
     }),
-    getPublicHttpClient().readContract({
-      address: stakingAssetAddress,
-      abi: erc20MetadataAbi,
-      functionName: "decimals",
+    getTokenMetadata({
+      address: feeJuiceAddress,
+      tokenName: "fee juice",
     }),
   ]);
 
   await emit.stakingAssetInfo({
     chainInfo: {
       ...chainInfo,
-      stakingAssetSymbol,
-      stakingAssetDecimals,
+      stakingAssetSymbol: stakingAssetMetadata.symbol,
+      stakingAssetDecimals: stakingAssetMetadata.decimals,
+      feeJuiceSymbol: feeJuiceMetadata.symbol,
+      feeJuiceDecimals: feeJuiceMetadata.decimals,
     },
   });
 };
@@ -70,9 +115,11 @@ export const onChainInfo = async (event: ChicmozChainInfoEvent) => {
   await storeL1ContractAddresses(event.chainInfo.l1ContractAddresses);
 
   try {
-    await publishStakingAssetInfo(event.chainInfo);
+    await publishChainInfoTokenMetadata(event.chainInfo);
   } catch (e) {
-    logger.error(`Failed to publish staking asset info: ${(e as Error).stack}`);
+    logger.error(
+      `Failed to publish chain info token metadata: ${(e as Error).stack}`,
+    );
   }
 
   await ensureStarted();

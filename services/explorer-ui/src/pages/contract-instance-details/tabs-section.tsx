@@ -3,7 +3,11 @@ import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OptionButtons } from "~/components/option-buttons";
-import { useContractClass, useContractInstanceBalanceHistory } from "~/hooks";
+import {
+  useChainInfo,
+  useContractClass,
+  useContractInstanceBalanceHistory,
+} from "~/hooks";
 import { type SimpleArtifactData } from "../contract-class-details/artifact-parser";
 import { ArtifactExplorerTab } from "../contract-class-details/tabs/artifact-explorer-tab";
 import { ArtifactJsonTab } from "../contract-class-details/tabs/artifact-json-tab";
@@ -17,6 +21,7 @@ interface PillSectionProps {
 export const TabsSection: FC<PillSectionProps> = ({
   contractInstanceDetails,
 }) => {
+  const { data: chainInfo } = useChainInfo();
   const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
     getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
 
@@ -55,7 +60,11 @@ export const TabsSection: FC<PillSectionProps> = ({
         return balanceHistoryRes.isLoading ? (
           <Loader amount={1} />
         ) : (
-          <FeeJuiceBalance historyData={balanceHistoryRes.data ?? []} />
+          <FeeJuiceBalance
+            historyData={balanceHistoryRes.data ?? []}
+            feeJuiceDecimals={chainInfo?.feeJuiceDecimals}
+            feeJuiceSymbol={chainInfo?.feeJuiceSymbol}
+          />
         );
       case "contactDetails":
         return <KeyValueDisplay data={deployerMetadata ?? []} />;

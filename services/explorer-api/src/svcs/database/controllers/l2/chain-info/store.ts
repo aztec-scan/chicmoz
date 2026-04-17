@@ -3,16 +3,18 @@ import { type ChicmozChainInfo } from "@chicmoz-pkg/types";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
 import { onRollupVersion } from "./rollup-version-cache.js";
 
-type ChicmozChainInfoWithStakingAsset = ChicmozChainInfo & {
+type ChicmozChainInfoWithTokenMetadata = ChicmozChainInfo & {
   stakingAssetSymbol?: string;
   stakingAssetDecimals?: number;
+  feeJuiceSymbol?: string;
+  feeJuiceDecimals?: number;
 };
 
 export async function storeChainInfo(
   chainInfo: ChicmozChainInfo,
 ): Promise<void> {
-  const chainInfoWithStakingAsset =
-    chainInfo as ChicmozChainInfoWithStakingAsset;
+  const chainInfoWithTokenMetadata =
+    chainInfo as ChicmozChainInfoWithTokenMetadata;
   const {
     l2NetworkId,
     l1ChainId,
@@ -30,11 +32,19 @@ export async function storeChainInfo(
   };
 
   const optionalValues = {
-    ...(chainInfoWithStakingAsset.stakingAssetSymbol !== undefined
-      ? { stakingAssetSymbol: chainInfoWithStakingAsset.stakingAssetSymbol }
+    ...(chainInfoWithTokenMetadata.stakingAssetSymbol !== undefined
+      ? { stakingAssetSymbol: chainInfoWithTokenMetadata.stakingAssetSymbol }
       : {}),
-    ...(chainInfoWithStakingAsset.stakingAssetDecimals !== undefined
-      ? { stakingAssetDecimals: chainInfoWithStakingAsset.stakingAssetDecimals }
+    ...(chainInfoWithTokenMetadata.stakingAssetDecimals !== undefined
+      ? {
+          stakingAssetDecimals: chainInfoWithTokenMetadata.stakingAssetDecimals,
+        }
+      : {}),
+    ...(chainInfoWithTokenMetadata.feeJuiceSymbol !== undefined
+      ? { feeJuiceSymbol: chainInfoWithTokenMetadata.feeJuiceSymbol }
+      : {}),
+    ...(chainInfoWithTokenMetadata.feeJuiceDecimals !== undefined
+      ? { feeJuiceDecimals: chainInfoWithTokenMetadata.feeJuiceDecimals }
       : {}),
   };
 
