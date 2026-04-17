@@ -1,11 +1,24 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { truncateHashString } from "~/lib/create-hash-string";
-import { DataTableColumnHeader } from "../data-table";
 import { type ChicmozFeeRecipient } from "@chicmoz-pkg/types";
+import { CopyableAmount } from "~/components/copyable-amount";
+import { truncateHashString } from "~/lib/create-hash-string";
+import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
+import { DataTableColumnHeader } from "../data-table";
 import { CustomTooltip } from "../custom-tooltip";
 import { CopyableText } from "../copy-text";
+import { EtherscanAddressLink } from "../etherscan-address-link";
 
-export const FeeRecipientColums: ColumnDef<ChicmozFeeRecipient>[] = [
+type CreateFeeRecipientColumnsArgs = {
+  feeJuiceAddress?: string;
+  feeJuiceDecimals?: number;
+  feeJuiceSymbol?: string;
+};
+
+export const createFeeRecipientColumns = ({
+  feeJuiceAddress,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
+}: CreateFeeRecipientColumnsArgs): ColumnDef<ChicmozFeeRecipient>[] => [
   {
     accessorKey: "l2Address",
     header: ({ column }) => (
@@ -30,12 +43,30 @@ export const FeeRecipientColums: ColumnDef<ChicmozFeeRecipient>[] = [
       />
     ),
     cell: ({ row }) => {
+      const symbol = getFeeJuiceSymbol(feeJuiceSymbol);
+      const formattedFees = formatFees(
+        String(row.getValue("feesReceived")),
+        feeJuiceDecimals,
+      );
+      const formattedValue = `${formattedFees.value}${formattedFees.denomination}`;
+
       return (
-        <CustomTooltip content="The amount of FJ received">
-          <div className="font-mono">
-            {String(row.getValue("feesReceived"))}
-          </div>
-        </CustomTooltip>
+        <div className="font-mono flex items-center gap-1">
+          <CopyableAmount
+            displayAmount={formattedValue}
+            rawAmount={String(row.getValue("feesReceived"))}
+          />
+          {feeJuiceAddress ? (
+            <EtherscanAddressLink
+              content={symbol}
+              endpoint={`/token/${feeJuiceAddress}`}
+              showExternalLinkIcon={false}
+              tooltipContent="View token address on Etherscan"
+            />
+          ) : (
+            <span>{symbol}</span>
+          )}
+        </div>
       );
     },
   },
@@ -50,7 +81,9 @@ export const FeeRecipientColums: ColumnDef<ChicmozFeeRecipient>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <CustomTooltip content="The amount of FJ received">
+        <CustomTooltip
+          content={`The number of blocks with ${getFeeJuiceSymbol(feeJuiceSymbol)} rewards received`}
+        >
           <div className="font-mono">{row.getValue("nbrOfBlocks")}</div>
         </CustomTooltip>
       );

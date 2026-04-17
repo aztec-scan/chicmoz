@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { formatCompactUnits } from "~/lib/utils";
@@ -117,11 +118,14 @@ export const createValidatorsTableColumns = ({
       }
 
       const stake = formatCompactUnits(rawStake, stakingAssetDecimals);
-      const symbol = stakingAssetSymbol ?? "STK";
+      const symbol = stakingAssetSymbol ?? "AZTEC";
 
       return (
         <div className="font-mono flex items-center gap-1">
-          <span>{stake}</span>
+          <CopyableAmount
+            displayAmount={stake}
+            rawAmount={rawStake.toString()}
+          />
           {stakingAssetAddress ? (
             <EtherscanAddressLink
               content={symbol}

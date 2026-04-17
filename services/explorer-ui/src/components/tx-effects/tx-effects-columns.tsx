@@ -1,15 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
 import { type UiTxEffectTable } from "@chicmoz-pkg/types";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { routes } from "~/routes/__root";
-import { CustomTooltip } from "../custom-tooltip";
+import { EtherscanAddressLink } from "../etherscan-address-link";
 import { TimeAgoCell } from "../formated-time-cell";
 
 const text = {
   txHash: "HASH",
-  transactionFee: "FEE (FJ)",
+  transactionFee: "FEE",
   blockHeight: "HEIGHT",
   timeSince: "AGE",
 };
@@ -25,7 +27,17 @@ const compareDecimalStrings = (left: string, right: string): number => {
   return leftValue > rightValue ? 1 : -1;
 };
 
-export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
+type CreateTxEffectsTableColumnsArgs = {
+  feeJuiceAddress?: string;
+  feeJuiceDecimals?: number;
+  feeJuiceSymbol?: string;
+};
+
+export const createTxEffectsTableColumns = ({
+  feeJuiceAddress,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
+}: CreateTxEffectsTableColumnsArgs): ColumnDef<UiTxEffectTable>[] => [
   {
     accessorKey: "txHash",
     header: ({ column }) => (
@@ -74,11 +86,33 @@ export const TxEffectsTableColumns: ColumnDef<UiTxEffectTable>[] = [
         title={text.transactionFee}
       />
     ),
-    cell: ({ row }) => (
-      <CustomTooltip content="The amount of FJ paid for this transaction">
-        <div className="font-mono">{row.getValue("transactionFee")}</div>
-      </CustomTooltip>
-    ),
+    cell: ({ row }) => {
+      const symbol = getFeeJuiceSymbol(feeJuiceSymbol);
+      const formattedFee = formatFees(
+        String(row.getValue("transactionFee")),
+        feeJuiceDecimals,
+      );
+      const formattedValue = `${formattedFee.value}${formattedFee.denomination}`;
+
+      return (
+        <div className="font-mono flex items-center gap-1">
+          <CopyableAmount
+            displayAmount={formattedValue}
+            rawAmount={String(row.getValue("transactionFee"))}
+          />
+          {feeJuiceAddress ? (
+            <EtherscanAddressLink
+              content={symbol}
+              endpoint={`/token/${feeJuiceAddress}`}
+              showExternalLinkIcon={false}
+              tooltipContent="View token address on Etherscan"
+            />
+          ) : (
+            <span>{symbol}</span>
+          )}
+        </div>
+      );
+    },
     sortingFn: (rowA, rowB, columnId) => {
       const left = rowA.getValue(columnId);
       const right = rowB.getValue(columnId);

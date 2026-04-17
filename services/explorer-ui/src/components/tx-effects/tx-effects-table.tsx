@@ -1,7 +1,7 @@
-import { type FC } from "react";
+import { type FC, useMemo } from "react";
 import { DataTable } from "~/components/data-table";
-import { TxEffectsTableColumns } from "./tx-effects-columns";
 import { type UiTxEffectTable } from "@chicmoz-pkg/types";
+import { createTxEffectsTableColumns } from "./tx-effects-columns";
 
 interface Props {
   title?: string;
@@ -11,6 +11,9 @@ interface Props {
   disableSizeSelector?: boolean;
   disablePagination?: boolean;
   maxEntries?: number;
+  feeJuiceAddress?: string;
+  feeJuiceDecimals?: number;
+  feeJuiceSymbol?: string;
 }
 
 export const TxEffectsTable: FC<Props> = ({
@@ -21,7 +24,20 @@ export const TxEffectsTable: FC<Props> = ({
   disableSizeSelector,
   disablePagination = false,
   maxEntries = 10,
+  feeJuiceAddress,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
 }) => {
+  const columns = useMemo(
+    () =>
+      createTxEffectsTableColumns({
+        feeJuiceAddress,
+        feeJuiceDecimals,
+        feeJuiceSymbol,
+      }),
+    [feeJuiceAddress, feeJuiceDecimals, feeJuiceSymbol],
+  );
+
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -36,7 +52,7 @@ export const TxEffectsTable: FC<Props> = ({
         <DataTable
           isLoading={isLoading}
           data={txEffects ?? []}
-          columns={TxEffectsTableColumns}
+          columns={columns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

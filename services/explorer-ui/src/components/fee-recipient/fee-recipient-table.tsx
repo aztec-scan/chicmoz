@@ -1,7 +1,7 @@
-import { type FC } from "react";
+import { type FC, useMemo } from "react";
 import { DataTable } from "~/components/data-table";
 import { type ChicmozFeeRecipient } from "@chicmoz-pkg/types";
-import { FeeRecipientColums } from "./fee-recipient-columns";
+import { createFeeRecipientColumns } from "./fee-recipient-columns";
 
 interface Props {
   title?: string;
@@ -11,6 +11,9 @@ interface Props {
   disableSizeSelector?: boolean;
   disablePagination?: boolean;
   maxEntries?: number;
+  feeJuiceAddress?: string;
+  feeJuiceDecimals?: number;
+  feeJuiceSymbol?: string;
 }
 
 export const FeeReceipientsTable: FC<Props> = ({
@@ -21,7 +24,20 @@ export const FeeReceipientsTable: FC<Props> = ({
   disableSizeSelector,
   disablePagination,
   maxEntries = 10,
+  feeJuiceAddress,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
 }) => {
+  const columns = useMemo(
+    () =>
+      createFeeRecipientColumns({
+        feeJuiceAddress,
+        feeJuiceDecimals,
+        feeJuiceSymbol,
+      }),
+    [feeJuiceAddress, feeJuiceDecimals, feeJuiceSymbol],
+  );
+
   if (error) {
     return <p className="text-red-500">{error.message}</p>;
   }
@@ -36,7 +52,7 @@ export const FeeReceipientsTable: FC<Props> = ({
         <DataTable
           isLoading={isLoading}
           data={feeRecipients ?? []}
-          columns={FeeRecipientColums}
+          columns={columns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

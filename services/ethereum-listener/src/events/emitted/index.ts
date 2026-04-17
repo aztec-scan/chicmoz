@@ -11,6 +11,8 @@ type StakingAssetInfoEvent = {
   chainInfo: ChicmozChainInfo & {
     stakingAssetSymbol?: string;
     stakingAssetDecimals?: number;
+    feeJuiceSymbol?: string;
+    feeJuiceDecimals?: number;
   };
 };
 
