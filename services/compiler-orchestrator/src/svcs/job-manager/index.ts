@@ -104,19 +104,34 @@ const buildCompileScript = (
 
   return [
     `set -e`,
+    `export RUST_BACKTRACE="\${RUST_BACKTRACE:-1}"`,
+    `echo "===INPUTS_START==="`,
+    `echo "GIT_URL=${_githubUrl}"`,
+    `echo "GIT_REF=${_gitRef ?? ""}"`,
+    `echo "SUB_PATH=${_subPath ?? ""}"`,
+    `echo "AZTEC_VERSION=$AZTEC_VERSION"`,
+    `echo "NARGO_HOME=$NARGO_HOME"`,
+    `echo "RUST_BACKTRACE=$RUST_BACKTRACE"`,
+    `echo "===INPUTS_END==="`,
     `echo "Cloning repository..."`,
     `git clone "$GIT_URL" /workspace/repo`,
     `cd /workspace/repo`,
+    `echo "Checking out git ref: ${_gitRef ?? "(default branch)"}"`,
     checkoutRef,
+    `echo "Resolved HEAD: $(git rev-parse HEAD)"`,
     `git rev-parse HEAD > /output/commit_hash`,
     cdSubPath,
+    `echo "Compile working directory: $PWD"`,
+    `echo "Detected package name before compile: $(awk -F'"' '/^name[[:space:]]*=[[:space:]]*"/ { print $2; exit }' Nargo.toml 2>/dev/null || true)"`,
     `echo "Compiling contract..."`,
     `ARTIFACT_MARKER_FILE="$(mktemp)"`,
     `touch "$ARTIFACT_MARKER_FILE"`,
+    `echo "Running compile command: node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile"`,
     `node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile`,
     `echo "Discovering compiled artifact..."`,
     `mkdir -p /output/artifact`,
     `CONTRACT_DIR_NAME="$(basename "$PWD")"`,
+    `echo "Contract directory name: $CONTRACT_DIR_NAME"`,
     `ARTIFACT_PATHS="$(find /workspace/repo -type f -path "*/target/*.json" -newer "$ARTIFACT_MARKER_FILE" | sort)"`,
     `printf "%s\\n" "$ARTIFACT_PATHS" | sed '/^$/d' > /tmp/artifact-paths.txt`,
     `if [ ! -s /tmp/artifact-paths.txt ]; then echo "No compiled artifact found after compile (searched: /workspace/repo/**/target/*.json newer than marker)"; exit 1; fi`,
@@ -124,7 +139,9 @@ const buildCompileScript = (
     `cat /tmp/artifact-paths.txt`,
     `SELECTED_ARTIFACT_PATH="$(grep "/target/$CONTRACT_DIR_NAME" /tmp/artifact-paths.txt | head -n 1 || true)"`,
     `if [ -z "$SELECTED_ARTIFACT_PATH" ]; then SELECTED_ARTIFACT_PATH="$(head -n 1 /tmp/artifact-paths.txt)"; fi`,
-    `if ! jq -e '.transpiled == true' "$SELECTED_ARTIFACT_PATH" >/dev/null 2>&1; then echo "Selected artifact is not transpiled: $SELECTED_ARTIFACT_PATH"; PACKAGE_NAME="$(awk -F'"' '/^name[[:space:]]*=[[:space:]]*"/ { print $2; exit }' Nargo.toml 2>/dev/null || true)"; WORKSPACE_ROOT=""; SEARCH_DIR="$PWD"; while [ "$SEARCH_DIR" != "/" ]; do if [ -f "$SEARCH_DIR/Nargo.toml" ] && grep -q '^\\[workspace\\]' "$SEARCH_DIR/Nargo.toml"; then WORKSPACE_ROOT="$SEARCH_DIR"; break; fi; if [ "$SEARCH_DIR" = "/workspace/repo" ]; then break; fi; SEARCH_DIR="$(dirname "$SEARCH_DIR")"; done; if [ -n "$PACKAGE_NAME" ] && [ -n "$WORKSPACE_ROOT" ]; then echo "Recompiling from workspace root ($WORKSPACE_ROOT) with --package $PACKAGE_NAME to force postprocessing..."; cd "$WORKSPACE_ROOT"; node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile --package "$PACKAGE_NAME"; ARTIFACT_PATHS="$(find /workspace/repo -type f -path "*/target/*.json" -newer "$ARTIFACT_MARKER_FILE" | sort)"; printf "%s\\n" "$ARTIFACT_PATHS" | sed '/^$/d' > /tmp/artifact-paths.txt; if [ ! -s /tmp/artifact-paths.txt ]; then echo "No compiled artifact found after workspace compile"; exit 1; fi; SELECTED_ARTIFACT_PATH="$(grep "/target/$CONTRACT_DIR_NAME" /tmp/artifact-paths.txt | head -n 1 || true)"; if [ -z "$SELECTED_ARTIFACT_PATH" ]; then SELECTED_ARTIFACT_PATH="$(head -n 1 /tmp/artifact-paths.txt)"; fi; fi; fi`,
+    `echo "Selected artifact path after first pass: $SELECTED_ARTIFACT_PATH"`,
+    `echo "Selected artifact transpiled flag after first pass: $(jq -r '.transpiled // "missing"' "$SELECTED_ARTIFACT_PATH" 2>/dev/null || echo "unreadable")"`,
+    `if ! jq -e '.transpiled == true' "$SELECTED_ARTIFACT_PATH" >/dev/null 2>&1; then echo "Selected artifact is not transpiled: $SELECTED_ARTIFACT_PATH"; PACKAGE_NAME="$(awk -F'"' '/^name[[:space:]]*=[[:space:]]*"/ { print $2; exit }' Nargo.toml 2>/dev/null || true)"; WORKSPACE_ROOT=""; SEARCH_DIR="$PWD"; while [ "$SEARCH_DIR" != "/" ]; do if [ -f "$SEARCH_DIR/Nargo.toml" ] && grep -q '^\\[workspace\\]' "$SEARCH_DIR/Nargo.toml"; then WORKSPACE_ROOT="$SEARCH_DIR"; break; fi; if [ "$SEARCH_DIR" = "/workspace/repo" ]; then break; fi; SEARCH_DIR="$(dirname "$SEARCH_DIR")"; done; echo "Workspace root candidate: \${WORKSPACE_ROOT:-"(none)"}"; echo "Package name candidate: \${PACKAGE_NAME:-"(none)"}"; if [ -n "$PACKAGE_NAME" ] && [ -n "$WORKSPACE_ROOT" ]; then echo "Running fallback compile command: node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile --package $PACKAGE_NAME"; echo "Recompiling from workspace root ($WORKSPACE_ROOT) with --package $PACKAGE_NAME to force postprocessing..."; cd "$WORKSPACE_ROOT"; node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js compile --package "$PACKAGE_NAME"; ARTIFACT_PATHS="$(find /workspace/repo -type f -path "*/target/*.json" -newer "$ARTIFACT_MARKER_FILE" | sort)"; printf "%s\\n" "$ARTIFACT_PATHS" | sed '/^$/d' > /tmp/artifact-paths.txt; if [ ! -s /tmp/artifact-paths.txt ]; then echo "No compiled artifact found after workspace compile"; exit 1; fi; echo "Discovered artifact paths after fallback compile:"; cat /tmp/artifact-paths.txt; SELECTED_ARTIFACT_PATH="$(grep "/target/$CONTRACT_DIR_NAME" /tmp/artifact-paths.txt | head -n 1 || true)"; if [ -z "$SELECTED_ARTIFACT_PATH" ]; then SELECTED_ARTIFACT_PATH="$(head -n 1 /tmp/artifact-paths.txt)"; fi; echo "Selected artifact path after fallback compile: $SELECTED_ARTIFACT_PATH"; echo "Selected artifact transpiled flag after fallback compile: $(jq -r '.transpiled // "missing"' "$SELECTED_ARTIFACT_PATH" 2>/dev/null || echo "unreadable")"; else echo "Skipping fallback compile because package name or workspace root could not be determined"; fi; fi`,
     `if ! jq -e '.transpiled == true' "$SELECTED_ARTIFACT_PATH" >/dev/null 2>&1; then echo "Compiled artifact is still not transpiled: $SELECTED_ARTIFACT_PATH"; exit 1; fi`,
     `cp "$SELECTED_ARTIFACT_PATH" /output/artifact/`,
     `rm -f "$ARTIFACT_MARKER_FILE"`,
@@ -158,6 +175,10 @@ echo "===SOURCES_END==="
 };
 
 const createCompileJob = async (state: JobState): Promise<void> => {
+  logger.info(
+    `Creating compile job: jobId=${state.jobId} k8sJobName=${state.k8sJobName} contractClassId=${state.contractClassId} version=${state.version} githubUrl=${state.githubUrl} gitRef=${state.gitRef ?? "(default branch)"} subPath=${state.subPath ?? "(repo root)"} aztecVersion=${state.aztecVersion} compilerImage=${COMPILER_IMAGE} readerImage=${READER_POD_IMAGE} namespace=${K8S_NAMESPACE}`,
+  );
+
   const compileScript = buildCompileScript(
     state.githubUrl,
     state.gitRef,
@@ -215,6 +236,10 @@ const createCompileJob = async (state: JobState): Promise<void> => {
                 {
                   name: "GIT_URL",
                   value: state.githubUrl,
+                },
+                {
+                  name: "AZTEC_VERSION",
+                  value: state.aztecVersion,
                 },
                 ...(state.gitRef
                   ? [{ name: "GIT_REF", value: state.gitRef }]
