@@ -13,12 +13,14 @@ type StakingAssetInfoEvent = {
   chainInfo: ChicmozChainInfo & {
     stakingAssetSymbol?: string;
     stakingAssetDecimals?: number;
+    feeJuiceSymbol?: string;
+    feeJuiceDecimals?: number;
   };
 };
 
 const onStakingAssetInfo = async (event: StakingAssetInfoEvent) => {
   logger.info(
-    `🪙 staking asset info event ${event.chainInfo.l1ContractAddresses.stakingAssetAddress} ${event.chainInfo.stakingAssetSymbol}`,
+    `🪙 token metadata event staking=${event.chainInfo.l1ContractAddresses.stakingAssetAddress}:${event.chainInfo.stakingAssetSymbol} feeJuice=${event.chainInfo.l1ContractAddresses.feeJuiceAddress}:${event.chainInfo.feeJuiceSymbol}`,
   );
   await l2.storeChainInfo(event.chainInfo);
 };

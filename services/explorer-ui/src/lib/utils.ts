@@ -104,50 +104,66 @@ export const formatTimeSince = (
   return `${duration}`;
 };
 
-const feesPrefix = [
-  { label: "", value: 1 },
-  { label: "k", value: 1_000 },
-  { label: "M", value: 1_000_000 },
-  { label: "G", value: 1_000_000_000 },
-];
-
-export const formatFees = (fees: string | undefined) => {
-  if (fees === undefined) {
-    return { denomination: "", value: "No data" };
-  }
-  const feesNumber = Number(fees);
-  for (let i = feesPrefix.length - 1; i >= 0; i--) {
-    const prefix = feesPrefix[i];
-    if (feesNumber >= prefix.value) {
-      return {
-        denomination: prefix.label,
-        value: (feesNumber / prefix.value).toFixed(2),
-      };
-    }
-  }
-  return {
-    denomination: "",
-    value: feesNumber.toFixed(2),
-  };
+export const getFeeJuiceSymbol = (symbol?: string): string => {
+  return symbol ?? "AZTEC";
 };
 
-const formatRoundedUnits = (
+const formatWithSignificantDigits = (
   value: bigint,
   decimals: number,
-  displayDecimals: number,
-) => {
-  const base = 10n ** BigInt(decimals);
-  const scale = 10n ** BigInt(displayDecimals);
-  const roundedScaledValue = (value * scale + base / 2n) / base;
-  const integerPart = roundedScaledValue / scale;
-
-  if (displayDecimals === 0) {
-    return integerPart.toString();
+  significantDigits = 4,
+): string => {
+  if (value === 0n) {
+    return "0";
   }
 
-  const fractionalPart = (roundedScaledValue % scale)
+  const rawDigits = value.toString();
+  const integerPartRaw =
+    rawDigits.length > decimals
+      ? rawDigits.slice(0, rawDigits.length - decimals)
+      : "0";
+  const fractionPartRaw =
+    rawDigits.length > decimals
+      ? rawDigits.slice(rawDigits.length - decimals)
+      : rawDigits.padStart(decimals, "0");
+  const integerPartNormalized = integerPartRaw.replace(/^0+/, "") || "0";
+  const hasIntegerPart = integerPartNormalized !== "0";
+
+  let fractionDigits: number;
+
+  if (hasIntegerPart) {
+    fractionDigits = Math.max(
+      significantDigits - integerPartNormalized.length,
+      0,
+    );
+  } else {
+    const firstNonZeroIndex = fractionPartRaw.search(/[1-9]/);
+
+    if (firstNonZeroIndex === -1) {
+      return "0";
+    }
+
+    fractionDigits = firstNonZeroIndex + significantDigits;
+  }
+
+  let roundedValue: bigint;
+
+  if (fractionDigits >= decimals) {
+    roundedValue = value * 10n ** BigInt(fractionDigits - decimals);
+  } else {
+    const divisor = 10n ** BigInt(decimals - fractionDigits);
+    roundedValue = (value + divisor / 2n) / divisor;
+  }
+
+  if (fractionDigits === 0) {
+    return roundedValue.toString();
+  }
+
+  const scale = 10n ** BigInt(fractionDigits);
+  const integerPart = roundedValue / scale;
+  const fractionalPart = (roundedValue % scale)
     .toString()
-    .padStart(displayDecimals, "0");
+    .padStart(fractionDigits, "0");
 
   return `${integerPart.toString()}.${fractionalPart}`;
 };
@@ -161,12 +177,30 @@ export const formatCompactUnits = (value: bigint, decimals = 18): string => {
   let formattedValue: string;
 
   if (absoluteValue < oneThousand) {
-    formattedValue = formatRoundedUnits(absoluteValue, decimals, 0);
+    formattedValue = formatWithSignificantDigits(absoluteValue, decimals);
   } else if (absoluteValue <= 999_999n * base) {
-    formattedValue = `${formatRoundedUnits(absoluteValue, decimals + 3, 0)}K`;
+    formattedValue = `${formatWithSignificantDigits(absoluteValue, decimals + 3)}k`;
   } else {
-    formattedValue = `${formatRoundedUnits(absoluteValue, decimals + 6, 2)}M`;
+    formattedValue = `${formatWithSignificantDigits(absoluteValue, decimals + 6)}M`;
   }
 
   return isNegative ? `-${formattedValue}` : formattedValue;
+};
+
+export const formatFees = (
+  fees: string | undefined,
+  decimals = 18,
+): { denomination: string; value: string } => {
+  if (fees === undefined) {
+    return { denomination: "", value: "No data" };
+  }
+
+  try {
+    return {
+      denomination: "",
+      value: formatCompactUnits(BigInt(fees), decimals),
+    };
+  } catch {
+    return { denomination: "", value: "No data" };
+  }
 };

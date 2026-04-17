@@ -33,6 +33,8 @@ export const chicmozChainInfoSchema = z.object({
   protocolContractAddresses: ProtocolContractAddressesSchema,
   stakingAssetSymbol: z.string().optional(),
   stakingAssetDecimals: z.number().int().nonnegative().optional(),
+  feeJuiceSymbol: z.string().optional(),
+  feeJuiceDecimals: z.number().int().nonnegative().optional(),
   createdAt: z.coerce.date().optional(),
   latestUpdateAt: z.coerce.date().optional(),
 });

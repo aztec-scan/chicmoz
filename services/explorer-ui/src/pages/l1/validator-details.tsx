@@ -33,7 +33,7 @@ const getValidatorData = (
     validator.stake,
     stakingAssetInfo.stakingAssetDecimals,
   );
-  const stakingAssetSymbol = stakingAssetInfo.stakingAssetSymbol ?? "STK";
+  const stakingAssetSymbol = stakingAssetInfo.stakingAssetSymbol ?? "AZTEC";
 
   return [
     {

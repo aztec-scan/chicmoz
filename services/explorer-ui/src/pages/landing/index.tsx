@@ -10,6 +10,7 @@ import {
   HealthStatus,
   useAvarageBlockTime,
   useAvarageFees,
+  useChainInfo,
   useLatestTableBlocks,
   useLatestTableTxEffects,
   usePendingTxs,
@@ -20,7 +21,7 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks";
-import { formatDuration, formatFees } from "~/lib/utils";
+import { formatDuration, formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 
 export const Landing: FC = () => {
@@ -63,6 +64,7 @@ export const Landing: FC = () => {
     isLoading: isLoadingTxEffects,
     error: txEffectsError,
   } = useLatestTableTxEffects();
+  const { data: chainInfo } = useChainInfo();
 
   // For pending transactions
   const {
@@ -148,7 +150,9 @@ export const Landing: FC = () => {
               data={totalAmountOfContracts}
             />
             <InfoBadge
-              title={`Average fees (${formattedFees.denomination} FJ)`}
+              title={`Average fees (${formattedFees.denomination} ${getFeeJuiceSymbol(
+                chainInfo?.feeJuiceSymbol,
+              )})`}
               isLoading={loadingAvarageFees}
               error={errorAvarageFees}
               data={formattedFees.value}
@@ -230,6 +234,11 @@ export const Landing: FC = () => {
                   disableSizeSelector={true}
                   disablePagination={true}
                   maxEntries={8}
+                  feeJuiceAddress={
+                    chainInfo?.l1ContractAddresses.feeJuiceAddress
+                  }
+                  feeJuiceDecimals={chainInfo?.feeJuiceDecimals}
+                  feeJuiceSymbol={chainInfo?.feeJuiceSymbol}
                 />
                 <Link
                   to={routes.txEffects.route}

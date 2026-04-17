@@ -2,6 +2,9 @@ import {
   type ChicmozL2DroppedTx,
   type ChicmozL2TxEffectDeluxe,
 } from "@chicmoz-pkg/types";
+import { createElement } from "react";
+import { EtherscanAddressLink } from "~/components/etherscan-address-link";
+import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
 import { type TabId } from "./types";
 
@@ -18,15 +21,46 @@ export type TxEffectDataType =
   | Array<{ logs: Array<{ data: Buffer }> }>
   | Array<{ leafSlot: string; value: string }>;
 
-export const getTxEffectData = (data: ChicmozL2TxEffectDeluxe) => {
+export const getTxEffectData = (
+  data: ChicmozL2TxEffectDeluxe,
+  feeJuiceAddress?: string,
+  feeJuiceDecimals?: number,
+  feeJuiceSymbol?: string,
+) => {
+  const formattedFee = formatFees(
+    data.transactionFee.toString(),
+    feeJuiceDecimals,
+  );
+  const symbol = getFeeJuiceSymbol(feeJuiceSymbol);
+
   return [
     {
       label: "HASH",
       value: data.txHash,
     },
     {
-      label: "TRANSACTION FEE (FJ)",
-      value: data.transactionFee.toString(),
+      label: "TRANSACTION FEE",
+      value: "CUSTOM",
+      customValue: createElement(
+        "span",
+        {
+          className:
+            "inline-flex w-full items-center justify-end gap-1 font-mono",
+        },
+        createElement(
+          "span",
+          undefined,
+          `${formattedFee.value}${formattedFee.denomination}`,
+        ),
+        feeJuiceAddress
+          ? createElement(EtherscanAddressLink, {
+              content: symbol,
+              endpoint: `/token/${feeJuiceAddress}`,
+              showExternalLinkIcon: false,
+              tooltipContent: "View token address on Etherscan",
+            })
+          : createElement("span", undefined, symbol),
+      ),
     },
     {
       label: "BLOCK NUMBER",
