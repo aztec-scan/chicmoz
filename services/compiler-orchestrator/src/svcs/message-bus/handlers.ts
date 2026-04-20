@@ -13,7 +13,7 @@ import { handleCompileRequest } from "../job-manager/index.js";
 
 const onCompileSourceRequest = async (event: CompileSourceRequestEvent) => {
   logger.info(
-    `Received compile source request: jobId=${event.jobId} contractClassId=${event.contractClassId} version=${event.version} githubUrl=${event.githubUrl} gitRef=${event.gitRef ?? "(default branch)"} subPath=${event.subPath ?? "(repo root)"} aztecVersion=${event.aztecVersion}`,
+    `Received compile source request: jobId=${event.jobId} contractClassId=${event.contractClassId} version=${event.version} githubUrl=${event.githubUrl} gitRef=${event.gitRef ?? "(default branch)"} subPath=${event.subPath ?? "(repo root)"}`,
   );
   await handleCompileRequest(event);
 };

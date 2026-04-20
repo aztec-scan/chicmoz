@@ -5,10 +5,12 @@ metadata:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/contract-compiler-devnet
-      context: ../../../services/event-cannon
+      context: services/event-cannon
       docker:
         dockerfile: Dockerfile.compile-contracts
         buildArgs:
+          BASE_AZTEC_IMAGE: "aztecprotocol/aztec:4.0.3"
+          NARGO_AZTEC_VERSION: "4.0.3"
           DOCKER_DEFAULT_PLATFORM: "linux/amd64"
   tagPolicy:
     customTemplate:

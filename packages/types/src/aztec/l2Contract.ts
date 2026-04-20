@@ -132,6 +132,8 @@ export type SourceVerificationStatus = z.infer<
 
 export const sourceVerificationFailureStageEnum = z.enum([
   "INPUT_VALIDATION",
+  "NARGO_DISCOVERY",
+  "IMAGE_RESOLUTION",
   "CLONE",
   "CHECKOUT",
   "COMPILE",
@@ -161,7 +163,6 @@ export const compileSourceRequestSchema = z.object({
   githubUrl: z.string().url(),
   gitRef: z.string().optional(),
   subPath: z.string().optional(),
-  aztecVersion: z.string(),
 });
 
 export type CompileSourceRequest = z.infer<typeof compileSourceRequestSchema>;
@@ -171,6 +172,7 @@ export const compileSourceResultSchema = z.object({
   contractClassId: frSchema,
   version: z.number(),
   status: z.enum(["success", "compilation_failed", "clone_failed", "timeout"]),
+  aztecVersion: z.string().optional(),
   artifactJson: z.string().optional(),
   sourceFiles: sourceCodeEntrySchema.array().optional(),
   commitHash: z.string().optional(),
@@ -188,7 +190,7 @@ export const sourceVerificationJobSchema = z.object({
   githubUrl: z.string().url(),
   gitRef: z.string().nullable().optional(),
   subPath: z.string().nullable().optional(),
-  aztecVersion: z.string(),
+  aztecVersion: z.string().nullable().optional(),
   commitHash: z.string().nullable().optional(),
   status: sourceVerificationStatusEnum,
   error: z.string().nullable().optional(),

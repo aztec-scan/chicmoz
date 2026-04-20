@@ -64,7 +64,6 @@ export type CompileSourceRequestEvent = {
   githubUrl: string;
   gitRef?: string;
   subPath?: string;
-  aztecVersion: string;
 };
 
 export type CompileSourceResultEvent = {
@@ -72,6 +71,7 @@ export type CompileSourceResultEvent = {
   contractClassId: string;
   version: number;
   status: "success" | "compilation_failed" | "clone_failed" | "timeout";
+  aztecVersion?: string;
   artifactJson?: string;
   sourceFiles?: Array<{ path: string; content: string }>;
   commitHash?: string;

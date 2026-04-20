@@ -292,6 +292,8 @@ export const sourceVerificationFailureStageEnum = pgEnum(
   "source_verification_failure_stage",
   [
     "INPUT_VALIDATION",
+    "NARGO_DISCOVERY",
+    "IMAGE_RESOLUTION",
     "CLONE",
     "CHECKOUT",
     "COMPILE",
@@ -311,7 +313,7 @@ export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   githubUrl: text("github_url").notNull(),
   gitRef: text("git_ref"),
   subPath: text("sub_path"),
-  aztecVersion: text("aztec_version").notNull(),
+  aztecVersion: text("aztec_version"),
   commitHash: text("commit_hash"),
   clientIp: text("client_ip"),
   status: sourceVerificationStatusEnum("status").notNull().default("PENDING"),

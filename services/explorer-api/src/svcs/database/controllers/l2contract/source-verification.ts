@@ -16,7 +16,6 @@ export const createSourceVerificationJob = async ({
   githubUrl,
   gitRef,
   subPath,
-  aztecVersion,
   clientIp,
 }: {
   id: string;
@@ -25,7 +24,6 @@ export const createSourceVerificationJob = async ({
   githubUrl: string;
   gitRef?: string;
   subPath?: string;
-  aztecVersion: string;
   clientIp?: string;
 }): Promise<void> => {
   await db()
@@ -37,7 +35,7 @@ export const createSourceVerificationJob = async ({
       githubUrl,
       gitRef: gitRef ?? null,
       subPath: subPath ?? null,
-      aztecVersion,
+      aztecVersion: null,
       clientIp: clientIp ?? null,
       status: "PENDING",
     });
@@ -74,6 +72,7 @@ export const updateSourceVerificationJobStatus = async ({
   status,
   error,
   commitHash,
+  aztecVersion,
   failureStage,
   compileOutput,
 }: {
@@ -81,6 +80,7 @@ export const updateSourceVerificationJobStatus = async ({
   status: SourceVerificationStatus;
   error?: string;
   commitHash?: string;
+  aztecVersion?: string;
   failureStage?: SourceVerificationFailureStage;
   compileOutput?: string;
 }): Promise<void> => {
@@ -92,6 +92,9 @@ export const updateSourceVerificationJobStatus = async ({
   };
   if (commitHash !== undefined) {
     updateValues.commitHash = commitHash;
+  }
+  if (aztecVersion !== undefined) {
+    updateValues.aztecVersion = aztecVersion;
   }
   await db()
     .update(sourceVerificationJobs)
@@ -165,14 +168,28 @@ export const getContractClassSourceCode = async (
   version: number,
 ): Promise<{
   sourceCode: Array<{ path: string; content: string }> | null;
+  sourceCodeUrl: string | null;
   sourceCodeCommitHash: string | null;
+  gitRef: string | null;
+  aztecVersion: string | null;
 }> => {
   const result = await db()
     .select({
       sourceCode: l2ContractClassRegistered.sourceCode,
+      sourceCodeUrl: l2ContractClassRegistered.sourceCodeUrl,
       sourceCodeCommitHash: l2ContractClassRegistered.sourceCodeCommitHash,
+      gitRef: sourceVerificationJobs.gitRef,
+      aztecVersion: sourceVerificationJobs.aztecVersion,
     })
     .from(l2ContractClassRegistered)
+    .leftJoin(
+      sourceVerificationJobs,
+      and(
+        eq(sourceVerificationJobs.contractClassId, contractClassId),
+        eq(sourceVerificationJobs.version, version),
+        eq(sourceVerificationJobs.status, "VERIFIED"),
+      ),
+    )
     .where(
       and(
         eq(l2ContractClassRegistered.contractClassId, contractClassId),
@@ -181,10 +198,19 @@ export const getContractClassSourceCode = async (
     )
     .limit(1);
   if (result.length === 0) {
-    return { sourceCode: null, sourceCodeCommitHash: null };
+    return {
+      sourceCode: null,
+      sourceCodeUrl: null,
+      sourceCodeCommitHash: null,
+      gitRef: null,
+      aztecVersion: null,
+    };
   }
   return {
     sourceCode: result[0].sourceCode ?? null,
+    sourceCodeUrl: result[0].sourceCodeUrl ?? null,
     sourceCodeCommitHash: result[0].sourceCodeCommitHash ?? null,
+    gitRef: result[0].gitRef ?? null,
+    aztecVersion: result[0].aztecVersion ?? null,
   };
 };

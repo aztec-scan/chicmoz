@@ -1,3 +1,8 @@
+import { execFile } from "child_process";
+import { mkdtemp, readFile, rm, stat } from "fs/promises";
+import os from "os";
+import path from "path";
+import { promisify } from "util";
 import * as k8s from "@kubernetes/client-node";
 import type { CompileSourceRequestEvent } from "@chicmoz-pkg/message-registry";
 import type { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
@@ -32,6 +37,7 @@ type JobState = {
   gitRef?: string;
   subPath?: string;
   aztecVersion: string;
+  compilerImage: string;
   createdAt: Date;
 };
 
@@ -63,8 +69,10 @@ const ANNOTATION_CONTRACT_CLASS_ID = "chicmoz/contract-class-id";
 const ANNOTATION_VERSION = "chicmoz/version";
 const ANNOTATION_GITHUB_URL = "chicmoz/github-url";
 const ANNOTATION_AZTEC_VERSION = "chicmoz/aztec-version";
+const ANNOTATION_COMPILER_IMAGE = "chicmoz/compiler-image";
 const NETWORK_LABEL_VALUE = L2_NETWORK_ID.toLowerCase();
 const MAX_COMPILE_OUTPUT_CHARS = 16 * 1024;
+const execFileAsync = promisify(execFile);
 
 // --- Helpers ---
 
@@ -74,6 +82,22 @@ const sanitizeForK8s = (id: string): string => {
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "")
     .substring(0, 40);
+};
+
+type ResolveCompileInputsError = Error & {
+  failureStage: SourceVerificationFailureStage;
+  aztecVersion?: string;
+};
+
+const createResolveCompileInputsError = (
+  failureStage: SourceVerificationFailureStage,
+  message: string,
+  aztecVersion?: string,
+): ResolveCompileInputsError => {
+  return Object.assign(new Error(message), {
+    failureStage,
+    aztecVersion,
+  });
 };
 
 const jobName = (jobId: string): string => `compile-${sanitizeForK8s(jobId)}`;
@@ -119,19 +143,29 @@ const detectFailureStage = ({
   reason,
   compileLog,
   readerLog,
+  podStatusOutput,
   fallbackStage,
 }: {
   reason?: string;
   compileLog?: string;
   readerLog?: string;
+  podStatusOutput?: string;
   fallbackStage?: SourceVerificationFailureStage;
 }): SourceVerificationFailureStage => {
-  const combinedOutput = [compileLog, readerLog, reason]
+  const combinedOutput = [compileLog, readerLog, podStatusOutput, reason]
     .filter(Boolean)
     .join("\n");
 
   if (reason === "timeout") {
     return "TIMEOUT";
+  }
+
+  if (
+    /ErrImagePull|ImagePullBackOff|InvalidImageName|Back-off pulling image|Failed to pull image|pull access denied|manifest unknown|no such image|failed to resolve reference/i.test(
+      combinedOutput,
+    )
+  ) {
+    return "IMAGE_RESOLUTION";
   }
 
   if (/Invalid git ref|Invalid sub-path/i.test(combinedOutput)) {
@@ -204,6 +238,10 @@ const summarizeFailure = (
   switch (failureStage) {
     case "INPUT_VALIDATION":
       return "Compilation request validation failed";
+    case "NARGO_DISCOVERY":
+      return "Nargo.toml discovery failed";
+    case "IMAGE_RESOLUTION":
+      return "Compiler image resolution failed";
     case "CLONE":
       return "Repository clone failed";
     case "CHECKOUT":
@@ -225,6 +263,141 @@ const summarizeFailure = (
   }
 
   return "Internal compilation error";
+};
+
+const buildCompilerImage = (aztecVersion: string): string => {
+  const normalizedAztecVersion = aztecVersion.replace(/^v/, "");
+  const lastColonIndex = COMPILER_IMAGE.lastIndexOf(":");
+  const slashIndex = COMPILER_IMAGE.lastIndexOf("/");
+
+  if (lastColonIndex > slashIndex) {
+    return `${COMPILER_IMAGE.slice(0, lastColonIndex)}:${normalizedAztecVersion}`;
+  }
+
+  return `${COMPILER_IMAGE}:${normalizedAztecVersion}`;
+};
+
+const extractAztecVersionFromNargoToml = (
+  contents: string,
+): string | undefined => {
+  const dependenciesSection = contents.match(
+    /^\[dependencies\]\s*([\s\S]*?)(?=^\[|$)/m,
+  )?.[1];
+
+  const inlineTag = dependenciesSection
+    ?.match(
+      /^\s*aztec\s*=\s*\{[\s\S]*?\btag\s*=\s*"([^"]+)"[\s\S]*?\}\s*$/m,
+    )?.[1]
+    ?.trim();
+  if (inlineTag) {
+    return inlineTag;
+  }
+
+  const aztecSection = contents.match(
+    /^\[dependencies\.aztec\]\s*([\s\S]*?)(?=^\[|$)/m,
+  )?.[1];
+
+  return aztecSection?.match(/^\s*tag\s*=\s*"([^"]+)"/m)?.[1]?.trim();
+};
+
+const runGit = async (
+  args: string[],
+  cwd?: string,
+): Promise<{ stdout: string; stderr: string }> => {
+  const { stdout, stderr } = await execFileAsync("git", args, {
+    cwd,
+    maxBuffer: 10 * 1024 * 1024,
+  });
+
+  return {
+    stdout: stdout.toString(),
+    stderr: stderr.toString(),
+  };
+};
+
+const resolveCompileInputs = async (
+  event: CompileSourceRequestEvent,
+): Promise<{ aztecVersion: string; compilerImage: string }> => {
+  if (event.gitRef && !isValidGitRef(event.gitRef)) {
+    throw createResolveCompileInputsError(
+      "INPUT_VALIDATION",
+      `Invalid git ref: ${event.gitRef}`,
+    );
+  }
+
+  if (event.subPath && !isValidSubPath(event.subPath)) {
+    throw createResolveCompileInputsError(
+      "INPUT_VALIDATION",
+      `Invalid sub-path: ${event.subPath}`,
+    );
+  }
+
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "source-verify-"));
+
+  try {
+    try {
+      await runGit(["clone", "--depth", "1", event.githubUrl, tempDir]);
+    } catch (error) {
+      throw createResolveCompileInputsError(
+        "CLONE",
+        `Failed to clone repository: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    if (event.gitRef) {
+      try {
+        await runGit(
+          ["fetch", "--depth", "1", "origin", event.gitRef],
+          tempDir,
+        );
+        await runGit(["checkout", "--detach", "FETCH_HEAD"], tempDir);
+      } catch (error) {
+        throw createResolveCompileInputsError(
+          "CHECKOUT",
+          `Failed to checkout git ref ${event.gitRef}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    const repoPath = event.subPath
+      ? path.join(tempDir, event.subPath)
+      : tempDir;
+
+    try {
+      await stat(repoPath);
+    } catch {
+      throw createResolveCompileInputsError(
+        "CHECKOUT",
+        `Could not enter sub-path: ${event.subPath}`,
+      );
+    }
+
+    const nargoPath = path.join(repoPath, "Nargo.toml");
+
+    let nargoToml: string;
+    try {
+      nargoToml = await readFile(nargoPath, "utf8");
+    } catch {
+      throw createResolveCompileInputsError(
+        "NARGO_DISCOVERY",
+        `Could not find readable Nargo.toml at ${event.subPath ? `${event.subPath}/Nargo.toml` : "Nargo.toml"}`,
+      );
+    }
+
+    const aztecVersion = extractAztecVersionFromNargoToml(nargoToml);
+    if (!aztecVersion) {
+      throw createResolveCompileInputsError(
+        "NARGO_DISCOVERY",
+        `Could not determine dependencies.aztec.tag from ${event.subPath ? `${event.subPath}/Nargo.toml` : "Nargo.toml"}`,
+      );
+    }
+
+    const compilerImage = buildCompilerImage(aztecVersion);
+
+    return { aztecVersion, compilerImage };
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
 };
 
 // --- K8s Job creation ---
@@ -323,7 +496,7 @@ echo "===SOURCES_END==="
 
 const createCompileJob = async (state: JobState): Promise<void> => {
   logger.info(
-    `Creating compile job: jobId=${state.jobId} k8sJobName=${state.k8sJobName} contractClassId=${state.contractClassId} version=${state.version} githubUrl=${state.githubUrl} gitRef=${state.gitRef ?? "(default branch)"} subPath=${state.subPath ?? "(repo root)"} aztecVersion=${state.aztecVersion} compilerImage=${COMPILER_IMAGE} readerImage=${READER_POD_IMAGE} namespace=${K8S_NAMESPACE}`,
+    `Creating compile job: jobId=${state.jobId} k8sJobName=${state.k8sJobName} contractClassId=${state.contractClassId} version=${state.version} githubUrl=${state.githubUrl} gitRef=${state.gitRef ?? "(default branch)"} subPath=${state.subPath ?? "(repo root)"} aztecVersion=${state.aztecVersion} compilerImage=${state.compilerImage} readerImage=${READER_POD_IMAGE} namespace=${K8S_NAMESPACE}`,
   );
 
   const compileScript = buildCompileScript(
@@ -349,6 +522,7 @@ const createCompileJob = async (state: JobState): Promise<void> => {
         [ANNOTATION_VERSION]: String(state.version),
         [ANNOTATION_GITHUB_URL]: state.githubUrl,
         [ANNOTATION_AZTEC_VERSION]: state.aztecVersion,
+        [ANNOTATION_COMPILER_IMAGE]: state.compilerImage,
       },
     },
     spec: {
@@ -372,7 +546,7 @@ const createCompileJob = async (state: JobState): Promise<void> => {
           initContainers: [
             {
               name: "compiler",
-              image: COMPILER_IMAGE,
+              image: state.compilerImage,
               command: ["/bin/sh", "-c"],
               args: [compileScript],
               env: [
@@ -507,13 +681,57 @@ const readJobLogs = async (state: JobState): Promise<JobLogs> => {
   }
 };
 
+const getPodFailureDiagnostics = async (
+  state: JobState,
+): Promise<string | undefined> => {
+  try {
+    const podName = await getJobPodName(state);
+    const pod = await coreApi.readNamespacedPod({
+      name: podName,
+      namespace: K8S_NAMESPACE,
+    });
+
+    const statusMessages = [
+      ...(pod.status?.initContainerStatuses ?? []),
+      ...(pod.status?.containerStatuses ?? []),
+    ].flatMap((containerStatus) =>
+      [
+        containerStatus.state?.waiting?.reason,
+        containerStatus.state?.waiting?.message,
+        containerStatus.state?.terminated?.reason,
+        containerStatus.state?.terminated?.message,
+        containerStatus.lastState?.terminated?.reason,
+        containerStatus.lastState?.terminated?.message,
+      ].filter(Boolean),
+    );
+
+    const conditionMessages = (pod.status?.conditions ?? []).flatMap(
+      (condition) => [condition.reason, condition.message].filter(Boolean),
+    );
+
+    const diagnostics = [...statusMessages, ...conditionMessages]
+      .join("\n")
+      .trim();
+    return diagnostics || undefined;
+  } catch (error) {
+    logger.warn(
+      `Failed to read pod diagnostics for jobId=${state.jobId}: ${(error as Error).message}`,
+    );
+    return undefined;
+  }
+};
+
 const buildCompileOutput = ({
   compileLog,
   readerLog,
-}: JobLogs): string | undefined => {
+  podStatusOutput,
+}: JobLogs & { podStatusOutput?: string }): string | undefined => {
   const sections = [
     compileLog ? `=== compiler log ===\n${compileLog.trim()}` : undefined,
     readerLog ? `=== reader log ===\n${readerLog.trim()}` : undefined,
+    podStatusOutput
+      ? `=== pod status ===\n${podStatusOutput.trim()}`
+      : undefined,
   ].filter(Boolean);
 
   return trimCompileOutput(sections.join("\n\n"));
@@ -598,6 +816,30 @@ const checkJobStatus = async (
 
 const getJobFailureReason = async (state: JobState): Promise<string> => {
   try {
+    try {
+      const podName = await getJobPodName(state);
+      const pod = await coreApi.readNamespacedPod({
+        name: podName,
+        namespace: K8S_NAMESPACE,
+      });
+
+      for (const containerStatus of pod.status?.initContainerStatuses ?? []) {
+        const waiting = containerStatus.state?.waiting;
+        if (waiting) {
+          return `${waiting.reason ?? "waiting"}: ${waiting.message ?? ""}`.trim();
+        }
+      }
+
+      for (const containerStatus of pod.status?.containerStatuses ?? []) {
+        const waiting = containerStatus.state?.waiting;
+        if (waiting) {
+          return `${waiting.reason ?? "waiting"}: ${waiting.message ?? ""}`.trim();
+        }
+      }
+    } catch {
+      // Fall back to job conditions below.
+    }
+
     const job = await batchApi.readNamespacedJob({
       name: state.k8sJobName,
       namespace: K8S_NAMESPACE,
@@ -632,6 +874,7 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
       contractClassId: state.contractClassId,
       version: state.version,
       status: "success",
+      aztecVersion: state.aztecVersion,
       artifactJson,
       sourceFiles,
       commitHash,
@@ -656,6 +899,7 @@ const handleJobCompletion = async (state: JobState): Promise<void> => {
         contractClassId: state.contractClassId,
         version: state.version,
         status: "compilation_failed",
+        aztecVersion: state.aztecVersion,
         error: summarizeFailure(failureStage),
         failureStage,
         compileOutput: buildCompileOutput(logs),
@@ -673,10 +917,12 @@ const handleJobFailure = async (state: JobState): Promise<void> => {
   activeJobs.delete(state.jobId);
   const reason = await getJobFailureReason(state);
   const logs = await readJobLogs(state);
+  const podStatusOutput = await getPodFailureDiagnostics(state);
   const failureStage = detectFailureStage({
     reason,
     compileLog: logs.compileLog,
     readerLog: logs.readerLog,
+    podStatusOutput,
   });
   const status =
     failureStage === "TIMEOUT"
@@ -693,9 +939,10 @@ const handleJobFailure = async (state: JobState): Promise<void> => {
       contractClassId: state.contractClassId,
       version: state.version,
       status,
+      aztecVersion: state.aztecVersion,
       error: summarizeFailure(failureStage),
       failureStage,
-      compileOutput: buildCompileOutput(logs),
+      compileOutput: buildCompileOutput({ ...logs, podStatusOutput }),
     });
   } catch (e) {
     logger.error(
@@ -770,7 +1017,6 @@ export const handleCompileRequest = async (
     return;
   }
 
-  // Validate gitRef and subPath to prevent shell injection / path traversal
   if (event.gitRef && !isValidGitRef(event.gitRef)) {
     logger.warn(`Invalid gitRef for jobId=${event.jobId}: ${event.gitRef}`);
     try {
@@ -815,6 +1061,45 @@ export const handleCompileRequest = async (
 
   const jName = jobName(event.jobId);
 
+  let resolvedInputs: { aztecVersion: string; compilerImage: string };
+
+  try {
+    resolvedInputs = await resolveCompileInputs(event);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const failureStage =
+      (error as Partial<ResolveCompileInputsError>).failureStage ?? "INTERNAL";
+    const aztecVersion = (error as Partial<ResolveCompileInputsError>)
+      .aztecVersion;
+
+    logger.warn(
+      `Failed to resolve compile inputs for jobId=${event.jobId}: ${message}`,
+    );
+
+    try {
+      await publishMessage("COMPILE_SOURCE_RESULT_EVENT", {
+        jobId: event.jobId,
+        contractClassId: event.contractClassId,
+        version: event.version,
+        status:
+          failureStage === "CLONE" ? "clone_failed" : "compilation_failed",
+        aztecVersion,
+        error: summarizeFailure(failureStage),
+        failureStage,
+        compileOutput: trimCompileOutput(message),
+      });
+    } catch (publishError) {
+      logger.error(
+        `Failed to publish resolution failure for jobId=${event.jobId}: ${(publishError as Error).message}`,
+      );
+    }
+    return;
+  }
+
+  logger.info(
+    `Resolved compile inputs for jobId=${event.jobId}: aztecVersion=${resolvedInputs.aztecVersion} compilerImage=${resolvedInputs.compilerImage}`,
+  );
+
   const state: JobState = {
     jobId: event.jobId,
     k8sJobName: jName,
@@ -823,7 +1108,8 @@ export const handleCompileRequest = async (
     githubUrl: event.githubUrl,
     gitRef: event.gitRef,
     subPath: event.subPath,
-    aztecVersion: event.aztecVersion,
+    aztecVersion: resolvedInputs.aztecVersion,
+    compilerImage: resolvedInputs.compilerImage,
     createdAt: new Date(),
   };
 
@@ -842,6 +1128,7 @@ export const handleCompileRequest = async (
         contractClassId: event.contractClassId,
         version: event.version,
         status: "compilation_failed",
+        aztecVersion: state.aztecVersion,
         error: summarizeFailure("INTERNAL"),
         failureStage: "INTERNAL",
         compileOutput: trimCompileOutput(
@@ -892,6 +1179,8 @@ export const recoverActiveJobs = async (): Promise<void> => {
           githubUrl: annotations[ANNOTATION_GITHUB_URL] ?? "unknown-recovery",
           aztecVersion:
             annotations[ANNOTATION_AZTEC_VERSION] ?? "unknown-recovery",
+          compilerImage:
+            annotations[ANNOTATION_COMPILER_IMAGE] ?? COMPILER_IMAGE,
           createdAt: job.metadata?.creationTimestamp
             ? new Date(job.metadata.creationTimestamp)
             : new Date(),

@@ -80,7 +80,11 @@ export const callExplorerApi = async ({
     req.write(postData);
     req.end();
   });
-  if (res.statusCode === 200 || res.statusCode === 201) {
+  if (
+    res.statusCode === 200 ||
+    res.statusCode === 201 ||
+    res.statusCode === 202
+  ) {
     logger.info(
       `📲✅ "${loggingString}" SUCCESS! ${JSON.stringify({
         statusCode: res.statusCode,

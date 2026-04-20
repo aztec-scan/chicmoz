@@ -36,7 +36,7 @@ export const CodeDisplay: FC<CodeDisplayProps> = ({ filePath, content }) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full md:min-h-[400px]">
       <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-2 bg-gray-50 dark:bg-gray-800/50">
         <span className="text-sm font-mono text-gray-600 dark:text-gray-300 truncate">
           {filePath}
@@ -50,17 +50,21 @@ export const CodeDisplay: FC<CodeDisplayProps> = ({ filePath, content }) => {
           Copy
         </button>
       </div>
-      <div className="overflow-auto flex-1 bg-[#282c34]">
+      <div className="flex-1 overflow-auto bg-[#282c34]">
         <SyntaxHighlighter
           language={language}
           style={oneDark}
           showLineNumbers
+          wrapLines={false}
           customStyle={{
             margin: 0,
             borderRadius: 0,
             fontSize: "0.8125rem",
             lineHeight: "1.5",
             background: "#282c34",
+            minHeight: "100%",
+            minWidth: "100%",
+            width: "max-content",
           }}
           codeTagProps={{
             style: { background: "transparent" },

@@ -29,6 +29,8 @@ const getStepIndex = (status: SourceVerificationStatus): number => {
 
 const FAILURE_STAGE_LABELS: Record<SourceVerificationFailureStage, string> = {
   INPUT_VALIDATION: "Input validation",
+  NARGO_DISCOVERY: "Nargo discovery",
+  IMAGE_RESOLUTION: "Image resolution",
   CLONE: "Clone",
   CHECKOUT: "Checkout",
   COMPILE: "Compile",
@@ -238,7 +240,7 @@ export const JobStatus: FC<JobStatusProps> = ({
               </div>
               <div>
                 <div className="text-xs font-medium uppercase tracking-[0.16em] text-red-700/60 dark:text-red-300/60">
-                  Aztec version
+                  Compiler version
                 </div>
                 <div className="font-mono text-red-700 dark:text-red-200">
                   {job?.aztecVersion ?? "—"}
@@ -261,14 +263,58 @@ export const JobStatus: FC<JobStatusProps> = ({
 
       {/* Verified state */}
       {isVerified && (
-        <div className="flex items-center gap-2 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4">
-          <CheckCircle2
-            size={16}
-            className="text-green-600 dark:text-green-400"
-          />
-          <span className="text-sm font-medium text-green-700 dark:text-green-300">
-            Source code verified successfully!
-          </span>
+        <div className="flex flex-col gap-3 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle2
+              size={16}
+              className="text-green-600 dark:text-green-400"
+            />
+            <span className="text-sm font-medium text-green-700 dark:text-green-300">
+              Source code verified successfully!
+            </span>
+          </div>
+          <div className="grid gap-3 text-sm md:grid-cols-2">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Repo URL
+              </div>
+              <div className="break-all text-green-700 dark:text-green-200">
+                {job?.githubUrl ?? "—"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Selected ref
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {job?.gitRef ?? "(default branch)"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Sub-path
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {job?.subPath ?? "/"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Compiler version
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {job?.aztecVersion ?? "—"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Verified commit
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {job?.commitHash ?? "—"}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

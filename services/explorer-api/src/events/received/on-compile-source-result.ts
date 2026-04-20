@@ -19,6 +19,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
     artifactJson,
     sourceFiles,
     commitHash,
+    aztecVersion,
     error,
     failureStage,
     compileOutput,
@@ -35,6 +36,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: errorMessage,
+        aztecVersion,
         failureStage,
         compileOutput,
       });
@@ -47,6 +49,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: "Compilation succeeded but no artifact was produced",
+        aztecVersion,
         failureStage: "ARTIFACT_DISCOVERY",
         compileOutput,
       });
@@ -57,6 +60,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
     await db.l2Contract.updateSourceVerificationJobStatus({
       jobId,
       status: "VERIFYING",
+      aztecVersion,
     });
 
     // Verify the artifact bytecode matches the on-chain contract class
@@ -72,6 +76,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
           jobId,
           status: "FAILED",
           error: "Artifact verification failed: bytecode mismatch",
+          aztecVersion,
           failureStage: "ARTIFACT_VERIFICATION",
         });
         return;
@@ -103,6 +108,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
           status: "FAILED",
           error:
             "Verification succeeded but no source files were produced (reader may have failed to parse output)",
+          aztecVersion,
           failureStage: "SOURCE_EXTRACTION",
           compileOutput,
         });
@@ -122,6 +128,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "VERIFIED",
         commitHash,
+        aztecVersion,
         failureStage: undefined,
         compileOutput: undefined,
       });
@@ -138,6 +145,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: `Verification failed: ${errorMsg}`,
+        aztecVersion,
         failureStage: "ARTIFACT_VERIFICATION",
         compileOutput,
       });
@@ -155,6 +163,7 @@ const onCompileSourceResult = async (event: CompileSourceResultEvent) => {
         jobId,
         status: "FAILED",
         error: "Internal error processing compilation result",
+        aztecVersion,
         failureStage: "INTERNAL",
       });
     } catch (updateError) {
