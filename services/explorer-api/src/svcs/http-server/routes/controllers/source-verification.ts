@@ -228,7 +228,7 @@ export const openapi_GET_VERIFY_SOURCE_JOB: OpenAPIObject["paths"] = {
                   githubUrl: { type: "string" },
                   gitRef: { type: "string", nullable: true },
                   subPath: { type: "string", nullable: true },
-                  aztecVersion: { type: "string" },
+                  aztecVersion: { type: "string", nullable: true },
                   status: { type: "string" },
                   commitHash: { type: "string", nullable: true },
                   error: { type: "string", nullable: true },

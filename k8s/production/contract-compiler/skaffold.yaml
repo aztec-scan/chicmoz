@@ -5,7 +5,7 @@ metadata:
 build:
   artifacts:
     - image: registry.digitalocean.com/aztlan-containers/contract-compiler
-      context: services/event-cannon
+      context: ../../../services/event-cannon
       docker:
         dockerfile: Dockerfile.compile-contracts
         buildArgs:

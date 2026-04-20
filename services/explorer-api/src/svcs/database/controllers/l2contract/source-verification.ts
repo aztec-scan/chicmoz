@@ -3,7 +3,7 @@ import type {
   SourceVerificationFailureStage,
   SourceVerificationStatus,
 } from "@chicmoz-pkg/types";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   sourceVerificationJobs,
@@ -195,6 +195,10 @@ export const getContractClassSourceCode = async (
         eq(l2ContractClassRegistered.contractClassId, contractClassId),
         eq(l2ContractClassRegistered.version, version),
       ),
+    )
+    .orderBy(
+      desc(sourceVerificationJobs.updatedAt),
+      desc(sourceVerificationJobs.createdAt),
     )
     .limit(1);
   if (result.length === 0) {

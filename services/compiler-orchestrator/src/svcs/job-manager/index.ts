@@ -72,6 +72,7 @@ const ANNOTATION_AZTEC_VERSION = "chicmoz/aztec-version";
 const ANNOTATION_COMPILER_IMAGE = "chicmoz/compiler-image";
 const NETWORK_LABEL_VALUE = L2_NETWORK_ID.toLowerCase();
 const MAX_COMPILE_OUTPUT_CHARS = 16 * 1024;
+const GIT_COMMAND_TIMEOUT_MS = 30_000;
 const execFileAsync = promisify(execFile);
 
 // --- Helpers ---
@@ -107,7 +108,7 @@ const jobName = (jobId: string): string => `compile-${sanitizeForK8s(jobId)}`;
  * Allows alphanumeric, '.', '-', '_', '/' (for branch names like feature/foo).
  */
 const isValidGitRef = (ref: string): boolean =>
-  /^[\w.\-/]+$/.test(ref) && !ref.includes("..");
+  /^[\w.\-/]+$/.test(ref) && !ref.includes("..") && !ref.startsWith("-");
 
 /**
  * Validate that a sub-path within a repository is safe.
@@ -304,15 +305,36 @@ const runGit = async (
   args: string[],
   cwd?: string,
 ): Promise<{ stdout: string; stderr: string }> => {
-  const { stdout, stderr } = await execFileAsync("git", args, {
-    cwd,
-    maxBuffer: 10 * 1024 * 1024,
-  });
+  try {
+    const { stdout, stderr } = await execFileAsync("git", args, {
+      cwd,
+      maxBuffer: 10 * 1024 * 1024,
+      timeout: GIT_COMMAND_TIMEOUT_MS,
+    });
 
-  return {
-    stdout: stdout.toString(),
-    stderr: stderr.toString(),
-  };
+    return {
+      stdout: stdout.toString(),
+      stderr: stderr.toString(),
+    };
+  } catch (error) {
+    const execError = error as NodeJS.ErrnoException & {
+      killed?: boolean;
+      signal?: NodeJS.Signals;
+    };
+
+    if (
+      execError.killed === true ||
+      execError.signal === "SIGTERM" ||
+      execError.message.includes("timed out")
+    ) {
+      throw createResolveCompileInputsError(
+        "TIMEOUT",
+        `Git command timed out after ${GIT_COMMAND_TIMEOUT_MS}ms: git ${args.join(" ")}`,
+      );
+    }
+
+    throw error;
+  }
 };
 
 const resolveCompileInputs = async (
@@ -347,7 +369,7 @@ const resolveCompileInputs = async (
     if (event.gitRef) {
       try {
         await runGit(
-          ["fetch", "--depth", "1", "origin", event.gitRef],
+          ["fetch", "--depth", "1", "origin", "--", event.gitRef],
           tempDir,
         );
         await runGit(["checkout", "--detach", "FETCH_HEAD"], tempDir);
@@ -359,9 +381,38 @@ const resolveCompileInputs = async (
       }
     }
 
-    const repoPath = event.subPath
-      ? path.join(tempDir, event.subPath)
-      : tempDir;
+    const repoPath = (() => {
+      if (!event.subPath) {
+        return tempDir;
+      }
+
+      if (
+        event.subPath.startsWith("/") ||
+        event.subPath.startsWith("\\") ||
+        path.isAbsolute(event.subPath)
+      ) {
+        throw createResolveCompileInputsError(
+          "CHECKOUT",
+          `Could not enter sub-path: ${event.subPath}`,
+        );
+      }
+
+      const resolvedRepoPath = path.resolve(tempDir, event.subPath);
+      const relativeRepoPath = path.relative(tempDir, resolvedRepoPath);
+
+      if (
+        relativeRepoPath === ".." ||
+        relativeRepoPath.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relativeRepoPath)
+      ) {
+        throw createResolveCompileInputsError(
+          "CHECKOUT",
+          `Could not enter sub-path: ${event.subPath}`,
+        );
+      }
+
+      return resolvedRepoPath;
+    })();
 
     try {
       await stat(repoPath);
