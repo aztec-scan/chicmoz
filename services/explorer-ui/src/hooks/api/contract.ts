@@ -4,10 +4,18 @@ import {
   type ChicmozL2ContractInstanceDeluxe,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
+  type SourceVerificationJob,
 } from "@chicmoz-pkg/types";
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  type UseMutationResult,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 import {
   type ChicmozL2ContractInstanceWithAztecScanNotes,
+  type ContractClassSourceResponse,
+  type VerifySourceResponse,
   ContractL2API,
 } from "~/api";
 import { REFETCH_INTERVAL, queryKeyGenerator } from "./utils";
@@ -74,10 +82,11 @@ export const useContractInstance = (
 ): UseQueryResult<ChicmozL2ContractInstanceDeluxe, Error> => {
   return useQuery<ChicmozL2ContractInstanceDeluxe, Error>({
     queryKey: queryKeyGenerator.contractInstance(address),
-    queryFn: () => ContractL2API.getContractInstance({
-      address,
-      includeArtifactJson,
-    }),
+    queryFn: () =>
+      ContractL2API.getContractInstance({
+        address,
+        includeArtifactJson,
+      }),
   });
 };
 
@@ -135,5 +144,79 @@ export const useDeployedContractInstances = (
   return useQuery<ChicmozL2ContractInstanceDeluxe[], Error>({
     queryKey: queryKeyGenerator.deployedContractInstances(classId),
     queryFn: () => ContractL2API.getContractInstancesByClassId(classId),
+  });
+};
+
+const VERIFICATION_POLL_INTERVAL = 3_000;
+
+export const useContractClassSource = (
+  classId: string,
+  version: string,
+  enabled = true,
+): UseQueryResult<ContractClassSourceResponse, Error> => {
+  return useQuery<ContractClassSourceResponse, Error>({
+    queryKey: queryKeyGenerator.contractClassSource(classId, version),
+    queryFn: () => ContractL2API.getContractClassSource({ classId, version }),
+    enabled,
+  });
+};
+
+export const useVerifySourceJob = (
+  classId: string,
+  version: string,
+  jobId: string | null,
+): UseQueryResult<SourceVerificationJob, Error> => {
+  return useQuery<SourceVerificationJob, Error>({
+    queryKey: queryKeyGenerator.verifySourceJob(classId, version, jobId ?? ""),
+    queryFn: () =>
+      ContractL2API.getVerifySourceJob({
+        classId,
+        version,
+        jobId: jobId!,
+      }),
+    enabled: !!jobId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (
+        status === "PENDING" ||
+        status === "COMPILING" ||
+        status === "VERIFYING"
+      ) {
+        return VERIFICATION_POLL_INTERVAL;
+      }
+      return false;
+    },
+  });
+};
+
+export const useSubmitSourceVerification = (
+  classId: string,
+  version: string,
+): UseMutationResult<
+  VerifySourceResponse,
+  Error,
+  {
+    githubUrl: string;
+    gitRef?: string;
+    subPath?: string;
+    aztecVersion?: string;
+  }
+> => {
+  return useMutation<
+    VerifySourceResponse,
+    Error,
+    {
+      githubUrl: string;
+      gitRef?: string;
+      subPath?: string;
+      aztecVersion?: string;
+    }
+  >({
+    mutationFn: (params) =>
+      ContractL2API.postVerifySource({
+        classId,
+        version,
+        ...params,
+      }),
   });
 };

@@ -8,13 +8,12 @@ const client = axios.create({
 });
 
 client.defaults.headers.get["Content-Type"] = "application/json";
-client.defaults.headers.get["Access-Control-Allow-Credentials"] = "true";
 
 export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
-    public type: "API" | "Schema" = "API"
+    public type: "API" | "Schema" = "API",
   ) {
     super(message);
     this.name = "ApiError";
@@ -59,17 +58,17 @@ client.interceptors.response.use(
         error: new ApiError(
           0,
           error.message || "An unexpected error occurred",
-          "API"
+          "API",
         ),
       };
     }
     throw lastError.error;
-  }
+  },
 );
 
 export const validateResponse = <T extends z.ZodType>(
   schema: T,
-  data: unknown
+  data: unknown,
 ): z.infer<T> => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -87,7 +86,7 @@ export const validateResponse = <T extends z.ZodType>(
         error: new ApiError(
           400,
           `Failed to validate response: ${(error as Error).message}`,
-          "Schema"
+          "Schema",
         ),
       };
     }

@@ -15,7 +15,7 @@ export const chicmozSearchQuerySchema = z.lazy(() =>
         if (val.startsWith("0x")) {
           return val;
         } else if (val.match(/^\d+$/)?.length) {
-          return parseInt(val);
+          return BigInt(val);
         } else {
           return `0x${val}`;
         }

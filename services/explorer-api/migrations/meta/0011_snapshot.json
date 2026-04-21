@@ -1,5 +1,5 @@
 {
-  "id": "c23644a8-af03-4a5a-bdbd-b8e67164d394",
+  "id": "88191577-d54d-4325-9adb-4de3485d7c23",
   "prevId": "b445686d-e704-470f-ada7-aafc28ee88a3",
   "version": "7",
   "dialect": "postgresql",
@@ -154,59 +154,6 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.tx_public_call_request": {
-      "name": "tx_public_call_request",
-      "schema": "",
-      "columns": {
-        "tx_hash": {
-          "name": "tx_hash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "msg_sender": {
-          "name": "msg_sender",
-          "type": "varchar(66)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "contract_address": {
-          "name": "contract_address",
-          "type": "varchar(66)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_static_call": {
-          "name": "is_static_call",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "calldata_hash": {
-          "name": "calldata_hash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "call_type": {
-          "name": "call_type",
-          "type": "call_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'revertible'"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "tx_public_call_request_tx_hash_calldata_hash_pk": {
-          "name": "tx_public_call_request_tx_hash_calldata_hash_pk",
-          "columns": ["tx_hash", "calldata_hash"]
-        }
-      },
       "uniqueConstraints": {}
     },
     "public.body": {
@@ -1437,6 +1384,18 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "source_code_commit_hash": {
+          "name": "source_code_commit_hash",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_code": {
+          "name": "source_code",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1973,6 +1932,99 @@
       },
       "uniqueConstraints": {}
     },
+    "public.source_verification_jobs": {
+      "name": "source_verification_jobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "contract_class_id": {
+          "name": "contract_class_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "github_url": {
+          "name": "github_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "git_ref": {
+          "name": "git_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sub_path": {
+          "name": "sub_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aztec_version": {
+          "name": "aztec_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "commit_hash": {
+          "name": "commit_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "client_ip": {
+          "name": "client_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "source_verification_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.tx": {
       "name": "tx",
       "schema": "",
@@ -1994,102 +2046,6 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
-        },
-        "expiration_timestamp": {
-          "name": "expiration_timestamp",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "gas_limit_da": {
-          "name": "gas_limit_da",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "gas_limit_l2": {
-          "name": "gas_limit_l2",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "teardown_gas_limit_da": {
-          "name": "teardown_gas_limit_da",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "teardown_gas_limit_l2": {
-          "name": "teardown_gas_limit_l2",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "max_fee_per_da_gas": {
-          "name": "max_fee_per_da_gas",
-          "type": "numeric(77, 0)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "max_fee_per_l2_gas": {
-          "name": "max_fee_per_l2_gas",
-          "type": "numeric(77, 0)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "max_priority_fee_per_da_gas": {
-          "name": "max_priority_fee_per_da_gas",
-          "type": "numeric(77, 0)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "max_priority_fee_per_l2_gas": {
-          "name": "max_priority_fee_per_l2_gas",
-          "type": "numeric(77, 0)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "gas_used_da": {
-          "name": "gas_used_da",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "gas_used_l2": {
-          "name": "gas_used_l2",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "fee_payment_method": {
-          "name": "fee_payment_method",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "note_hash_count": {
-          "name": "note_hash_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "nullifier_count": {
-          "name": "nullifier_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "l2_to_l1_msg_count": {
-          "name": "l2_to_l1_msg_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "private_log_count": {
-          "name": "private_log_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -2714,10 +2670,10 @@
     }
   },
   "enums": {
-    "public.call_type": {
-      "name": "call_type",
+    "public.source_verification_status": {
+      "name": "source_verification_status",
       "schema": "public",
-      "values": ["non_revertible", "revertible", "teardown"]
+      "values": ["PENDING", "COMPILING", "VERIFYING", "VERIFIED", "FAILED"]
     }
   },
   "schemas": {},

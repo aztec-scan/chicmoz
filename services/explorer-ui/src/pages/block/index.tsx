@@ -5,18 +5,20 @@ import { BaseLayout } from "~/layout/base-layout";
 import {
   useAvarageBlockTime,
   useAvarageFees,
+  useChainInfo,
   useSubTitle,
   usePaginatedTableBlocks,
   useLatestTableBlocks,
   useLatestTableBlocksByHeightRange,
 } from "~/hooks";
-import { formatDuration } from "~/lib/utils";
+import { formatDuration, getFeeJuiceSymbol } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 
 export const Blocks: FC = () => {
   useSubTitle(routes.blocks.children.index.title);
 
   const { data: latestBlocksData } = useLatestTableBlocks();
+  const { data: chainInfo } = useChainInfo();
 
   // State for block range (for range selector)
   const [startBlock, setStartBlock] = useState<number | undefined>(undefined);
@@ -35,7 +37,7 @@ export const Blocks: FC = () => {
       startBlock === undefined &&
       endBlock === undefined
     ) {
-      const latestHeight = Number(latestBlocksData[0].height);
+      const latestHeight = Number(latestBlocksData[0].height.toString());
       setEndBlock(latestHeight);
       setStartBlock(Math.max(1, latestHeight - 19)); // Show 20 blocks by default
     }
@@ -113,7 +115,7 @@ export const Blocks: FC = () => {
       </div>
       <div className="grid grid-cols-2 gap-3 my-10 md:gap-5">
         <InfoBadge
-          title="Average fees (FJ)"
+          title={`Average fees (${getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol)})`}
           isLoading={loadingAvarageFees}
           error={errorAvarageFees}
           data={avarageFees}

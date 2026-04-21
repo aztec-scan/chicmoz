@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { ChicmozContractInstanceBalance } from "@chicmoz-pkg/types";
+import { type ChicmozContractInstanceBalance } from "@chicmoz-pkg/types";
+import { getFeeJuiceSymbol } from "~/lib/utils";
 
 interface ChartDataPoint {
   timestamp: number;
@@ -11,6 +12,7 @@ export const useBalanceChartData = (
   historyData: ChicmozContractInstanceBalance[],
   startDate: string,
   endDate: string,
+  feeJuiceSymbol?: string,
 ) => {
   return useMemo(() => {
     // Sort data by timestamp to ensure chronological order
@@ -20,15 +22,21 @@ export const useBalanceChartData = (
 
     // Filter data based on date range
     const filteredData = (() => {
-      if (!startDate && !endDate) return sortedData;
+      if (!startDate && !endDate) {
+        return sortedData;
+      }
 
       return sortedData.filter((item) => {
         const itemDate = new Date(item.timestamp);
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate + "T23:59:59") : null; // Include end of day
 
-        if (start && itemDate < start) return false;
-        if (end && itemDate > end) return false;
+        if (start && itemDate < start) {
+          return false;
+        }
+        if (end && itemDate > end) {
+          return false;
+        }
         return true;
       });
     })();
@@ -103,7 +111,10 @@ export const useBalanceChartData = (
     const timeFormatter = getTimeFormatter();
 
     const formatTooltipValue = (value: number) => {
-      return [`${value.toLocaleString()} Fee Juice`, "Balance"];
+      return [
+        `${value.toLocaleString()} ${getFeeJuiceSymbol(feeJuiceSymbol)}`,
+        "Balance",
+      ];
     };
 
     const formatTooltipLabel = (timestamp: number) => {
@@ -137,5 +148,5 @@ export const useBalanceChartData = (
       minDateForInput,
       maxDateForInput,
     };
-  }, [historyData, startDate, endDate]);
+  }, [historyData, startDate, endDate, feeJuiceSymbol]);
 };

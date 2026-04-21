@@ -1,9 +1,9 @@
-import { type FC } from "react";
-import { DataTable } from "~/components/data-table";
-import { ValidatorsTableColumns } from "./validators-columns";
 import { type ChicmozL1L2Validator } from "@chicmoz-pkg/types";
+import { type FC, useMemo } from "react";
+import { DataTable } from "~/components/data-table";
+import { createValidatorsTableColumns } from "./validators-columns";
 
-interface Props {
+type Props = {
   title?: string;
   validators?: ChicmozL1L2Validator[];
   isLoading?: boolean;
@@ -18,7 +18,10 @@ interface Props {
   hasNextPage?: boolean;
   hasPreviousPage?: boolean;
   totalCount?: number;
-}
+  stakingAssetAddress?: string;
+  stakingAssetDecimals?: number;
+  stakingAssetSymbol?: string;
+};
 
 export const ValidatorsTable: FC<Props> = ({
   title,
@@ -35,7 +38,20 @@ export const ValidatorsTable: FC<Props> = ({
   hasNextPage,
   hasPreviousPage,
   totalCount,
+  stakingAssetAddress,
+  stakingAssetDecimals,
+  stakingAssetSymbol,
 }) => {
+  const columns = useMemo(
+    () =>
+      createValidatorsTableColumns({
+        stakingAssetAddress,
+        stakingAssetDecimals,
+        stakingAssetSymbol,
+      }),
+    [stakingAssetAddress, stakingAssetDecimals, stakingAssetSymbol],
+  );
+
   if (!validators) {
     return <div>No data</div>;
   }
@@ -53,7 +69,7 @@ export const ValidatorsTable: FC<Props> = ({
         <DataTable
           isLoading={isLoading}
           data={validators}
-          columns={ValidatorsTableColumns}
+          columns={columns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

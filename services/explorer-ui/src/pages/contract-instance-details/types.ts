@@ -22,7 +22,7 @@ export const tabSchema = z.object({
 export type Tab = z.infer<typeof tabSchema>;
 
 export const verifiedDeploymentTabs: Tab[] = [
-  { id: "feeJuiceBalance", label: "Feejuice Balance" },
+  { id: "feeJuiceBalance", label: "Token Balance" },
   { id: "verifiedDeployment", label: "Verified deployment" },
   { id: "contactDetails", label: "Contact details" },
   { id: "aztecScanNotes", label: "Aztec Scan notes" },

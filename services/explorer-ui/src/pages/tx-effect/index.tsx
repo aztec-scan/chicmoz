@@ -4,6 +4,7 @@ import { Loader } from "~/components/loader";
 import { PendingTxsTable } from "~/components/pending-txs/pending-txs-table";
 import { TxEffectsTable } from "~/components/tx-effects/tx-effects-table";
 import {
+  useChainInfo,
   useLatestTableTxEffects,
   usePendingTxs,
   useSubTitle,
@@ -37,6 +38,7 @@ export const TxEffects: FC = () => {
     isLoading: isLoadingPendingTxs,
     error: pendingTxsError,
   } = usePendingTxs();
+  const { data: chainInfo } = useChainInfo();
 
   return (
     <BaseLayout>
@@ -69,6 +71,9 @@ export const TxEffects: FC = () => {
             txEffects={latestTxEffectsData}
             isLoading={isLoadingTxEffects}
             error={txEffectsError}
+            feeJuiceAddress={chainInfo?.l1ContractAddresses.feeJuiceAddress}
+            feeJuiceDecimals={chainInfo?.feeJuiceDecimals}
+            feeJuiceSymbol={chainInfo?.feeJuiceSymbol}
           />
         </div>
         <div className="bg-white rounded-lg shadow-lg w-full md:w-1/2">

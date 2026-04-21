@@ -26,7 +26,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { getExistingRollupVersion } from "../l2block/get-latest.js";
 
 type GetBlocksByRange = {
@@ -41,7 +41,7 @@ export const getBlocksForUiTable = async ({
   const whereRange = getBlocksWhereRange({ from, to });
 
   const rollupVersion =
-    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
 
   // Initial query to get basic block information
   const dbRes = await db()
@@ -168,7 +168,7 @@ export const getTxEffectForUiTable = async (
   args: GetTableTxEffectByBlockHeight | GetTableTxEffectsByBlockHeightRange,
 ): Promise<UiTxEffectTable[]> => {
   const rollupVersion =
-    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
 
   const joinQuery = db()
     .select({

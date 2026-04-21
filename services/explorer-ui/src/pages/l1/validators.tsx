@@ -2,6 +2,7 @@ import { type FC, useState } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { ValidatorsTable } from "~/components/validators/validators-table";
 import { useSubTitle } from "~/hooks";
+import { useChainInfo } from "~/hooks/api";
 import {
   usePaginatedValidators,
   useValidatorTotals,
@@ -22,6 +23,7 @@ export const ValidatorsPage: FC = () => {
   );
 
   const { data: totalsData } = useValidatorTotals();
+  const { data: chainInfo } = useChainInfo();
 
   // Determine if there's a next page based on data length
   const hasNextPage = data ? data.length === pageSize : true;
@@ -81,7 +83,7 @@ export const ValidatorsPage: FC = () => {
           title="All Validators"
           validators={sortedValidatorsData}
           isLoading={isLoading}
-          error={error || undefined}
+          error={error ?? undefined}
           maxEntries={pageSize}
           currentPage={currentPage}
           onPageChange={handlePageChange}
@@ -90,6 +92,11 @@ export const ValidatorsPage: FC = () => {
           hasNextPage={hasNextPage}
           hasPreviousPage={hasPreviousPage}
           totalCount={totalCount}
+          stakingAssetAddress={
+            chainInfo?.l1ContractAddresses.stakingAssetAddress
+          }
+          stakingAssetDecimals={chainInfo?.stakingAssetDecimals}
+          stakingAssetSymbol={chainInfo?.stakingAssetSymbol}
         />
       </div>
     </BaseLayout>

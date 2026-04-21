@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { aztecAddressSchema, hexStringSchema } from "../general.js";
-import { frNumberSchema, frSchema } from "./utils.js";
+import { frDecimalStringSchema, frSchema } from "./utils.js";
 
 export const callTypeSchema = z.enum([
   "non_revertible",
@@ -64,7 +64,7 @@ export const chicmozL2TxEffectSchema = z.object({
   ),
   txHash: hexStringSchema,
   txBirthTimestamp: z.coerce.number().optional(),
-  transactionFee: frNumberSchema,
+  transactionFee: frDecimalStringSchema,
   noteHashes: z.array(frSchema),
   nullifiers: z.array(frSchema),
   l2ToL1Msgs: z.array(frSchema),

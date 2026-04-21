@@ -2,6 +2,8 @@ apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
   name: only-swagger-prod
+requires:
+  - path: ./gateways/skaffold.swagger.yaml
 deploy:
   kubectl:
     flags:

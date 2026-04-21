@@ -10,11 +10,13 @@ export const v4_0_3 = "4181870535";
 export const v4_0_0_devnet_2_patch_0 = "615022430";
 export const sandbox_v4_0_0_devnet_2_patch_1 = "126353417";
 export const v4_1_0_testnet_rc_2 = "4127419662";
-export const v4_1_1 = "2934756905";
+export const v4_1_3 = "2934756905";
+export const sandbox_v4_1_3 = "344372055";
 
 // Current active version to use for fetching blocks
 // NOTE: must match the aztec version running in the environment.
 export const CURRENT_ROLLUP_VERSION =
-  process.env.L2_NETWORK_ID === "SANDBOX"
-    ? sandbox_v4_0_0_devnet_2_patch_1
-    : v4_1_1;
+  process.env.L2_NETWORK_ID === "SANDBOX" ? sandbox_v4_1_3 : v4_1_3;
+
+export const CURRENT_ROLLUP_VERSION_NUMBER = Number(CURRENT_ROLLUP_VERSION);
+export const CURRENT_ROLLUP_VERSION_BIGINT = BigInt(CURRENT_ROLLUP_VERSION);

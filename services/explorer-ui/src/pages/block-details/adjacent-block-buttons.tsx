@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { startTransition } from "react";
 
 interface AdjacentBlockButtonsProps {
-  blockNumber: number;
+  blockNumber: bigint;
 }
 
 export const AdjecentBlockButtons: React.FC<AdjacentBlockButtonsProps> = ({
@@ -10,7 +10,7 @@ export const AdjecentBlockButtons: React.FC<AdjacentBlockButtonsProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const navigateToBlock = (blockNum: number) => {
+  const navigateToBlock = (blockNum: bigint) => {
     startTransition(() => {
       void navigate({
         to: "/blocks/$blockNumber",
@@ -21,13 +21,13 @@ export const AdjecentBlockButtons: React.FC<AdjacentBlockButtonsProps> = ({
   return (
     <div className="flex justify-between ml-2 mr-2">
       <button
-        onClick={() => navigateToBlock(blockNumber - 1)}
+        onClick={() => navigateToBlock(blockNumber - 1n)}
         className="text-sm text-primary underline hover:text-primary/70 transition-colors"
       >
         Previous Block
       </button>
       <button
-        onClick={() => navigateToBlock(blockNumber + 1)}
+        onClick={() => navigateToBlock(blockNumber + 1n)}
         className="text-sm text-primary underline hover:text-primary/70 transition-colors"
       >
         Next Block

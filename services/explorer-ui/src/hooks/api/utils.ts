@@ -4,7 +4,7 @@ export const statsKey = "stats";
 export const queryKeyGenerator = {
   txEffectsByBlockHeight: (height: string | number | bigint | undefined) => [
     "txEffectsByBlockHeight",
-    Number(height),
+    height?.toString(),
   ],
   txEffectByHash: (hash: string) => ["txEffectByHash", hash],
   latestTxEffects: ["latestTxEffects"],
@@ -98,5 +98,16 @@ export const queryKeyGenerator = {
     "paginatedTableBlocks",
     page,
     pageSize,
+  ],
+  contractClassSource: (classId: string, version: string) => [
+    "contractClassSource",
+    classId,
+    version,
+  ],
+  verifySourceJob: (classId: string, version: string, jobId: string) => [
+    "verifySourceJob",
+    classId,
+    version,
+    jobId,
   ],
 };

@@ -1,8 +1,9 @@
-import { type L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type ColumnDef } from "@tanstack/react-table";
+import { CopyableAmount } from "~/components/copyable-amount";
 import { DataTableColumnHeader } from "~/components/data-table";
 import { truncateHashString } from "~/lib/create-hash-string";
+import { formatCompactUnits } from "~/lib/utils";
 import { routes } from "~/routes/__root";
 import { EtherscanAddressLink } from "../etherscan-address-link";
 import { TimeAgoCell } from "../formated-time-cell";
@@ -23,10 +24,21 @@ const getLinkCell = (content: string, endpoint: string) => (
   <EtherscanAddressLink
     content={truncateHashString(content)}
     endpoint={endpoint}
+    showExternalLinkIcon={false}
   />
 );
 
-export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
+type CreateValidatorsTableColumnsArgs = {
+  stakingAssetAddress?: string;
+  stakingAssetDecimals?: number;
+  stakingAssetSymbol?: string;
+};
+
+export const createValidatorsTableColumns = ({
+  stakingAssetAddress,
+  stakingAssetDecimals,
+  stakingAssetSymbol,
+}: CreateValidatorsTableColumnsArgs): ColumnDef<ValidatorTableSchema>[] => [
   {
     accessorKey: "attester",
     header: ({ column }) => (
@@ -101,9 +113,31 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
     ),
     cell: ({ row }) => {
       const rawStake = row.getValue("stake");
-      const stake = (Number(rawStake) / 10 ** 18).toFixed(2);
+      if (typeof rawStake !== "bigint") {
+        return null;
+      }
 
-      return <div className="font-mono flex items-center">{stake} STK</div>; // TODO: 1. use Viem to get the decimals 2. use Viem to get the symbol
+      const stake = formatCompactUnits(rawStake, stakingAssetDecimals);
+      const symbol = stakingAssetSymbol ?? "AZTEC";
+
+      return (
+        <div className="font-mono flex items-center gap-1">
+          <CopyableAmount
+            displayAmount={stake}
+            rawAmount={rawStake.toString()}
+          />
+          {stakingAssetAddress ? (
+            <EtherscanAddressLink
+              content={symbol}
+              endpoint={`/token/${stakingAssetAddress}`}
+              showExternalLinkIcon={false}
+              tooltipContent="View token address on Etherscan"
+            />
+          ) : (
+            <span>{symbol}</span>
+          )}
+        </div>
+      );
     },
     enableSorting: true,
     enableHiding: false,
@@ -118,7 +152,10 @@ export const ValidatorsTableColumns: ColumnDef<ValidatorTableSchema>[] = [
       />
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status") as L1L2ValidatorStatus;
+      const status = row.getValue("status");
+      if (typeof status !== "number") {
+        return null;
+      }
       return <ValidatorStatusBadge status={status} />;
     },
     enableSorting: true,
