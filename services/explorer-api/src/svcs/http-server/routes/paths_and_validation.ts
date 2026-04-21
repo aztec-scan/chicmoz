@@ -177,6 +177,12 @@ export const getContractClassesByCurrentClassIdSchema = z.object({
   }),
 });
 
+export const getContractClassesSchema = z.object({
+  query: z.object({
+    verifiedSourceOnly: z.coerce.boolean().optional(),
+  }),
+});
+
 export const getArtifactsByArtifactHashSchema = z.object({
   params: z.object({
     [artifactHash]: hexStringSchema,
