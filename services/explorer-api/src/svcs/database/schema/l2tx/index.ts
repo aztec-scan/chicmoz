@@ -5,11 +5,15 @@ import { integer, numeric, pgTable, varchar } from "drizzle-orm/pg-core";
 import { droppedTx } from "../dropped-tx/index.js";
 import { generateTimestampColumn } from "../utils.js";
 import { l2TxPublicCallRequest } from "../l2public-call/index.js";
+import { l2TxL2ToL1Msg } from "../l2pending-l2-to-l1-msg/index.js";
 
 export const l2Tx = pgTable("tx", {
   txHash: varchar("hash").notNull().$type<HexString>().primaryKey(),
   feePayer: generateAztecAddressColumn("fee_payer").notNull(),
   birthTimestamp: generateTimestampColumn("birth_timestamp").notNull(),
+  // The outermost initiator (account contract that signed the tx).
+  // Absent for private-only transactions.
+  initiator: generateAztecAddressColumn("initiator"),
   // Expiration
   expirationTimestamp: integer("expiration_timestamp"),
   // Gas limits
@@ -46,4 +50,5 @@ export const l2TxRelations = relations(l2Tx, ({ one, many }) => ({
     references: [droppedTx.txHash],
   }),
   publicCallRequests: many(l2TxPublicCallRequest),
+  l2ToL1Msgs: many(l2TxL2ToL1Msg),
 }));

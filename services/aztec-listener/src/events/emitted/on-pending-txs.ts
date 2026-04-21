@@ -1,5 +1,10 @@
 import { Tx } from "@aztec/aztec.js/tx";
-import { ChicmozL2PendingTx, PublicCallRequest } from "@chicmoz-pkg/types";
+import {
+  ChicmozL2PendingTx,
+  ChicmozL2PendingL2ToL1Msg,
+  HexString,
+  PublicCallRequest,
+} from "@chicmoz-pkg/types";
 import { MEMPOOL_SYNC_GRACE_PERIOD_MS } from "../../environment.js";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
@@ -13,7 +18,30 @@ const isNonNull = (address: string) => address !== NULL_ADDRESS;
 const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
   const requests: PublicCallRequest[] = [];
 
-  if (!tx.data.forPublic) {return requests;}
+  if (!tx.data.forPublic) {
+    return requests;
+  }
+
+  // Build a lookup map calldataHash → functionSelector from the calldata-enriched requests.
+  // TODO: ABI decoding — map functionSelector to human-readable function name + decoded params.
+  const calldataMap = new Map<string, string>();
+  try {
+    for (const r of tx.getPublicCallRequestsWithCalldata()) {
+      calldataMap.set(
+        r.request.calldataHash.toString(),
+        r.functionSelector.toString(),
+      );
+    }
+    const teardownWithCalldata = tx.getTeardownPublicCallRequestWithCalldata();
+    if (teardownWithCalldata) {
+      calldataMap.set(
+        teardownWithCalldata.request.calldataHash.toString(),
+        teardownWithCalldata.functionSelector.toString(),
+      );
+    }
+  } catch {
+    // getPublicCallRequestsWithCalldata may throw if calldata is unavailable; proceed without selectors
+  }
 
   const nonRevertible =
     tx.data.forPublic.nonRevertibleAccumulatedData.publicCallRequests;
@@ -33,6 +61,7 @@ const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
         isStaticCall: req.isStaticCall,
         calldataHash: req.calldataHash.toString(),
         callType: "non_revertible",
+        functionSelector: calldataMap.get(req.calldataHash.toString()),
       });
     }
   }
@@ -49,6 +78,7 @@ const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
         isStaticCall: req.isStaticCall,
         calldataHash: req.calldataHash.toString(),
         callType: "revertible",
+        functionSelector: calldataMap.get(req.calldataHash.toString()),
       });
     }
   }
@@ -65,10 +95,49 @@ const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
       isStaticCall: teardown.isStaticCall,
       calldataHash: teardown.calldataHash.toString(),
       callType: "teardown",
+      functionSelector: calldataMap.get(teardown.calldataHash.toString()),
     });
   }
 
   return requests;
+};
+
+const extractInitiator = (
+  publicCallRequests: PublicCallRequest[],
+): string | undefined => {
+  // The outermost initiator is the msgSender of the first non-revertible call
+  // (the account contract that signed and submitted the transaction).
+  // Falls back to the first available call request for private-only txs that still
+  // have some public component, or undefined for fully private transactions.
+  return (
+    publicCallRequests.find((r) => r.callType === "non_revertible")
+      ?.msgSender ?? publicCallRequests[0]?.msgSender
+  );
+};
+
+const extractL2ToL1Msgs = (
+  tx: Tx,
+  txHash: HexString,
+): ChicmozL2PendingL2ToL1Msg[] => {
+  const msgs: ChicmozL2PendingL2ToL1Msg[] = [];
+  const raw = tx.data.getNonEmptyL2ToL1Msgs();
+
+  for (let i = 0; i < raw.length; i++) {
+    const scoped = raw[i];
+    // Filter out empty / zero messages
+    if (scoped.message.isEmpty()) {
+      continue;
+    }
+    msgs.push({
+      txHash,
+      index: i,
+      contractAddress: scoped.contractAddress.toString(),
+      recipient: scoped.message.recipient.toString(),
+      content: scoped.message.content.toString(),
+    });
+  }
+
+  return msgs;
 };
 
 const extractGasSettings = (tx: Tx) => {
@@ -91,15 +160,18 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
 
     const currentPendingTxs: ChicmozL2PendingTx[] = await Promise.all(
       pendingTxs.map((tx) => {
+        const txHash = tx.getTxHash().toString() ;
         const publicCallRequests = extractPublicCallRequests(tx);
         const gasSettings = extractGasSettings(tx);
         const gasUsed = tx.data.gasUsed;
         const stats = tx.getStats();
+        const l2ToL1Msgs = extractL2ToL1Msgs(tx, txHash);
 
         return {
-          txHash: tx.getTxHash().toString(),
+          txHash,
           feePayer: tx.data.feePayer.toString(),
           birthTimestamp: new Date().getTime(),
+          initiator: extractInitiator(publicCallRequests),
           expirationTimestamp: Number(tx.data.expirationTimestamp),
           gasLimitDa: gasSettings.gasLimitDa,
           gasLimitL2: gasSettings.gasLimitL2,
@@ -118,6 +190,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
           privateLogCount: tx.data.getNonEmptyPrivateLogs().length,
           publicCallRequests:
             publicCallRequests.length > 0 ? publicCallRequests : undefined,
+          l2ToL1Msgs: l2ToL1Msgs.length > 0 ? l2ToL1Msgs : undefined,
         };
       }),
     );

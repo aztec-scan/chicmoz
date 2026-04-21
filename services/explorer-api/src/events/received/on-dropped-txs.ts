@@ -11,6 +11,7 @@ import { storeDroppedTx } from "../../svcs/database/controllers/dropped-tx/store
 import { deleteTx } from "../../svcs/database/controllers/l2Tx/index.js";
 import { txEffectExists } from "../../svcs/database/controllers/l2TxEffect/get-tx-effect.js";
 import { deletePublicCall } from "../../svcs/database/controllers/l2Public-call/delete.js";
+import { deleteL2ToL1Msgs } from "../../svcs/database/controllers/l2PendingL2ToL1Msg/delete.js";
 
 const onDroppedTxs = async ({ txs }: DroppedTxsEvent) => {
   logger.info(`🗑️ Received ${txs.length} dropped txs to handle`);
@@ -27,6 +28,9 @@ const onDroppedTxs = async ({ txs }: DroppedTxsEvent) => {
 
       // Delete public call data
       await deletePublicCall(droppedTx.txHash);
+
+      // Delete L2-to-L1 messages
+      await deleteL2ToL1Msgs(droppedTx.txHash);
 
       // Delete from pending transactions
       await deleteTx(droppedTx.txHash);

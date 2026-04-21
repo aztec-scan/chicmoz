@@ -19,6 +19,7 @@ const publicCallRequestSchema = {
       type: "string",
       enum: ["non_revertible", "revertible", "teardown"],
     },
+    functionSelector: { type: "string", nullable: true },
   },
 };
 

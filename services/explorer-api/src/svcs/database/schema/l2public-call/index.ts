@@ -25,6 +25,8 @@ export const l2TxPublicCallRequest = pgTable(
     isStaticCall: boolean("is_static_call").notNull(),
     calldataHash: varchar("calldata_hash").notNull().$type<HexString>(),
     callType: callTypeEnum("call_type").notNull().default("revertible"),
+    // Raw 4-byte function selector. TODO: ABI decoding to human-readable name + params.
+    functionSelector: varchar("function_selector"),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.txHash, table.calldataHash] }),

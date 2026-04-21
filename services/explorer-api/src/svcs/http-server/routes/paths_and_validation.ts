@@ -47,6 +47,10 @@ export const paths = {
   publicDataContract: `/l2/public-call-requests/contract/:${address}`,
   publicDataSender: `/l2/public-call-requests/sender/:${address}`,
 
+  l2ToL1MsgsByTx: `/l2/l2-to-l1-msgs/tx/:${txEffectHash}`,
+  l2ToL1MsgsByContract: `/l2/l2-to-l1-msgs/contract/:${address}`,
+  l2ToL1MsgsByRecipient: `/l2/l2-to-l1-msgs/recipient/:${address}`,
+
   droppedTxByHash: `/l2/dropped-txs/:${txEffectHash}`,
 
   contractClass: `/l2/contract-classes/:${contractClassId}/versions/:${version}`,
@@ -138,6 +142,12 @@ export const getTxEffectsByTxHashSchema = z.object({
 });
 
 export const getPublicCallRequestsByAddressSchema = z.object({
+  params: z.object({
+    [address]: hexStringSchema,
+  }),
+});
+
+export const getL2ToL1MsgsByAddressSchema = z.object({
   params: z.object({
     [address]: hexStringSchema,
   }),

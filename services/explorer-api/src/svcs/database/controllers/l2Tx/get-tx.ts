@@ -8,6 +8,7 @@ import { desc, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 import { l2Tx } from "../../../database/schema/l2tx/index.js";
 import { getPublicCallRequestsByTxHash } from "../l2Public-call/get.js";
+import { getL2ToL1MsgsByTxHash } from "../l2PendingL2ToL1Msg/get.js";
 
 export const getTxs = async (): Promise<ChicmozL2PendingTx[]> => {
   const res = await db()
@@ -38,11 +39,15 @@ export const getTxByHash = async (
   }
 
   const tx = res[0];
-  const publicCallRequests = await getPublicCallRequestsByTxHash(hash);
+  const [publicCallRequests, l2ToL1Msgs] = await Promise.all([
+    getPublicCallRequestsByTxHash(hash),
+    getL2ToL1MsgsByTxHash(hash),
+  ]);
 
   return chicmozL2PendingTxSchema.parse({
     ...tx,
     publicCallRequests:
       publicCallRequests.length > 0 ? publicCallRequests : undefined,
+    l2ToL1Msgs: l2ToL1Msgs.length > 0 ? l2ToL1Msgs : undefined,
   });
 };

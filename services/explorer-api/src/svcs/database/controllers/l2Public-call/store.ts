@@ -22,6 +22,7 @@ export const storePublicCallRequests = async (
     isStaticCall: request.isStaticCall,
     calldataHash: request.calldataHash,
     callType: request.callType,
+    functionSelector: request.functionSelector ?? null,
   }));
 
   await db().insert(l2TxPublicCallRequest).values(values);

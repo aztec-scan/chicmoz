@@ -11,9 +11,20 @@ CREATE TABLE IF NOT EXISTS "tx_public_call_request" (
 	"is_static_call" boolean NOT NULL,
 	"calldata_hash" varchar NOT NULL,
 	"call_type" "call_type" DEFAULT 'revertible' NOT NULL,
+	"function_selector" varchar,
 	CONSTRAINT "tx_public_call_request_tx_hash_calldata_hash_pk" PRIMARY KEY("tx_hash","calldata_hash")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "tx_l2_to_l1_msg" (
+	"tx_hash" varchar NOT NULL,
+	"index" integer NOT NULL,
+	"contract_address" varchar(66) NOT NULL,
+	"recipient" varchar(42) NOT NULL,
+	"content" varchar NOT NULL,
+	CONSTRAINT "tx_l2_to_l1_msg_tx_hash_index_pk" PRIMARY KEY("tx_hash","index")
+);
+--> statement-breakpoint
+ALTER TABLE "tx" ADD COLUMN "initiator" varchar(66);--> statement-breakpoint
 ALTER TABLE "tx" ADD COLUMN "expiration_timestamp" integer;--> statement-breakpoint
 ALTER TABLE "tx" ADD COLUMN "gas_limit_da" integer;--> statement-breakpoint
 ALTER TABLE "tx" ADD COLUMN "gas_limit_l2" integer;--> statement-breakpoint

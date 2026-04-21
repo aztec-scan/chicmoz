@@ -10,6 +10,7 @@ const selectColumns = {
   isStaticCall: l2TxPublicCallRequest.isStaticCall,
   calldataHash: l2TxPublicCallRequest.calldataHash,
   callType: l2TxPublicCallRequest.callType,
+  functionSelector: l2TxPublicCallRequest.functionSelector,
 };
 
 export const getPublicCallRequestsByTxHash = async (
