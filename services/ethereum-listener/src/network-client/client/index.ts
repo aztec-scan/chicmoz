@@ -169,6 +169,11 @@ const hardcodedRollupGenesisBlocks = (
     rollupAddress.toLowerCase() === "0xcd1a7be18501092f3ba8d80ce5629501ba178de0"
   ) {
     return 10286799n;
+  } else if (
+    networkId === "MAINNET" &&
+    rollupAddress.toLowerCase() === "0xae2001f7e21d5ecabf6234e9fdd1e76f50f74962"
+  ) {
+    return 24586322n;
   }
   return 0n;
 };
