@@ -7,6 +7,7 @@ COPY . .
 RUN yarn build
 
 FROM node:22-trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/main/services/compiler-orchestrator
 COPY --from=BUILD /usr/main /usr/main
 

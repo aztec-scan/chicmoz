@@ -130,6 +130,25 @@ export type SourceVerificationStatus = z.infer<
   typeof sourceVerificationStatusEnum
 >;
 
+export const sourceVerificationFailureStageEnum = z.enum([
+  "INPUT_VALIDATION",
+  "NARGO_DISCOVERY",
+  "IMAGE_RESOLUTION",
+  "CLONE",
+  "CHECKOUT",
+  "COMPILE",
+  "TRANSPILATION",
+  "ARTIFACT_DISCOVERY",
+  "ARTIFACT_VERIFICATION",
+  "SOURCE_EXTRACTION",
+  "TIMEOUT",
+  "INTERNAL",
+]);
+
+export type SourceVerificationFailureStage = z.infer<
+  typeof sourceVerificationFailureStageEnum
+>;
+
 export const sourceCodeEntrySchema = z.object({
   path: z.string(),
   content: z.string(),
@@ -144,7 +163,6 @@ export const compileSourceRequestSchema = z.object({
   githubUrl: z.string().url(),
   gitRef: z.string().optional(),
   subPath: z.string().optional(),
-  aztecVersion: z.string(),
 });
 
 export type CompileSourceRequest = z.infer<typeof compileSourceRequestSchema>;
@@ -154,10 +172,13 @@ export const compileSourceResultSchema = z.object({
   contractClassId: frSchema,
   version: z.number(),
   status: z.enum(["success", "compilation_failed", "clone_failed", "timeout"]),
+  aztecVersion: z.string().optional(),
   artifactJson: z.string().optional(),
   sourceFiles: sourceCodeEntrySchema.array().optional(),
   commitHash: z.string().optional(),
   error: z.string().optional(),
+  failureStage: sourceVerificationFailureStageEnum.optional(),
+  compileOutput: z.string().optional(),
 });
 
 export type CompileSourceResult = z.infer<typeof compileSourceResultSchema>;
@@ -169,10 +190,12 @@ export const sourceVerificationJobSchema = z.object({
   githubUrl: z.string().url(),
   gitRef: z.string().nullable().optional(),
   subPath: z.string().nullable().optional(),
-  aztecVersion: z.string(),
+  aztecVersion: z.string().nullable().optional(),
   commitHash: z.string().nullable().optional(),
   status: sourceVerificationStatusEnum,
   error: z.string().nullable().optional(),
+  failureStage: sourceVerificationFailureStageEnum.nullable().optional(),
+  compileOutput: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

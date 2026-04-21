@@ -1,4 +1,4 @@
-import {
+import type {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
@@ -9,6 +9,7 @@ import {
   ChicmozL2RpcNodeError,
   ChicmozL2Sequencer,
   L2NetworkId,
+  SourceVerificationFailureStage,
 } from "@chicmoz-pkg/types";
 
 export type NewBlockEvent = {
@@ -63,7 +64,6 @@ export type CompileSourceRequestEvent = {
   githubUrl: string;
   gitRef?: string;
   subPath?: string;
-  aztecVersion: string;
 };
 
 export type CompileSourceResultEvent = {
@@ -71,10 +71,13 @@ export type CompileSourceResultEvent = {
   contractClassId: string;
   version: number;
   status: "success" | "compilation_failed" | "clone_failed" | "timeout";
+  aztecVersion?: string;
   artifactJson?: string;
   sourceFiles?: Array<{ path: string; content: string }>;
   commitHash?: string;
   error?: string;
+  failureStage?: SourceVerificationFailureStage;
+  compileOutput?: string;
 };
 
 export function generateL2TopicName(
