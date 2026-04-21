@@ -467,6 +467,7 @@ const buildCompileScript = (
   const cdSubPath = _subPath
     ? `cd "/workspace/repo/$SUB_PATH"`
     : "cd /workspace/repo";
+  const sourceRoot = _subPath ? `/workspace/repo/$SUB_PATH` : "/workspace/repo";
 
   return [
     `set -e`,
@@ -516,9 +517,13 @@ const buildCompileScript = (
     `cp "$SELECTED_ARTIFACT_PATH" /output/artifact/`,
     `rm -f "$ARTIFACT_MARKER_FILE"`,
     `echo "===STAGE:SOURCE_EXTRACTION==="`,
-    `echo "Copying source files (excluding .git)..."`,
+    `echo "Copying source files from ${_subPath ?? "(repo root)"} (excluding .git)..."`,
     `mkdir -p /output/source`,
+    `SOURCE_ROOT="${sourceRoot}"`,
+    `cd "$SOURCE_ROOT"`,
     `find . -not -path './.git/*' -not -name '.git' | cpio -pdm /output/source/ 2>/dev/null || cp -r . /output/source/ && rm -rf /output/source/.git`,
+    `mkdir -p /output/source/__repo_root__`,
+    `find /workspace/repo -maxdepth 1 -type f '(' -iname 'LICENSE' -o -iname 'LICENSE.*' -o -iname 'LICENCE' -o -iname 'LICENCE.*' ')' -exec cp {} /output/source/__repo_root__/ ';'`,
     `echo "Done."`,
   ].join(" && ");
 };
@@ -536,7 +541,7 @@ echo ""
 echo "===ARTIFACT_END==="
 echo "===SOURCES_START==="
 cd /output/source
-find . -type f \\( -name "*.nr" -o -name "Nargo.toml" \\) | sort | while read f; do
+find . -type f \\( -name "*.nr" -o -name "Nargo.toml" -o -path './__repo_root__/LICENSE*' -o -path './__repo_root__/LICENCE*' \\) | sort | while read f; do
   clean_path=$(echo "$f" | sed 's|^\\./||')
   content=$(cat "$f" | sed 's/\\\\/\\\\\\\\/g' | sed 's/"/\\\\"/g' | sed ':a;N;$!ba;s/\\n/\\\\n/g')
   echo "{\\"path\\":\\"$clean_path\\",\\"content\\":\\"$content\\"}"
