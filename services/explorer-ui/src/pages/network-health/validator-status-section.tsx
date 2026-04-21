@@ -1,47 +1,47 @@
 import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { useMemo, type FC } from "react";
-import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { useValidatorTotals } from "~/hooks/api/l1-l2-validator";
 import { routes } from "~/routes/__root";
 
 export const ValidatorStatusSection: FC = () => {
   const {
-    data: validators,
-    isLoading: validatorsLoading,
-    error: validatorsError,
-  } = useL1L2Validators();
+    data: validatorTotals,
+    isLoading: validatorTotalsLoading,
+    error: validatorTotalsError,
+  } = useValidatorTotals();
 
-  // Count validators for each status
   const validatorStatusCounts = useMemo(() => {
-    if (!validators) {
-      return [];
+    if (!validatorTotals) {
+      return [] as Array<readonly [number, number]>;
     }
 
-    // Create a map to store counts for each status
-    const counts = new Map<number, number>();
+    const entries: Array<readonly [number, number]> = [];
 
-    // Count validators for each status
-    validators.forEach((validator) => {
-      const status = validator.status;
-      counts.set(status, (counts.get(status) ?? 0) + 1);
-    });
+    for (const [statusName, count] of Object.entries(
+      validatorTotals.statusCounts,
+    )) {
+      const status =
+        L1L2ValidatorStatus[statusName as keyof typeof L1L2ValidatorStatus];
+      const countValue = typeof count === "number" ? count : Number(count);
 
-    // Convert to array of [status, count] pairs
-    return Array.from(counts.entries()).sort(
-      ([statusA], [statusB]) => statusA - statusB,
-    ); // Sort by status
-  }, [validators]);
+      if (typeof status === "number" && Number.isFinite(countValue)) {
+        entries.push([status, countValue]);
+      }
+    }
 
-  // Get total validators count
-  const totalValidators = validators?.length ?? 0;
+    return entries.sort(([statusA], [statusB]) => statusA - statusB);
+  }, [validatorTotals]);
+
+  const totalValidators = validatorTotals?.total ?? 0;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
       <h2 className="mb-4">Validators Status</h2>
-      {validatorsLoading ? (
+      {validatorTotalsLoading ? (
         <p>Loading validators...</p>
-      ) : validatorsError ? (
-        <p>Error loading validators: {validatorsError.message}</p>
+      ) : validatorTotalsError ? (
+        <p>Error loading validators: {validatorTotalsError.message}</p>
       ) : (
         <div className="flex flex-col">
           <div className="mb-4">

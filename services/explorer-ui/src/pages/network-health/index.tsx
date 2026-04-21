@@ -83,8 +83,7 @@ export const NetworkHealth: FC = () => {
     let data = "0";
 
     if (validatorTotals) {
-      const totalValidators =
-        validatorTotals.validating + validatorTotals.nonValidating;
+      const totalValidators = validatorTotals.total;
       const validatingValidatorsPercentage =
         totalValidators > 0
           ? Math.round((validatorTotals.validating / totalValidators) * 100)
