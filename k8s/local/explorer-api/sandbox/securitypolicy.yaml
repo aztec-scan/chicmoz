@@ -13,6 +13,8 @@ spec:
       - http://swagger.chicmoz.localhost
       - http://localhost:5173
       - http://sandbox.chicmoz.localhost
+      - http://remote.chicmoz.localhost
+      - http://remote.chicmoz.localhost:8080
     allowMethods:
       - GET
       - PUT

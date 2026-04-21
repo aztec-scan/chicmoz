@@ -16,6 +16,13 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: api-sandbox-remote
+      hostname: api.remote.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     - name: ui-sandbox
       hostname: sandbox.chicmoz.localhost
       port: 80
