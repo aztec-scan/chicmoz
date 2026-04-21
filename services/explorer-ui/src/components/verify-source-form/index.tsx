@@ -24,7 +24,6 @@ export const VerifySourceForm: FC<VerifySourceFormProps> = ({
   const [githubUrl, setGithubUrl] = useState("");
   const [gitRef, setGitRef] = useState("");
   const [subPath, setSubPath] = useState("");
-  const [aztecVersion, setAztecVersion] = useState("4.0.3");
   const [jobId, setJobId] = useState<string | null>(null);
 
   const mutation = useSubmitSourceVerification(classId, version);
@@ -47,7 +46,6 @@ export const VerifySourceForm: FC<VerifySourceFormProps> = ({
         githubUrl: githubUrl.trim(),
         gitRef: gitRef.trim() || undefined,
         subPath: subPath.trim() || undefined,
-        aztecVersion: aztecVersion.trim() || undefined,
       },
       {
         onSuccess: (data) => {
@@ -133,7 +131,7 @@ export const VerifySourceForm: FC<VerifySourceFormProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="git-ref"
@@ -173,27 +171,6 @@ export const VerifySourceForm: FC<VerifySourceFormProps> = ({
             />
             <span className="text-xs text-gray-400">
               Path to contract within repo
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="aztec-version"
-              className="text-sm font-medium dark:text-gray-200"
-            >
-              Aztec Version
-            </label>
-            <Input
-              id="aztec-version"
-              type="text"
-              placeholder="4.0.3"
-              value={aztecVersion}
-              onChange={(e) => {
-                setAztecVersion(e.target.value);
-              }}
-            />
-            <span className="text-xs text-gray-400">
-              Compiler version to use
             </span>
           </div>
         </div>

@@ -199,7 +199,6 @@ export const useSubmitSourceVerification = (
     githubUrl: string;
     gitRef?: string;
     subPath?: string;
-    aztecVersion?: string;
   }
 > => {
   return useMutation<
@@ -209,7 +208,6 @@ export const useSubmitSourceVerification = (
       githubUrl: string;
       gitRef?: string;
       subPath?: string;
-      aztecVersion?: string;
     }
   >({
     mutationFn: (params) =>
