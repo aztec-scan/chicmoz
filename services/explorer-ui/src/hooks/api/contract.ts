@@ -29,6 +29,16 @@ export const useContractClasses = (
   });
 };
 
+export const useVerifiedSourceContractClasses = (): UseQueryResult<
+  ChicmozL2ContractClassRegisteredEvent[],
+  Error
+> => {
+  return useQuery<ChicmozL2ContractClassRegisteredEvent[], Error>({
+    queryKey: queryKeyGenerator.contractClass({ verifiedSourceOnly: true }),
+    queryFn: () => ContractL2API.getContractClasses(undefined, true),
+  });
+};
+
 export const useLatestContractClasses = (
   classId?: string,
 ): UseQueryResult<ChicmozL2ContractClassRegisteredEvent[], Error> => {

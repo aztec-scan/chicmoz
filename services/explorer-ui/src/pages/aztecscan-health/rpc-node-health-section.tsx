@@ -1,15 +1,25 @@
 import { type ChicmozL2RpcNodeError } from "@chicmoz-pkg/types";
 import { type FC } from "react";
-import { SequencerErrorsTable } from "~/components/sequencer-errors";
-import { useChainErrors, useSequencers } from "~/hooks";
-import { SequencerHealthCard } from "./sequencer-health-card";
+import { RpcNodeErrorsTable } from "~/components/rpc-node-errors";
+import { useChainErrors, useRpcNodes } from "~/hooks";
+import { RpcNodeHealthCard } from "./rpc-node-health-card";
 
-export const SequencerHealthSection: FC = () => {
+interface Props {
+  maxAgeDays?: number;
+}
+
+const getRpcNodeErrorIdentifiers = (error: ChicmozL2RpcNodeError): string[] => {
+  return [error.rpcNodeName, error.rpcUrl].filter((value): value is string =>
+    Boolean(value),
+  );
+};
+
+export const RpcNodeHealthSection: FC<Props> = ({ maxAgeDays }) => {
   const {
-    data: allSequencers,
-    isLoading: sequencersLoading,
-    error: sequencersError,
-  } = useSequencers();
+    data: allRpcNodes,
+    isLoading: rpcNodesLoading,
+    error: rpcNodesError,
+  } = useRpcNodes();
 
   const {
     data: chainErrors,
@@ -17,46 +27,54 @@ export const SequencerHealthSection: FC = () => {
     error: errorsError,
   } = useChainErrors();
 
-  const sequencers = (allSequencers ?? [])
+  const maxAgeMs =
+    maxAgeDays !== undefined ? maxAgeDays * 24 * 60 * 60 * 1000 : undefined;
+  const oldestAllowedTimestamp =
+    maxAgeMs !== undefined ? Date.now() - maxAgeMs : undefined;
+
+  const rpcNodes = (allRpcNodes ?? [])
+    .filter((rpcNode) => {
+      if (oldestAllowedTimestamp === undefined) {
+        return true;
+      }
+
+      return new Date(rpcNode.lastSeenAt).getTime() >= oldestAllowedTimestamp;
+    })
     .sort((a, b) => {
       return (
         new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
       );
     })
     .reduce(
-      (acc, sequencer) => {
-        if (acc?.some((s) => s.rpcUrl === sequencer.rpcUrl)) {
+      (acc: typeof allRpcNodes, rpcNode) => {
+        if (acc?.some((item) => item.rpcNodeName === rpcNode.rpcNodeName)) {
           return acc;
         }
-        return [...(acc ?? []), sequencer];
+        return [...(acc ?? []), rpcNode];
       },
-      [] as typeof allSequencers,
+      [] as typeof allRpcNodes,
     );
 
-  // Function to get errors for a specific sequencer
-  const getSequencerErrors = (
-    sequencerRpcUrl?: string,
-  ): ChicmozL2RpcNodeError[] => {
-    if (!chainErrors || !sequencerRpcUrl) return [];
+  const getRpcNodeErrors = (rpcNodeName?: string): ChicmozL2RpcNodeError[] => {
+    if (!chainErrors || !rpcNodeName) return [];
 
-    return chainErrors.filter(
-      (error) =>
-        error.rpcUrl === sequencerRpcUrl || error.nodeName === sequencerRpcUrl,
+    return chainErrors.filter((error) =>
+      getRpcNodeErrorIdentifiers(error).includes(rpcNodeName),
     );
   };
 
-  // Function to get errors that don't match any sequencer
   const getUnmatchedErrors = (): ChicmozL2RpcNodeError[] => {
-    if (!chainErrors || !sequencers) return [];
+    if (!chainErrors || !allRpcNodes) return [];
 
-    const sequencerRpcUrls = sequencers.map((s) => s.rpcUrl).filter(Boolean);
+    const rpcNodeIdentifiers = allRpcNodes
+      .map((rpcNode) => rpcNode.rpcNodeName)
+      .filter((value): value is string => Boolean(value));
 
     return chainErrors.filter((error) => {
-      // Error is unmatched if its rpcUrl or nodeName doesn't match any sequencer's rpcUrl
-      const errorIdentifiers = [error.rpcUrl, error.nodeName].filter(Boolean);
+      const errorIdentifiers = getRpcNodeErrorIdentifiers(error);
 
       return !errorIdentifiers.some((identifier) =>
-        sequencerRpcUrls.includes(identifier),
+        rpcNodeIdentifiers.includes(identifier),
       );
     });
   };
@@ -64,15 +82,15 @@ export const SequencerHealthSection: FC = () => {
   const unmatchedErrors = getUnmatchedErrors();
 
   // Loading state
-  if (sequencersLoading || errorsLoading) {
+  if (rpcNodesLoading || errorsLoading) {
     return (
       <div>
-        <h2 className="mb-6 text-primary dark:text-white">Sequencer Health</h2>
+        <h2 className="mb-6 text-primary dark:text-white">RPC Node Health</h2>
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <div className="text-gray-600 dark:text-gray-400">
-              Loading sequencer data...
+              Loading rpc node data...
             </div>
           </div>
         </div>
@@ -81,18 +99,18 @@ export const SequencerHealthSection: FC = () => {
   }
 
   // Error state
-  if (sequencersError || errorsError) {
+  if (rpcNodesError || errorsError) {
     return (
       <div>
-        <h2 className="mb-6 text-primary dark:text-white">Sequencer Health</h2>
+        <h2 className="mb-6 text-primary dark:text-white">RPC Node Health</h2>
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
           <div className="text-center py-8">
             <div className="text-red-500 mb-4">
-              <div className="font-medium">Error Loading Sequencer Data</div>
+              <div className="font-medium">Error Loading RPC Node Data</div>
             </div>
-            {sequencersError && (
+            {rpcNodesError && (
               <div className="text-red-500 text-sm mb-2">
-                Sequencers: {sequencersError.message}
+                RPC Nodes: {rpcNodesError.message}
               </div>
             )}
             {errorsError && (
@@ -106,28 +124,26 @@ export const SequencerHealthSection: FC = () => {
     );
   }
 
-  // No sequencers found
-  if (!sequencers || sequencers.length === 0) {
+  if (!rpcNodes || rpcNodes.length === 0) {
     return (
       <div>
-        <h2 className="mb-6 text-primary dark:text-white">Sequencer Health</h2>
+        <h2 className="mb-6 text-primary dark:text-white">RPC Node Health</h2>
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
           <div className="text-center py-8">
             <div className="text-gray-500 dark:text-gray-400 mb-4">
-              <div className="font-medium">No Sequencers Found</div>
+              <div className="font-medium">No RPC Nodes Found</div>
               <div className="text-sm">
-                No sequencer data is currently available
+                No rpc node data is currently available
               </div>
             </div>
           </div>
         </div>
 
-        {/* Show unmatched errors even when no sequencers */}
         {unmatchedErrors.length > 0 && (
           <div className="mb-8">
-            <SequencerErrorsTable
+            <RpcNodeErrorsTable
               title={`Unmatched Errors (${unmatchedErrors.length})`}
-              sequencerErrors={unmatchedErrors}
+              rpcNodeErrors={unmatchedErrors}
               isLoading={false}
               error={null}
               disableSizeSelector={true}
@@ -144,7 +160,7 @@ export const SequencerHealthSection: FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-primary dark:text-white">
-          Sequencer Health ({sequencers.length})
+          RPC Node Health ({rpcNodes.length})
         </h2>
         <div className="text-sm text-gray-600 dark:text-gray-400">
           Total Errors: {chainErrors?.length ?? 0}
@@ -152,34 +168,32 @@ export const SequencerHealthSection: FC = () => {
       </div>
 
       <div className="space-y-6">
-        {sequencers.map((sequencer) => {
-          const sequencerErrors = getSequencerErrors(sequencer.rpcUrl);
+        {rpcNodes.map((rpcNode) => {
+          const rpcNodeErrors = getRpcNodeErrors(rpcNode.rpcNodeName);
 
           return (
-            <SequencerHealthCard
-              key={sequencer.enr}
-              sequencer={sequencer}
-              sequencerErrors={sequencerErrors}
+            <RpcNodeHealthCard
+              key={rpcNode.rpcNodeName}
+              rpcNode={rpcNode}
+              rpcNodeErrors={rpcNodeErrors}
             />
           );
         })}
       </div>
 
-      {/* Unmatched Errors Section */}
       {unmatchedErrors.length > 0 && (
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6 dark:bg-gray-800">
-          {/* Sequencer Header */}
           <div className="flex flex-col gap-4 mb-6">
             <div className="flex-1">
               <h3 className="text-lg font-medium mb-4 text-primary dark:text-white">
                 Unmatched Errors
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Errors that could not be associated with any known sequencer
+                Errors that could not be associated with any known rpc node
               </p>
             </div>
-            <SequencerErrorsTable
-              sequencerErrors={unmatchedErrors}
+            <RpcNodeErrorsTable
+              rpcNodeErrors={unmatchedErrors}
               isLoading={false}
               error={null}
               disableSizeSelector={true}
@@ -201,7 +215,7 @@ export const SequencerHealthSection: FC = () => {
             <div className="text-green-600 dark:text-green-400">
               <div className="font-medium">No Errors Detected</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                All sequencers are operating without any reported errors
+                All rpc nodes are operating without any reported errors
               </div>
             </div>
           </div>

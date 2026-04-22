@@ -5,7 +5,7 @@ import {
   useChainErrors,
   useChainInfo,
   useContractInstancesWithBalance,
-  useSequencers,
+  useRpcNodes,
   useSubTitle,
 } from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
@@ -34,10 +34,10 @@ export const DevPage: FC = () => {
   } = useChainErrors();
 
   const {
-    data: sequencers,
-    isLoading: isSequencersLoading,
-    error: sequencersError,
-  } = useSequencers();
+    data: rpcNodes,
+    isLoading: isRpcNodesLoading,
+    error: rpcNodesError,
+  } = useRpcNodes();
 
   const {
     data: contractInstancesWithBalance,
@@ -156,16 +156,16 @@ stack:          ${error.stack}
           </>,
         )}
         {generateCard(
-          "Sequencers",
+          "RPC Nodes",
           <>
-            {isSequencersLoading && <p>Loading...</p>}
-            {sequencersError && <p>Error: {sequencersError.message}</p>}
-            {sequencers && (
+            {isRpcNodesLoading && <p>Loading...</p>}
+            {rpcNodesError && <p>Error: {rpcNodesError.message}</p>}
+            {rpcNodes && (
               <pre>
                 {JSON.stringify(
-                  sequencers.map((s) => ({
-                    ...s,
-                    rollupVersion: s.rollupVersion.toString(),
+                  rpcNodes.map((rpcNode) => ({
+                    ...rpcNode,
+                    rollupVersion: rpcNode.rollupVersion.toString(),
                   })),
                   null,
                   2,

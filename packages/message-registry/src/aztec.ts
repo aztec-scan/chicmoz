@@ -7,7 +7,6 @@ import type {
   ChicmozL2PendingTx,
   ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
-  ChicmozL2Sequencer,
   L2NetworkId,
   SourceVerificationFailureStage,
 } from "@chicmoz-pkg/types";
@@ -36,7 +35,7 @@ export type CatchupBlockEvent = NewBlockEvent;
 
 export type ChicmozL2RpcNodeAliveEvent = {
   rpcUrl: ChicmozL2RpcNode["rpcUrl"];
-  rpcName: ChicmozL2RpcNode["name"];
+  rpcNodeName: ChicmozL2RpcNode["rpcNodeName"];
   timestamp: number;
 };
 
@@ -44,8 +43,8 @@ export type ChicmozL2RpcNodeErrorEvent = {
   nodeError: ChicmozL2RpcNodeError;
 };
 
-export type ChicmozSequencerEvent = {
-  sequencer: ChicmozL2Sequencer;
+export type ChicmozL2RpcNodeInfoEvent = {
+  rpcNode: ChicmozL2RpcNode;
 };
 
 export type ChicmozChainInfoEvent = {
@@ -95,7 +94,7 @@ export type L2_MESSAGES = {
   CONTRACT_INSTANCE_BALANCE_EVENT: ContractInstanceBalanceEvent;
   L2_RPC_NODE_ERROR_EVENT: ChicmozL2RpcNodeErrorEvent;
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
-  SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;
+  L2_RPC_NODE_INFO_EVENT: ChicmozL2RpcNodeInfoEvent;
   CHAIN_INFO_EVENT: ChicmozChainInfoEvent;
   L2_BLOCK_FINALIZATION_UPDATE_EVENT: ChicmozL2BlockFinalizationUpdateEvent;
   COMPILE_SOURCE_REQUEST_EVENT: CompileSourceRequestEvent;

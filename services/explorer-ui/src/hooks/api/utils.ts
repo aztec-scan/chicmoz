@@ -36,10 +36,12 @@ export const queryKeyGenerator = {
   contractClass: ({
     classId,
     version,
+    verifiedSourceOnly,
   }: {
     classId?: string;
     version?: string;
-  }) => ["contractClass", classId, version],
+    verifiedSourceOnly?: boolean;
+  }) => ["contractClass", classId, version, verifiedSourceOnly],
   contractClassPrivateFunctions: (classId: string) => [
     "contractClassPrivateFunctions",
     classId,
@@ -75,8 +77,8 @@ export const queryKeyGenerator = {
   ],
   chainInfo: ["chainInfo"],
   chainErrors: ["chainErrors"],
-  sequencers: ["sequencers"],
-  sequencer: (enr: string) => ["sequencer", enr],
+  rpcNodes: ["rpcNodes"],
+  rpcNode: (rpcNodeName: string) => ["rpcNode", rpcNodeName],
   feeRecipients: ["feeRecipients"],
   l1L2Validators: ["l1L2Validators"],
   l1L2ValidatorTotals: ["l1L2ValidatorTotals"],
