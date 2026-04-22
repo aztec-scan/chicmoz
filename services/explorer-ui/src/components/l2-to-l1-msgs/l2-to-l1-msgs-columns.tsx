@@ -114,3 +114,12 @@ export const L2ToL1MsgsColumnsWithoutTxHash: ColumnDef<ChicmozL2PendingL2ToL1Msg
   L2ToL1MsgsColumns.filter(
     (col) => (col as { accessorKey?: string }).accessorKey !== "txHash",
   );
+
+/**
+ * Columns variant without the recipient column — used on pages where the
+ * recipient is already shown as the page address (e.g. L1 address details).
+ */
+export const L2ToL1MsgsColumnsWithoutRecipient: ColumnDef<ChicmozL2PendingL2ToL1Msg>[] =
+  L2ToL1MsgsColumns.filter(
+    (col) => (col as { accessorKey?: string }).accessorKey !== "recipient",
+  );
