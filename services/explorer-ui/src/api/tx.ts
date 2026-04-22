@@ -45,6 +45,14 @@ export const TxAPI = {
     );
     return validateResponse(z.array(publicCallRequestSchema), response.data);
   },
+  getPublicCallRequestsByTxHash: async (
+    txHash: string,
+  ): Promise<PublicCallRequest[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2PublicCallRequestsByTxHash(txHash),
+    );
+    return validateResponse(z.array(publicCallRequestSchema), response.data);
+  },
   getL2ToL1MsgsByRecipient: async (
     address: string,
   ): Promise<ChicmozL2PendingL2ToL1Msg[]> => {

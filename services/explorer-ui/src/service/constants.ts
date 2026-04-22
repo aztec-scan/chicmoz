@@ -65,6 +65,8 @@ export const aztecExplorer = {
     `/l2/l2-to-l1-msgs/contract/${address}`,
   getL2PublicCallRequestsBySender: (address: string) =>
     `/l2/public-call-requests/sender/${address}`,
+  getL2PublicCallRequestsByTxHash: (txHash: string) =>
+    `/l2/public-call-requests/tx/${txHash}`,
   getL2ToL1MsgsByRecipient: (address: string) =>
     `/l2/l2-to-l1-msgs/recipient/${address}`,
 

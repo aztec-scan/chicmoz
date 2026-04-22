@@ -118,7 +118,7 @@ export const TxEffectDetails: FC = () => {
               )}
             />
           </div>
-          <TabsSection txEffects={txEffects} />
+          <TabsSection txEffects={txEffects} txHash={txEffects.txHash} />
         </div>
       </div>
     </BaseLayout>

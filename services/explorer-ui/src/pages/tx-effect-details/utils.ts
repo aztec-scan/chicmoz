@@ -109,6 +109,7 @@ export const getDroppedTxEffectData = (data: ChicmozL2DroppedTx) => [
 
 export const mapTxEffectsData = (
   data?: ChicmozL2TxEffectDeluxe,
+  hasPublicCallRequests?: boolean,
 ): Record<TabId, boolean> => {
   return {
     privateLogs: !!data?.privateLogs?.length,
@@ -118,5 +119,6 @@ export const mapTxEffectsData = (
     noteHashes: !!data?.noteHashes?.length,
     l2ToL1Msgs: !!data?.l2ToL1Msgs?.length,
     publicDataWrites: !!data?.publicDataWrites?.length,
+    publicCallRequests: hasPublicCallRequests ?? false,
   };
 };

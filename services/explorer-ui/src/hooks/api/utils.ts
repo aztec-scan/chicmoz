@@ -123,4 +123,8 @@ export const queryKeyGenerator = {
     "l2ToL1MsgsByRecipient",
     address,
   ],
+  publicCallRequestsByTxHash: (txHash: string) => [
+    "publicCallRequestsByTxHash",
+    txHash,
+  ],
 };

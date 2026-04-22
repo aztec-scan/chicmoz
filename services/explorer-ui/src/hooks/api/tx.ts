@@ -59,3 +59,11 @@ export const useL2ToL1MsgsByRecipient = (
     queryKey: queryKeyGenerator.l2ToL1MsgsByRecipient(address),
     queryFn: () => TxAPI.getL2ToL1MsgsByRecipient(address),
   });
+
+export const usePublicCallRequestsByTxHash = (
+  txHash: string,
+): UseQueryResult<PublicCallRequest[], Error> =>
+  useQuery({
+    queryKey: queryKeyGenerator.publicCallRequestsByTxHash(txHash),
+    queryFn: () => TxAPI.getPublicCallRequestsByTxHash(txHash),
+  });
