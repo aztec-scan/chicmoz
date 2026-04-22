@@ -35,15 +35,15 @@ spec:
             - name: EXPLORER_API_URL
               value: "http://explorer-api-sandbox-service:80"
             - name: INIFINITE_LOOP
-              value: "false"
+              value: "true"
             - name: SCENARIO_SIMPLE_DEFAULT_ACCOUNT
-              value: "false"
+              value: "true"
             - name: SCENARIO_TOKEN_CONTRACT
-              value: "false"
+              value: "true"
             - name: SCENARIO_FUNCTIONS_VOTE
-              value: "false"
+              value: "true"
             - name: SCENARIO_SIMPLE_CONTRACT
-              value: "false"
+              value: "true"
             - name: SCENARIO_SIMPLE_LOG
               value: "true"
             - name: SCENARIO_L1L2_PUBLIC_MESSAGING
@@ -52,11 +52,11 @@ spec:
               value: "true"
             #TODO: https://github.com/aztec-scan/chicmoz/issues/375
             - name: SCENARIO_DEPLOY_AND_UPDATE
-              value: "false"
+              value: "true"
             - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY
               value: "true"
             - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT
-              value: "false"
+              value: "true"
             - name: SCENARIO_VERIFY_SOURCE_CODE
-              value: "false"
+              value: "true"
 status: {}
