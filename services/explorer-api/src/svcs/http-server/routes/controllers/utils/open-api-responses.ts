@@ -13,13 +13,13 @@ import {
   chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema,
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
-  chicmozL2RpcNodeDeluxeSchema,
-  chicmozL2RpcNodeSchema,
   chicmozL2RpcNodeErrorSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozReorgSchema,
   chicmozSearchResultsSchema,
+  publicChicmozL2RpcNodeDeluxeSchema,
+  publicChicmozL2RpcNodeSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { logger } from "../../../../../logger.js";
@@ -232,7 +232,7 @@ export const reorgResponseArray = getResponse(
   "reorgArray",
 );
 
-const cleanedRpcNodeDeluxeSchema = chicmozL2RpcNodeDeluxeSchema.extend({
+const cleanedRpcNodeDeluxeSchema = publicChicmozL2RpcNodeDeluxeSchema.extend({
   rollupVersion: z.string(), // Convert BigInt to string
 });
 
@@ -241,7 +241,7 @@ export const rpcNodeResponse = getResponse(
   "l2RpcNodeDeluxe",
 );
 
-const cleanedRpcNodeSchema = chicmozL2RpcNodeSchema.extend({
+const cleanedRpcNodeSchema = publicChicmozL2RpcNodeSchema.extend({
   rollupVersion: z.string(), // Convert BigInt to string
 });
 

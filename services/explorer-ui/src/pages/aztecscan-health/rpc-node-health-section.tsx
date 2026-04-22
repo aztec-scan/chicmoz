@@ -4,13 +4,17 @@ import { RpcNodeErrorsTable } from "~/components/rpc-node-errors";
 import { useChainErrors, useRpcNodes } from "~/hooks";
 import { RpcNodeHealthCard } from "./rpc-node-health-card";
 
+interface Props {
+  maxAgeDays?: number;
+}
+
 const getRpcNodeErrorIdentifiers = (error: ChicmozL2RpcNodeError): string[] => {
   return [error.rpcNodeName, error.rpcUrl].filter((value): value is string =>
     Boolean(value),
   );
 };
 
-export const RpcNodeHealthSection: FC = () => {
+export const RpcNodeHealthSection: FC<Props> = ({ maxAgeDays }) => {
   const {
     data: allRpcNodes,
     isLoading: rpcNodesLoading,
@@ -23,7 +27,19 @@ export const RpcNodeHealthSection: FC = () => {
     error: errorsError,
   } = useChainErrors();
 
+  const maxAgeMs =
+    maxAgeDays !== undefined ? maxAgeDays * 24 * 60 * 60 * 1000 : undefined;
+  const oldestAllowedTimestamp =
+    maxAgeMs !== undefined ? Date.now() - maxAgeMs : undefined;
+
   const rpcNodes = (allRpcNodes ?? [])
+    .filter((rpcNode) => {
+      if (oldestAllowedTimestamp === undefined) {
+        return true;
+      }
+
+      return new Date(rpcNode.lastSeenAt).getTime() >= oldestAllowedTimestamp;
+    })
     .sort((a, b) => {
       return (
         new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
@@ -48,10 +64,10 @@ export const RpcNodeHealthSection: FC = () => {
   };
 
   const getUnmatchedErrors = (): ChicmozL2RpcNodeError[] => {
-    if (!chainErrors || !rpcNodes) return [];
+    if (!chainErrors || !allRpcNodes) return [];
 
-    const rpcNodeIdentifiers = rpcNodes
-      .flatMap((rpcNode) => [rpcNode.rpcNodeName, rpcNode.rpcUrl])
+    const rpcNodeIdentifiers = allRpcNodes
+      .map((rpcNode) => rpcNode.rpcNodeName)
       .filter((value): value is string => Boolean(value));
 
     return chainErrors.filter((error) => {

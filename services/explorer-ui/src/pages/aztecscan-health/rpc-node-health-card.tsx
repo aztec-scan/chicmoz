@@ -1,6 +1,6 @@
 import {
   type ChicmozL2RpcNodeError,
-  type ChicmozL2RpcNode,
+  type PublicChicmozL2RpcNode,
 } from "@chicmoz-pkg/types";
 import { type FC } from "react";
 import { DeterministicStatusBadge } from "~/components/deterministic-status-badge";
@@ -10,7 +10,7 @@ import { useReactiveTime } from "~/hooks/use-reactive-time";
 import { formatTimeSince } from "~/lib/utils";
 
 interface Props {
-  rpcNode: ChicmozL2RpcNode;
+  rpcNode: PublicChicmozL2RpcNode;
   rpcNodeErrors: ChicmozL2RpcNodeError[];
 }
 

@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   chicmozL2RpcNodeSchema,
   chicmozL2RpcNodeErrorSchema,
+  publicChicmozL2RpcNodeSchema,
   chicmozL2SequencerSchema,
 } from "./general.js";
 import { chicmozL2BlockSchema } from "./l2Block.js";
@@ -108,8 +109,16 @@ export const chicmozL2RpcNodeDeluxeSchema = z.object({
   errors: z.array(chicmozL2RpcNodeErrorSchema),
 });
 
+export const publicChicmozL2RpcNodeDeluxeSchema = z.object({
+  ...publicChicmozL2RpcNodeSchema.shape,
+  errors: z.array(chicmozL2RpcNodeErrorSchema),
+});
+
 export type ChicmozL2RpcNodeDeluxe = z.infer<
   typeof chicmozL2RpcNodeDeluxeSchema
+>;
+export type PublicChicmozL2RpcNodeDeluxe = z.infer<
+  typeof publicChicmozL2RpcNodeDeluxeSchema
 >;
 
 export const chicmozL2SequencerDeluxeSchema = z.object({

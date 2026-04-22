@@ -1,5 +1,11 @@
+import {
+  jsonStringify,
+  publicChicmozL2RpcNodeDeluxeSchema,
+  publicChicmozL2RpcNodeSchema,
+} from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
+import { z } from "zod";
 import { controllers as db } from "../../../database/index.js";
 import { getRpcNodeSchema } from "../paths_and_validation.js";
 import {
@@ -26,7 +32,13 @@ export const GET_L2_RPC_NODES = asyncHandler(async (_req, res) => {
   if (!rpcNodes) {
     throw new Error("RPC nodes not found");
   }
-  res.status(200).json(JSON.parse(rpcNodes));
+  const validatedRpcNodes = z
+    .array(publicChicmozL2RpcNodeSchema)
+    .parse(JSON.parse(rpcNodes));
+  res
+    .status(200)
+    .type("application/json")
+    .send(jsonStringify(validatedRpcNodes));
 });
 
 export const openapi_GET_L2_RPC_NODE: OpenAPIObject["paths"] = {
@@ -55,5 +67,11 @@ export const GET_L2_RPC_NODE = asyncHandler(async (req, res) => {
     ["l2", "rpc-nodes", rpcNodeName],
     () => db.l2.getL2RpcNodeByName(rpcNodeName),
   );
-  res.status(200).json(JSON.parse(rpcNode));
+  const validatedRpcNode = publicChicmozL2RpcNodeDeluxeSchema.parse(
+    JSON.parse(rpcNode),
+  );
+  res
+    .status(200)
+    .type("application/json")
+    .send(jsonStringify(validatedRpcNode));
 });

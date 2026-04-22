@@ -4,6 +4,8 @@ import { BaseLayout } from "~/layout/base-layout";
 import { RpcNodeHealthSection } from "./rpc-node-health-section";
 import { SystemHealthOverview } from "./system-health-overview";
 
+const RPC_NODE_MAX_AGE_DAYS = 30;
+
 export const AztecscanHealth: FC = () => {
   const systemHealth = useSystemHealth();
 
@@ -21,7 +23,7 @@ export const AztecscanHealth: FC = () => {
       {/* Floating InfoBadges under title */}
       <SystemHealthOverview systemHealth={systemHealth} />
 
-      <RpcNodeHealthSection />
+      <RpcNodeHealthSection maxAgeDays={RPC_NODE_MAX_AGE_DAYS} />
     </BaseLayout>
   );
 };

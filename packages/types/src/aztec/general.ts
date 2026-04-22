@@ -64,6 +64,10 @@ export const chicmozL2RpcNodeSchema = z.object({
   lastSeenAt: z.coerce.date(),
 });
 
+export const publicChicmozL2RpcNodeSchema = chicmozL2RpcNodeSchema.omit({
+  rpcUrl: true,
+});
+
 export const chicmozL2RpcNodeErrorSchema = z.object({
   rpcNodeName: chicmozL2RpcNodeSchema.shape.rpcNodeName,
   rpcUrl: chicmozL2RpcNodeSchema.shape.rpcUrl.optional(),
@@ -83,6 +87,9 @@ export const chicmozL2SequencerSchema = chicmozL2RpcNodeSchema.extend({
 });
 
 export type ChicmozL2RpcNode = z.infer<typeof chicmozL2RpcNodeSchema>;
+export type PublicChicmozL2RpcNode = z.infer<
+  typeof publicChicmozL2RpcNodeSchema
+>;
 export type ChicmozL2RpcNodeError = z.infer<typeof chicmozL2RpcNodeErrorSchema>;
 export type ChicmozL2Sequencer = z.infer<typeof chicmozL2SequencerSchema>;
 
