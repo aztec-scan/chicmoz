@@ -20,6 +20,8 @@ import {
   chicmozSearchResultsSchema,
   publicChicmozL2RpcNodeDeluxeSchema,
   publicChicmozL2RpcNodeSchema,
+  uiBlockTableSchema,
+  uiTxEffectTableSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { logger } from "../../../../../logger.js";
@@ -204,6 +206,24 @@ export const verifiedContractInstanceResponseArray = getResponse(
 export const searchResultResponse = getResponse(
   chicmozSearchResultsSchema,
   "searchResult",
+);
+
+const cleanedUiBlockTableSchema = uiBlockTableSchema.extend({
+  height: z.string(),
+});
+
+export const uiBlockTableResponseArray = getResponse(
+  z.array(cleanedUiBlockTableSchema),
+  "uiBlockTableArray",
+);
+
+const cleanedUiTxEffectTableSchema = uiTxEffectTableSchema.extend({
+  blockNumber: z.string(),
+});
+
+export const uiTxEffectTableResponseArray = getResponse(
+  z.array(cleanedUiTxEffectTableSchema),
+  "uiTxEffectTableArray",
 );
 
 const cleanedValidatorSchema = chicmozL1L2ValidatorSchema.extend({
