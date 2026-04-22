@@ -1,6 +1,6 @@
 import { type ChicmozL2PendingL2ToL1Msg } from "@chicmoz-pkg/types";
+import { Link } from "@tanstack/react-router";
 import { createElement, type FC } from "react";
-import { EtherscanAddressLink } from "~/components/etherscan-address-link";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 
 type Props = {
@@ -32,10 +32,15 @@ export const L2ToL1MsgsTab: FC<Props> = ({ messages }) => {
               {
                 label: "Recipient",
                 value: "CUSTOM",
-                customValue: createElement(EtherscanAddressLink, {
-                  content: msg.recipient,
-                  endpoint: `/address/${msg.recipient}`,
-                }),
+                customValue: createElement(
+                  Link,
+                  {
+                    to: "/l1/address/$address",
+                    params: { address: msg.recipient },
+                    className: "text-purple-light font-mono hover:underline",
+                  },
+                  msg.recipient,
+                ),
               },
               { label: "Content", value: msg.content },
             ]}

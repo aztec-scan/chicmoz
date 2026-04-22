@@ -37,4 +37,20 @@ export const TxAPI = {
     );
     return validateResponse(z.array(pendingL2ToL1MsgSchema), response.data);
   },
+  getPublicCallRequestsBySender: async (
+    address: string,
+  ): Promise<PublicCallRequest[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2PublicCallRequestsBySender(address),
+    );
+    return validateResponse(z.array(publicCallRequestSchema), response.data);
+  },
+  getL2ToL1MsgsByRecipient: async (
+    address: string,
+  ): Promise<ChicmozL2PendingL2ToL1Msg[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ToL1MsgsByRecipient(address),
+    );
+    return validateResponse(z.array(pendingL2ToL1MsgSchema), response.data);
+  },
 };

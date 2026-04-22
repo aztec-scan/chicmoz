@@ -63,6 +63,10 @@ export const aztecExplorer = {
     `/l2/public-call-requests/contract/${address}`,
   getL2ToL1MsgsByContract: (address: string) =>
     `/l2/l2-to-l1-msgs/contract/${address}`,
+  getL2PublicCallRequestsBySender: (address: string) =>
+    `/l2/public-call-requests/sender/${address}`,
+  getL2ToL1MsgsByRecipient: (address: string) =>
+    `/l2/l2-to-l1-msgs/recipient/${address}`,
 
   getL2TotalTxEffects: "/l2/stats/total-tx-effects",
   getL2TotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",

@@ -115,4 +115,12 @@ export const queryKeyGenerator = {
     address,
   ],
   l2ToL1MsgsByContract: (address: string) => ["l2ToL1MsgsByContract", address],
+  publicCallRequestsBySender: (address: string) => [
+    "publicCallRequestsBySender",
+    address,
+  ],
+  l2ToL1MsgsByRecipient: (address: string) => [
+    "l2ToL1MsgsByRecipient",
+    address,
+  ],
 };

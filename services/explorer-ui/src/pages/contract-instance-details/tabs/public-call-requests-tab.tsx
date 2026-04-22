@@ -20,7 +20,7 @@ export const PublicCallRequestsTab: FC<Props> = ({ publicCallRequests }) => {
               {
                 label: "Msg Sender",
                 value: req.msgSender,
-                link: `/contracts/instances/${req.msgSender}`,
+                link: `/address/${req.msgSender}`,
               },
               {
                 label: "Contract Address",
