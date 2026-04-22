@@ -19,8 +19,11 @@ export const publicCallRequestSchema = z.object({
   calldataHash: hexStringSchema,
   callType: callTypeSchema,
   // Raw 4-byte function selector (hex string). Present when calldata is available.
-  // TODO: ABI decoding — map functionSelector to human-readable function name + decoded params.
   functionSelector: z.string().optional(),
+  // Human-readable names resolved from the contract artifact at index time.
+  // NULL when the artifact was not yet uploaded when the tx was indexed.
+  contractName: z.string().optional(),
+  functionName: z.string().optional(),
 });
 
 // L2-to-L1 message emitted by a pending transaction (plaintext, available pre-execution).
