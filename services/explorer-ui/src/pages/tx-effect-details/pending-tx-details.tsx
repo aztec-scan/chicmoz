@@ -48,7 +48,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
           {
             label: "Fee Payer",
             value: pendingTxDetails.feePayer,
-            link: `/contracts/instances/${pendingTxDetails.feePayer}`,
+            link: `/address/${pendingTxDetails.feePayer}`,
           },
         ]
       : []),
@@ -57,7 +57,7 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
           {
             label: "Initiator",
             value: pendingTxDetails.initiator,
-            link: `/contracts/instances/${pendingTxDetails.initiator}`,
+            link: `/address/${pendingTxDetails.initiator}`,
           },
         ]
       : []),
