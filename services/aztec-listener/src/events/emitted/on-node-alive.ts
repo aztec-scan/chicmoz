@@ -13,9 +13,9 @@ const bottleneckOpts: Bottleneck.ConstructorOptions = {
 
 export const onL2RpcNodeAlive = (
   rpcUrl: ChicmozL2RpcNode["rpcUrl"],
-  rpcName: string,
+  rpcNodeName: ChicmozL2RpcNode["rpcNodeName"],
 ) => {
-  const event = { rpcName, rpcUrl, timestamp: new Date().getTime() };
+  const event = { rpcNodeName, rpcUrl, timestamp: new Date().getTime() };
   if (!publishBottlenecks[rpcUrl]) {
     publishBottlenecks[rpcUrl] = new Bottleneck(bottleneckOpts);
   }

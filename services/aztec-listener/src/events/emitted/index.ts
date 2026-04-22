@@ -1,8 +1,8 @@
 import {
   ChicmozChainInfo,
   ChicmozL2BlockFinalizationStatus,
+  ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
-  ChicmozL2Sequencer,
   chicmozL2RpcNodeErrorSchema,
   jsonStringify,
 } from "@chicmoz-pkg/types";
@@ -96,8 +96,8 @@ export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   await publishMessage("CHAIN_INFO_EVENT", event);
 };
 
-export const onL2SequencerInfo = async (sequencer: ChicmozL2Sequencer) => {
-  const event = { sequencer };
+export const onL2SequencerInfo = async (rpcNode: ChicmozL2RpcNode) => {
+  const event = { sequencer: rpcNode };
   logger.info(`🔍 publishing SEQUENCER_INFO_EVENT ${jsonStringify(event)}`);
   await publishMessage("SEQUENCER_INFO_EVENT", event);
 };
@@ -158,7 +158,7 @@ export const onL2RpcNodeError = (
     return;
   }
   logger.info(
-    `❌ publishing L2_RPC_NODE_ERROR_EVENT ${rpcNodeError.nodeName ? `(${rpcNodeError.nodeName})` : ""}...`,
+    `❌ publishing L2_RPC_NODE_ERROR_EVENT ${rpcNodeError.rpcNodeName ? `(${rpcNodeError.rpcNodeName})` : ""}...`,
   );
   event.nodeError.cause = replaceIpAddress(event.nodeError.cause);
   event.nodeError.stack = replaceIpAddress(event.nodeError.stack);

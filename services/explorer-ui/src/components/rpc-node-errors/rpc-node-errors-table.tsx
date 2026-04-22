@@ -1,11 +1,11 @@
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
-import { SequencerErrorsTableColumns } from "./sequencer-errors-columns";
-import { type SequencerErrorTableSchema } from "./sequencer-errors-schema";
+import { RpcNodeErrorsTableColumns } from "./rpc-node-errors-columns";
+import { type RpcNodeErrorTableSchema } from "./rpc-node-errors-schema";
 
 interface Props {
   title?: string;
-  sequencerErrors?: SequencerErrorTableSchema[];
+  rpcNodeErrors?: RpcNodeErrorTableSchema[];
   isLoading: boolean;
   error?: Error | null;
   disableSizeSelector?: boolean;
@@ -13,16 +13,16 @@ interface Props {
   maxEntries?: number;
 }
 
-export const SequencerErrorsTable: FC<Props> = ({
+export const RpcNodeErrorsTable: FC<Props> = ({
   title,
-  sequencerErrors,
+  rpcNodeErrors,
   isLoading,
   error,
   disableSizeSelector = true,
   disablePagination = false,
   maxEntries = 10,
 }) => {
-  if (!sequencerErrors) {
+  if (!rpcNodeErrors) {
     return <div>No data</div>;
   }
   if (error) {
@@ -38,8 +38,8 @@ export const SequencerErrorsTable: FC<Props> = ({
         )}
         <DataTable
           isLoading={isLoading}
-          data={sequencerErrors ?? []}
-          columns={SequencerErrorsTableColumns}
+          data={rpcNodeErrors ?? []}
+          columns={RpcNodeErrorsTableColumns}
           disableSizeSelector={disableSizeSelector}
           disablePagination={disablePagination}
           maxEntries={maxEntries}

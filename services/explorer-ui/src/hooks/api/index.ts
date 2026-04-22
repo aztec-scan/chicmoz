@@ -3,7 +3,7 @@ export * from "./chain-info";
 export * from "./contract";
 export * from "./dropped-tx";
 export * from "./search";
-export * from "./sequencer";
+export * from "./rpc-node";
 export * from "./stats";
 export * from "./tx";
 export * from "./tx-effect";

@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import { useSubTitle, useSystemHealth } from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
-import { SequencerHealthSection } from "./sequencer-health-section";
+import { RpcNodeHealthSection } from "./rpc-node-health-section";
 import { SystemHealthOverview } from "./system-health-overview";
 
 export const AztecscanHealth: FC = () => {
@@ -21,8 +21,7 @@ export const AztecscanHealth: FC = () => {
       {/* Floating InfoBadges under title */}
       <SystemHealthOverview systemHealth={systemHealth} />
 
-      {/* Sequencer Health Section */}
-      <SequencerHealthSection />
+      <RpcNodeHealthSection />
     </BaseLayout>
   );
 };

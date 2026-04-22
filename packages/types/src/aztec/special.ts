@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  chicmozL2RpcNodeSchema,
   chicmozL2RpcNodeErrorSchema,
   chicmozL2SequencerSchema,
 } from "./general.js";
@@ -101,6 +102,15 @@ export const chicmozL2BlockLightSchema = z.object({
 });
 
 export type ChicmozL2BlockLight = z.infer<typeof chicmozL2BlockLightSchema>;
+
+export const chicmozL2RpcNodeDeluxeSchema = z.object({
+  ...chicmozL2RpcNodeSchema.shape,
+  errors: z.array(chicmozL2RpcNodeErrorSchema),
+});
+
+export type ChicmozL2RpcNodeDeluxe = z.infer<
+  typeof chicmozL2RpcNodeDeluxeSchema
+>;
 
 export const chicmozL2SequencerDeluxeSchema = z.object({
   ...chicmozL2SequencerSchema.shape,

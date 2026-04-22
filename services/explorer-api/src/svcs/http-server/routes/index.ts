@@ -65,8 +65,8 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_CHAIN_INFO,
   ...controller.openapi_GET_CHAIN_ERRORS,
 
-  ...controller.openapi_GET_L2_SEQUENCER,
-  ...controller.openapi_GET_L2_SEQUENCERS,
+  ...controller.openapi_GET_L2_RPC_NODE,
+  ...controller.openapi_GET_L2_RPC_NODES,
 
   ...controller.openapi_L2_SEARCH_PUBLIC_LOGS,
 };
@@ -263,8 +263,8 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);
   router.get(paths.chainErrors, controller.GET_CHAIN_ERRORS);
 
-  router.get(paths.sequencer, controller.GET_L2_SEQUENCER);
-  router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
+  router.get(paths.rpcNode, controller.GET_L2_RPC_NODE);
+  router.get(paths.rpcNodes, controller.GET_L2_RPC_NODES);
 
   router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
   router.get(paths.uiTxEffectTable, controller.GET_TX_EFFECTS_UI_TABLE_DATA);

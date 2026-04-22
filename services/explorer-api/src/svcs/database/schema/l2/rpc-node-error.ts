@@ -12,7 +12,7 @@ export const l2RpcNodeErrorTable = pgTable("l2_rpc_node_error", {
   name: varchar("name").primaryKey().notNull(),
   rpcNodeName: varchar("rpc_node_name")
     .notNull()
-    .references(() => l2RpcNodeTable.name, {
+    .references(() => l2RpcNodeTable.rpcNodeName, {
       onDelete: "cascade",
     }),
   cause: varchar("cause").notNull(),
