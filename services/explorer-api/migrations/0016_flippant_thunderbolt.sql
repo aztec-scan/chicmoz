@@ -41,3 +41,9 @@ ALTER TABLE "tx" ADD COLUMN "note_hash_count" integer;--> statement-breakpoint
 ALTER TABLE "tx" ADD COLUMN "nullifier_count" integer;--> statement-breakpoint
 ALTER TABLE "tx" ADD COLUMN "l2_to_l1_msg_count" integer;--> statement-breakpoint
 ALTER TABLE "tx" ADD COLUMN "private_log_count" integer;
+--> statement-breakpoint
+ALTER TABLE "tx_effect" ADD COLUMN "fee_payer" varchar(66);
+--> statement-breakpoint
+ALTER TABLE "tx_effect" ADD COLUMN "fee_payment_method" varchar(32);
+--> statement-breakpoint
+ALTER TABLE "tx_effect" ADD COLUMN "initiator" varchar(66);

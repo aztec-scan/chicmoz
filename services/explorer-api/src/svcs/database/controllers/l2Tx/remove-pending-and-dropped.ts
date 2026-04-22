@@ -3,37 +3,43 @@ import { type ChicmozL2TxEffect } from "@chicmoz-pkg/types";
 import { eq } from "drizzle-orm";
 import { logger } from "../../../../logger.js";
 import { l2Tx } from "../../../database/schema/l2tx/index.js";
+import { txEffect } from "../../../database/schema/l2block/body.js";
 import { removeDroppedTxByHash } from "../../controllers/dropped-tx/remove.js";
 
 export const removePendingAndDroppedTx = async (
   txEffects: ChicmozL2TxEffect[],
 ): Promise<void> => {
   return await db().transaction(async (dbTx) => {
-    for (const txEffect of Object.values(txEffects)) {
-      const tx = await dbTx
+    for (const txEffectRow of Object.values(txEffects)) {
+      const deleted = await dbTx
         .delete(l2Tx)
-        .where(eq(l2Tx.txHash, txEffect.txHash))
+        .where(eq(l2Tx.txHash, txEffectRow.txHash))
         .returning();
-      if (!tx) {
+
+      if (!deleted || deleted.length === 0) {
         continue;
       }
-      logger.info(`🕐🔥 deleted pending tx ${txEffect.txHash}`);
+
+      logger.info(`🕐🔥 deleted pending tx ${txEffectRow.txHash}`);
+
+      const pendingTx = deleted[0];
+
+      // Copy fee/identity fields from the deleted pending tx onto the mined tx effect row.
+      await dbTx
+        .update(txEffect)
+        .set({
+          feePayer: pendingTx.feePayer ?? null,
+          feePaymentMethod: pendingTx.feePaymentMethod ?? null,
+          initiator: pendingTx.initiator ?? null,
+        })
+        .where(eq(txEffect.txHash, txEffectRow.txHash));
 
       try {
-        await removeDroppedTxByHash(txEffect.txHash);
+        await removeDroppedTxByHash(txEffectRow.txHash);
       } catch (e) {
         logger.error(
-          `Error removing dropped tx ${txEffect.txHash}: ${(e as Error).stack}`,
+          `Error removing dropped tx ${txEffectRow.txHash}: ${(e as Error).stack}`,
         );
-      }
-
-      if (tx[0]?.birthTimestamp) {
-        await dbTx
-          .update(l2Tx)
-          .set({
-            birthTimestamp: tx[0].birthTimestamp,
-          })
-          .where(eq(l2Tx.txHash, txEffect.txHash));
       }
     }
   });
