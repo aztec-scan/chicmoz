@@ -110,4 +110,9 @@ export const queryKeyGenerator = {
     version,
     jobId,
   ],
+  publicCallRequestsByContract: (address: string) => [
+    "publicCallRequestsByContract",
+    address,
+  ],
+  l2ToL1MsgsByContract: (address: string) => ["l2ToL1MsgsByContract", address],
 };

@@ -1,0 +1,47 @@
+import { type ChicmozL2PendingL2ToL1Msg } from "@chicmoz-pkg/types";
+import { createElement, type FC } from "react";
+import { EtherscanAddressLink } from "~/components/etherscan-address-link";
+import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+
+type Props = {
+  messages: ChicmozL2PendingL2ToL1Msg[];
+};
+
+export const L2ToL1MsgsTab: FC<Props> = ({ messages }) => {
+  if (messages.length === 0) {
+    return <p className="text-gray-500">No L2→L1 messages found.</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {messages.map((msg, i) => (
+        <div key={i} className="rounded">
+          <KeyValueDisplay
+            data={[
+              {
+                label: "Tx Hash",
+                value: msg.txHash,
+                link: `/tx-effects/${msg.txHash}`,
+              },
+              { label: "Index", value: msg.index.toString() },
+              {
+                label: "Contract Address",
+                value: msg.contractAddress,
+                link: `/contracts/instances/${msg.contractAddress}`,
+              },
+              {
+                label: "Recipient",
+                value: "CUSTOM",
+                customValue: createElement(EtherscanAddressLink, {
+                  content: msg.recipient,
+                  endpoint: `/address/${msg.recipient}`,
+                }),
+              },
+              { label: "Content", value: msg.content },
+            ]}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};

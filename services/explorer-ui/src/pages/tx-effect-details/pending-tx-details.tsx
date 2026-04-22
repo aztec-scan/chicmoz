@@ -1,6 +1,8 @@
 import { type ChicmozL2PendingTx } from "@chicmoz-pkg/types";
-import { useMemo, type FC } from "react";
+import { createElement, useMemo, type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
+import { EtherscanAddressLink } from "~/components/etherscan-address-link";
+import { FeePaymentMethodBadge } from "~/components/fee-payment-method-badge";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OrphanedBanner } from "~/components/orphaned-banner";
 import { useAvarageBlockTime, useLatestTableBlocks } from "~/hooks";
@@ -19,7 +21,9 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
   const { data: latestBlocks } = useLatestTableBlocks();
 
   const blocksCreatedSinceTx = useMemo(() => {
-    if (!latestBlocks || latestBlocks.length === 0) return 0;
+    if (!latestBlocks || latestBlocks.length === 0) {
+      return 0;
+    }
 
     const blocksAfterTx = latestBlocks.filter(
       (block) => block.timestamp > pendingTxDetails.birthTimestamp,
@@ -29,6 +33,44 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
   }, [latestBlocks, pendingTxDetails.birthTimestamp]);
 
   const isStaleTransaction = blocksCreatedSinceTx >= 2;
+
+  const mainData = [
+    { label: "Hash", value: pendingTxDetails.txHash },
+    {
+      label: "Timestamp",
+      value: pendingTxDetails.birthTimestamp.toString(),
+      timestamp: pendingTxDetails.birthTimestamp,
+    },
+    ...(pendingTxDetails.feePayer
+      ? [
+          {
+            label: "Fee Payer",
+            value: pendingTxDetails.feePayer,
+            link: `/contracts/instances/${pendingTxDetails.feePayer}`,
+          },
+        ]
+      : []),
+    ...(pendingTxDetails.initiator
+      ? [
+          {
+            label: "Initiator",
+            value: pendingTxDetails.initiator,
+            link: `/contracts/instances/${pendingTxDetails.initiator}`,
+          },
+        ]
+      : []),
+    ...(pendingTxDetails.feePaymentMethod
+      ? [
+          {
+            label: "Fee Payment Method",
+            value: "CUSTOM",
+            customValue: createElement(FeePaymentMethodBadge, {
+              method: pendingTxDetails.feePaymentMethod,
+            }),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <BaseLayout>
@@ -58,18 +100,83 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
             </div>
           )}
           <div className="bg-white rounded-lg shadow-md p-4">
-            <KeyValueDisplay
-              key={tick}
-              data={[
-                { label: "Hash", value: pendingTxDetails.txHash },
-                {
-                  label: "Timestamp",
-                  value: pendingTxDetails.birthTimestamp.toString(),
-                  timestamp: pendingTxDetails.birthTimestamp,
-                },
-              ]}
-            />
+            <KeyValueDisplay key={tick} data={mainData} />
           </div>
+
+          {pendingTxDetails.publicCallRequests &&
+          pendingTxDetails.publicCallRequests.length > 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="text-lg font-semibold mb-4">
+                Public Call Requests
+              </h3>
+              <div className="flex flex-col gap-4">
+                {pendingTxDetails.publicCallRequests.map((req, i) => (
+                  <div key={i} className="border-0">
+                    <KeyValueDisplay
+                      data={[
+                        {
+                          label: "Msg Sender",
+                          value: req.msgSender,
+                          link: `/contracts/instances/${req.msgSender}`,
+                        },
+                        {
+                          label: "Contract Address",
+                          value: req.contractAddress,
+                          link: `/contracts/instances/${req.contractAddress}`,
+                        },
+                        { label: "Call Type", value: req.callType },
+                        ...(req.functionSelector
+                          ? [
+                              {
+                                label: "Function Selector",
+                                value: req.functionSelector,
+                              },
+                            ]
+                          : []),
+                        {
+                          label: "Is Static Call",
+                          value: req.isStaticCall ? "Yes" : "No",
+                        },
+                        { label: "Calldata Hash", value: req.calldataHash },
+                      ]}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {pendingTxDetails.l2ToL1Msgs &&
+          pendingTxDetails.l2ToL1Msgs.length > 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="text-lg font-semibold mb-4">L2→L1 Messages</h3>
+              <div className="flex flex-col gap-4">
+                {pendingTxDetails.l2ToL1Msgs.map((msg, i) => (
+                  <div key={i} className="border rounded p-3">
+                    <KeyValueDisplay
+                      data={[
+                        { label: "Index", value: msg.index.toString() },
+                        {
+                          label: "Contract Address",
+                          value: msg.contractAddress,
+                          link: `/contracts/instances/${msg.contractAddress}`,
+                        },
+                        {
+                          label: "Recipient",
+                          value: "CUSTOM",
+                          customValue: createElement(EtherscanAddressLink, {
+                            content: msg.recipient,
+                            endpoint: `/address/${msg.recipient}`,
+                          }),
+                        },
+                        { label: "Content", value: msg.content },
+                      ]}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </BaseLayout>
