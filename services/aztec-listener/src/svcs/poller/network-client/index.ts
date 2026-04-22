@@ -14,7 +14,7 @@ import {
 import {
   onChainInfo,
   onL2RpcNodeAlive,
-  onL2SequencerInfo,
+  onL2RpcNodeInfo,
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
 import {
@@ -165,7 +165,7 @@ export const getFreshInfo = async (): Promise<{
       );
       rpcNodes.push(rpcNode);
 
-      await onL2SequencerInfo(rpcNode).catch((e) => {
+      await onL2RpcNodeInfo(rpcNode).catch((e) => {
         logger.error(
           `Aztec failed to publish rpc node info: ${(e as Error).message}`,
         );

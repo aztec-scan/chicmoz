@@ -10,6 +10,7 @@ export async function storeL2RpcNodeError(
 ): Promise<void> {
   const { name, rpcUrl, rpcNodeName, cause, message, stack, data } =
     rpcNodeError;
+  const now = new Date();
   assert(
     rpcUrl,
     `rpcUrl is required to store rpc node error ${JSON.stringify(rpcNodeError)}`,
@@ -25,11 +26,13 @@ export async function storeL2RpcNodeError(
       .values({
         rpcNodeName,
         rpcUrl,
+        lastSeenAt: now,
       })
       .onConflictDoUpdate({
         target: l2RpcNodeTable.rpcNodeName,
         set: {
           rpcUrl,
+          lastSeenAt: now,
         },
       })
       .returning({ rpcNodeName: l2RpcNodeTable.rpcNodeName });

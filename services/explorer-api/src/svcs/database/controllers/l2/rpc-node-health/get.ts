@@ -30,7 +30,7 @@ export async function getL2RpcNodeByName(
   rpcNodeName: ChicmozL2RpcNode["rpcNodeName"],
 ): Promise<ChicmozL2RpcNodeDeluxe | null> {
   return db().transaction(async (tx) => {
-    const sequencerRes = await tx
+    const rpcNodeRes = await tx
       .select()
       .from(l2RpcNodeTable)
       .where(
@@ -44,20 +44,17 @@ export async function getL2RpcNodeByName(
       )
       .limit(1)
       .execute();
-    if (sequencerRes.length === 0) {
+    if (rpcNodeRes.length === 0) {
       return null;
     }
     const errors = await tx
       .select()
       .from(l2RpcNodeErrorTable)
-      .where(eq(l2RpcNodeErrorTable.rpcNodeName, sequencerRes[0].rpcNodeName))
+      .where(eq(l2RpcNodeErrorTable.rpcNodeName, rpcNodeRes[0].rpcNodeName))
       .execute();
     return chicmozL2RpcNodeDeluxeSchema.parse({
-      ...sequencerRes[0],
+      ...rpcNodeRes[0],
       errors,
     });
   });
 }
-
-export const getAllSequencers = getAllRpcNodes;
-export const getSequencerByEnr = getL2RpcNodeByName;

@@ -96,10 +96,10 @@ export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   await publishMessage("CHAIN_INFO_EVENT", event);
 };
 
-export const onL2SequencerInfo = async (rpcNode: ChicmozL2RpcNode) => {
-  const event = { sequencer: rpcNode };
-  logger.info(`🔍 publishing SEQUENCER_INFO_EVENT ${jsonStringify(event)}`);
-  await publishMessage("SEQUENCER_INFO_EVENT", event);
+export const onL2RpcNodeInfo = async (rpcNode: ChicmozL2RpcNode) => {
+  const event = { rpcNode };
+  logger.info(`🔍 publishing L2_RPC_NODE_INFO_EVENT ${jsonStringify(event)}`);
+  await publishMessage("L2_RPC_NODE_INFO_EVENT", event);
 };
 
 const isIpAddress = (str: string) => {
