@@ -179,6 +179,9 @@ const _getTxEffects = async (
       txBirthTimestamp: txEffect.txBirthTimestamp,
       publicDataWrites,
       revertCode: { code: txEffect.revertCode },
+      feePayer: txEffect.feePayer ?? undefined,
+      feePaymentMethod: txEffect.feePaymentMethod ?? undefined,
+      initiator: txEffect.initiator ?? undefined,
       noteHashes: Array.isArray(txEffect.noteHashes)
         ? txEffect.noteHashes
         : ([] as string[]),
@@ -252,6 +255,9 @@ export const getTxEffectDynamicWhere = async (
     txBirthTimestamp: dbRes[0].txBirthTimestamp,
     publicDataWrites,
     revertCode: { code: dbRes[0].revertCode },
+    feePayer: dbRes[0].feePayer ?? undefined,
+    feePaymentMethod: dbRes[0].feePaymentMethod ?? undefined,
+    initiator: dbRes[0].initiator ?? undefined,
     noteHashes: (Array.isArray(dbRes[0].noteHashes)
       ? dbRes[0].noteHashes
       : []) as string[],

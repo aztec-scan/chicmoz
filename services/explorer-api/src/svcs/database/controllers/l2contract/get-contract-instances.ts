@@ -20,6 +20,7 @@ import {
   l2ContractInstanceVerifiedDeploymentArguments,
 } from "../../schema/l2contract/index.js";
 import { getBlocksWhereRange } from "../utils.js";
+import { getExistingRollupVersion } from "../l2block/get-latest.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
 
 const DEFAULT_SORT =
@@ -109,6 +110,8 @@ export const getL2DeployedContractInstances = async ({
   toHeight?: bigint;
   includeArtifactJson?: boolean;
 }): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
   const whereRange = getBlocksWhereRange({ from: fromHeight, to: toHeight });
   const result = await db()
     .select({
@@ -159,7 +162,7 @@ export const getL2DeployedContractInstances = async ({
       and(
         whereRange,
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+        eq(l2Block.version, rollupVersion),
       ),
     )
     .orderBy(DEFAULT_SORT)

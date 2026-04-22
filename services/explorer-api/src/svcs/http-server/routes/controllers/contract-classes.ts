@@ -268,6 +268,12 @@ export const verifyArtifact = async ({
     contractName: parsed.name,
     standardData: standardData,
   });
+  await db.l2Contract.backfillPublicCallRequestNames({
+    contractClassId: dbContractClass.contractClassId,
+    version: dbContractClass.version,
+    artifactJson: artifactJsonString,
+    contractName: parsed.name,
+  });
 
   return {
     success: true,

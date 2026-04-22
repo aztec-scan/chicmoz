@@ -404,6 +404,12 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         artifactJson: stringifiedArtifactJson,
         contractName: artifactContractName,
       });
+      await db.l2Contract.backfillPublicCallRequestNames({
+        contractClassId: dbContractClass.contractClassId,
+        version: dbContractClass.version,
+        artifactJson: stringifiedArtifactJson,
+        contractName: artifactContractName,
+      });
     }
 
     const artifactString =

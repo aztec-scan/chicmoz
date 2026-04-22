@@ -3,6 +3,7 @@ import { HexString } from "@chicmoz-pkg/types";
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  foreignKey,
   pgEnum,
   pgTable,
   primaryKey,
@@ -27,9 +28,18 @@ export const l2TxPublicCallRequest = pgTable(
     callType: callTypeEnum("call_type").notNull().default("revertible"),
     // Raw 4-byte function selector. TODO: ABI decoding to human-readable name + params.
     functionSelector: varchar("function_selector"),
+    // Resolved from artifact at write time (or backfilled when artifact is uploaded).
+    // NULL when artifact is not yet available.
+    contractName: varchar("contract_name"),
+    functionName: varchar("function_name"),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.txHash, table.calldataHash] }),
+    txHashFk: foreignKey({
+      name: "tx_public_call_request_tx_hash_fk",
+      columns: [table.txHash],
+      foreignColumns: [l2Tx.txHash],
+    }).onDelete("cascade"),
   }),
 );
 

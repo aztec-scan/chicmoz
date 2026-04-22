@@ -8,6 +8,7 @@ import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
+import { getExistingRollupVersion } from "../l2block/get-latest.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
 import { z } from "zod";
 
@@ -60,6 +61,8 @@ export const getL2RegisteredContractClasses = async ({
 export const getLatestL2RegisteredContractClasses = async (): Promise<
   Array<ChicmozL2ContractClassRegisteredEvent>
 > => {
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
   const result = await db()
     .select({
       blockHash: l2ContractClassRegistered.blockHash,
@@ -77,10 +80,7 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
     .where(
-      and(
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
-      ),
+      and(isNull(l2Block.orphan_timestamp), eq(l2Block.version, rollupVersion)),
     )
     .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height))
     .limit(DB_MAX_CONTRACTS);

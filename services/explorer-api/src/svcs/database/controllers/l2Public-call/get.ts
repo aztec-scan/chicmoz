@@ -11,6 +11,8 @@ const selectColumns = {
   calldataHash: l2TxPublicCallRequest.calldataHash,
   callType: l2TxPublicCallRequest.callType,
   functionSelector: l2TxPublicCallRequest.functionSelector,
+  contractName: l2TxPublicCallRequest.contractName,
+  functionName: l2TxPublicCallRequest.functionName,
 };
 
 export const getPublicCallRequestsByTxHash = async (

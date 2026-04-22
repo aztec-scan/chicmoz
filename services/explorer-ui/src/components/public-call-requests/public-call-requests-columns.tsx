@@ -39,18 +39,48 @@ export const PublicCallRequestsColumns: ColumnDef<PublicCallRequest>[] = [
       <DataTableColumnHeader
         className="text-purple-dark text-sm"
         column={column}
-        title="CONTRACT"
+        title="CONTRACT ADDRESS"
       />
     ),
     cell: ({ row }) => {
       const addr = row.getValue<string>("contractAddress");
-      if (!addr) return <span className="text-gray-400">—</span>;
+      if (!addr) return <span className="text-gray-400">Unknown</span>;
       const href = `${routes.contracts.route}${routes.contracts.children.instances.route}/${addr}`;
       return (
         <div className="text-purple-light font-mono text-xs">
           <Link to={href}>{truncateHashString(addr)}</Link>
         </div>
       );
+    },
+  },
+  {
+    accessorKey: "contractName",
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        className="text-purple-dark text-sm"
+        column={column}
+        title="CONTRACT NAME"
+      />
+    ),
+    cell: ({ row }) => {
+      const contractName = row.getValue<string | undefined>("contractName");
+      if (!contractName) return <span className="text-gray-400">Unknown</span>;
+      return <span className="text-xs font-medium">{contractName}</span>;
+    },
+  },
+  {
+    accessorKey: "functionName",
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        className="text-purple-dark text-sm"
+        column={column}
+        title="FUNCTION NAME"
+      />
+    ),
+    cell: ({ row }) => {
+      const functionName = row.getValue<string | undefined>("functionName");
+      if (!functionName) return <span className="text-gray-400">Unknown</span>;
+      return <span className="text-xs font-medium">{functionName}</span>;
     },
   },
   {
@@ -64,7 +94,7 @@ export const PublicCallRequestsColumns: ColumnDef<PublicCallRequest>[] = [
     ),
     cell: ({ row }) => {
       const sel = row.getValue<string | undefined>("functionSelector");
-      if (!sel) return <span className="text-gray-400">—</span>;
+      if (!sel) return <span className="text-gray-400">Unknown</span>;
       return <span className="font-mono text-xs">{sel}</span>;
     },
   },

@@ -19,8 +19,11 @@ export const publicCallRequestSchema = z.object({
   calldataHash: hexStringSchema,
   callType: callTypeSchema,
   // Raw 4-byte function selector (hex string). Present when calldata is available.
-  // TODO: ABI decoding — map functionSelector to human-readable function name + decoded params.
   functionSelector: z.string().optional(),
+  // Human-readable names resolved from the contract artifact at index time.
+  // NULL when the artifact was not yet uploaded when the tx was indexed.
+  contractName: z.string().optional(),
+  functionName: z.string().optional(),
 });
 
 // L2-to-L1 message emitted by a pending transaction (plaintext, available pre-execution).
@@ -41,7 +44,7 @@ export const chicmozL2PendingTxSchema = z.object({
   // The outermost initiator of the transaction (msgSender of the first non-revertible
   // public call request — the account contract that kicked off execution).
   // Absent for private-only transactions (no forPublic data).
-  initiator: aztecAddressSchema.optional(),
+  initiator: aztecAddressSchema.nullish().transform((v) => v ?? undefined),
   // Expiration
   expirationTimestamp: z.coerce.number().optional(),
   // Gas limits
@@ -101,6 +104,9 @@ export const chicmozL2TxEffectSchema = z.object({
   txHash: hexStringSchema,
   txBirthTimestamp: z.coerce.number().optional(),
   transactionFee: frDecimalStringSchema,
+  feePayer: aztecAddressSchema.optional(),
+  feePaymentMethod: z.string().optional(),
+  initiator: aztecAddressSchema.optional(),
   noteHashes: z.array(frSchema),
   nullifiers: z.array(frSchema),
   l2ToL1Msgs: z.array(frSchema),

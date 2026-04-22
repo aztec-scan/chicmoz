@@ -8,7 +8,7 @@ import {
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -17,6 +17,9 @@ import {
   l2PrivateFunction,
   l2UtilityFunction,
 } from "../../../database/schema/l2contract/index.js";
+import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
+import { getFunctionNameFromArtifact } from "../../../../utils/resolve-artifact-names.js";
+import { logger } from "../../../../logger.js";
 
 export const storeContractInstanceDeployed = async (
   instance: ChicmozL2ContractInstanceDeployedEvent,
@@ -111,4 +114,84 @@ export const storeUtilityFunction = async (
       utilityFunction_metadataHash: utilityFunction.metadataHash,
       utilityFunction_bytecode: utilityFunction.bytecode,
     });
+};
+
+/**
+ * Backfills contractName and functionName on all tx_public_call_request rows
+ * that are associated with instances of the given contract class and still have
+ * a NULL contractName. Called after a new artifact is uploaded so that previously
+ * indexed call requests get human-readable names retroactively.
+ */
+export const backfillPublicCallRequestNames = async ({
+  contractClassId,
+  version,
+  artifactJson,
+  contractName,
+}: {
+  contractClassId: string;
+  version: number;
+  artifactJson: string;
+  contractName: string | undefined;
+}): Promise<void> => {
+  // Find all contract instance addresses belonging to this class
+  const instances = await db()
+    .select({ address: l2ContractInstanceDeployed.address })
+    .from(l2ContractInstanceDeployed)
+    .where(
+      and(
+        eq(l2ContractInstanceDeployed.currentContractClassId, contractClassId),
+        eq(l2ContractInstanceDeployed.version, version),
+      ),
+    );
+
+  if (instances.length === 0) {
+    return;
+  }
+
+  const instanceAddressSet = new Set(instances.map((i) => i.address));
+
+  // Fetch all call request rows for these instances that still have NULL contractName
+  const candidateRows = await db()
+    .select({
+      txHash: l2TxPublicCallRequest.txHash,
+      calldataHash: l2TxPublicCallRequest.calldataHash,
+      contractAddress: l2TxPublicCallRequest.contractAddress,
+      functionSelector: l2TxPublicCallRequest.functionSelector,
+    })
+    .from(l2TxPublicCallRequest)
+    .where(isNull(l2TxPublicCallRequest.contractName));
+
+  const rowsToUpdate = candidateRows.filter((r) =>
+    instanceAddressSet.has(r.contractAddress),
+  );
+
+  if (rowsToUpdate.length === 0) {
+    return;
+  }
+
+  // Update each row — function names differ per functionSelector so one UPDATE per row
+  await Promise.all(
+    rowsToUpdate.map(async (row) => {
+      const functionName = row.functionSelector
+        ? ((await getFunctionNameFromArtifact(
+            artifactJson,
+            row.functionSelector,
+          )) ?? null)
+        : null;
+
+      return db()
+        .update(l2TxPublicCallRequest)
+        .set({ contractName: contractName ?? null, functionName })
+        .where(
+          and(
+            eq(l2TxPublicCallRequest.txHash, row.txHash),
+            eq(l2TxPublicCallRequest.calldataHash, row.calldataHash),
+          ),
+        );
+    }),
+  );
+
+  logger.info(
+    `🔎 Backfilled artifact names for ${rowsToUpdate.length} public call request(s) (classId: ${contractClassId})`,
+  );
 };
