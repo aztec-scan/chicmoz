@@ -1,9 +1,9 @@
-ARG BASE_AZTEC_IMAGE=aztecprotocol/aztec:4.1.1
-ARG NARGO_AZTEC_VERSION=v4.2.0-aztecnr-rc.2
+ARG BASE_AZTEC_IMAGE=aztecprotocol/aztec:4.2.0
+ARG NARGO_AZTEC_VERSION=v4.2.0
 
 FROM ${BASE_AZTEC_IMAGE}
 
-ARG NARGO_AZTEC_VERSION=v4.2.0-aztecnr-rc.2
+ARG NARGO_AZTEC_VERSION=v4.2.0
 
 # Put nargo and bb on PATH so `aztec compile` can find them
 ENV PATH="/usr/src/noir/noir-repo/target/release:/usr/src/barretenberg/ts/build/amd64-linux:${PATH}"
@@ -11,14 +11,14 @@ ENV PATH="/usr/src/noir/noir-repo/target/release:/usr/src/barretenberg/ts/build/
 # Pre-fetch nargo dependencies so compiles don't need network access.
 # The aztec-nr dependency tag is distinct from the upstream aztec Docker image tag.
 RUN git clone --depth 1 --branch ${NARGO_AZTEC_VERSION} \
-      https://github.com/AztecProtocol/aztec-packages.git \
-      /root/nargo/github.com/AztecProtocol/aztec-packages/${NARGO_AZTEC_VERSION} && \
-    git clone --depth 1 --branch v0.2.3 \
-      https://github.com/noir-lang/poseidon.git \
-      /root/nargo/github.com/noir-lang/poseidon/v0.2.3 && \
-    git clone --depth 1 --branch v0.3.0 \
-      https://github.com/noir-lang/sha256.git \
-      /root/nargo/github.com/noir-lang/sha256/v0.3.0
+  https://github.com/AztecProtocol/aztec-packages.git \
+  /root/nargo/github.com/AztecProtocol/aztec-packages/${NARGO_AZTEC_VERSION} && \
+  git clone --depth 1 --branch v0.2.3 \
+  https://github.com/noir-lang/poseidon.git \
+  /root/nargo/github.com/noir-lang/poseidon/v0.2.3 && \
+  git clone --depth 1 --branch v0.3.0 \
+  https://github.com/noir-lang/sha256.git \
+  /root/nargo/github.com/noir-lang/sha256/v0.3.0
 
 # The compilation entrypoint is configured by the K8s Job command/args
 ENTRYPOINT ["/bin/sh", "-c"]

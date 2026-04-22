@@ -341,7 +341,7 @@ The architecture follows an event-driven pattern:
 
 | Environment Variable                                      | Description                                 | Default Value                    |
 | --------------------------------------------------------- | ------------------------------------------- | -------------------------------- |
-| `AZTEC_RPC_URL`                                           | URL of the Aztec node                       | `http://aztec-sandbox-node:8080` |
+| `AZTEC_RPC_URL`                                           | URL of the Aztec node                       | `http://aztec-sandbox-node:8081` |
 | `BLOCK_POLL_INTERVAL_MS`                                  | Polling interval for blocks in milliseconds | `500`                            |
 | `AZTEC_LISTEN_FOR_PENDING_TXS`                            | Whether to listen for pending transactions  | `true`                           |
 | `AZTEC_LISTEN_FOR_CHAIN_INFO`                             | Whether to listen for chain info updates    | `true`                           |
