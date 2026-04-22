@@ -53,4 +53,4 @@ ALTER TABLE "tx_public_call_request" ADD COLUMN "contract_name" varchar;
 ALTER TABLE "tx_public_call_request" ADD COLUMN "function_name" varchar;
 --> statement-breakpoint
 ALTER TABLE "tx_public_call_request" ADD CONSTRAINT "tx_public_call_request_tx_hash_fk"
-  FOREIGN KEY ("tx_hash") REFERENCES "tx"("tx_hash") ON DELETE CASCADE;
+  FOREIGN KEY ("tx_hash") REFERENCES "tx"("hash") ON DELETE CASCADE;
