@@ -23,21 +23,23 @@ const contracts: Record<
 > = {
   "4.1.0-rc.4": {
     // TODO: these types are not actually checked
-    token: TokenContractJsonLegacy as NoirCompiledContract,
-    dripper: DripperContractJsonLegacy as NoirCompiledContract,
-    escrow: EscrowContractJsonLegacy as NoirCompiledContract,
-    nft: NftContractJsonLegacy as NoirCompiledContract,
-    generic_proxy: GenericProxyContractJsonLegacy as NoirCompiledContract,
-    test_logic: TestLogicContractJsonLegacy as NoirCompiledContract,
+    token: TokenContractJsonLegacy as unknown as NoirCompiledContract,
+    dripper: DripperContractJsonLegacy as unknown as NoirCompiledContract,
+    escrow: EscrowContractJsonLegacy as unknown as NoirCompiledContract,
+    nft: NftContractJsonLegacy as unknown as NoirCompiledContract,
+    generic_proxy:
+      GenericProxyContractJsonLegacy as unknown as NoirCompiledContract,
+    test_logic: TestLogicContractJsonLegacy as unknown as NoirCompiledContract,
   },
   "4.2.0-aztecnr-rc.2": {
     // TODO: these types are not actually checked
-    token: TokenContractJsonCurrent as NoirCompiledContract,
-    dripper: DripperContractJsonCurrent as NoirCompiledContract,
-    escrow: EscrowContractJsonCurrent as NoirCompiledContract,
-    nft: NftContractJsonCurrent as NoirCompiledContract,
-    generic_proxy: GenericProxyContractJsonCurrent as NoirCompiledContract,
-    test_logic: TestLogicContractJsonCurrent as NoirCompiledContract,
+    token: TokenContractJsonCurrent as unknown as NoirCompiledContract,
+    dripper: DripperContractJsonCurrent as unknown as NoirCompiledContract,
+    escrow: EscrowContractJsonCurrent as unknown as NoirCompiledContract,
+    nft: NftContractJsonCurrent as unknown as NoirCompiledContract,
+    generic_proxy:
+      GenericProxyContractJsonCurrent as unknown as NoirCompiledContract,
+    test_logic: TestLogicContractJsonCurrent as unknown as NoirCompiledContract,
   },
 };
 

@@ -10,8 +10,11 @@ spec:
   parentRefs:
     - name: chicmoz-gateway
       sectionName: aztec-sandbox
+    - name: chicmoz-gateway
+      sectionName: aztec-sandbox-remote
   hostnames:
     - aztec.sandbox.chicmoz.localhost
+    - aztec.remote.chicmoz.localhost
   rules:
     - matches:
         - path:
@@ -19,4 +22,4 @@ spec:
             value: /
       backendRefs:
         - name: aztec-sandbox-node
-          port: 80
+          port: 8081
