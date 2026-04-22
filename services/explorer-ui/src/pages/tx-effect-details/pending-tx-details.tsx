@@ -1,13 +1,15 @@
 import { type ChicmozL2PendingTx } from "@chicmoz-pkg/types";
 import { createElement, useMemo, type FC } from "react";
 import { BlockCountdownProgress } from "~/components/block-countdown-progress";
-import { EtherscanAddressLink } from "~/components/etherscan-address-link";
+import { DataTable } from "~/components/data-table";
 import { FeePaymentMethodBadge } from "~/components/fee-payment-method-badge";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { OrphanedBanner } from "~/components/orphaned-banner";
+import { PublicCallRequestsColumns } from "~/components/public-call-requests/public-call-requests-columns";
 import { useAvarageBlockTime, useLatestTableBlocks } from "~/hooks";
 import { useTimeTick } from "~/hooks/useTimeTick";
 import { BaseLayout } from "~/layout/base-layout";
+import { L2ToL1MsgsColumnsWithoutTxHash } from "~/components/l2-to-l1-msgs/l2-to-l1-msgs-columns";
 
 interface PendingTxDetailsProps {
   pendingTxDetails: ChicmozL2PendingTx;
@@ -109,40 +111,12 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
               <h3 className="text-lg font-semibold mb-4">
                 Public Call Requests
               </h3>
-              <div className="flex flex-col gap-4">
-                {pendingTxDetails.publicCallRequests.map((req, i) => (
-                  <div key={i} className="border-0">
-                    <KeyValueDisplay
-                      data={[
-                        {
-                          label: "Msg Sender",
-                          value: req.msgSender,
-                          link: `/contracts/instances/${req.msgSender}`,
-                        },
-                        {
-                          label: "Contract Address",
-                          value: req.contractAddress,
-                          link: `/contracts/instances/${req.contractAddress}`,
-                        },
-                        { label: "Call Type", value: req.callType },
-                        ...(req.functionSelector
-                          ? [
-                              {
-                                label: "Function Selector",
-                                value: req.functionSelector,
-                              },
-                            ]
-                          : []),
-                        {
-                          label: "Is Static Call",
-                          value: req.isStaticCall ? "Yes" : "No",
-                        },
-                        { label: "Calldata Hash", value: req.calldataHash },
-                      ]}
-                    />
-                  </div>
-                ))}
-              </div>
+              <DataTable
+                columns={PublicCallRequestsColumns}
+                data={pendingTxDetails.publicCallRequests}
+                disableSizeSelector={false}
+                maxEntries={20}
+              />
             </div>
           ) : null}
 
@@ -150,31 +124,12 @@ export const PendingTxDetails: FC<PendingTxDetailsProps> = ({
           pendingTxDetails.l2ToL1Msgs.length > 0 ? (
             <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="text-lg font-semibold mb-4">L2→L1 Messages</h3>
-              <div className="flex flex-col gap-4">
-                {pendingTxDetails.l2ToL1Msgs.map((msg, i) => (
-                  <div key={i} className="border rounded p-3">
-                    <KeyValueDisplay
-                      data={[
-                        { label: "Index", value: msg.index.toString() },
-                        {
-                          label: "Contract Address",
-                          value: msg.contractAddress,
-                          link: `/contracts/instances/${msg.contractAddress}`,
-                        },
-                        {
-                          label: "Recipient",
-                          value: "CUSTOM",
-                          customValue: createElement(EtherscanAddressLink, {
-                            content: msg.recipient,
-                            endpoint: `/address/${msg.recipient}`,
-                          }),
-                        },
-                        { label: "Content", value: msg.content },
-                      ]}
-                    />
-                  </div>
-                ))}
-              </div>
+              <DataTable
+                columns={L2ToL1MsgsColumnsWithoutTxHash}
+                data={pendingTxDetails.l2ToL1Msgs}
+                disableSizeSelector={false}
+                maxEntries={20}
+              />
             </div>
           ) : null}
         </div>

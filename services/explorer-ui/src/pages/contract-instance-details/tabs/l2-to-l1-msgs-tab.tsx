@@ -1,7 +1,7 @@
 import { type ChicmozL2PendingL2ToL1Msg } from "@chicmoz-pkg/types";
-import { Link } from "@tanstack/react-router";
-import { createElement, type FC } from "react";
-import { KeyValueDisplay } from "~/components/info-display/key-value-display";
+import { type FC } from "react";
+import { DataTable } from "~/components/data-table";
+import { L2ToL1MsgsColumns } from "~/components/l2-to-l1-msgs/l2-to-l1-msgs-columns";
 
 type Props = {
   messages: ChicmozL2PendingL2ToL1Msg[];
@@ -13,40 +13,11 @@ export const L2ToL1MsgsTab: FC<Props> = ({ messages }) => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {messages.map((msg, i) => (
-        <div key={i} className="rounded">
-          <KeyValueDisplay
-            data={[
-              {
-                label: "Tx Hash",
-                value: msg.txHash,
-                link: `/tx-effects/${msg.txHash}`,
-              },
-              { label: "Index", value: msg.index.toString() },
-              {
-                label: "Contract Address",
-                value: msg.contractAddress,
-                link: `/contracts/instances/${msg.contractAddress}`,
-              },
-              {
-                label: "Recipient",
-                value: "CUSTOM",
-                customValue: createElement(
-                  Link,
-                  {
-                    to: "/l1/address/$address",
-                    params: { address: msg.recipient },
-                    className: "text-purple-light font-mono hover:underline",
-                  },
-                  msg.recipient,
-                ),
-              },
-              { label: "Content", value: msg.content },
-            ]}
-          />
-        </div>
-      ))}
-    </div>
+    <DataTable
+      columns={L2ToL1MsgsColumns}
+      data={messages}
+      disableSizeSelector={false}
+      maxEntries={20}
+    />
   );
 };
