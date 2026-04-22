@@ -41,7 +41,7 @@ export const chicmozL2PendingTxSchema = z.object({
   // The outermost initiator of the transaction (msgSender of the first non-revertible
   // public call request — the account contract that kicked off execution).
   // Absent for private-only transactions (no forPublic data).
-  initiator: aztecAddressSchema.optional(),
+  initiator: aztecAddressSchema.nullish().transform((v) => v ?? undefined),
   // Expiration
   expirationTimestamp: z.coerce.number().optional(),
   // Gas limits
