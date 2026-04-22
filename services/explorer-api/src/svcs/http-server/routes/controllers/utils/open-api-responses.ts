@@ -14,12 +14,12 @@ import {
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2RpcNodeErrorSchema,
-  chicmozL2SequencerDeluxeSchema,
-  chicmozL2SequencerSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozReorgSchema,
   chicmozSearchResultsSchema,
+  publicChicmozL2RpcNodeDeluxeSchema,
+  publicChicmozL2RpcNodeSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { logger } from "../../../../../logger.js";
@@ -232,27 +232,27 @@ export const reorgResponseArray = getResponse(
   "reorgArray",
 );
 
-const cleanedSequencerDeluxeSchema = chicmozL2SequencerDeluxeSchema.extend({
+const cleanedRpcNodeDeluxeSchema = publicChicmozL2RpcNodeDeluxeSchema.extend({
   rollupVersion: z.string(), // Convert BigInt to string
 });
 
-export const sequencerResponse = getResponse(
-  cleanedSequencerDeluxeSchema,
-  "l2SequencerDeluxe",
+export const rpcNodeResponse = getResponse(
+  cleanedRpcNodeDeluxeSchema,
+  "l2RpcNodeDeluxe",
 );
 
-const cleanedSequencerSchema = chicmozL2SequencerSchema.extend({
+const cleanedRpcNodeSchema = publicChicmozL2RpcNodeSchema.extend({
   rollupVersion: z.string(), // Convert BigInt to string
 });
 
-export const sequencerResponseArray = getResponse(
-  z.array(cleanedSequencerSchema),
-  "l2SequencerArrayDeluxe",
+export const rpcNodeResponseArray = getResponse(
+  z.array(cleanedRpcNodeSchema),
+  "l2RpcNodeArrayDeluxe",
 );
 
-export const sequencerErrorResponseArray = getResponse(
+export const rpcNodeErrorResponseArray = getResponse(
   z.array(chicmozL2RpcNodeErrorSchema),
-  "l2SequencerErrorArray",
+  "l2RpcNodeErrorArray",
 );
 
 const cleanedChainInfoSchema = chicmozChainInfoSchema.extend({
@@ -264,7 +264,7 @@ export const chainInfoResponse = getResponse(
   "chainInfo",
 );
 
-export const chainErrorsResponse = sequencerErrorResponseArray;
+export const chainErrorsResponse = rpcNodeErrorResponseArray;
 
 const cleanedContractEventsSchema = chicmozL1GenericContractEventSchema.extend({
   l1BlockNumber: z.string(), // Convert BigInt to string

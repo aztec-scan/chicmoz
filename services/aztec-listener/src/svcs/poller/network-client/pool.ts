@@ -105,7 +105,7 @@ export const setNodeOffline = <K extends keyof AztecNode>(
       cause: JSON.stringify((e as Error).cause) ?? "UnknownCause",
       stack: (e as Error).stack ?? "UnknownStack",
       data: { fnName, args, error: e },
-      nodeName: node.name,
+      rpcNodeName: node.name,
     },
     node.url,
   );

@@ -1,10 +1,10 @@
 import { NodeInfo } from "@aztec/aztec.js/node";
 import {
   ChicmozChainInfo,
-  ChicmozL2Sequencer,
+  ChicmozL2RpcNode,
   L2NetworkId,
   chicmozChainInfoSchema,
-  chicmozL2SequencerSchema,
+  chicmozL2RpcNodeSchema,
 } from "@chicmoz-pkg/types";
 
 export const getChicmozChainInfoFromNodeInfo = (
@@ -17,13 +17,15 @@ export const getChicmozChainInfoFromNodeInfo = (
   });
 };
 
-export const getSequencerFromNodeInfo = (
+export const getRpcNodeFromNodeInfo = (
   l2NetworkId: L2NetworkId,
+  rpcNodeName: string,
   rpcUrl: string,
   nodeInfo: NodeInfo,
-): ChicmozL2Sequencer => {
-  return chicmozL2SequencerSchema.parse({
+): ChicmozL2RpcNode => {
+  return chicmozL2RpcNodeSchema.parse({
     l2NetworkId,
+    rpcNodeName,
     rpcUrl,
     lastSeenAt: new Date(),
     createdAt: new Date(),
