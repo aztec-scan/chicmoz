@@ -25,6 +25,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH,
 
   ...controller.openapi_GET_PENDING_TXS,
+  ...controller.openapi_GET_PENDING_TX_BY_HASH,
   ...controller.openapi_GET_DROPPED_TX_BY_HASH,
 
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASS,
@@ -69,6 +70,10 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_RPC_NODES,
 
   ...controller.openapi_L2_SEARCH_PUBLIC_LOGS,
+
+  ...controller.openapi_GET_BLOCK_UI_TABLE_DATA,
+  ...controller.openapi_GET_TX_EFFECTS_UI_TABLE_DATA,
+  ...controller.openapi_GET_TX_EFFECTS_BY_BLOCK_HEIGHT_UI_TABLE,
 };
 
 const otherPaths = [
@@ -127,7 +132,6 @@ const checkDocsStatus = () => {
 
 export const init = ({ router }: { router: Router }) => {
   checkDocsStatus();
-  router.get("/l2/index", controller.GET_ROUTES);
 
   router.get(paths.latestHeight, controller.GET_LATEST_HEIGHT);
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);

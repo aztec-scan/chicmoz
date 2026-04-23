@@ -19,7 +19,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-anvil
-          image: aztecprotocol/aztec:4.1.1
+          image: aztecprotocol/aztec:4.2.0
           command:
             [
               "sh",
@@ -27,7 +27,7 @@ spec:
               "until nc -z anvil-ethereum-node 8545; do echo waiting for anvil; sleep 2; done",
             ]
       containers:
-        - image: aztecprotocol/aztec:4.1.1
+        - image: aztecprotocol/aztec:4.2.0
           name: aztec-sandbox-node
           resources:
             requests:
@@ -45,6 +45,21 @@ spec:
             - name: pxe-port
               containerPort: 8081
               protocol: TCP
+          startupProbe:
+            tcpSocket:
+              port: 8081
+            periodSeconds: 5
+            failureThreshold: 120
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 10
           env:
             # NOTE: Reference file in aztec-packages: yarn-project/aztec/src/cli/aztec_start_options.ts
             #- name: DEBUG
