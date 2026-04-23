@@ -54,15 +54,14 @@ export const getTxEffectData = (
             },
             truncateHashString(data.feePayer),
           )
-        : createElement(
-            CustomTooltip,
-            { content: "We were not able to index this information" },
-            createElement(
+        : createElement(CustomTooltip, {
+            content: "We were not able to index this information",
+            children: createElement(
               "span",
               { className: "text-gray-400 italic cursor-help" },
               "Unknown",
             ),
-          ),
+          }),
     },
     {
       label: "INITIATOR",
@@ -76,15 +75,14 @@ export const getTxEffectData = (
             },
             truncateHashString(data.initiator),
           )
-        : createElement(
-            CustomTooltip,
-            { content: "We were not able to index this information" },
-            createElement(
+        : createElement(CustomTooltip, {
+            content: "We were not able to index this information",
+            children: createElement(
               "span",
               { className: "text-gray-400 italic cursor-help" },
               "Unknown",
             ),
-          ),
+          }),
     },
     {
       label: "FEE PAYMENT METHOD",
@@ -93,15 +91,14 @@ export const getTxEffectData = (
         ? createElement(FeePaymentMethodBadge, {
             method: data.feePaymentMethod as "fee_juice" | "fpc",
           })
-        : createElement(
-            CustomTooltip,
-            { content: "We were not able to index this information" },
-            createElement(
+        : createElement(CustomTooltip, {
+            content: "We were not able to index this information",
+            children: createElement(
               "span",
               { className: "text-gray-400 italic cursor-help" },
               "Unknown",
             ),
-          ),
+          }),
     },
     {
       label: "TRANSACTION FEE",
