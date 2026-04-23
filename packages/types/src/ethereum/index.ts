@@ -33,6 +33,17 @@ export const chicmozL1L2ValidatorSchema = z.object({
 
 export type ChicmozL1L2Validator = z.infer<typeof chicmozL1L2ValidatorSchema>;
 
+export const chicmozL1L2ValidatorTotalsSchema = z.object({
+  total: z.number().nonnegative(),
+  validating: z.number().nonnegative(),
+  nonValidating: z.number().nonnegative(),
+  statusCounts: z.record(z.string(), z.number().nonnegative()),
+});
+
+export type ChicmozL1L2ValidatorTotals = z.infer<
+  typeof chicmozL1L2ValidatorTotalsSchema
+>;
+
 export const chicmozL1L2ValidatorHistoryEntrySchema = z.tuple([
   timestampSchema,
   keyChangedSchema,

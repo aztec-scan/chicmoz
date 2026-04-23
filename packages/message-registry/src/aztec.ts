@@ -1,4 +1,4 @@
-import {
+import type {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
@@ -7,8 +7,8 @@ import {
   ChicmozL2PendingTx,
   ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
-  ChicmozL2Sequencer,
   L2NetworkId,
+  SourceVerificationFailureStage,
 } from "@chicmoz-pkg/types";
 
 export type NewBlockEvent = {
@@ -35,7 +35,7 @@ export type CatchupBlockEvent = NewBlockEvent;
 
 export type ChicmozL2RpcNodeAliveEvent = {
   rpcUrl: ChicmozL2RpcNode["rpcUrl"];
-  rpcName: ChicmozL2RpcNode["name"];
+  rpcNodeName: ChicmozL2RpcNode["rpcNodeName"];
   timestamp: number;
 };
 
@@ -43,8 +43,8 @@ export type ChicmozL2RpcNodeErrorEvent = {
   nodeError: ChicmozL2RpcNodeError;
 };
 
-export type ChicmozSequencerEvent = {
-  sequencer: ChicmozL2Sequencer;
+export type ChicmozL2RpcNodeInfoEvent = {
+  rpcNode: ChicmozL2RpcNode;
 };
 
 export type ChicmozChainInfoEvent = {
@@ -63,7 +63,6 @@ export type CompileSourceRequestEvent = {
   githubUrl: string;
   gitRef?: string;
   subPath?: string;
-  aztecVersion: string;
 };
 
 export type CompileSourceResultEvent = {
@@ -71,10 +70,13 @@ export type CompileSourceResultEvent = {
   contractClassId: string;
   version: number;
   status: "success" | "compilation_failed" | "clone_failed" | "timeout";
+  aztecVersion?: string;
   artifactJson?: string;
   sourceFiles?: Array<{ path: string; content: string }>;
   commitHash?: string;
   error?: string;
+  failureStage?: SourceVerificationFailureStage;
+  compileOutput?: string;
 };
 
 export function generateL2TopicName(
@@ -92,7 +94,7 @@ export type L2_MESSAGES = {
   CONTRACT_INSTANCE_BALANCE_EVENT: ContractInstanceBalanceEvent;
   L2_RPC_NODE_ERROR_EVENT: ChicmozL2RpcNodeErrorEvent;
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
-  SEQUENCER_INFO_EVENT: ChicmozSequencerEvent;
+  L2_RPC_NODE_INFO_EVENT: ChicmozL2RpcNodeInfoEvent;
   CHAIN_INFO_EVENT: ChicmozChainInfoEvent;
   L2_BLOCK_FINALIZATION_UPDATE_EVENT: ChicmozL2BlockFinalizationUpdateEvent;
   COMPILE_SOURCE_REQUEST_EVENT: CompileSourceRequestEvent;

@@ -18,7 +18,8 @@ import {
   Contract,
   type ContractInstanceWithAddress,
   DeployMethod,
- TxSendResultMined } from "@aztec/aztec.js/contracts";
+  TxSendResultMined,
+} from "@aztec/aztec.js/contracts";
 import { FunctionType, NoirCompiledContract } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
@@ -26,7 +27,7 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-import { Wallet } from "@aztec/aztec.js/wallet";
+import { ContractInitializationStatus, Wallet } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
@@ -267,7 +268,11 @@ export const publicDeployAccounts = async (
       return contractMetadata;
     }),
   ).then((results) =>
-    results.filter((result) => !result.isContractInitialized),
+    results.filter(
+      (result) =>
+        result.initializationStatus !==
+        ContractInitializationStatus.INITIALIZED,
+    ),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
@@ -280,7 +285,7 @@ export const publicDeployAccounts = async (
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
       logger.warn(
-        `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
+        `🚨 Contract instance not found for contract initializationStatus: ${contractMetadata.initializationStatus}`,
       );
       continue;
     }

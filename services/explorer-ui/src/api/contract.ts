@@ -34,6 +34,8 @@ const contractClassSourceResponseSchema = z.object({
   version: z.number(),
   sourceCodeUrl: z.string().nullable().optional(),
   sourceCodeCommitHash: z.string().nullable().optional(),
+  gitRef: z.string().nullable().optional(),
+  aztecVersion: z.string().nullable().optional(),
   sourceCode: sourceCodeEntrySchema.array(),
 });
 
@@ -74,9 +76,13 @@ export const ContractL2API = {
   },
   getContractClasses: async (
     classId?: string,
+    verifiedSourceOnly?: boolean,
   ): Promise<ChicmozL2ContractClassRegisteredEvent[]> => {
     const response = await client.get(
       aztecExplorer.getL2ContractClasses(classId),
+      {
+        params: classId ? undefined : { verifiedSourceOnly },
+      },
     );
     return validateResponse(
       chicmozL2ContractClassRegisteredEventSchema.array(),
@@ -249,14 +255,12 @@ export const ContractL2API = {
     githubUrl,
     gitRef,
     subPath,
-    aztecVersion,
   }: {
     classId: string;
     version: string;
     githubUrl: string;
     gitRef?: string;
     subPath?: string;
-    aztecVersion?: string;
   }): Promise<VerifySourceResponse> => {
     const response = await client.post(
       aztecExplorer.postL2VerifySource(classId, version),
@@ -264,7 +268,6 @@ export const ContractL2API = {
         githubUrl,
         gitRef,
         subPath,
-        aztecVersion,
       },
     );
     return validateResponse(verifySourceResponseSchema, response.data);

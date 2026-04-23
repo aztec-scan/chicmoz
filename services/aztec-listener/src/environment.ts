@@ -42,11 +42,16 @@ export const AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT = z.coerce
   .gt(0)
   .optional()
   .parse(process.env.AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT);
-export const AZTEC_LISTEN_FOR_PENDING_TXS =
-  process.env.AZTEC_LISTEN_FOR_PENDING_TXS === "true";
-export const AZTEC_LISTEN_FOR_CHAIN_INFO =
-  process.env.AZTEC_LISTEN_FOR_CHAIN_INFO === "true";
-export const AZTEC_DISABLED = process.env.AZTEC_DISABLED === "true";
+export const AZTEC_LISTEN_FOR_PENDING_TXS = z.coerce
+  .boolean()
+  .default(true)
+  .parse(process.env.AZTEC_LISTEN_FOR_PENDING_TXS);
+export const AZTEC_LISTEN_FOR_CHAIN_INFO = z.coerce
+  .boolean()
+  .default(true)
+  .parse(process.env.AZTEC_LISTEN_FOR_CHAIN_INFO);
+export const AZTEC_DISABLED = z.coerce
+  .boolean().default(false).parse(process.env.AZTEC_DISABLED);
 export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
   .boolean()
   .default(false)
@@ -89,50 +94,37 @@ const printPool = () => {
 };
 
 export const getConfigStr = () => `POLLER
-AZTEC_DISABLED:                                            ${
-  AZTEC_DISABLED ? "✅" : "❌"
-}
+AZTEC_DISABLED:                                            ${AZTEC_DISABLED ? "✅" : "❌"
+  }
 L2_NETWORK_ID:                                             ${L2_NETWORK_ID}
 AZTEC_RPC_URL_POOL:                                        ${printPool()}
 =======================
-AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${
-  AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
-}
-AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT: ${
-  AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT
+AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
+  }
+AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT: ${AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT
     ? AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT + "⚠️"
     : "❌"
-}
-AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS:                    ${
-  AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS ? "✅" : "❌"
-}
-AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT:   ${
-  AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT
+  }
+AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS:                    ${AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS ? "✅" : "❌"
+  }
+AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT:   ${AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT
     ? AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT + "⚠️"
     : "❌"
-}
-AZTEC_LISTEN_FOR_PENDING_TXS:                              ${
-  AZTEC_LISTEN_FOR_PENDING_TXS ? "✅" : "❌"
-}
-TX_POLL_INTERVAL_MS:                                       ${
-  TX_POLL_INTERVAL_MS / 1000
-}s
-DROPPED_TX_VERIFICATION_INTERVAL_MS:                      ${
-  DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000
-}s
-DROPPED_TX_AGE_THRESHOLD_MS:                              ${
-  DROPPED_TX_AGE_THRESHOLD_MS / 1000
-}s
-MEMPOOL_SYNC_GRACE_PERIOD_MS:                              ${
-  MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000
-}s
-AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${
-  AZTEC_LISTEN_FOR_CHAIN_INFO ? "✅" : "❌"
-}
-CHAIN_INFO_POLL_INTERVAL_MS:                               ${
-  CHAIN_INFO_POLL_INTERVAL_MS / 1000
-}s
-IGNORE_PROCESSED_HEIGHT:                                   ${
-  IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
-}
+  }
+AZTEC_LISTEN_FOR_PENDING_TXS:                              ${AZTEC_LISTEN_FOR_PENDING_TXS ? "✅" : "❌"
+  }
+TX_POLL_INTERVAL_MS:                                       ${TX_POLL_INTERVAL_MS / 1000
+  }s
+DROPPED_TX_VERIFICATION_INTERVAL_MS:                      ${DROPPED_TX_VERIFICATION_INTERVAL_MS / 1000
+  }s
+DROPPED_TX_AGE_THRESHOLD_MS:                              ${DROPPED_TX_AGE_THRESHOLD_MS / 1000
+  }s
+MEMPOOL_SYNC_GRACE_PERIOD_MS:                              ${MEMPOOL_SYNC_GRACE_PERIOD_MS / 1000
+  }s
+AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${AZTEC_LISTEN_FOR_CHAIN_INFO ? "✅" : "❌"
+  }
+CHAIN_INFO_POLL_INTERVAL_MS:                               ${CHAIN_INFO_POLL_INTERVAL_MS / 1000
+  }s
+IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
+  }
 MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}`;

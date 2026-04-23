@@ -125,6 +125,12 @@ jobs:
         run: |
           doctl registries kubernetes-manifest aztlan-containers --namespace chicmoz-prod | kubectl apply -f -
 
+      - name: Publish supported contract-compiler images
+        env:
+          CONTRACT_COMPILER_IMAGE_REPO: registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet
+        run: |
+          bash scripts/build_contract_compiler.sh --push
+
       - name: Deploy to cluster with Skaffold
         env:
           MAINNET_AZTEC_L1_HTTP: ${{ vars.MAINNET_AZTEC_L1_HTTP }}

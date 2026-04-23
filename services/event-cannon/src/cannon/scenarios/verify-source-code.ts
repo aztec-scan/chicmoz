@@ -14,10 +14,63 @@ import { EXPLORER_API_URL } from "../../environment.js";
 const GITHUB_URL = "https://github.com/aztec-scan/chicmoz";
 const GIT_REF = "production-devnet";
 const SUB_PATH = "services/event-cannon/src/contract-projects/SimpleLogging";
-const AZTEC_VERSION = "4.0.3";
-
 const POLL_INTERVAL_MS = 10_000;
 const MAX_POLL_ATTEMPTS = 60; // 10 minutes max
+
+type ExplorerApiResponse = {
+  statusCode: number | undefined;
+  statusMessage: string | undefined;
+  data: string;
+};
+
+const parseJsonBody = (
+  response: ExplorerApiResponse,
+  context: string,
+): Record<string, unknown> | undefined => {
+  try {
+    return JSON.parse(response.data) as Record<string, unknown>;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.warn(
+      `${context} returned a non-JSON body (${message}). Raw body: ${response.data}`,
+    );
+    return undefined;
+  }
+};
+
+const logApiResponse = (context: string, response: ExplorerApiResponse) => {
+  logger.info(
+    `${context} response: ${JSON.stringify({
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      data: response.data,
+    })}`,
+  );
+};
+
+const logVerificationJobDetails = (
+  job: Record<string, unknown>,
+  context: string,
+) => {
+  const status = job.status as string | undefined;
+  const failureStage = job.failureStage as string | undefined;
+  const error = job.error as string | undefined;
+  const compileOutput = job.compileOutput as string | undefined;
+  const commitHash = job.commitHash as string | undefined;
+
+  logger.info(
+    `${context}: ${JSON.stringify({
+      status,
+      failureStage,
+      error,
+      commitHash,
+    })}`,
+  );
+
+  if (compileOutput) {
+    logger.info(`${context} compile output:\n${compileOutput}`);
+  }
+};
 
 export async function run() {
   logger.info("===== VERIFY SOURCE CODE =====");
@@ -61,7 +114,6 @@ export async function run() {
     githubUrl: GITHUB_URL,
     gitRef: GIT_REF,
     subPath: SUB_PATH,
-    aztecVersion: AZTEC_VERSION,
   });
 
   const submitRes = await callExplorerApi({
@@ -72,19 +124,34 @@ export async function run() {
     waitForIndexing: true,
   });
 
+  logApiResponse("Source verification submit", submitRes);
+
   // 202 = job created, 200 = already verified
   if (submitRes.statusCode !== 202 && submitRes.statusCode !== 200) {
     logger.error(
-      `Source verification submission failed: ${submitRes.statusCode} ${submitRes.data}`,
+      `Source verification submission failed: ${JSON.stringify({
+        statusCode: submitRes.statusCode,
+        statusMessage: submitRes.statusMessage,
+        data: submitRes.data,
+      })}`,
     );
     return;
   }
 
-  const submitBody = JSON.parse(submitRes.data) as Record<string, unknown>;
+  const submitBody = parseJsonBody(submitRes, "Source verification submit");
+  if (!submitBody) {
+    logger.error(
+      "Source verification submission succeeded but response body was invalid",
+    );
+    return;
+  }
 
   if (submitRes.statusCode === 200) {
     logger.info(
-      `Source already verified (status=${submitBody.status as string}, sourceCodeUrl=${submitBody.sourceCodeUrl as string})`,
+      `Source already verified: ${JSON.stringify({
+        status: submitBody.status,
+        sourceCodeUrl: submitBody.sourceCodeUrl,
+      })}`,
     );
     return;
   }
@@ -105,13 +172,25 @@ export async function run() {
     });
 
     if (pollRes.statusCode !== 200) {
-      logger.warn(`Poll returned ${pollRes.statusCode}: ${pollRes.data}`);
+      logger.warn(
+        `Poll returned unexpected response: ${JSON.stringify({
+          statusCode: pollRes.statusCode,
+          statusMessage: pollRes.statusMessage,
+          data: pollRes.data,
+        })}`,
+      );
       continue;
     }
 
-    const job = JSON.parse(pollRes.data) as Record<string, unknown>;
+    logApiResponse(`Poll attempt ${attempt}`, pollRes);
+
+    const job = parseJsonBody(pollRes, `Poll attempt ${attempt}`);
+    if (!job) {
+      continue;
+    }
+
     const status = job.status as string;
-    logger.info(`  Job status: ${status}`);
+    logVerificationJobDetails(job, `Job update attempt ${attempt}`);
 
     if (status === "VERIFIED") {
       logger.info("Source code VERIFIED successfully!");
@@ -124,14 +203,27 @@ export async function run() {
         loggingString: `🔬 fetchVerifiedSource ${contractLoggingName}`,
       });
 
+      logApiResponse("Fetch verified source", sourceRes);
+
       if (sourceRes.statusCode === 200) {
-        const sourceBody = JSON.parse(sourceRes.data) as Record<
-          string,
-          unknown
-        >;
+        const sourceBody = parseJsonBody(sourceRes, "Fetch verified source");
+        if (!sourceBody) {
+          logger.warn(
+            "Verified source fetch succeeded but response body was invalid",
+          );
+          logger.info("===== VERIFY SOURCE CODE COMPLETE =====");
+          return;
+        }
+
         const sourceFiles = sourceBody.sourceCode as
           | { path: string; content: string }[]
           | undefined;
+        logger.info(
+          `  Source metadata: ${JSON.stringify({
+            sourceCodeUrl: sourceBody.sourceCodeUrl,
+            sourceCodeCommitHash: sourceBody.sourceCodeCommitHash,
+          })}`,
+        );
         logger.info(`  Retrieved ${sourceFiles?.length ?? 0} source file(s)`);
         if (sourceFiles) {
           for (const f of sourceFiles) {
@@ -149,8 +241,13 @@ export async function run() {
     }
 
     if (status === "FAILED") {
-      const error = job.error as string | undefined;
-      logger.error(`Source verification FAILED: ${error ?? "unknown error"}`);
+      logger.error(
+        `Source verification FAILED: ${JSON.stringify({
+          error: job.error ?? "unknown error",
+          failureStage: job.failureStage,
+          compileOutput: job.compileOutput,
+        })}`,
+      );
       return;
     }
 

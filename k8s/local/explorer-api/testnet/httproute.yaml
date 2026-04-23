@@ -10,8 +10,11 @@ spec:
   parentRefs:
     - name: chicmoz-gateway
       sectionName: api-testnet
+    - name: chicmoz-gateway
+      sectionName: api-testnet-remote
   hostnames:
     - api.testnet.chicmoz.localhost
+    - api.remote.chicmoz.localhost
   rules:
     - matches:
         - path:

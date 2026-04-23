@@ -10,9 +10,9 @@ import { useMemo, useState } from "react";
 import { CustomTooltip } from "~/components/custom-tooltip";
 import { InfoCard } from "~/components/info-card";
 import {
-  useContractClasses,
   useContractInstancesWithAztecScanNotes,
   useSubTitle,
+  useVerifiedSourceContractClasses,
 } from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
 import { truncateHashString } from "~/lib/create-hash-string";
@@ -24,7 +24,7 @@ export const Ecosystem: FC = () => {
     data: contractClasses,
     isLoading: isLoadingClasses,
     error: classesError,
-  } = useContractClasses();
+  } = useVerifiedSourceContractClasses();
   useSubTitle("Ecosystem");
   const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
 
@@ -55,7 +55,7 @@ export const Ecosystem: FC = () => {
     if (!contractClasses) {
       return [];
     }
-    return contractClasses.filter((cc) => !!cc.sourceCodeUrl);
+    return contractClasses;
   }, [contractClasses]);
 
   const sdkLink = (

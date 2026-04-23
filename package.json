@@ -22,6 +22,8 @@
     "typescript": "5.8.3"
   },
   "scripts": {
+    "build:contract-compiler": "bash scripts/build_contract_compiler.sh",
+    "build:contract-compiler-from-nargo": "bash scripts/build_contract_compiler_from_nargo.sh",
     "build:packages": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",
     "lint:packages": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose --include '@chicmoz-pkg/*' run lint",
     "build-all-slow": "yarn workspaces foreach --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build && yarn workspaces foreach --all --topological-dev --verbose --include 'services/*' run build",
@@ -45,20 +47,20 @@
   },
   "resolutions": {
     "viem": "2.20.0",
-    "@aztec/accounts": "4.1.1",
-    "@aztec/aztec.js": "4.1.1",
-    "@aztec/bb.js": "4.1.1",
-    "@aztec/bb-prover": "4.1.1",
-    "@aztec/builder": "4.1.1",
-    "@aztec/constants": "4.1.1",
-    "@aztec/entrypoints": "4.1.1",
-    "@aztec/ethereum": "4.1.1",
-    "@aztec/foundation": "4.1.1",
-    "@aztec/l1-artifacts": "4.1.1",
-    "@aztec/noir-contracts.js": "4.1.1",
-    "@aztec/protocol-contracts": "4.1.1",
-    "@aztec/pxe": "4.1.1",
-    "@aztec/simulator": "4.1.1",
-    "@aztec/stdlib": "4.1.1"
+    "@aztec/accounts": "4.2.0",
+    "@aztec/aztec.js": "4.2.0",
+    "@aztec/bb.js": "4.2.0",
+    "@aztec/bb-prover": "4.2.0",
+    "@aztec/builder": "4.2.0",
+    "@aztec/constants": "4.2.0",
+    "@aztec/entrypoints": "4.2.0",
+    "@aztec/ethereum": "4.2.0",
+    "@aztec/foundation": "4.2.0",
+    "@aztec/l1-artifacts": "4.2.0",
+    "@aztec/noir-contracts.js": "4.2.0",
+    "@aztec/protocol-contracts": "4.2.0",
+    "@aztec/pxe": "4.2.0",
+    "@aztec/simulator": "4.2.0",
+    "@aztec/stdlib": "4.2.0"
   }
 }
