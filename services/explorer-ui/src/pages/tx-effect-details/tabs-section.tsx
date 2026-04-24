@@ -1,5 +1,6 @@
 import { type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
 import { type FC, useState } from "react";
+import { Loader } from "~/components/loader";
 import { ValueListDisplay } from "~/components/info-display/value-list-display";
 import { OptionButtons } from "~/components/option-buttons";
 import { usePublicCallRequestsByTxHash } from "~/hooks/api";
@@ -21,7 +22,10 @@ export const TabsSection: FC<PillSectionProps> = ({ txEffects, txHash }) => {
     setSelectedTab(value as TabId);
   };
 
-  const { data: publicCallRequests } = usePublicCallRequestsByTxHash(txHash);
+  const {
+    data: publicCallRequests,
+    isLoading: isPublicCallRequestsLoading,
+  } = usePublicCallRequestsByTxHash(txHash);
 
   const txEffectData = mapTxEffectsData(
     txEffects,
@@ -54,7 +58,9 @@ export const TabsSection: FC<PillSectionProps> = ({ txEffects, txHash }) => {
       case "publicDataWrites":
         return <PublicDataWrites writes={txEffects.publicDataWrites} />;
       case "publicCallRequests":
-        return (
+        return isPublicCallRequestsLoading ? (
+          <Loader amount={1} />
+        ) : (
           <PublicCallRequestsTab
             publicCallRequests={publicCallRequests ?? []}
           />

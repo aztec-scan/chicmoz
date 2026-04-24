@@ -7,7 +7,6 @@ import { CopyableAmount } from "~/components/copyable-amount";
 import { CustomTooltip } from "~/components/custom-tooltip";
 import { EtherscanAddressLink } from "~/components/etherscan-address-link";
 import { FeePaymentMethodBadge } from "~/components/fee-payment-method-badge";
-import { truncateHashString } from "~/lib/create-hash-string";
 import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
 import { type TabId } from "./types";
@@ -44,44 +43,40 @@ export const getTxEffectData = (
     },
     {
       label: "FEE PAYER",
-      value: "CUSTOM",
-      customValue: data.feePayer
-        ? createElement(
-            "a",
-            {
-              href: `/address/${data.feePayer}`,
-              className: "text-purple-light font-mono hover:underline",
-            },
-            truncateHashString(data.feePayer),
-          )
-        : createElement(CustomTooltip, {
-            content: "We were not able to index this information",
-            children: createElement(
-              "span",
-              { className: "text-gray-400 italic cursor-help" },
-              "Unknown",
-            ),
+      ...(data.feePayer
+        ? {
+            value: data.feePayer,
+            link: `/address/${data.feePayer}`,
+          }
+        : {
+            value: "CUSTOM",
+            customValue: createElement(CustomTooltip, {
+              content: "We were not able to index this information",
+              children: createElement(
+                "span",
+                { className: "text-gray-400 italic cursor-help" },
+                "Unknown",
+              ),
+            }),
           }),
     },
     {
       label: "INITIATOR",
-      value: "CUSTOM",
-      customValue: data.initiator
-        ? createElement(
-            "a",
-            {
-              href: `/address/${data.initiator}`,
-              className: "text-purple-light font-mono hover:underline",
-            },
-            truncateHashString(data.initiator),
-          )
-        : createElement(CustomTooltip, {
-            content: "We were not able to index this information",
-            children: createElement(
-              "span",
-              { className: "text-gray-400 italic cursor-help" },
-              "Unknown",
-            ),
+      ...(data.initiator
+        ? {
+            value: data.initiator,
+            link: `/address/${data.initiator}`,
+          }
+        : {
+            value: "CUSTOM",
+            customValue: createElement(CustomTooltip, {
+              content: "We were not able to index this information",
+              children: createElement(
+                "span",
+                { className: "text-gray-400 italic cursor-help" },
+                "Unknown",
+              ),
+            }),
           }),
     },
     {

@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { ChicmozL2PendingTx } from "@chicmoz-pkg/types";
+import type { ChicmozL2PendingTx } from "@chicmoz-pkg/types";
 import { eq } from "drizzle-orm";
 import { l2TxL2ToL1Msg } from "../../schema/index.js";
 

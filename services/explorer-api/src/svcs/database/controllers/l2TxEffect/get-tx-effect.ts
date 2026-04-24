@@ -3,7 +3,6 @@ import {
   ChicmozL2TxEffect,
   ChicmozL2TxEffectDeluxe,
   HexString,
-  PublicCallRequest,
   chicmozL2TxEffectDeluxeSchema,
 } from "@chicmoz-pkg/types";
 import assert from "assert";
@@ -28,7 +27,10 @@ import {
   publicDataWrite,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
-import { getPublicCallRequestsByTxHash } from "../l2Public-call/get.js";
+import {
+  getPublicCallRequestsByTxHash,
+  getPublicCallRequestsByTxHashes,
+} from "../l2Public-call/get.js";
 
 enum GetTypes {
   BlockHeightRange,
@@ -169,17 +171,9 @@ const _getTxEffects = async (
 
   const dbRes = await whereQuery.execute();
 
-  // Fetch public call requests for all tx effects in parallel
-  const publicCallRequestsEntries = await Promise.all(
-    dbRes.map(
-      async (row): Promise<[string, PublicCallRequest[]]> => [
-        row.txHash,
-        await getPublicCallRequestsByTxHash(row.txHash ),
-      ],
-    ),
-  );
-  const publicCallRequestsMap = new Map<string, PublicCallRequest[]>(
-    publicCallRequestsEntries,
+  // Fetch all public call requests in a single query, then group by txHash in memory
+  const publicCallRequestsMap = await getPublicCallRequestsByTxHashes(
+    dbRes.map((row) => row.txHash),
   );
 
   // Process the results directly without additional queries

@@ -8,7 +8,7 @@ import {
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -156,9 +156,9 @@ export const backfillPublicCallRequestNames = async ({
     return;
   }
 
-  const instanceAddressSet = new Set(instances.map((i) => i.address));
+  const instanceAddresses = instances.map((i) => i.address);
 
-  // Fetch rows missing contractName OR functionName for these instances
+  // Fetch rows missing contractName OR functionName, filtered by the relevant contract addresses in SQL
   const candidateRows = await db()
     .select({
       txHash: l2TxPublicCallRequest.txHash,
@@ -168,23 +168,22 @@ export const backfillPublicCallRequestNames = async ({
     })
     .from(l2TxPublicCallRequest)
     .where(
-      or(
-        isNull(l2TxPublicCallRequest.contractName),
-        isNull(l2TxPublicCallRequest.functionName),
+      and(
+        inArray(l2TxPublicCallRequest.contractAddress, instanceAddresses),
+        or(
+          isNull(l2TxPublicCallRequest.contractName),
+          isNull(l2TxPublicCallRequest.functionName),
+        ),
       ),
     );
 
-  const rowsToUpdate = candidateRows.filter((r) =>
-    instanceAddressSet.has(r.contractAddress),
-  );
-
-  if (rowsToUpdate.length === 0) {
+  if (candidateRows.length === 0) {
     return;
   }
 
   // Update each row using the pre-built selectorMap — O(1) per row, no artifact parsing
   await Promise.all(
-    rowsToUpdate.map((row) => {
+    candidateRows.map((row) => {
       const functionName = row.functionSelector
         ? (selectorMap[row.functionSelector] ?? null)
         : null;
@@ -202,6 +201,6 @@ export const backfillPublicCallRequestNames = async ({
   );
 
   logger.info(
-    `🔎 Backfilled artifact names for ${rowsToUpdate.length} public call request(s) (classId: ${contractClassId})`,
+    `🔎 Backfilled artifact names for ${candidateRows.length} public call request(s) (classId: ${contractClassId})`,
   );
 };
