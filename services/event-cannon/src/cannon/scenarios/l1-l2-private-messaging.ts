@@ -30,7 +30,6 @@ import { createLogger } from "@aztec/aztec.js/log";
 import { Fr } from "@aztec/aztec.js/fields";
 import { SiblingPath } from "@aztec/aztec.js/trees";
 import { EpochNumber } from "@aztec/foundation/branded-types";
-import { SetPublicAuthwitContractInteraction } from "@aztec/aztec.js/authorization";
 
 const MNEMONIC = "test test test test test test test test test test test junk";
 const TOKEN_NAME = "TokenName";
@@ -354,36 +353,23 @@ export const run = async () => {
     l2Bridge.address,
     EthAddress.ZERO,
   );
-  const user1Wallet = wallet;
-  const setPublicAuthWitInteraction =
-    await SetPublicAuthwitContractInteraction.create(
-      user1Wallet,
-      account.getAddress(),
-      {
-        // The bridge will burn the user's tokens during the exit.
-        // Authorize the bridge (not the user) to perform the burn.
-        caller: l2Bridge.address,
-        action: l2Token.methods.burn_private(
-          ownerAddress,
-          withdrawAmount,
-          nonce,
-        ),
-      },
-      true,
-    );
-  await logAndWaitForTx(
-    setPublicAuthWitInteraction.send(),
-    "setting private burn auth wit",
-  );
+  const authWit = await wallet.createAuthWit(account.getAddress(), {
+    caller: l2Bridge.address,
+    call: await l2Token.methods
+      .burn_private(ownerAddress, withdrawAmount, nonce)
+      .getFunctionCall(),
+  });
 
   const l2TxReceipt = await simulateThenSend({
-    method: l2Bridge.methods.exit_to_l1_private(
-      l2Token.address,
-      ethAccount,
-      withdrawAmount,
-      EthAddress.ZERO,
-      nonce,
-    ),
+    method: l2Bridge.methods
+      .exit_to_l1_private(
+        l2Token.address,
+        ethAccount,
+        withdrawAmount,
+        EthAddress.ZERO,
+        nonce,
+      )
+      .with({ authWitnesses: [authWit] }),
     from: account.getAddress(),
     additionalInfo: "exiting to L1",
   });

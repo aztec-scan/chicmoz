@@ -8,7 +8,7 @@ import {
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -17,6 +17,9 @@ import {
   l2PrivateFunction,
   l2UtilityFunction,
 } from "../../../database/schema/l2contract/index.js";
+import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
+import { buildSelectorMap } from "../../../../utils/resolve-artifact-names.js";
+import { logger } from "../../../../logger.js";
 
 export const storeContractInstanceDeployed = async (
   instance: ChicmozL2ContractInstanceDeployedEvent,
@@ -66,12 +69,15 @@ export const addArtifactData = async ({
   artifactJson: string;
   contractName?: string;
   standardData?: ContractStandard;
-}): Promise<void> => {
+}): Promise<{ selectorMap: Record<string, string> }> => {
+  const selectorMap = await buildSelectorMap(artifactJson);
+
   await db()
     .update(l2ContractClassRegistered)
     .set({
       artifactJson,
       artifactContractName: contractName ?? null,
+      selectorMap,
       standardContractType: standardData?.name ?? null,
       standardContractVersion: standardData?.version ?? null,
     })
@@ -82,6 +88,8 @@ export const addArtifactData = async ({
       ),
     )
     .execute();
+
+  return { selectorMap };
 };
 
 export const storePrivateFunction = async (
@@ -111,4 +119,88 @@ export const storeUtilityFunction = async (
       utilityFunction_metadataHash: utilityFunction.metadataHash,
       utilityFunction_bytecode: utilityFunction.bytecode,
     });
+};
+
+/**
+ * Backfills contractName and functionName on all tx_public_call_request rows
+ * that are associated with instances of the given contract class and are still
+ * missing contractName OR functionName. Called after a new artifact is uploaded
+ * so that previously indexed call requests get human-readable names retroactively.
+ *
+ * Uses the pre-built selectorMap (computed by addArtifactData) for O(1) lookups
+ * instead of re-parsing the artifact JSON for each row.
+ */
+export const backfillPublicCallRequestNames = async ({
+  contractClassId,
+  version,
+  selectorMap,
+  contractName,
+}: {
+  contractClassId: string;
+  version: number;
+  selectorMap: Record<string, string>;
+  contractName: string | undefined;
+}): Promise<void> => {
+  // Find all contract instance addresses belonging to this class
+  const instances = await db()
+    .select({ address: l2ContractInstanceDeployed.address })
+    .from(l2ContractInstanceDeployed)
+    .where(
+      and(
+        eq(l2ContractInstanceDeployed.currentContractClassId, contractClassId),
+        eq(l2ContractInstanceDeployed.version, version),
+      ),
+    );
+
+  if (instances.length === 0) {
+    return;
+  }
+
+  const instanceAddresses = instances.map((i) => i.address);
+
+  // Fetch rows missing contractName OR functionName, filtered by the relevant contract addresses in SQL
+  const candidateRows = await db()
+    .select({
+      txHash: l2TxPublicCallRequest.txHash,
+      calldataHash: l2TxPublicCallRequest.calldataHash,
+      contractAddress: l2TxPublicCallRequest.contractAddress,
+      functionSelector: l2TxPublicCallRequest.functionSelector,
+    })
+    .from(l2TxPublicCallRequest)
+    .where(
+      and(
+        inArray(l2TxPublicCallRequest.contractAddress, instanceAddresses),
+        or(
+          isNull(l2TxPublicCallRequest.contractName),
+          isNull(l2TxPublicCallRequest.functionName),
+        ),
+      ),
+    );
+
+  if (candidateRows.length === 0) {
+    return;
+  }
+
+  // Update each row using the pre-built selectorMap — O(1) per row, no artifact parsing
+  await Promise.all(
+    candidateRows.map((row) => {
+      const functionName = row.functionSelector
+        ? (selectorMap[row.functionSelector] ?? null)
+        : null;
+
+      return db()
+        .update(l2TxPublicCallRequest)
+        .set({ contractName: contractName ?? null, functionName })
+        .where(
+          and(
+            eq(l2TxPublicCallRequest.txHash, row.txHash),
+            eq(l2TxPublicCallRequest.calldataHash, row.calldataHash),
+          ),
+        );
+    }),
+  );
+
+  logger.info(
+    `🔎 Backfilled artifact names for ${candidateRows.length} public call request(s) (classId: ${contractClassId})`,
+  );
 };

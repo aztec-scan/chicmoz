@@ -398,10 +398,16 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       ).catch((err) => {
         logger.warn(`Failed to cache contract class: ${err}`);
       });
-      await db.l2Contract.addArtifactData({
+      const { selectorMap } = await db.l2Contract.addArtifactData({
         contractClassId: dbContractClass.contractClassId,
         version: dbContractClass.version,
         artifactJson: stringifiedArtifactJson,
+        contractName: artifactContractName,
+      });
+      await db.l2Contract.backfillPublicCallRequestNames({
+        contractClassId: dbContractClass.contractClassId,
+        version: dbContractClass.version,
+        selectorMap,
         contractName: artifactContractName,
       });
     }

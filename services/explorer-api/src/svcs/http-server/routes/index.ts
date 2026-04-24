@@ -26,6 +26,11 @@ export const openApiPaths: OpenAPIObject["paths"] = {
 
   ...controller.openapi_GET_PENDING_TXS,
   ...controller.openapi_GET_PENDING_TX_BY_HASH,
+  ...controller.openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  ...controller.openapi_GET_PUBLIC_CALL_REQUESTS,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_TX_HASH,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_CONTRACT_ADDRESS,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_RECIPIENT,
   ...controller.openapi_GET_DROPPED_TX_BY_HASH,
 
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASS,
@@ -165,7 +170,22 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.txs, controller.GET_PENDING_TXS);
   router.get(paths.txByHash, controller.GET_PENDING_TX_BY_HASH);
+  router.get(
+    paths.publicCallRequestsByTxHash,
+    controller.GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  );
+  router.get(paths.publicCallRequests, controller.GET_PUBLIC_CALL_REQUESTS);
   router.get(paths.droppedTxByHash, controller.GET_DROPPED_TX_BY_HASH);
+
+  router.get(paths.l2ToL1MsgsByTx, controller.GET_L2_TO_L1_MSGS_BY_TX_HASH);
+  router.get(
+    paths.l2ToL1MsgsByContract,
+    controller.GET_L2_TO_L1_MSGS_BY_CONTRACT_ADDRESS,
+  );
+  router.get(
+    paths.l2ToL1MsgsByRecipient,
+    controller.GET_L2_TO_L1_MSGS_BY_RECIPIENT,
+  );
 
   router.get(paths.contractClass, controller.GET_L2_REGISTERED_CONTRACT_CLASS);
   router.get(
