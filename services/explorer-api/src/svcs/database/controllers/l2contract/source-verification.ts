@@ -84,11 +84,10 @@ export const updateSourceVerificationJobStatus = async ({
   failureStage?: SourceVerificationFailureStage;
   compileOutput?: string;
 }): Promise<void> => {
-  const updateValues: Partial<typeof sourceVerificationJobs.$inferInsert> = {
-    status: status as (typeof sourceVerificationJobs.$inferInsert)["status"],
+  const updateValues: Record<string, unknown> = {
+    status,
     error: error ?? null,
-    failureStage: (failureStage ??
-      null) as (typeof sourceVerificationJobs.$inferInsert)["failureStage"],
+    failureStage: failureStage ?? null,
     compileOutput: compileOutput ?? null,
   };
   if (commitHash !== undefined) {
