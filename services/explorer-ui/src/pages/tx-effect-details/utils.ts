@@ -4,7 +4,9 @@ import {
 } from "@chicmoz-pkg/types";
 import { createElement } from "react";
 import { CopyableAmount } from "~/components/copyable-amount";
+import { CustomTooltip } from "~/components/custom-tooltip";
 import { EtherscanAddressLink } from "~/components/etherscan-address-link";
+import { FeePaymentMethodBadge } from "~/components/fee-payment-method-badge";
 import { formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
 import { type TabId } from "./types";
@@ -38,6 +40,60 @@ export const getTxEffectData = (
     {
       label: "HASH",
       value: data.txHash,
+    },
+    {
+      label: "FEE PAYER",
+      ...(data.feePayer
+        ? {
+            value: data.feePayer,
+            link: `/address/${data.feePayer}`,
+          }
+        : {
+            value: "CUSTOM",
+            customValue: createElement(CustomTooltip, {
+              content: "We were not able to index this information",
+              children: createElement(
+                "span",
+                { className: "text-gray-400 italic cursor-help" },
+                "Unknown",
+              ),
+            }),
+          }),
+    },
+    {
+      label: "INITIATOR",
+      ...(data.initiator
+        ? {
+            value: data.initiator,
+            link: `/address/${data.initiator}`,
+          }
+        : {
+            value: "CUSTOM",
+            customValue: createElement(CustomTooltip, {
+              content: "We were not able to index this information",
+              children: createElement(
+                "span",
+                { className: "text-gray-400 italic cursor-help" },
+                "Unknown",
+              ),
+            }),
+          }),
+    },
+    {
+      label: "FEE PAYMENT METHOD",
+      value: "CUSTOM",
+      customValue: data.feePaymentMethod
+        ? createElement(FeePaymentMethodBadge, {
+            method: data.feePaymentMethod as "fee_juice" | "fpc",
+          })
+        : createElement(CustomTooltip, {
+            content: "We were not able to index this information",
+            children: createElement(
+              "span",
+              { className: "text-gray-400 italic cursor-help" },
+              "Unknown",
+            ),
+          }),
     },
     {
       label: "TRANSACTION FEE",
@@ -109,6 +165,7 @@ export const getDroppedTxEffectData = (data: ChicmozL2DroppedTx) => [
 
 export const mapTxEffectsData = (
   data?: ChicmozL2TxEffectDeluxe,
+  hasPublicCallRequests?: boolean,
 ): Record<TabId, boolean> => {
   return {
     privateLogs: !!data?.privateLogs?.length,
@@ -118,5 +175,6 @@ export const mapTxEffectsData = (
     noteHashes: !!data?.noteHashes?.length,
     l2ToL1Msgs: !!data?.l2ToL1Msgs?.length,
     publicDataWrites: !!data?.publicDataWrites?.length,
+    publicCallRequests: hasPublicCallRequests ?? false,
   };
 };

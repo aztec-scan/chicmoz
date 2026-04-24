@@ -27,7 +27,7 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-import { ContractInitializationStatus, Wallet } from "@aztec/aztec.js/wallet";
+import { Wallet } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
@@ -46,9 +46,7 @@ export const logAndWaitForTx = async (
     "receipt" in result ? result.receipt : result,
   );
   const hash = receipt.txHash.toString();
-  logger.info(
-    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
-  );
+  logger.info(`⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`);
   return receipt;
 };
 
@@ -80,9 +78,7 @@ export const simulateThenSend = async ({
 
   const { receipt } = await method.send({ from });
   const hash = receipt.txHash.toString();
-  logger.info(
-    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
-  );
+  logger.info(`⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`);
   return receipt;
 };
 
@@ -268,11 +264,7 @@ export const publicDeployAccounts = async (
       return contractMetadata;
     }),
   ).then((results) =>
-    results.filter(
-      (result) =>
-        result.initializationStatus !==
-        ContractInitializationStatus.INITIALIZED,
-    ),
+    results.filter((result) => !result.isContractInitialized),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
@@ -284,9 +276,7 @@ export const publicDeployAccounts = async (
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
-      logger.warn(
-        `🚨 Contract instance not found for contract initializationStatus: ${contractMetadata.initializationStatus}`,
-      );
+      logger.warn(`🚨 Contract instance not found (contract not initialized)`);
       continue;
     }
     await wallet.registerContract(contractMetadata.instance);

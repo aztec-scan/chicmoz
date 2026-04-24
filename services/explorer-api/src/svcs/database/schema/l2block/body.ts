@@ -1,3 +1,4 @@
+import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import {
   index,
@@ -43,6 +44,9 @@ export const txEffect = pgTable(
     index: integer("index").notNull(),
     revertCode: smallint("revert_code").notNull(),
     transactionFee: generateLargeIntegerColumn("transaction_fee").notNull(),
+    feePayer: generateAztecAddressColumn("fee_payer"),
+    feePaymentMethod: varchar("fee_payment_method"),
+    initiator: generateAztecAddressColumn("initiator"),
     // NOTE: below three are arrays of Fr they might be needed in separate tables
     noteHashes: jsonb("note_hashes").notNull(),
     nullifiers: jsonb("nullifiers").notNull(),

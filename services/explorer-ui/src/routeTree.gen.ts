@@ -33,10 +33,12 @@ const BlocksIndexLazyImport = createFileRoute('/blocks/')()
 const TxEffectsHashLazyImport = createFileRoute('/tx-effects/$hash')()
 const L1ContractEventsLazyImport = createFileRoute('/l1/contract-events')()
 const BlocksBlockNumberLazyImport = createFileRoute('/blocks/$blockNumber')()
+const AddressAddressLazyImport = createFileRoute('/address/$address')()
 const L1ValidatorsIndexLazyImport = createFileRoute('/l1/validators/')()
 const L1ValidatorsAttesterAddressLazyImport = createFileRoute(
   '/l1/validators/$attesterAddress',
 )()
+const L1AddressAddressLazyImport = createFileRoute('/l1/address/$address')()
 const ContractsInstancesAddressLazyImport = createFileRoute(
   '/contracts/instances/$address',
 )()
@@ -151,6 +153,13 @@ const BlocksBlockNumberLazyRoute = BlocksBlockNumberLazyImport.update({
   import('./routes/blocks/$blockNumber.lazy').then((d) => d.Route),
 )
 
+const AddressAddressLazyRoute = AddressAddressLazyImport.update({
+  path: '/address/$address',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/address.$address.lazy').then((d) => d.Route),
+)
+
 const L1ValidatorsIndexLazyRoute = L1ValidatorsIndexLazyImport.update({
   path: '/l1/validators/',
   getParentRoute: () => rootRoute,
@@ -165,6 +174,13 @@ const L1ValidatorsAttesterAddressLazyRoute =
   } as any).lazy(() =>
     import('./routes/l1/validators/$attesterAddress.lazy').then((d) => d.Route),
   )
+
+const L1AddressAddressLazyRoute = L1AddressAddressLazyImport.update({
+  path: '/l1/address/$address',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/l1/address.$address.lazy').then((d) => d.Route),
+)
 
 const ContractsInstancesAddressLazyRoute =
   ContractsInstancesAddressLazyImport.update({
@@ -275,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StakingLazyImport
       parentRoute: typeof rootRoute
     }
+    '/address/$address': {
+      id: '/address/$address'
+      path: '/address/$address'
+      fullPath: '/address/$address'
+      preLoaderRoute: typeof AddressAddressLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/blocks/$blockNumber': {
       id: '/blocks/$blockNumber'
       path: '/blocks/$blockNumber'
@@ -324,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsInstancesAddressLazyImport
       parentRoute: typeof rootRoute
     }
+    '/l1/address/$address': {
+      id: '/l1/address/$address'
+      path: '/l1/address/$address'
+      fullPath: '/l1/address/$address'
+      preLoaderRoute: typeof L1AddressAddressLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/l1/validators/$attesterAddress': {
       id: '/l1/validators/$attesterAddress'
       path: '/l1/validators/$attesterAddress'
@@ -369,6 +399,7 @@ export const routeTree = rootRoute.addChildren({
   IncidentsLazyRoute,
   PrivacyPolicyLazyRoute,
   StakingLazyRoute,
+  AddressAddressLazyRoute,
   BlocksBlockNumberLazyRoute,
   L1ContractEventsLazyRoute,
   TxEffectsHashLazyRoute,
@@ -376,6 +407,7 @@ export const routeTree = rootRoute.addChildren({
   ContractsIndexLazyRoute,
   TxEffectsIndexLazyRoute,
   ContractsInstancesAddressLazyRoute,
+  L1AddressAddressLazyRoute,
   L1ValidatorsAttesterAddressLazyRoute,
   L1ValidatorsIndexLazyRoute,
   ContractsClassesIdVersionsVersionLazyRoute:
@@ -403,6 +435,7 @@ export const routeTree = rootRoute.addChildren({
         "/incidents",
         "/privacy-policy",
         "/staking",
+        "/address/$address",
         "/blocks/$blockNumber",
         "/l1/contract-events",
         "/tx-effects/$hash",
@@ -410,6 +443,7 @@ export const routeTree = rootRoute.addChildren({
         "/contracts/",
         "/tx-effects/",
         "/contracts/instances/$address",
+        "/l1/address/$address",
         "/l1/validators/$attesterAddress",
         "/l1/validators/",
         "/contracts/classes/$id/versions/$version"
@@ -448,6 +482,9 @@ export const routeTree = rootRoute.addChildren({
     "/staking": {
       "filePath": "staking.lazy.tsx"
     },
+    "/address/$address": {
+      "filePath": "address.$address.lazy.tsx"
+    },
     "/blocks/$blockNumber": {
       "filePath": "blocks/$blockNumber.lazy.tsx"
     },
@@ -468,6 +505,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/contracts/instances/$address": {
       "filePath": "contracts/instances.$address.lazy.tsx"
+    },
+    "/l1/address/$address": {
+      "filePath": "l1/address.$address.lazy.tsx"
     },
     "/l1/validators/$attesterAddress": {
       "filePath": "l1/validators/$attesterAddress.lazy.tsx"

@@ -1,11 +1,97 @@
 import { z } from "zod";
-import { aztecAddressSchema, hexStringSchema } from "../general.js";
+import {
+  aztecAddressSchema,
+  ethAddressSchema,
+  hexStringSchema,
+} from "../general.js";
 import { frDecimalStringSchema, frSchema } from "./utils.js";
+
+export const callTypeSchema = z.enum([
+  "non_revertible",
+  "revertible",
+  "teardown",
+]);
+
+export const publicCallRequestSchema = z.object({
+  msgSender: aztecAddressSchema,
+  contractAddress: aztecAddressSchema,
+  isStaticCall: z.boolean(),
+  calldataHash: hexStringSchema,
+  callType: callTypeSchema,
+  // Raw 4-byte function selector (hex string). Present when calldata is available.
+  functionSelector: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  // Human-readable names resolved from the contract artifact at index time.
+  // NULL when the artifact was not yet uploaded when the tx was indexed.
+  contractName: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  functionName: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+});
+
+// L2-to-L1 message emitted by a pending transaction (plaintext, available pre-execution).
+// Note: public logs are NOT available on pending txs (execution hasn't happened yet).
+// Private log payloads are encrypted and not stored — only their count is tracked.
+export const pendingL2ToL1MsgSchema = z.object({
+  txHash: hexStringSchema,
+  index: z.coerce.number(),
+  contractAddress: aztecAddressSchema,
+  recipient: ethAddressSchema,
+  content: z.string(), // Fr field element serialized as decimal string
+});
 
 export const chicmozL2PendingTxSchema = z.object({
   txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
   feePayer: aztecAddressSchema,
   birthTimestamp: z.coerce.number().default(() => new Date().getTime()),
+  // The outermost initiator of the transaction (msgSender of the first non-revertible
+  // public call request — the account contract that kicked off execution).
+  // Absent for private-only transactions (no forPublic data).
+  initiator: aztecAddressSchema.nullish().transform((v) => v ?? undefined),
+  // Expiration
+  expirationTimestamp: z.coerce.number().optional(),
+  // Gas limits
+  gasLimitDa: z.coerce.number().optional(),
+  gasLimitL2: z.coerce.number().optional(),
+  teardownGasLimitDa: z.coerce.number().optional(),
+  teardownGasLimitL2: z.coerce.number().optional(),
+  // Max fees (stored as strings to preserve bigint precision)
+  maxFeePerDaGas: z.string().optional(),
+  maxFeePerL2Gas: z.string().optional(),
+  maxPriorityFeePerDaGas: z.string().optional(),
+  maxPriorityFeePerL2Gas: z.string().optional(),
+  // Gas used in private phase
+  gasUsedDa: z.coerce.number().optional(),
+  gasUsedL2: z.coerce.number().optional(),
+  // Fee payment method ('fee_juice' | 'fpc')
+  feePaymentMethod: z.string().optional(),
+  // Summary counts (raw private values are encrypted/large; counts are the useful observable metric)
+  noteHashCount: z.coerce.number().optional(),
+  nullifierCount: z.coerce.number().optional(),
+  l2ToL1MsgCount: z.coerce.number().optional(),
+  privateLogCount: z.coerce.number().optional(),
+  // Public call requests (with callType + functionSelector tagging)
+  publicCallRequests: z.array(publicCallRequestSchema).optional(),
+  // Plaintext L2-to-L1 messages emitted by this pending tx.
+  // Note: public logs are NOT available at mempool time (execution hasn't happened yet).
+  // Private log payloads are encrypted and not stored — only their count is tracked above.
+  l2ToL1Msgs: z
+    .array(
+      z.object({
+        txHash: hexStringSchema,
+        index: z.coerce.number(),
+        contractAddress: aztecAddressSchema,
+        recipient: ethAddressSchema,
+        content: z.string(), // Fr field element as decimal string
+      }),
+    )
+    .optional(),
 });
 
 export const chicmozL2DroppedTxSchema = z.object({
@@ -27,6 +113,9 @@ export const chicmozL2TxEffectSchema = z.object({
   txHash: hexStringSchema,
   txBirthTimestamp: z.coerce.number().optional(),
   transactionFee: frDecimalStringSchema,
+  feePayer: aztecAddressSchema.optional(),
+  feePaymentMethod: z.string().optional(),
+  initiator: aztecAddressSchema.optional(),
   noteHashes: z.array(frSchema),
   nullifiers: z.array(frSchema),
   l2ToL1Msgs: z.array(frSchema),
@@ -50,8 +139,14 @@ export const chicmozL2TxEffectSchema = z.object({
       emittedLength: z.number(),
     }),
   ),
+  // Public call requests — available on both pending and confirmed txs.
+  publicCallRequests: z.array(publicCallRequestSchema).optional(),
 });
 
+export type CallType = z.infer<typeof callTypeSchema>;
+export type PublicCallRequest = z.infer<typeof publicCallRequestSchema>;
 export type ChicmozL2PendingTx = z.infer<typeof chicmozL2PendingTxSchema>;
+export type ChicmozL2PendingL2ToL1Msg =
+  ChicmozL2PendingTx["l2ToL1Msgs"] extends (infer T)[] | undefined ? T : never;
 export type ChicmozL2TxEffect = z.infer<typeof chicmozL2TxEffectSchema>;
 export type ChicmozL2DroppedTx = z.infer<typeof chicmozL2DroppedTxSchema>;

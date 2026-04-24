@@ -11,7 +11,7 @@ export const v4_0_0_devnet_2_patch_0 = "615022430";
 export const sandbox_v4_0_0_devnet_2_patch_1 = "126353417";
 export const v4_1_0_testnet_rc_2 = "4127419662";
 export const v4_1_3 = "2934756905";
-export const sandbox_v4_1_3 = "344372055";
+export const sandbox_v4_1_3 = "231905116";
 
 // Current active version to use for fetching blocks
 // NOTE: must match the aztec version running in the environment.
