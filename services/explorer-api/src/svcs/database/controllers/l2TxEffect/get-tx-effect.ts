@@ -3,6 +3,7 @@ import {
   ChicmozL2TxEffect,
   ChicmozL2TxEffectDeluxe,
   HexString,
+  PublicCallRequest,
   chicmozL2TxEffectDeluxeSchema,
 } from "@chicmoz-pkg/types";
 import assert from "assert";
@@ -27,6 +28,7 @@ import {
   publicDataWrite,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
+import { getPublicCallRequestsByTxHash } from "../l2Public-call/get.js";
 
 enum GetTypes {
   BlockHeightRange,
@@ -167,6 +169,19 @@ const _getTxEffects = async (
 
   const dbRes = await whereQuery.execute();
 
+  // Fetch public call requests for all tx effects in parallel
+  const publicCallRequestsEntries = await Promise.all(
+    dbRes.map(
+      async (row): Promise<[string, PublicCallRequest[]]> => [
+        row.txHash,
+        await getPublicCallRequestsByTxHash(row.txHash ),
+      ],
+    ),
+  );
+  const publicCallRequestsMap = new Map<string, PublicCallRequest[]>(
+    publicCallRequestsEntries,
+  );
+
   // Process the results directly without additional queries
   const txEffects: ChicmozL2TxEffectDeluxe[] = dbRes.map((txEffect) => {
     // Ensure publicDataWrites is properly cast to the expected type
@@ -178,6 +193,7 @@ const _getTxEffects = async (
       ...txEffect,
       txBirthTimestamp: txEffect.txBirthTimestamp,
       publicDataWrites,
+      publicCallRequests: publicCallRequestsMap.get(txEffect.txHash) ?? [],
       revertCode: { code: txEffect.revertCode },
       feePayer: txEffect.feePayer ?? undefined,
       feePaymentMethod: txEffect.feePaymentMethod ?? undefined,
@@ -250,10 +266,15 @@ export const getTxEffectDynamicWhere = async (
     ? dbRes[0].publicDataWrites
     : [];
 
+  const publicCallRequests = await getPublicCallRequestsByTxHash(
+    dbRes[0].txHash ,
+  );
+
   const toParse: ChicmozL2TxEffectDeluxe = {
     ...dbRes[0],
     txBirthTimestamp: dbRes[0].txBirthTimestamp,
     publicDataWrites,
+    publicCallRequests,
     revertCode: { code: dbRes[0].revertCode },
     feePayer: dbRes[0].feePayer ?? undefined,
     feePaymentMethod: dbRes[0].feePaymentMethod ?? undefined,

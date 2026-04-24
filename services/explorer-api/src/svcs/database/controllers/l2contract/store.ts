@@ -8,7 +8,7 @@ import {
   type ChicmozL2PrivateFunctionBroadcastedEvent,
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -18,7 +18,7 @@ import {
   l2UtilityFunction,
 } from "../../../database/schema/l2contract/index.js";
 import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
-import { getFunctionNameFromArtifact } from "../../../../utils/resolve-artifact-names.js";
+import { buildSelectorMap } from "../../../../utils/resolve-artifact-names.js";
 import { logger } from "../../../../logger.js";
 
 export const storeContractInstanceDeployed = async (
@@ -69,12 +69,15 @@ export const addArtifactData = async ({
   artifactJson: string;
   contractName?: string;
   standardData?: ContractStandard;
-}): Promise<void> => {
+}): Promise<{ selectorMap: Record<string, string> }> => {
+  const selectorMap = await buildSelectorMap(artifactJson);
+
   await db()
     .update(l2ContractClassRegistered)
     .set({
       artifactJson,
       artifactContractName: contractName ?? null,
+      selectorMap,
       standardContractType: standardData?.name ?? null,
       standardContractVersion: standardData?.version ?? null,
     })
@@ -85,6 +88,8 @@ export const addArtifactData = async ({
       ),
     )
     .execute();
+
+  return { selectorMap };
 };
 
 export const storePrivateFunction = async (
@@ -118,19 +123,22 @@ export const storeUtilityFunction = async (
 
 /**
  * Backfills contractName and functionName on all tx_public_call_request rows
- * that are associated with instances of the given contract class and still have
- * a NULL contractName. Called after a new artifact is uploaded so that previously
- * indexed call requests get human-readable names retroactively.
+ * that are associated with instances of the given contract class and are still
+ * missing contractName OR functionName. Called after a new artifact is uploaded
+ * so that previously indexed call requests get human-readable names retroactively.
+ *
+ * Uses the pre-built selectorMap (computed by addArtifactData) for O(1) lookups
+ * instead of re-parsing the artifact JSON for each row.
  */
 export const backfillPublicCallRequestNames = async ({
   contractClassId,
   version,
-  artifactJson,
+  selectorMap,
   contractName,
 }: {
   contractClassId: string;
   version: number;
-  artifactJson: string;
+  selectorMap: Record<string, string>;
   contractName: string | undefined;
 }): Promise<void> => {
   // Find all contract instance addresses belonging to this class
@@ -150,7 +158,7 @@ export const backfillPublicCallRequestNames = async ({
 
   const instanceAddressSet = new Set(instances.map((i) => i.address));
 
-  // Fetch all call request rows for these instances that still have NULL contractName
+  // Fetch rows missing contractName OR functionName for these instances
   const candidateRows = await db()
     .select({
       txHash: l2TxPublicCallRequest.txHash,
@@ -159,7 +167,12 @@ export const backfillPublicCallRequestNames = async ({
       functionSelector: l2TxPublicCallRequest.functionSelector,
     })
     .from(l2TxPublicCallRequest)
-    .where(isNull(l2TxPublicCallRequest.contractName));
+    .where(
+      or(
+        isNull(l2TxPublicCallRequest.contractName),
+        isNull(l2TxPublicCallRequest.functionName),
+      ),
+    );
 
   const rowsToUpdate = candidateRows.filter((r) =>
     instanceAddressSet.has(r.contractAddress),
@@ -169,14 +182,11 @@ export const backfillPublicCallRequestNames = async ({
     return;
   }
 
-  // Update each row — function names differ per functionSelector so one UPDATE per row
+  // Update each row using the pre-built selectorMap — O(1) per row, no artifact parsing
   await Promise.all(
-    rowsToUpdate.map(async (row) => {
+    rowsToUpdate.map((row) => {
       const functionName = row.functionSelector
-        ? ((await getFunctionNameFromArtifact(
-            artifactJson,
-            row.functionSelector,
-          )) ?? null)
+        ? (selectorMap[row.functionSelector] ?? null)
         : null;
 
       return db()

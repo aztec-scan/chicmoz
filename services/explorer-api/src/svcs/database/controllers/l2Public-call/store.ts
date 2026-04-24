@@ -6,13 +6,14 @@ import {
   l2ContractInstanceDeployed,
 } from "../../schema/l2contract/index.js";
 import { l2TxPublicCallRequest } from "../../schema/l2public-call/index.js";
-import { getFunctionNameFromArtifact } from "../../../../utils/resolve-artifact-names.js";
 import { logger } from "../../../../logger.js";
 import { deletePublicCall } from "./delete.js";
 
 /**
  * Resolves contractName and functionName for a single public call request
  * by joining through the contract instance → contract class tables.
+ * Uses the pre-built selectorMap (stored at artifact upload time) for O(1)
+ * function name lookup — no artifact JSON parsing or selector hashing at runtime.
  * Returns null for both if the contract instance or artifact is not found.
  */
 const resolveArtifactNames = async (
@@ -22,7 +23,7 @@ const resolveArtifactNames = async (
   const rows = await db()
     .select({
       artifactContractName: l2ContractClassRegistered.artifactContractName,
-      artifactJson: l2ContractClassRegistered.artifactJson,
+      selectorMap: l2ContractClassRegistered.selectorMap,
     })
     .from(l2ContractInstanceDeployed)
     .leftJoin(
@@ -39,12 +40,11 @@ const resolveArtifactNames = async (
     return { contractName: null, functionName: null };
   }
 
-  const { artifactContractName, artifactJson } = rows[0];
+  const { artifactContractName, selectorMap } = rows[0];
 
   const functionName =
-    functionSelector && artifactJson
-      ? ((await getFunctionNameFromArtifact(artifactJson, functionSelector)) ??
-        null)
+    functionSelector && selectorMap
+      ? (selectorMap[functionSelector] ?? null)
       : null;
 
   return { contractName: artifactContractName, functionName };

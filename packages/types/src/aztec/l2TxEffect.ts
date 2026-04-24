@@ -19,11 +19,20 @@ export const publicCallRequestSchema = z.object({
   calldataHash: hexStringSchema,
   callType: callTypeSchema,
   // Raw 4-byte function selector (hex string). Present when calldata is available.
-  functionSelector: z.string().optional(),
+  functionSelector: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
   // Human-readable names resolved from the contract artifact at index time.
   // NULL when the artifact was not yet uploaded when the tx was indexed.
-  contractName: z.string().optional(),
-  functionName: z.string().optional(),
+  contractName: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
+  functionName: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
 });
 
 // L2-to-L1 message emitted by a pending transaction (plaintext, available pre-execution).
@@ -130,6 +139,8 @@ export const chicmozL2TxEffectSchema = z.object({
       emittedLength: z.number(),
     }),
   ),
+  // Public call requests — available on both pending and confirmed txs.
+  publicCallRequests: z.array(publicCallRequestSchema).optional(),
 });
 
 export type CallType = z.infer<typeof callTypeSchema>;

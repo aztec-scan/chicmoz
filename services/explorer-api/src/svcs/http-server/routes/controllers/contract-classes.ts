@@ -261,7 +261,7 @@ export const verifyArtifact = async ({
     logger.warn(`Failed to cache contract class: ${err}`);
   });
 
-  await db.l2Contract.addArtifactData({
+  const { selectorMap } = await db.l2Contract.addArtifactData({
     contractClassId: dbContractClass.contractClassId,
     version: dbContractClass.version,
     artifactJson: artifactJsonString,
@@ -271,7 +271,7 @@ export const verifyArtifact = async ({
   await db.l2Contract.backfillPublicCallRequestNames({
     contractClassId: dbContractClass.contractClassId,
     version: dbContractClass.version,
-    artifactJson: artifactJsonString,
+    selectorMap,
     contractName: parsed.name,
   });
 

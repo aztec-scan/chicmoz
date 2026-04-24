@@ -1,15 +1,12 @@
 import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
-import { relations } from "drizzle-orm";
 import {
   boolean,
-  foreignKey,
   pgEnum,
   pgTable,
   primaryKey,
   varchar,
 } from "drizzle-orm/pg-core";
-import { l2Tx } from "../l2tx/index.js";
 
 export const callTypeEnum = pgEnum("call_type", [
   "non_revertible",
@@ -35,20 +32,5 @@ export const l2TxPublicCallRequest = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.txHash, table.calldataHash] }),
-    txHashFk: foreignKey({
-      name: "tx_public_call_request_tx_hash_fk",
-      columns: [table.txHash],
-      foreignColumns: [l2Tx.txHash],
-    }).onDelete("cascade"),
-  }),
-);
-
-export const l2TxPublicCallRequestRelations = relations(
-  l2TxPublicCallRequest,
-  ({ one }) => ({
-    tx: one(l2Tx, {
-      fields: [l2TxPublicCallRequest.txHash],
-      references: [l2Tx.txHash],
-    }),
   }),
 );
