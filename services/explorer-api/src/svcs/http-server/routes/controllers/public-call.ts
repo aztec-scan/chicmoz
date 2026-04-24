@@ -110,7 +110,7 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS: OpenAPIObject["paths"] = {
         },
         400: {
           description:
-            "Bad request — provide either contractAddress or senderAddress",
+            "Bad request — provide exactly one of contractAddress or senderAddress (not both, not neither)",
         },
       },
     },
@@ -120,6 +120,13 @@ export const openapi_GET_PUBLIC_CALL_REQUESTS: OpenAPIObject["paths"] = {
 export const GET_PUBLIC_CALL_REQUESTS = asyncHandler(async (req, res) => {
   const { contractAddress, senderAddress } =
     getPublicCallRequestsSchema.parse(req).query;
+
+  if (contractAddress && senderAddress) {
+    res
+      .status(400)
+      .json({ error: "Provide either contractAddress or senderAddress, not both" });
+    return;
+  }
 
   if (contractAddress) {
     const publicCallRequests = await dbWrapper.getLatest(
