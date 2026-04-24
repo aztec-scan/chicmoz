@@ -4,7 +4,7 @@ import {
   NodeEnv,
   chicmozL2BlockSchema,
   chicmozL2ContractInstanceDeployerMetadataSchema,
-  chicmozL2SequencerSchema,
+  chicmozL2RpcNodeSchema,
   chicmozSearchQuerySchema,
   contractStandardSchema,
   ethAddressSchema,
@@ -101,8 +101,8 @@ export const paths = {
 
   chainInfo: "/l2/info",
   chainErrors: "/l2/errors",
-  sequencers: "/l2/sequencers",
-  sequencer: "/l2/sequencers/:enr",
+  rpcNodes: "/l2/rpc-nodes",
+  rpcNode: "/l2/rpc-nodes/:rpcNodeName",
 
   uiBlockTable: "/l2/ui/blocks-for-table",
   uiTxEffectTable: "/l2/ui/tx-effects-for-table",
@@ -197,6 +197,12 @@ export const getContractClassesByCurrentClassIdSchema = z.object({
   }),
 });
 
+export const getContractClassesSchema = z.object({
+  query: z.object({
+    verifiedSourceOnly: z.coerce.boolean().optional(),
+  }),
+});
+
 export const getArtifactsByArtifactHashSchema = z.object({
   params: z.object({
     [artifactHash]: hexStringSchema,
@@ -285,9 +291,9 @@ export const getL1L2ValidatorsPaginatedSchema = z.object({
   }),
 });
 
-export const getSequencerSchema = z.object({
+export const getRpcNodeSchema = z.object({
   params: z.object({
-    enr: chicmozL2SequencerSchema.shape.enr,
+    rpcNodeName: chicmozL2RpcNodeSchema.shape.rpcNodeName,
   }),
 });
 
@@ -308,7 +314,6 @@ export const postVerifySourceSchema = z.object({
     githubUrl: z.string().url(),
     gitRef: z.string().optional(),
     subPath: z.string().optional(),
-    aztecVersion: z.string().default("4.0.3"),
   }),
 });
 

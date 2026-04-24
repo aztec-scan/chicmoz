@@ -7,6 +7,9 @@ import { type SourceCodeViewerProps } from "./types";
 export const SourceCodeViewer: FC<SourceCodeViewerProps> = ({
   sourceFiles,
   sourceCodeUrl,
+  sourceCodeCommitHash,
+  gitRef,
+  resolvedAztecVersion,
 }) => {
   const tree = useMemo(() => buildFileTree(sourceFiles), [sourceFiles]);
 
@@ -17,25 +20,59 @@ export const SourceCodeViewer: FC<SourceCodeViewerProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {sourceCodeUrl && (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-800 dark:text-green-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-            Verified
-          </span>
-          <a
-            href={sourceCodeUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            View on GitHub
-            <ExternalLink size={12} />
-          </a>
+      {(sourceCodeUrl ||
+        sourceCodeCommitHash ||
+        gitRef ||
+        resolvedAztecVersion) && (
+        <div className="flex flex-col gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-800 dark:text-green-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              Verified
+            </span>
+            {sourceCodeUrl && (
+              <a
+                href={sourceCodeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                View on GitHub
+                <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+
+          <div className="grid gap-3 text-sm md:grid-cols-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Selected ref
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {gitRef ?? "(default branch)"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Verified commit
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {sourceCodeCommitHash ?? "—"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-green-700/60 dark:text-green-300/60">
+                Compiler version
+              </div>
+              <div className="font-mono text-green-700 dark:text-green-200">
+                {resolvedAztecVersion ?? "—"}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden min-h-[400px]">
+      <div className="flex flex-col md:flex-row border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden md:min-h-[400px]">
         {/* File tree sidebar */}
         <div className="md:w-64 md:min-w-[16rem] border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 overflow-auto max-h-[200px] md:max-h-[600px]">
           <div className="p-2">
@@ -48,7 +85,7 @@ export const SourceCodeViewer: FC<SourceCodeViewerProps> = ({
         </div>
 
         {/* Code display */}
-        <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 min-w-0 overflow-hidden bg-[#282c34]">
           {selectedFile ? (
             <CodeDisplay
               filePath={selectedFile.path}

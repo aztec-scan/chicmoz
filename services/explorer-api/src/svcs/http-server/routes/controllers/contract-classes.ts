@@ -12,6 +12,7 @@ import { getProtocolContractByClassId } from "../../../../utils/protocol-contrac
 import { controllers as db } from "../../../database/index.js";
 import {
   getContractClassesByCurrentClassIdSchema,
+  getContractClassesSchema,
   getContractClassSchema,
   postContrctClassArtifactSchema,
 } from "../paths_and_validation.js";
@@ -127,18 +128,35 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES: OpenAPIObject["paths"] 
       get: {
         tags: ["L2", "contract-classes"],
         summary: "Get latest registered contract classes",
+        parameters: [
+          {
+            name: "verifiedSourceOnly",
+            in: "query",
+            schema: {
+              type: "boolean",
+            },
+          },
+        ],
         responses: contractClassResponseArray,
       },
     },
   };
 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
-  async (_req, res) => {
+  async (req, res) => {
     const includeArtifactJson = false;
+    const { verifiedSourceOnly } = getContractClassesSchema.parse(req).query;
     const contractClasses = await dbWrapper.getLatest(
-      ["l2", "contract-classes"],
+      [
+        "l2",
+        "contract-classes",
+        verifiedSourceOnly ? "verified-source" : "all",
+      ],
       () =>
-        db.l2Contract.getL2RegisteredContractClasses({ includeArtifactJson }),
+        db.l2Contract.getL2RegisteredContractClasses({
+          includeArtifactJson,
+          verifiedSourceOnly,
+        }),
     );
     res.status(200).json(JSON.parse(contractClasses));
   },

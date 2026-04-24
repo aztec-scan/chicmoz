@@ -44,7 +44,6 @@ export const openapi_POST_VERIFY_SOURCE: OpenAPIObject["paths"] = {
                 githubUrl: { type: "string" },
                 gitRef: { type: "string" },
                 subPath: { type: "string" },
-                aztecVersion: { type: "string" },
               },
               required: ["githubUrl"],
             },
@@ -92,7 +91,7 @@ export const openapi_POST_VERIFY_SOURCE: OpenAPIObject["paths"] = {
 export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
   const {
     params: { contractClassId, version },
-    body: { githubUrl, gitRef, subPath, aztecVersion },
+    body: { githubUrl, gitRef, subPath },
   } = postVerifySourceSchema.parse(req);
 
   // Rate limit by IP (DB-backed — survives restarts and self-cleans as jobs complete)
@@ -146,7 +145,6 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
     githubUrl,
     gitRef,
     subPath,
-    aztecVersion,
     clientIp,
   });
 
@@ -159,7 +157,6 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
       githubUrl,
       gitRef,
       subPath,
-      aztecVersion,
     });
 
     // Update job status to COMPILING now that the request has been published
@@ -175,6 +172,8 @@ export const POST_VERIFY_SOURCE = asyncHandler(async (req, res) => {
       jobId,
       status: "FAILED",
       error: "Failed to submit compilation request",
+      failureStage: "INTERNAL",
+      compileOutput: "Failed to submit compilation request",
     });
     res.status(500).json({ error: "Failed to submit compilation request" });
     return;
@@ -229,10 +228,12 @@ export const openapi_GET_VERIFY_SOURCE_JOB: OpenAPIObject["paths"] = {
                   githubUrl: { type: "string" },
                   gitRef: { type: "string", nullable: true },
                   subPath: { type: "string", nullable: true },
-                  aztecVersion: { type: "string" },
+                  aztecVersion: { type: "string", nullable: true },
                   status: { type: "string" },
                   commitHash: { type: "string", nullable: true },
                   error: { type: "string", nullable: true },
+                  failureStage: { type: "string", nullable: true },
+                  compileOutput: { type: "string", nullable: true },
                   createdAt: { type: "string" },
                   updatedAt: { type: "string" },
                 },
@@ -274,6 +275,8 @@ export const GET_VERIFY_SOURCE_JOB = asyncHandler(async (req, res) => {
     commitHash: job.commitHash,
     status: job.status,
     error: job.error,
+    failureStage: job.failureStage,
+    compileOutput: job.compileOutput,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
   });
@@ -310,6 +313,8 @@ export const openapi_GET_CONTRACT_CLASS_SOURCE: OpenAPIObject["paths"] = {
                   version: { type: "number" },
                   sourceCodeUrl: { type: "string" },
                   sourceCodeCommitHash: { type: "string", nullable: true },
+                  gitRef: { type: "string", nullable: true },
+                  aztecVersion: { type: "string", nullable: true },
                   sourceCode: {
                     type: "array",
                     items: {
@@ -366,8 +371,10 @@ export const GET_CONTRACT_CLASS_SOURCE = asyncHandler(async (req, res) => {
   res.status(200).json({
     contractClassId,
     version,
-    sourceCodeUrl: contractClass.sourceCodeUrl,
+    sourceCodeUrl: sourceData.sourceCodeUrl ?? contractClass.sourceCodeUrl,
     sourceCodeCommitHash: sourceData.sourceCodeCommitHash,
+    gitRef: sourceData.gitRef,
+    aztecVersion: sourceData.aztecVersion,
     sourceCode: sourceData.sourceCode,
   });
 });

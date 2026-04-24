@@ -1,5 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
+  type ChicmozL1L2ValidatorTotals,
   ChicmozL1L2Validator,
   chicmozL1L2ValidatorSchema,
   L1L2ValidatorStatus,
@@ -173,18 +174,32 @@ export async function getAllL1L2Validators(
   });
 }
 
-export async function getValidatorTotals(): Promise<{
-  validating: number;
-  nonValidating: number;
-}> {
+export async function getValidatorTotals(): Promise<ChicmozL1L2ValidatorTotals> {
   const chainInfo = await getL2ChainInfo(L2_NETWORK_ID);
 
   if (!chainInfo) {
     logger.error("Chain info not found");
-    return { validating: 0, nonValidating: 0 };
+    return {
+      total: 0,
+      validating: 0,
+      nonValidating: 0,
+      statusCounts: {},
+    };
   }
 
   return db().transaction(async (dbTx) => {
+    const latestRollupAddresses = dbTx
+      .selectDistinctOn([l1L2ValidatorRollupAddress.attesterAddress], {
+        attesterAddress: l1L2ValidatorRollupAddress.attesterAddress,
+        rollupAddress: l1L2ValidatorRollupAddress.rollupAddress,
+      })
+      .from(l1L2ValidatorRollupAddress)
+      .orderBy(
+        l1L2ValidatorRollupAddress.attesterAddress,
+        desc(l1L2ValidatorRollupAddress.timestamp),
+      )
+      .as("latest_rollup_addresses");
+
     // Get the latest statuses for each validator
     const latestStatuses = dbTx
       .selectDistinctOn([l1L2ValidatorStatusTable.attesterAddress], {
@@ -206,21 +221,35 @@ export async function getValidatorTotals(): Promise<{
       })
       .from(latestStatuses)
       .innerJoin(
-        l1L2ValidatorRollupAddress,
+        latestRollupAddresses,
         eq(
           latestStatuses.attesterAddress,
-          l1L2ValidatorRollupAddress.attesterAddress,
+          latestRollupAddresses.attesterAddress,
         ),
       )
       .where(
         eq(
-          l1L2ValidatorRollupAddress.rollupAddress,
+          latestRollupAddresses.rollupAddress,
           chainInfo.l1ContractAddresses.rollupAddress,
         ),
       )
       .groupBy(latestStatuses.status);
 
-    // Extract counts
+    const total = result.reduce((sum, row) => sum + row.count, 0);
+
+    const statusCounts = result.reduce<Record<string, number>>((acc, row) => {
+      const statusName =
+        row.status !== null && row.status !== undefined
+          ? L1L2ValidatorStatus[row.status]
+          : "UNKNOWN";
+
+      if (statusName) {
+        acc[statusName] = row.count;
+      }
+
+      return acc;
+    }, {});
+
     const validating =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       result.find((row) => row.status === L1L2ValidatorStatus.VALIDATING)
@@ -231,6 +260,6 @@ export async function getValidatorTotals(): Promise<{
       .filter((row) => row.status !== L1L2ValidatorStatus.VALIDATING)
       .reduce((sum, row) => sum + row.count, 0);
 
-    return { validating, nonValidating };
+    return { total, validating, nonValidating, statusCounts };
   });
 }

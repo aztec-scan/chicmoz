@@ -1,5 +1,7 @@
 .idea
 build*
+!scripts/build_contract_compiler.sh
+!scripts/build_contract_compiler_from_nargo.sh
 node_modules*
 .DS_Store
 

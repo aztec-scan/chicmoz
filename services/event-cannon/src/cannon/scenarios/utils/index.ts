@@ -276,9 +276,7 @@ export const publicDeployAccounts = async (
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
-      logger.warn(
-        `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
-      );
+      logger.warn(`🚨 Contract instance not found (contract not initialized)`);
       continue;
     }
     await wallet.registerContract(contractMetadata.instance);

@@ -20,4 +20,7 @@ export type CodeDisplayProps = {
 export type SourceCodeViewerProps = {
   sourceFiles: { path: string; content: string }[];
   sourceCodeUrl?: string | null;
+  sourceCodeCommitHash?: string | null;
+  gitRef?: string | null;
+  resolvedAztecVersion?: string | null;
 };

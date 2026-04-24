@@ -16,6 +16,13 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: api-sandbox-remote
+      hostname: api.remote.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     - name: ui-sandbox
       hostname: sandbox.chicmoz.localhost
       port: 80
@@ -32,6 +39,13 @@ spec:
           from: Same
     - name: aztec-sandbox
       hostname: aztec.sandbox.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: aztec-sandbox-remote
+      hostname: aztec.remote.chicmoz.localhost
       port: 80
       protocol: HTTP
       allowedRoutes:

@@ -25,6 +25,7 @@ export const init = async () => {
       cause: "UnknownCause",
       stack: new Error().stack?.toString() ?? "UnknownStack",
       data: {},
+      rpcNodeName: "mocked-rpc-node",
     });
   }
   await ensureInitializedBlockHeights();
@@ -38,7 +39,7 @@ export const init = async () => {
       .l1ContractAddresses as unknown as NodeInfo["l1ContractAddresses"],
     protocolContractAddresses: initResult.chainInfo
       .protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
-    enr: undefined,
+    enr: "",
     realProofs: false,
   };
 };

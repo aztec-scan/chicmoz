@@ -1,6 +1,9 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import type { SourceVerificationStatus } from "@chicmoz-pkg/types";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import type {
+  SourceVerificationFailureStage,
+  SourceVerificationStatus,
+} from "@chicmoz-pkg/types";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   sourceVerificationJobs,
@@ -13,7 +16,6 @@ export const createSourceVerificationJob = async ({
   githubUrl,
   gitRef,
   subPath,
-  aztecVersion,
   clientIp,
 }: {
   id: string;
@@ -22,7 +24,6 @@ export const createSourceVerificationJob = async ({
   githubUrl: string;
   gitRef?: string;
   subPath?: string;
-  aztecVersion: string;
   clientIp?: string;
 }): Promise<void> => {
   await db()
@@ -34,7 +35,7 @@ export const createSourceVerificationJob = async ({
       githubUrl,
       gitRef: gitRef ?? null,
       subPath: subPath ?? null,
-      aztecVersion,
+      aztecVersion: null,
       clientIp: clientIp ?? null,
       status: "PENDING",
     });
@@ -71,19 +72,34 @@ export const updateSourceVerificationJobStatus = async ({
   status,
   error,
   commitHash,
+  aztecVersion,
+  failureStage,
+  compileOutput,
 }: {
   jobId: string;
   status: SourceVerificationStatus;
   error?: string;
   commitHash?: string;
+  aztecVersion?: string;
+  failureStage?: SourceVerificationFailureStage;
+  compileOutput?: string;
 }): Promise<void> => {
+  const updateValues: Partial<typeof sourceVerificationJobs.$inferInsert> = {
+    status: status as (typeof sourceVerificationJobs.$inferInsert)["status"],
+    error: error ?? null,
+    failureStage: (failureStage ??
+      null) as (typeof sourceVerificationJobs.$inferInsert)["failureStage"],
+    compileOutput: compileOutput ?? null,
+  };
+  if (commitHash !== undefined) {
+    updateValues.commitHash = commitHash;
+  }
+  if (aztecVersion !== undefined) {
+    updateValues.aztecVersion = aztecVersion;
+  }
   await db()
     .update(sourceVerificationJobs)
-    .set({
-      status: status as (typeof sourceVerificationJobs.$inferInsert)["status"],
-      error: error ?? null,
-      ...(commitHash !== undefined ? { commitHash } : {}),
-    })
+    .set(updateValues)
     .where(eq(sourceVerificationJobs.id, jobId));
 };
 
@@ -153,26 +169,53 @@ export const getContractClassSourceCode = async (
   version: number,
 ): Promise<{
   sourceCode: Array<{ path: string; content: string }> | null;
+  sourceCodeUrl: string | null;
   sourceCodeCommitHash: string | null;
+  gitRef: string | null;
+  aztecVersion: string | null;
 }> => {
   const result = await db()
     .select({
       sourceCode: l2ContractClassRegistered.sourceCode,
+      sourceCodeUrl: l2ContractClassRegistered.sourceCodeUrl,
       sourceCodeCommitHash: l2ContractClassRegistered.sourceCodeCommitHash,
+      gitRef: sourceVerificationJobs.gitRef,
+      aztecVersion: sourceVerificationJobs.aztecVersion,
     })
     .from(l2ContractClassRegistered)
+    .leftJoin(
+      sourceVerificationJobs,
+      and(
+        eq(sourceVerificationJobs.contractClassId, contractClassId),
+        eq(sourceVerificationJobs.version, version),
+        eq(sourceVerificationJobs.status, "VERIFIED"),
+      ),
+    )
     .where(
       and(
         eq(l2ContractClassRegistered.contractClassId, contractClassId),
         eq(l2ContractClassRegistered.version, version),
       ),
     )
+    .orderBy(
+      desc(sourceVerificationJobs.updatedAt),
+      desc(sourceVerificationJobs.createdAt),
+    )
     .limit(1);
   if (result.length === 0) {
-    return { sourceCode: null, sourceCodeCommitHash: null };
+    return {
+      sourceCode: null,
+      sourceCodeUrl: null,
+      sourceCodeCommitHash: null,
+      gitRef: null,
+      aztecVersion: null,
+    };
   }
   return {
     sourceCode: result[0].sourceCode ?? null,
+    sourceCodeUrl: result[0].sourceCodeUrl ?? null,
     sourceCodeCommitHash: result[0].sourceCodeCommitHash ?? null,
+    gitRef: result[0].gitRef ?? null,
+    aztecVersion: result[0].aztecVersion ?? null,
   };
 };
