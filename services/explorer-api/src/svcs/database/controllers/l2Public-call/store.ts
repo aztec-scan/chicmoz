@@ -1,6 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { HexString, type PublicCallRequest } from "@chicmoz-pkg/types";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -28,9 +28,15 @@ const resolveArtifactNames = async (
     .from(l2ContractInstanceDeployed)
     .leftJoin(
       l2ContractClassRegistered,
-      eq(
-        l2ContractInstanceDeployed.currentContractClassId,
-        l2ContractClassRegistered.contractClassId,
+      and(
+        eq(
+          l2ContractInstanceDeployed.currentContractClassId,
+          l2ContractClassRegistered.contractClassId,
+        ),
+        eq(
+          l2ContractInstanceDeployed.version,
+          l2ContractClassRegistered.version,
+        ),
       ),
     )
     .where(eq(l2ContractInstanceDeployed.address, contractAddress))

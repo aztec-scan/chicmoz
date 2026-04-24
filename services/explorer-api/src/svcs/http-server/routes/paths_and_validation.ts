@@ -43,9 +43,8 @@ export const paths = {
   txs: "/l2/txs",
   txByHash: `/l2/txs/:${txEffectHash}`,
 
-  publicDataTx: `/l2/public-call-requests/tx/:${txEffectHash}`,
-  publicDataContract: `/l2/public-call-requests/contract/:${address}`,
-  publicDataSender: `/l2/public-call-requests/sender/:${address}`,
+  publicCallRequestsByTxHash: `/l2/public-call-requests/:${txEffectHash}`,
+  publicCallRequests: "/l2/public-call-requests",
 
   l2ToL1MsgsByTx: `/l2/l2-to-l1-msgs/tx/:${txEffectHash}`,
   l2ToL1MsgsByContract: `/l2/l2-to-l1-msgs/contract/:${address}`,
@@ -141,9 +140,10 @@ export const getTxEffectsByTxHashSchema = z.object({
   }),
 });
 
-export const getPublicCallRequestsByAddressSchema = z.object({
-  params: z.object({
-    [address]: hexStringSchema,
+export const getPublicCallRequestsSchema = z.object({
+  query: z.object({
+    contractAddress: hexStringSchema.optional(),
+    senderAddress: hexStringSchema.optional(),
   }),
 });
 

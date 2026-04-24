@@ -60,13 +60,13 @@ export const aztecExplorer = {
   getL2VerifiedContractByInstanceAddress: (address: string) =>
     `/l2/verified-contracts/${address}`,
   getL2PublicCallRequestsByContract: (address: string) =>
-    `/l2/public-call-requests/contract/${address}`,
+    `/l2/public-call-requests?contractAddress=${address}`,
   getL2ToL1MsgsByContract: (address: string) =>
     `/l2/l2-to-l1-msgs/contract/${address}`,
   getL2PublicCallRequestsBySender: (address: string) =>
-    `/l2/public-call-requests/sender/${address}`,
+    `/l2/public-call-requests?senderAddress=${address}`,
   getL2PublicCallRequestsByTxHash: (txHash: string) =>
-    `/l2/public-call-requests/tx/${txHash}`,
+    `/l2/public-call-requests/${txHash}`,
   getL2ToL1MsgsByRecipient: (address: string) =>
     `/l2/l2-to-l1-msgs/recipient/${address}`,
 

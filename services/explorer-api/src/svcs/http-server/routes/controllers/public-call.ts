@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
 import {
-  getPublicCallRequestsByAddressSchema,
+  getPublicCallRequestsSchema,
   getTxEffectsByTxHashSchema,
 } from "../paths_and_validation.js";
 import { dbWrapper } from "./utils/index.js";
@@ -20,18 +20,20 @@ const publicCallRequestSchema = {
       enum: ["non_revertible", "revertible", "teardown"],
     },
     functionSelector: { type: "string", nullable: true },
+    contractName: { type: "string", nullable: true },
+    functionName: { type: "string", nullable: true },
   },
 };
 
 export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH: OpenAPIObject["paths"] =
   {
-    "/l2/public-call-requests/tx/{hash}": {
+    "/l2/public-call-requests/{txHash}": {
       get: {
         tags: ["L2", "pending-txs", "public-call-requests"],
         summary: "Get public call requests by tx hash",
         parameters: [
           {
-            name: "hash",
+            name: "txHash",
             in: "path",
             required: true,
             schema: {
@@ -68,92 +70,79 @@ export const GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH = asyncHandler(
   },
 );
 
-export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS: OpenAPIObject["paths"] =
-  {
-    "/l2/public-call-requests/contract/{address}": {
-      get: {
-        tags: ["L2", "public-call-requests"],
-        summary: "Get public call requests by contract address",
-        parameters: [
-          {
-            name: "address",
-            in: "path",
-            required: true,
-            schema: {
-              type: "string",
-              pattern: "^0x[a-fA-F0-9]+$",
-            },
+export const openapi_GET_PUBLIC_CALL_REQUESTS: OpenAPIObject["paths"] = {
+  "/l2/public-call-requests": {
+    get: {
+      tags: ["L2", "public-call-requests"],
+      summary:
+        "Get public call requests filtered by contractAddress or senderAddress query param",
+      parameters: [
+        {
+          name: "contractAddress",
+          in: "query",
+          required: false,
+          schema: {
+            type: "string",
+            pattern: "^0x[a-fA-F0-9]+$",
           },
-        ],
-        responses: {
-          200: {
-            description: "Public call requests for the contract address",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: publicCallRequestSchema,
-                },
+        },
+        {
+          name: "senderAddress",
+          in: "query",
+          required: false,
+          schema: {
+            type: "string",
+            pattern: "^0x[a-fA-F0-9]+$",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Public call requests matching the given filter",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: publicCallRequestSchema,
               },
             },
           },
         },
-      },
-    },
-  };
-
-export const GET_PUBLIC_CALL_REQUESTS_BY_CONTRACT_ADDRESS = asyncHandler(
-  async (req, res) => {
-    const { address } = getPublicCallRequestsByAddressSchema.parse(req).params;
-    const publicCallRequests = await dbWrapper.getLatest(
-      ["l2", "public-call-requests", "contract", address],
-      () => db.l2PublicCall.getPublicCallRequestsByContractAddress(address),
-    );
-    res.status(200).json(JSON.parse(publicCallRequests));
-  },
-);
-
-export const openapi_GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS: OpenAPIObject["paths"] =
-  {
-    "/l2/public-call-requests/sender/{address}": {
-      get: {
-        tags: ["L2", "public-call-requests"],
-        summary: "Get public call requests by sender address",
-        parameters: [
-          {
-            name: "address",
-            in: "path",
-            required: true,
-            schema: {
-              type: "string",
-              pattern: "^0x[a-fA-F0-9]+$",
-            },
-          },
-        ],
-        responses: {
-          200: {
-            description: "Public call requests for the sender address",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: publicCallRequestSchema,
-                },
-              },
-            },
-          },
+        400: {
+          description:
+            "Bad request — provide either contractAddress or senderAddress",
         },
       },
     },
-  };
+  },
+};
 
-export const GET_PUBLIC_CALL_REQUESTS_BY_SENDER_ADDRESS = asyncHandler(
-  async (req, res) => {
-    const { address } = getPublicCallRequestsByAddressSchema.parse(req).params;
+export const GET_PUBLIC_CALL_REQUESTS = asyncHandler(async (req, res) => {
+  const { contractAddress, senderAddress } =
+    getPublicCallRequestsSchema.parse(req).query;
+
+  if (contractAddress) {
     const publicCallRequests = await dbWrapper.getLatest(
-      ["l2", "public-call-requests", "sender", address],
-      () => db.l2PublicCall.getPublicCallRequestsBySenderAddress(address),
+      ["l2", "public-call-requests", "contract", contractAddress],
+      () =>
+        db.l2PublicCall.getPublicCallRequestsByContractAddress(contractAddress),
     );
     res.status(200).json(JSON.parse(publicCallRequests));
-  },
-);
+    return;
+  }
+
+  if (senderAddress) {
+    const publicCallRequests = await dbWrapper.getLatest(
+      ["l2", "public-call-requests", "sender", senderAddress],
+      () =>
+        db.l2PublicCall.getPublicCallRequestsBySenderAddress(senderAddress),
+    );
+    res.status(200).json(JSON.parse(publicCallRequests));
+    return;
+  }
+
+  res
+    .status(400)
+    .json({ error: "Provide either contractAddress or senderAddress" });
+});
+
