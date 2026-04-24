@@ -23,7 +23,6 @@ const extractPublicCallRequests = (tx: Tx): PublicCallRequest[] => {
   }
 
   // Build a lookup map calldataHash → functionSelector from the calldata-enriched requests.
-  // TODO: ABI decoding — map functionSelector to human-readable function name + decoded params.
   const calldataMap = new Map<string, string>();
   try {
     for (const r of tx.getPublicCallRequestsWithCalldata()) {
@@ -160,7 +159,7 @@ export const onPendingTxs = async (pendingTxs: Tx[]) => {
 
     const currentPendingTxs: ChicmozL2PendingTx[] = await Promise.all(
       pendingTxs.map((tx) => {
-        const txHash = tx.getTxHash().toString() ;
+        const txHash = tx.getTxHash().toString();
         const publicCallRequests = extractPublicCallRequests(tx);
         const gasSettings = extractGasSettings(tx);
         const gasUsed = tx.data.gasUsed;
