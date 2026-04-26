@@ -1,0 +1,9 @@
+[package]
+name = "explorer_showcase"
+type = "contract"
+authors = [""]
+compiler_version = ">=0.25.0"
+
+[dependencies]
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.2.0", directory = "aztec" }
+field_note = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v4.2.0", directory = "field-note" }
