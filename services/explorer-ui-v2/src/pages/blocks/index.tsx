@@ -43,11 +43,12 @@ export const BlocksPage: FC = () => {
   }, [blocks, statusFilter, sortKey, sortDir]);
 
   const latestHeight = latestBlock ? Number(latestBlock.height) : 0;
-  const provenHead = blocksByStatus?.find(
-    (b) => blockStatusToDisplay(b.finalizationStatus) === "proven",
-  );
+  const provenHead = blocksByStatus?.find((b) => {
+    const display = blockStatusToDisplay(b.finalizationStatus, !!b.orphan);
+    return display === "proven" || display === "finalized";
+  });
   const finalized = blocksByStatus?.find(
-    (b) => blockStatusToDisplay(b.finalizationStatus) === "finalized",
+    (b) => blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
   );
 
   // We page server-side at PAGE_SIZE at a time; totalPages is best-effort.
