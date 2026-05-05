@@ -2,6 +2,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import { DetailField, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
+import { HashList } from "./hash-list";
 import {
   useDroppedTxByHash,
   useGetTxEffectByHash,
@@ -196,30 +197,10 @@ export const TxDetailPage: FC = () => {
               </button>
             </div>
             {tab === "notes" && (
-              <div>
-                {noteHashes.map((h, i) => (
-                  <div key={`${h}-${i}`} className="list-row">
-                    <span className="idx">{i}</span>
-                    <span className="v">{h}</span>
-                  </div>
-                ))}
-                {noteHashes.length === 0 && (
-                  <div className="empty-state">no note hashes</div>
-                )}
-              </div>
+              <HashList items={noteHashes} emptyMessage="no note hashes" />
             )}
             {tab === "nulls" && (
-              <div>
-                {nullifiers.map((h, i) => (
-                  <div key={`${h}-${i}`} className="list-row">
-                    <span className="idx">{i}</span>
-                    <span className="v">{h}</span>
-                  </div>
-                ))}
-                {nullifiers.length === 0 && (
-                  <div className="empty-state">no nullifiers</div>
-                )}
-              </div>
+              <HashList items={nullifiers} emptyMessage="no nullifiers" />
             )}
             {tab === "public" && (
               <div>
@@ -241,17 +222,7 @@ export const TxDetailPage: FC = () => {
               </div>
             )}
             {tab === "l1" && (
-              <div>
-                {l2ToL1Msgs.map((m, i) => (
-                  <div key={`${m}-${i}`} className="list-row">
-                    <span className="idx">{i}</span>
-                    <span className="v">{m}</span>
-                  </div>
-                ))}
-                {l2ToL1Msgs.length === 0 && (
-                  <div className="empty-state">no L2 → L1 messages</div>
-                )}
-              </div>
+              <HashList items={l2ToL1Msgs} emptyMessage="no L2 → L1 messages" />
             )}
             {tab === "logs" && (
               <div className="kv-grid">
