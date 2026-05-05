@@ -26,7 +26,6 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
         <div>Hash</div>
         <div style={{ textAlign: "right" }}>Txs</div>
         <div style={{ textAlign: "right" }}>Status</div>
-        <div style={{ textAlign: "right" }}>Proposer</div>
         <div style={{ textAlign: "right" }}>Age</div>
       </div>
       <div className="rows">
@@ -50,13 +49,6 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
               <span className="num">{b.txEffectsLength}</span>
               <span className="status-cell">
                 <StatusPill status={status} />
-              </span>
-              <span
-                className="hash"
-                style={{ textAlign: "right" }}
-                title={b.proposer ?? undefined}
-              >
-                {b.proposer ? truncateHashString(b.proposer, 4, 4) : "—"}
               </span>
               <span className="age">{ageStr(ts)}</span>
             </Link>
