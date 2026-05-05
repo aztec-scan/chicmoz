@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import https from "https";
+import { fileURLToPath } from "url";
 import artifactJson from "../../target/explorer_showcase-ExplorerShowcase.json" with { type: "json" };
 import { logger } from "../../../../logger.js";
 
@@ -82,7 +83,7 @@ export async function run() {
 
     const timeoutMs = Math.max(60000, sizeInMB * 10000);
     req.setTimeout(timeoutMs, () => {
-      reject(new Error(`Request timed out after ${timeoutMs}ms`));
+      req.destroy(new Error(`Request timed out after ${timeoutMs}ms`));
     });
 
     req.write(postData);
@@ -112,4 +113,6 @@ export async function run() {
   logger.info("===== DONE =====");
 }
 
-void run();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  void run();
+}

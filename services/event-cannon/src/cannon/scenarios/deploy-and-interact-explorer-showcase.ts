@@ -69,16 +69,16 @@ export async function run() {
     "Transfer private balance (alice -> bob, 40)",
   );
 
-  // Private->Public: shield (burn note, credit public counter)
-  await logAndWaitForTx(
-    contract.methods.shield(20n).send({ from: deployerWallet.address }),
-    "Shield (private note -> public counter, 20)",
-  );
-
-  // Public->Private: unshield (debit public counter, create note)
+  // Private->Public: unshield (consume private note, credit public counter)
   await logAndWaitForTx(
     contract.methods.unshield(10n).send({ from: deployerWallet.address }),
-    "Unshield (public counter -> private note, 10)",
+    "Unshield (private note -> public counter, 10)",
+  );
+
+  // Public->Private: shield (debit public counter, create private note)
+  await logAndWaitForTx(
+    contract.methods.shield(5n).send({ from: deployerWallet.address }),
+    "Shield (public counter -> private note, 5)",
   );
 
   logger.info("===== EXPLORER SHOWCASE COMPLETE =====");

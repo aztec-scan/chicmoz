@@ -6,7 +6,7 @@ if [ -z "$NODE_URL" ]; then
   exit 1
 fi
 
-echo "===== UNSHIELD (public counter -> private note) ====="
+echo "===== UNSHIELD (private note -> public counter) ====="
 echo "node:     $NODE_URL"
 echo "contract: explorer-showcase"
 echo "account:  accounts:aztecscan-wallet"

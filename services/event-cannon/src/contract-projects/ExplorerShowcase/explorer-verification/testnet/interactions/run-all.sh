@@ -28,12 +28,12 @@ echo "[4/6] transfer-private"
 bash "$SCRIPT_DIR/transfer-private.sh"
 echo ""
 
-echo "[5/6] shield"
-bash "$SCRIPT_DIR/shield.sh"
+echo "[5/6] unshield (private -> public)"
+bash "$SCRIPT_DIR/unshield.sh"
 echo ""
 
-echo "[6/6] unshield"
-bash "$SCRIPT_DIR/unshield.sh"
+echo "[6/6] shield (public -> private)"
+bash "$SCRIPT_DIR/shield.sh"
 echo ""
 
 echo "===== ALL INTERACTIONS COMPLETE ====="
