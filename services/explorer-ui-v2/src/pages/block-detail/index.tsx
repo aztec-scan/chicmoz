@@ -1,6 +1,10 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { StatusPill } from "~/components/common";
+import {
+  DetailEmptyState,
+  DetailField,
+  StatusPill,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useGetBlockByIdentifier,
@@ -21,38 +25,28 @@ export const BlockDetailPage: FC = () => {
     block?.height !== undefined ? block.height : undefined,
   );
 
+  const stubCrumbs = [
+    { label: "aztec-scan", to: "/" },
+    { label: "blocks", to: "/blocks" },
+    { label: `#${blockNumber}`, active: true },
+  ];
   if (isLoading) {
     return (
-      <Shell active="blocks">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "blocks", to: "/blocks" },
-            { label: `#${blockNumber}`, active: true },
-          ]}
-          comment={`/api/l2/blocks/${blockNumber}`}
-        />
-        <div className="panel">
-          <div className="empty-state">loading block…</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="blocks"
+        crumbs={stubCrumbs}
+        comment={`/api/l2/blocks/${blockNumber}`}
+        message="loading block…"
+      />
     );
   }
-
   if (isError || !block) {
     return (
-      <Shell active="blocks">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "blocks", to: "/blocks" },
-            { label: `#${blockNumber}`, active: true },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">block not found</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="blocks"
+        crumbs={stubCrumbs}
+        message="block not found"
+      />
     );
   }
 
@@ -160,57 +154,39 @@ export const BlockDetailPage: FC = () => {
             </h3>
           </div>
           <div className="kv-grid">
-            <div className="kv wide">
-              <span className="k">Height</span>
-              <span className="v">#{fmtNum(height)}</span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Hash</span>
-              <span className="v">{block.hash}</span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Parent archive</span>
-              <span className="v">
-                {height && height > 0 ? (
-                  <Link
-                    to="/blocks/$blockNumber"
-                    params={{ blockNumber: String(height - 1) }}
-                  >
-                    {block.header.lastArchive.root}
-                  </Link>
-                ) : (
-                  block.header.lastArchive.root
-                )}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Archive root</span>
-              <span className="v">{block.archive.root}</span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Timestamp</span>
-              <span className="v">
-                {toIsoUtc(ts)} <span className="mute">· {ageStr(ts)}</span>
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Status</span>
-              <span className="v" style={{ color: "var(--green)" }}>
-                {status}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Slot</span>
-              <span className="v">
-                {fmtNum(block.header.globalVariables.slotNumber)}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Rollup version</span>
-              <span className="v">
-                {block.header.globalVariables.version}
-              </span>
-            </div>
+            <DetailField label="Height" width="wide">
+              #{fmtNum(height)}
+            </DetailField>
+            <DetailField label="Hash" width="wide">
+              {block.hash}
+            </DetailField>
+            <DetailField label="Parent archive" width="wide">
+              {height && height > 0 ? (
+                <Link
+                  to="/blocks/$blockNumber"
+                  params={{ blockNumber: String(height - 1) }}
+                >
+                  {block.header.lastArchive.root}
+                </Link>
+              ) : (
+                block.header.lastArchive.root
+              )}
+            </DetailField>
+            <DetailField label="Archive root" width="wide">
+              {block.archive.root}
+            </DetailField>
+            <DetailField label="Timestamp" width="wide">
+              {toIsoUtc(ts)} <span className="mute">· {ageStr(ts)}</span>
+            </DetailField>
+            <DetailField label="Status" width="wide">
+              <span style={{ color: "var(--green)" }}>{status}</span>
+            </DetailField>
+            <DetailField label="Slot" width="wide">
+              {fmtNum(block.header.globalVariables.slotNumber)}
+            </DetailField>
+            <DetailField label="Rollup version" width="wide">
+              {block.header.globalVariables.version}
+            </DetailField>
           </div>
         </div>
         <div className="panel">
@@ -220,56 +196,34 @@ export const BlockDetailPage: FC = () => {
             </h3>
           </div>
           <div className="kv-grid">
-            <div className="kv wide">
-              <span className="k">Coinbase</span>
-              <span className="v">{block.header.globalVariables.coinbase}</span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Fee recipient</span>
-              <span className="v">
-                {block.header.globalVariables.feeRecipient}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">L1 block</span>
-              <span className="v">
-                {block.proposedOnL1?.l1BlockNumber !== undefined
-                  ? `#${fmtNum(Number(block.proposedOnL1.l1BlockNumber))} · ethereum`
-                  : "—"}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">L1 block hash</span>
-              <span className="v">
-                {block.proposedOnL1?.l1BlockHash ?? "—"}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Rollup contract</span>
-              <span className="v">
-                {block.proposedOnL1?.l1ContractAddress ?? "—"}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Prover</span>
-              <span className="v">
-                {block.proofVerifiedOnL1?.proverId
-                  ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
-                  : "—"}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Fee per L2 gas</span>
-              <span className="v">
-                {fmtNum(block.header.globalVariables.gasFees.feePerL2Gas)}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Fee per DA gas</span>
-              <span className="v">
-                {fmtNum(block.header.globalVariables.gasFees.feePerDaGas)}
-              </span>
-            </div>
+            <DetailField label="Coinbase" width="wide">
+              {block.header.globalVariables.coinbase}
+            </DetailField>
+            <DetailField label="Fee recipient" width="wide">
+              {block.header.globalVariables.feeRecipient}
+            </DetailField>
+            <DetailField label="L1 block" width="wide">
+              {block.proposedOnL1?.l1BlockNumber !== undefined
+                ? `#${fmtNum(Number(block.proposedOnL1.l1BlockNumber))} · ethereum`
+                : "—"}
+            </DetailField>
+            <DetailField label="L1 block hash" width="wide">
+              {block.proposedOnL1?.l1BlockHash ?? "—"}
+            </DetailField>
+            <DetailField label="Rollup contract" width="wide">
+              {block.proposedOnL1?.l1ContractAddress ?? "—"}
+            </DetailField>
+            <DetailField label="Prover" width="wide">
+              {block.proofVerifiedOnL1?.proverId
+                ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
+                : "—"}
+            </DetailField>
+            <DetailField label="Fee per L2 gas" width="wide">
+              {fmtNum(block.header.globalVariables.gasFees.feePerL2Gas)}
+            </DetailField>
+            <DetailField label="Fee per DA gas" width="wide">
+              {fmtNum(block.header.globalVariables.gasFees.feePerDaGas)}
+            </DetailField>
           </div>
         </div>
       </div>
@@ -323,30 +277,18 @@ export const BlockDetailPage: FC = () => {
         )}
         {tab === "roots" && (
           <div className="kv-grid">
-            <div className="kv wide">
-              <span className="k">Note hash tree</span>
-              <span className="v">
-                {block.header.state.partial.noteHashTree.root}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Nullifier tree</span>
-              <span className="v">
-                {block.header.state.partial.nullifierTree.root}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">Public data tree</span>
-              <span className="v">
-                {block.header.state.partial.publicDataTree.root}
-              </span>
-            </div>
-            <div className="kv wide">
-              <span className="k">L1→L2 message tree</span>
-              <span className="v">
-                {block.header.state.l1ToL2MessageTree.root}
-              </span>
-            </div>
+            <DetailField label="Note hash tree" width="wide">
+              {block.header.state.partial.noteHashTree.root}
+            </DetailField>
+            <DetailField label="Nullifier tree" width="wide">
+              {block.header.state.partial.nullifierTree.root}
+            </DetailField>
+            <DetailField label="Public data tree" width="wide">
+              {block.header.state.partial.publicDataTree.root}
+            </DetailField>
+            <DetailField label="L1→L2 message tree" width="wide">
+              {block.header.state.l1ToL2MessageTree.root}
+            </DetailField>
           </div>
         )}
         {tab === "contracts" && (

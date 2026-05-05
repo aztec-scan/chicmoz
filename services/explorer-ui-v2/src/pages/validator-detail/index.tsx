@@ -1,6 +1,10 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
-import { StatusPill } from "~/components/common";
+import {
+  DetailEmptyState,
+  DetailField,
+  StatusPill,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useL1L2Validator, useL1L2ValidatorHistory } from "~/hooks/api";
 import { ageStr, fmtNum, formatFees, toIsoUtc, truncateHashString } from "~/lib/utils";
@@ -11,43 +15,27 @@ export const ValidatorDetailPage: FC = () => {
   const { data: validator, isLoading } = useL1L2Validator(attesterAddress);
   const { data: history } = useL1L2ValidatorHistory(attesterAddress);
 
+  const stubCrumbs = [
+    { label: "aztec-scan", to: "/" },
+    { label: "validators", to: "/validators" },
+    { label: truncateHashString(attesterAddress, 10, 8), active: true },
+  ];
   if (isLoading) {
     return (
-      <Shell active="validators">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "validators", to: "/validators" },
-            {
-              label: truncateHashString(attesterAddress, 10, 8),
-              active: true,
-            },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">loading validator…</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="validators"
+        crumbs={stubCrumbs}
+        message="loading validator…"
+      />
     );
   }
-
   if (!validator) {
     return (
-      <Shell active="validators">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "validators", to: "/validators" },
-            {
-              label: truncateHashString(attesterAddress, 10, 8),
-              active: true,
-            },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">validator not found</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="validators"
+        crumbs={stubCrumbs}
+        message="validator not found"
+      />
     );
   }
 
@@ -126,39 +114,30 @@ export const ValidatorDetailPage: FC = () => {
           </h3>
         </div>
         <div className="kv-grid">
-          <div className="kv wide">
-            <span className="k">Attester</span>
-            <span className="v">{validator.attester}</span>
-          </div>
-          <div className="kv wide">
-            <span className="k">Withdrawer</span>
-            <span className="v">{validator.withdrawer}</span>
-          </div>
-          <div className="kv wide">
-            <span className="k">Proposer</span>
-            <span className="v">{validator.proposer}</span>
-          </div>
-          <div className="kv wide">
-            <span className="k">Rollup contract</span>
-            <span className="v">{validator.rollupAddress}</span>
-          </div>
-          <div className="kv wide">
-            <span className="k">Stake</span>
-            <span className="v">{formatFees(validator.stake, 18, 4)} STK</span>
-          </div>
-          <div className="kv wide">
-            <span className="k">First seen</span>
-            <span className="v">{toIsoUtc(validator.firstSeenAt)}</span>
-          </div>
-          <div className="kv wide">
-            <span className="k">Latest change</span>
-            <span className="v">
-              {toIsoUtc(validator.latestSeenChangeAt)}{" "}
-              <span className="mute">
-                · {ageStr(validator.latestSeenChangeAt)}
-              </span>
+          <DetailField label="Attester" width="wide">
+            {validator.attester}
+          </DetailField>
+          <DetailField label="Withdrawer" width="wide">
+            {validator.withdrawer}
+          </DetailField>
+          <DetailField label="Proposer" width="wide">
+            {validator.proposer}
+          </DetailField>
+          <DetailField label="Rollup contract" width="wide">
+            {validator.rollupAddress}
+          </DetailField>
+          <DetailField label="Stake" width="wide">
+            {formatFees(validator.stake, 18, 4)} STK
+          </DetailField>
+          <DetailField label="First seen" width="wide">
+            {toIsoUtc(validator.firstSeenAt)}
+          </DetailField>
+          <DetailField label="Latest change" width="wide">
+            {toIsoUtc(validator.latestSeenChangeAt)}{" "}
+            <span className="mute">
+              · {ageStr(validator.latestSeenChangeAt)}
             </span>
-          </div>
+          </DetailField>
         </div>
       </div>
 

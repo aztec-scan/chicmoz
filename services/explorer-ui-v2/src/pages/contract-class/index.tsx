@@ -1,6 +1,10 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { StatusPill } from "~/components/common";
+import {
+  DetailEmptyState,
+  DetailField,
+  StatusPill,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useContractClass,
@@ -27,39 +31,28 @@ export const ContractClassPage: FC = () => {
 
   const [tab, setTab] = useState<Tab>("source");
 
+  const stubCrumbs = [
+    { label: "aztec-scan", to: "/" },
+    { label: "contracts", to: "/contracts" },
+    { label: "classes" },
+    { label: truncateHashString(classId, 8, 6), active: true },
+  ];
   if (isLoading) {
     return (
-      <Shell active="contracts">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "contracts", to: "/contracts" },
-            { label: "classes" },
-            { label: truncateHashString(classId, 8, 6), active: true },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">loading contract class…</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="contracts"
+        crumbs={stubCrumbs}
+        message="loading contract class…"
+      />
     );
   }
-
   if (!classData) {
     return (
-      <Shell active="contracts">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "contracts", to: "/contracts" },
-            { label: "classes" },
-            { label: truncateHashString(classId, 8, 6), active: true },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">class not found</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="contracts"
+        crumbs={stubCrumbs}
+        message="class not found"
+      />
     );
   }
 
@@ -128,67 +121,50 @@ export const ContractClassPage: FC = () => {
           </h3>
         </div>
         <div className="kv-grid">
-          <div className="kv extra-wide">
-            <span className="k">Class ID</span>
-            <span className="v">{classData.contractClassId}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Version</span>
-            <span className="v">v{classData.version}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Artifact hash</span>
-            <span className="v">{classData.artifactHash}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Private fns root</span>
-            <span className="v">{classData.privateFunctionsRoot}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Block registered</span>
-            <span className="v">
-              {classData.blockHash ? (
-                <>
-                  hash {truncateHashString(classData.blockHash, 14, 12)}
-                </>
-              ) : (
-                "—"
-              )}
-            </span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Standard</span>
-            <span className="v">
-              {classData.standardContractType ? (
-                <>
-                  {classData.standardContractType}
-                  {classData.standardContractVersion
-                    ? ` · v${classData.standardContractVersion}`
-                    : ""}
-                </>
-              ) : (
-                <Link
-                  to="/contracts/classes/$id/versions/$version/submit-standard-contract"
-                  params={{
-                    id: classData.contractClassId,
-                    version: String(classData.version),
-                  }}
-                  className="propose-standard-link"
-                >
-                  not set · propose →
-                </Link>
-              )}
-            </span>
-          </div>
+          <DetailField label="Class ID" width="extra-wide">
+            {classData.contractClassId}
+          </DetailField>
+          <DetailField label="Version" width="extra-wide">
+            v{classData.version}
+          </DetailField>
+          <DetailField label="Artifact hash" width="extra-wide">
+            {classData.artifactHash}
+          </DetailField>
+          <DetailField label="Private fns root" width="extra-wide">
+            {classData.privateFunctionsRoot}
+          </DetailField>
+          <DetailField label="Block registered" width="extra-wide">
+            {classData.blockHash
+              ? `hash ${truncateHashString(classData.blockHash, 14, 12)}`
+              : "—"}
+          </DetailField>
+          <DetailField label="Standard" width="extra-wide">
+            {classData.standardContractType ? (
+              <>
+                {classData.standardContractType}
+                {classData.standardContractVersion
+                  ? ` · v${classData.standardContractVersion}`
+                  : ""}
+              </>
+            ) : (
+              <Link
+                to="/contracts/classes/$id/versions/$version/submit-standard-contract"
+                params={{
+                  id: classData.contractClassId,
+                  version: String(classData.version),
+                }}
+                className="propose-standard-link"
+              >
+                not set · propose →
+              </Link>
+            )}
+          </DetailField>
           {classData.sourceCodeUrl && (
-            <div className="kv extra-wide">
-              <span className="k">Source</span>
-              <span className="v">
-                <a href={classData.sourceCodeUrl} target="_blank" rel="noreferrer">
-                  {classData.sourceCodeUrl}
-                </a>
-              </span>
-            </div>
+            <DetailField label="Source" width="extra-wide">
+              <a href={classData.sourceCodeUrl} target="_blank" rel="noreferrer">
+                {classData.sourceCodeUrl}
+              </a>
+            </DetailField>
           )}
         </div>
       </div>

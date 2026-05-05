@@ -1,6 +1,10 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { StatusPill } from "~/components/common";
+import {
+  DetailEmptyState,
+  DetailField,
+  StatusPill,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useContractInstance,
@@ -19,39 +23,28 @@ export const ContractInstancePage: FC = () => {
 
   const [tab, setTab] = useState<Tab>("balance");
 
+  const stubCrumbs = [
+    { label: "aztec-scan", to: "/" },
+    { label: "contracts", to: "/contracts" },
+    { label: "instances" },
+    { label: truncateHashString(address, 8, 6), active: true },
+  ];
   if (isLoading) {
     return (
-      <Shell active="contracts">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "contracts", to: "/contracts" },
-            { label: "instances" },
-            { label: truncateHashString(address, 8, 6), active: true },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">loading instance…</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="contracts"
+        crumbs={stubCrumbs}
+        message="loading instance…"
+      />
     );
   }
-
   if (!instance) {
     return (
-      <Shell active="contracts">
-        <ConsoleHead
-          crumbs={[
-            { label: "aztec-scan", to: "/" },
-            { label: "contracts", to: "/contracts" },
-            { label: "instances" },
-            { label: truncateHashString(address, 8, 6), active: true },
-          ]}
-        />
-        <div className="panel">
-          <div className="empty-state">instance not found</div>
-        </div>
-      </Shell>
+      <DetailEmptyState
+        active="contracts"
+        crumbs={stubCrumbs}
+        message="instance not found"
+      />
     );
   }
 
@@ -166,45 +159,36 @@ export const ContractInstancePage: FC = () => {
           </h3>
         </div>
         <div className="kv-grid">
-          <div className="kv extra-wide">
-            <span className="k">Address</span>
-            <span className="v">{instance.address}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Contract class</span>
-            <span className="v">
-              <Link
-                to="/contracts/classes/$id/versions/$version"
-                params={{
-                  id: instance.contractClassId,
-                  version: String(instance.version),
-                }}
-              >
-                {className} v{instance.version}
-              </Link>{" "}
-              <span className="mute">· {instance.contractClassId}</span>
-            </span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Initialization hash</span>
-            <span className="v">{instance.initializationHash}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Deployer</span>
-            <span className="v">{instance.deployer}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Salt</span>
-            <span className="v">{instance.salt}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Block hash</span>
-            <span className="v">{instance.blockHash}</span>
-          </div>
-          <div className="kv extra-wide">
-            <span className="k">Artifact hash</span>
-            <span className="v">{instance.artifactHash}</span>
-          </div>
+          <DetailField label="Address" width="extra-wide">
+            {instance.address}
+          </DetailField>
+          <DetailField label="Contract class" width="extra-wide">
+            <Link
+              to="/contracts/classes/$id/versions/$version"
+              params={{
+                id: instance.contractClassId,
+                version: String(instance.version),
+              }}
+            >
+              {className} v{instance.version}
+            </Link>{" "}
+            <span className="mute">· {instance.contractClassId}</span>
+          </DetailField>
+          <DetailField label="Initialization hash" width="extra-wide">
+            {instance.initializationHash}
+          </DetailField>
+          <DetailField label="Deployer" width="extra-wide">
+            {instance.deployer}
+          </DetailField>
+          <DetailField label="Salt" width="extra-wide">
+            {instance.salt}
+          </DetailField>
+          <DetailField label="Block hash" width="extra-wide">
+            {instance.blockHash}
+          </DetailField>
+          <DetailField label="Artifact hash" width="extra-wide">
+            {instance.artifactHash}
+          </DetailField>
         </div>
       </div>
 

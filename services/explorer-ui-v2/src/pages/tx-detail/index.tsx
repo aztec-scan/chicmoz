@@ -1,6 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { StatusPill } from "~/components/common";
+import { DetailField, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useDroppedTxByHash,
@@ -124,48 +124,31 @@ export const TxDetailPage: FC = () => {
               </h3>
             </div>
             <div className="kv-grid">
-              <div className="kv extra-wide">
-                <span className="k">Tx hash</span>
-                <span className="v">{effect.txHash}</span>
-              </div>
-              <div className="kv extra-wide">
-                <span className="k">Status</span>
-                <span
-                  className="v"
-                  style={{ color: "var(--green)" }}
+              <DetailField label="Tx hash" width="extra-wide">
+                {effect.txHash}
+              </DetailField>
+              <DetailField label="Status" width="extra-wide">
+                <span style={{ color: "var(--green)" }}>mined</span>
+              </DetailField>
+              <DetailField label="Block" width="extra-wide">
+                <Link
+                  to="/blocks/$blockNumber"
+                  params={{ blockNumber: String(effect.blockHeight) }}
                 >
-                  mined
-                </span>
-              </div>
-              <div className="kv extra-wide">
-                <span className="k">Block</span>
-                <span className="v">
-                  <Link
-                    to="/blocks/$blockNumber"
-                    params={{ blockNumber: String(effect.blockHeight) }}
-                  >
-                    #{fmtNum(Number(effect.blockHeight))}
-                  </Link>
-                </span>
-              </div>
-              <div className="kv extra-wide">
-                <span className="k">Block hash</span>
-                <span className="v">{effect.blockHash}</span>
-              </div>
-              <div className="kv extra-wide">
-                <span className="k">Timestamp</span>
-                <span className="v">
-                  {toIsoUtc(ts)} <span className="mute">· {ts ? ageStr(ts) : "—"}</span>
-                </span>
-              </div>
-              <div className="kv extra-wide">
-                <span className="k">Transaction fee</span>
-                <span className="v">{formatFees(effect.transactionFee, 18, 5)} FJ</span>
-              </div>
-              <div className="kv extra-wide">
-                <span className="k">Revert code</span>
+                  #{fmtNum(Number(effect.blockHeight))}
+                </Link>
+              </DetailField>
+              <DetailField label="Block hash" width="extra-wide">
+                {effect.blockHash}
+              </DetailField>
+              <DetailField label="Timestamp" width="extra-wide">
+                {toIsoUtc(ts)} <span className="mute">· {ts ? ageStr(ts) : "—"}</span>
+              </DetailField>
+              <DetailField label="Transaction fee" width="extra-wide">
+                {formatFees(effect.transactionFee, 18, 5)} FJ
+              </DetailField>
+              <DetailField label="Revert code" width="extra-wide">
                 <span
-                  className="v"
                   style={{
                     color: effect.revertCode.code
                       ? "var(--red)"
@@ -175,7 +158,7 @@ export const TxDetailPage: FC = () => {
                   {effect.revertCode.code} ·{" "}
                   {effect.revertCode.code ? "reverted" : "ok"}
                 </span>
-              </div>
+              </DetailField>
             </div>
           </div>
 
@@ -272,18 +255,11 @@ export const TxDetailPage: FC = () => {
             )}
             {tab === "logs" && (
               <div className="kv-grid">
-                <div className="kv">
-                  <span className="k">Private logs</span>
-                  <span className="v">{privateLogs.length}</span>
-                </div>
-                <div className="kv">
-                  <span className="k">Public logs</span>
-                  <span className="v">{publicLogs.length}</span>
-                </div>
-                <div className="kv">
-                  <span className="k">Contract class logs</span>
-                  <span className="v">{contractClassLogs.length}</span>
-                </div>
+                <DetailField label="Private logs">{privateLogs.length}</DetailField>
+                <DetailField label="Public logs">{publicLogs.length}</DetailField>
+                <DetailField label="Contract class logs">
+                  {contractClassLogs.length}
+                </DetailField>
               </div>
             )}
           </div>
@@ -298,21 +274,16 @@ export const TxDetailPage: FC = () => {
             </h3>
           </div>
           <div className="kv-grid">
-            <div className="kv extra-wide">
-              <span className="k">Tx hash</span>
-              <span className="v">{pending.txHash}</span>
-            </div>
-            <div className="kv extra-wide">
-              <span className="k">Fee payer</span>
-              <span className="v">{pending.feePayer}</span>
-            </div>
-            <div className="kv extra-wide">
-              <span className="k">Seen at</span>
-              <span className="v">
-                {toIsoUtc(pending.birthTimestamp)}{" "}
-                <span className="mute">· {ageStr(pending.birthTimestamp)}</span>
-              </span>
-            </div>
+            <DetailField label="Tx hash" width="extra-wide">
+              {pending.txHash}
+            </DetailField>
+            <DetailField label="Fee payer" width="extra-wide">
+              {pending.feePayer}
+            </DetailField>
+            <DetailField label="Seen at" width="extra-wide">
+              {toIsoUtc(pending.birthTimestamp)}{" "}
+              <span className="mute">· {ageStr(pending.birthTimestamp)}</span>
+            </DetailField>
           </div>
         </div>
       )}
@@ -325,18 +296,15 @@ export const TxDetailPage: FC = () => {
             </h3>
           </div>
           <div className="kv-grid">
-            <div className="kv extra-wide">
-              <span className="k">Tx hash</span>
-              <span className="v">{dropped.txHash}</span>
-            </div>
-            <div className="kv extra-wide">
-              <span className="k">Seen as pending at</span>
-              <span className="v">{toIsoUtc(dropped.createdAsPendingAt)}</span>
-            </div>
-            <div className="kv extra-wide">
-              <span className="k">Dropped at</span>
-              <span className="v">{toIsoUtc(dropped.droppedAt)}</span>
-            </div>
+            <DetailField label="Tx hash" width="extra-wide">
+              {dropped.txHash}
+            </DetailField>
+            <DetailField label="Seen as pending at" width="extra-wide">
+              {toIsoUtc(dropped.createdAsPendingAt)}
+            </DetailField>
+            <DetailField label="Dropped at" width="extra-wide">
+              {toIsoUtc(dropped.droppedAt)}
+            </DetailField>
           </div>
         </div>
       )}
