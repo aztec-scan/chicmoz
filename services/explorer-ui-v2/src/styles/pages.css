@@ -1911,22 +1911,6 @@
   padding-top: 10px;
   border-top: 1px solid var(--line-soft);
 }
-.eco-card .foot .chip {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 7px;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-  color: var(--ink-3);
-  background: transparent;
-  cursor: default;
-}
-.eco-card .foot .chip.std {
-  color: var(--green);
-  border-color: rgba(49, 166, 123, 0.4);
-}
 .eco-card .scroll {
   position: absolute;
   top: 14px;
@@ -2858,16 +2842,6 @@
   color: var(--ink-1);
   font-style: normal;
 }
-.rpc-node-card .rpc-node-meta .chip {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 7px;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-  color: var(--ink-3);
-}
 .stats-strip.inner {
   border: none;
   border-radius: 0;
@@ -3159,5 +3133,42 @@
   }
   .static-page-head h1 {
     font-size: 26px;
+  }
+}
+
+/* ====================================================================
+ * PUBLIC CALL REQUESTS table + L2->L1 messages table
+ * ==================================================================== */
+.pcr-cols {
+  grid-template-columns: 1fr 1fr 140px 180px 110px 60px;
+}
+.pcr-cols-narrow {
+  grid-template-columns: 1fr 140px 180px 110px 60px;
+}
+
+.l2l1-cols {
+  grid-template-columns: 60px 1fr 1fr 1fr 1fr;
+}
+.l2l1-cols-narrow {
+  grid-template-columns: 60px 1fr 1fr 1fr;
+}
+.l2l1-cols-narrowest {
+  grid-template-columns: 60px 1fr 1fr;
+}
+
+@media (max-width: 1100px) {
+  .pcr-cols,
+  .pcr-cols-narrow,
+  .l2l1-cols,
+  .l2l1-cols-narrow,
+  .l2l1-cols-narrowest {
+    grid-template-columns: 1fr 110px;
+  }
+  .pcr-cols > :nth-child(n + 3),
+  .pcr-cols-narrow > :nth-child(n + 3),
+  .l2l1-cols > :nth-child(n + 3),
+  .l2l1-cols-narrow > :nth-child(n + 3),
+  .l2l1-cols-narrowest > :nth-child(n + 3) {
+    display: none;
   }
 }

@@ -756,6 +756,32 @@
   color: var(--ink-1);
 }
 
+/* ===== info badges (non-interactive — used in cards, tables, detail strips) ===== */
+.tag-chip {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  color: var(--ink-3);
+  background: transparent;
+  display: inline-block;
+}
+.tag-chip-ok {
+  color: var(--green);
+  border-color: rgba(49, 166, 123, 0.4);
+}
+.tag-chip-warn {
+  color: #c99800;
+  border-color: rgba(201, 152, 0, 0.4);
+}
+.tag-chip-purple {
+  color: var(--purple);
+  border-color: rgba(120, 90, 200, 0.4);
+}
+
 /* ===== pagination ===== */
 .pagination {
   display: flex;

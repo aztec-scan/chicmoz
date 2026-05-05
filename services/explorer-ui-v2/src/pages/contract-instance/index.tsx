@@ -5,21 +5,27 @@ import {
   DetailField,
   StatusPill,
 } from "~/components/common";
+import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
+import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useContractInstance,
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
+  useL2ToL1MsgsByContract,
+  usePublicCallRequestsByContract,
 } from "~/hooks/api";
 import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
 
-type Tab = "balance" | "history";
+type Tab = "balance" | "history" | "calls" | "l2l1";
 
 export const ContractInstancePage: FC = () => {
   const { address = "" } = useParams({ strict: false });
   const { data: instance, isLoading } = useContractInstance(address);
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
+  const { data: publicCalls } = usePublicCallRequestsByContract(address);
+  const { data: l2ToL1Msgs } = useL2ToL1MsgsByContract(address);
 
   const [tab, setTab] = useState<Tab>("balance");
 
@@ -207,6 +213,20 @@ export const ContractInstancePage: FC = () => {
             Balance history
             <span className="c">{history?.length ?? 0}</span>
           </button>
+          <button
+            className={tab === "calls" ? "on" : ""}
+            onClick={() => setTab("calls")}
+          >
+            Public calls
+            <span className="c">{publicCalls?.length ?? 0}</span>
+          </button>
+          <button
+            className={tab === "l2l1" ? "on" : ""}
+            onClick={() => setTab("l2l1")}
+          >
+            L2 → L1 msgs
+            <span className="c">{l2ToL1Msgs?.length ?? 0}</span>
+          </button>
         </div>
         {tab === "balance" && (
           <div className="balance-block">
@@ -270,6 +290,13 @@ export const ContractInstancePage: FC = () => {
               <div className="empty-state">no balance history</div>
             )}
           </>
+        )}
+        {tab === "calls" && <PublicCallRequestsTable data={publicCalls} />}
+        {tab === "l2l1" && (
+          <L2ToL1MsgsTable
+            data={l2ToL1Msgs}
+            emptyMessage="no L2 → L1 messages from this contract"
+          />
         )}
       </div>
     </Shell>

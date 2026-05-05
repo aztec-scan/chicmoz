@@ -35,6 +35,8 @@ const TxEffectsHashLazyImport = createFileRoute('/tx-effects/$hash')()
 const L1ContractEventsLazyImport = createFileRoute('/l1/contract-events')()
 const HealthAztecscanLazyImport = createFileRoute('/health/aztecscan')()
 const BlocksBlockNumberLazyImport = createFileRoute('/blocks/$blockNumber')()
+const AddressAddressLazyImport = createFileRoute('/address/$address')()
+const L1AddressAddressLazyImport = createFileRoute('/l1/address/$address')()
 const ContractsInstancesAddressLazyImport = createFileRoute(
   '/contracts/instances/$address',
 )()
@@ -156,6 +158,20 @@ const BlocksBlockNumberLazyRoute = BlocksBlockNumberLazyImport.update({
   import('./routes/blocks/$blockNumber.lazy').then((d) => d.Route),
 )
 
+const AddressAddressLazyRoute = AddressAddressLazyImport.update({
+  path: '/address/$address',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/address.$address.lazy').then((d) => d.Route),
+)
+
+const L1AddressAddressLazyRoute = L1AddressAddressLazyImport.update({
+  path: '/l1/address/$address',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/l1/address.$address.lazy').then((d) => d.Route),
+)
+
 const ContractsInstancesAddressLazyRoute =
   ContractsInstancesAddressLazyImport.update({
     path: '/contracts/instances/$address',
@@ -237,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsAndConditionsLazyImport
       parentRoute: typeof rootRoute
     }
+    '/address/$address': {
+      id: '/address/$address'
+      path: '/address/$address'
+      fullPath: '/address/$address'
+      preLoaderRoute: typeof AddressAddressLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/blocks/$blockNumber': {
       id: '/blocks/$blockNumber'
       path: '/blocks/$blockNumber'
@@ -314,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsInstancesAddressLazyImport
       parentRoute: typeof rootRoute
     }
+    '/l1/address/$address': {
+      id: '/l1/address/$address'
+      path: '/l1/address/$address'
+      fullPath: '/l1/address/$address'
+      preLoaderRoute: typeof L1AddressAddressLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/contracts/classes/$id/versions/$version': {
       id: '/contracts/classes/$id/versions/$version'
       path: '/contracts/classes/$id/versions/$version'
@@ -341,6 +371,7 @@ export const routeTree = rootRoute.addChildren({
   PrivacyPolicyLazyRoute,
   StakingLazyRoute,
   TermsAndConditionsLazyRoute,
+  AddressAddressLazyRoute,
   BlocksBlockNumberLazyRoute,
   HealthAztecscanLazyRoute,
   L1ContractEventsLazyRoute,
@@ -352,6 +383,7 @@ export const routeTree = rootRoute.addChildren({
   TxEffectsIndexLazyRoute,
   ValidatorsIndexLazyRoute,
   ContractsInstancesAddressLazyRoute,
+  L1AddressAddressLazyRoute,
   ContractsClassesIdVersionsVersionLazyRoute:
     ContractsClassesIdVersionsVersionLazyRoute.addChildren({
       ContractsClassesIdVersionsVersionSubmitStandardContractLazyRoute,
@@ -373,6 +405,7 @@ export const routeTree = rootRoute.addChildren({
         "/privacy-policy",
         "/staking",
         "/terms-and-conditions",
+        "/address/$address",
         "/blocks/$blockNumber",
         "/health/aztecscan",
         "/l1/contract-events",
@@ -384,6 +417,7 @@ export const routeTree = rootRoute.addChildren({
         "/tx-effects/",
         "/validators/",
         "/contracts/instances/$address",
+        "/l1/address/$address",
         "/contracts/classes/$id/versions/$version"
       ]
     },
@@ -407,6 +441,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/terms-and-conditions": {
       "filePath": "terms-and-conditions.lazy.tsx"
+    },
+    "/address/$address": {
+      "filePath": "address.$address.lazy.tsx"
     },
     "/blocks/$blockNumber": {
       "filePath": "blocks/$blockNumber.lazy.tsx"
@@ -440,6 +477,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/contracts/instances/$address": {
       "filePath": "contracts/instances.$address.lazy.tsx"
+    },
+    "/l1/address/$address": {
+      "filePath": "l1/address.$address.lazy.tsx"
     },
     "/contracts/classes/$id/versions/$version": {
       "filePath": "contracts/classes.$id.versions.$version.lazy.tsx",

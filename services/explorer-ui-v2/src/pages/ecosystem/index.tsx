@@ -255,8 +255,10 @@ export const EcosystemPage: FC = () => {
               </div>
               <div className="comment">{note.comment}</div>
               <div className="foot">
-                <span className="chip">{note.origin}</span>
-                {isStandard && <span className="chip std">standard</span>}
+                <span className="tag-chip">{note.origin}</span>
+                {isStandard && (
+                  <span className="tag-chip tag-chip-ok">standard</span>
+                )}
               </div>
             </Link>
           );
@@ -321,8 +323,8 @@ export const EcosystemPage: FC = () => {
                 </a>
               )}
               <div className="foot">
-                <span className="chip std">verified</span>
-                <span className="chip">class</span>
+                <span className="tag-chip tag-chip-ok">verified</span>
+                <span className="tag-chip">class</span>
               </div>
             </Link>
           );

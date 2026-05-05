@@ -80,8 +80,8 @@ const RpcNodeCard: FC<{
           <span>
             last seen <em>{ageStr(rpcNode.lastSeenAt.getTime())}</em>
           </span>
-          <span className="chip">node {rpcNode.nodeVersion}</span>
-          <span className="chip">rollup v{rpcNode.rollupVersion.toString()}</span>
+          <span className="tag-chip">node {rpcNode.nodeVersion}</span>
+          <span className="tag-chip">rollup v{rpcNode.rollupVersion.toString()}</span>
         </div>
       </div>
       <div className="stats-strip inner">

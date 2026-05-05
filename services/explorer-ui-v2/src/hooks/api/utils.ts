@@ -46,6 +46,33 @@ export const queryKeyGenerator = {
   pendingTxsByHash: (hash: string) => ["pendingTxs", hash],
   droppedTxByHash: (hash: string) => ["droppedTxByHash", hash],
 
+  publicCallRequestsByTxHash: (hash: string) => [
+    "publicCallRequests",
+    "tx",
+    hash,
+  ],
+  publicCallRequestsByContract: (address: string) => [
+    "publicCallRequests",
+    "contract",
+    address,
+  ],
+  publicCallRequestsBySender: (address: string) => [
+    "publicCallRequests",
+    "sender",
+    address,
+  ],
+
+  l2ToL1MsgsByContract: (address: string) => [
+    "l2ToL1Msgs",
+    "contract",
+    address,
+  ],
+  l2ToL1MsgsByRecipient: (address: string) => [
+    "l2ToL1Msgs",
+    "recipient",
+    address,
+  ],
+
   totalTxEffects: [statsKey, "totalTxEffects"],
   totalTxEffectsLast24h: [statsKey, "totalTxEffectsLast24h"],
   totalContracts: [statsKey, "totalContracts"],

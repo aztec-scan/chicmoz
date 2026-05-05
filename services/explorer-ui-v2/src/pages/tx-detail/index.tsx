@@ -1,16 +1,24 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { DetailField, StatusPill } from "~/components/common";
+import {
+  DetailField,
+  FeePaymentMethodBadge,
+  L2AddressLink,
+  StatusPill,
+} from "~/components/common";
+import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
+import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { HashList } from "./hash-list";
 import {
   useDroppedTxByHash,
   useGetTxEffectByHash,
   usePendingTxsByHash,
+  usePublicCallRequestsByTxHash,
 } from "~/hooks/api";
 import { ageStr, fmtNum, formatFees, toIsoUtc, truncateHashString } from "~/lib/utils";
 
-type Tab = "notes" | "nulls" | "public" | "l1" | "logs";
+type Tab = "notes" | "nulls" | "public" | "l1" | "logs" | "calls";
 
 export const TxDetailPage: FC = () => {
   const { hash = "" } = useParams({ strict: false });
@@ -19,6 +27,9 @@ export const TxDetailPage: FC = () => {
   const { data: effect } = useGetTxEffectByHash(hash);
   const { data: pending } = usePendingTxsByHash(hash);
   const { data: dropped } = useDroppedTxByHash(hash);
+  const { data: minedPublicCalls } = usePublicCallRequestsByTxHash(
+    effect ? hash : "",
+  );
 
   const mined = !!effect;
   const status = mined
@@ -148,6 +159,21 @@ export const TxDetailPage: FC = () => {
               <DetailField label="Transaction fee" width="extra-wide">
                 {formatFees(effect.transactionFee, 18, 5)} FJ
               </DetailField>
+              {effect.feePayer && (
+                <DetailField label="Fee payer" width="extra-wide">
+                  <L2AddressLink address={effect.feePayer} truncate={false} />
+                </DetailField>
+              )}
+              {effect.initiator && (
+                <DetailField label="Initiator" width="extra-wide">
+                  <L2AddressLink address={effect.initiator} truncate={false} />
+                </DetailField>
+              )}
+              {effect.feePaymentMethod && (
+                <DetailField label="Fee payment method" width="extra-wide">
+                  <FeePaymentMethodBadge method={effect.feePaymentMethod} />
+                </DetailField>
+              )}
               <DetailField label="Revert code" width="extra-wide">
                 <span
                   style={{
@@ -195,6 +221,13 @@ export const TxDetailPage: FC = () => {
               >
                 Logs<span className="c">{logsCount}</span>
               </button>
+              <button
+                className={tab === "calls" ? "on" : ""}
+                onClick={() => setTab("calls")}
+              >
+                Public calls
+                <span className="c">{minedPublicCalls?.length ?? 0}</span>
+              </button>
             </div>
             {tab === "notes" && (
               <HashList items={noteHashes} emptyMessage="no note hashes" />
@@ -233,30 +266,72 @@ export const TxDetailPage: FC = () => {
                 </DetailField>
               </div>
             )}
+            {tab === "calls" && (
+              <PublicCallRequestsTable data={minedPublicCalls} />
+            )}
           </div>
         </>
       )}
 
       {!mined && pending && (
-        <div className="panel">
-          <div className="panel-head">
-            <h3>
-              Pending<span className="tag">/api/l2/txs/{truncateHashString(hash, 6, 4)}</span>
-            </h3>
+        <>
+          <div className="panel">
+            <div className="panel-head">
+              <h3>
+                Pending<span className="tag">/api/l2/txs/{truncateHashString(hash, 6, 4)}</span>
+              </h3>
+            </div>
+            <div className="kv-grid">
+              <DetailField label="Tx hash" width="extra-wide">
+                {pending.txHash}
+              </DetailField>
+              <DetailField label="Fee payer" width="extra-wide">
+                <L2AddressLink address={pending.feePayer} truncate={false} />
+              </DetailField>
+              {pending.initiator && (
+                <DetailField label="Initiator" width="extra-wide">
+                  <L2AddressLink address={pending.initiator} truncate={false} />
+                </DetailField>
+              )}
+              {pending.feePaymentMethod && (
+                <DetailField label="Fee payment method" width="extra-wide">
+                  <FeePaymentMethodBadge method={pending.feePaymentMethod} />
+                </DetailField>
+              )}
+              <DetailField label="Seen at" width="extra-wide">
+                {toIsoUtc(pending.birthTimestamp)}{" "}
+                <span className="mute">· {ageStr(pending.birthTimestamp)}</span>
+              </DetailField>
+            </div>
           </div>
-          <div className="kv-grid">
-            <DetailField label="Tx hash" width="extra-wide">
-              {pending.txHash}
-            </DetailField>
-            <DetailField label="Fee payer" width="extra-wide">
-              {pending.feePayer}
-            </DetailField>
-            <DetailField label="Seen at" width="extra-wide">
-              {toIsoUtc(pending.birthTimestamp)}{" "}
-              <span className="mute">· {ageStr(pending.birthTimestamp)}</span>
-            </DetailField>
-          </div>
-        </div>
+
+          {pending.publicCallRequests &&
+            pending.publicCallRequests.length > 0 && (
+              <div className="panel">
+                <div className="panel-head">
+                  <h3>
+                    Public call requests
+                    <span className="c">
+                      {pending.publicCallRequests.length}
+                    </span>
+                  </h3>
+                </div>
+                <PublicCallRequestsTable data={pending.publicCallRequests} />
+              </div>
+            )}
+
+          {pending.l2ToL1Msgs && pending.l2ToL1Msgs.length > 0 && (
+            <div className="panel">
+              <div className="panel-head">
+                <h3>
+                  L2 → L1 messages
+                  <span className="c">{pending.l2ToL1Msgs.length}</span>
+                </h3>
+              </div>
+              <L2ToL1MsgsTable data={pending.l2ToL1Msgs} omitTxHash />
+            </div>
+          )}
+        </>
       )}
 
       {!mined && !pending && dropped && (

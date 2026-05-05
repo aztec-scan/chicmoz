@@ -18,6 +18,18 @@ export const aztecExplorer = {
   getL2PendingTxs: "/l2/txs",
   getL2PendingTxsByHash: (hash: string) => `/l2/txs/${hash}`,
   getL2DroppedTxByHash: (hash: string) => `/l2/dropped-txs/${hash}`,
+
+  getL2PublicCallRequestsByTxHash: (txHash: string) =>
+    `/l2/public-call-requests/${txHash}`,
+  getL2PublicCallRequestsByContract: (address: string) =>
+    `/l2/public-call-requests?contractAddress=${address}`,
+  getL2PublicCallRequestsBySender: (address: string) =>
+    `/l2/public-call-requests?senderAddress=${address}`,
+
+  getL2ToL1MsgsByContract: (address: string) =>
+    `/l2/l2-to-l1-msgs/contract/${address}`,
+  getL2ToL1MsgsByRecipient: (address: string) =>
+    `/l2/l2-to-l1-msgs/recipient/${address}`,
   getL2ContractClassByIdAndVersion: (classId: string, version: string) =>
     `/l2/contract-classes/${classId}/versions/${version}`,
   getL2ContractClasses: (classId?: string) =>
