@@ -3,6 +3,7 @@ import { type FC, useMemo, useState } from "react";
 import { Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useL1L2Validators, useValidatorTotals } from "~/hooks/api";
+import { usePaginated } from "~/hooks/use-paginated";
 import { useSortableTable } from "~/hooks/use-sortable-table";
 import { ageStr, fmtNum, parseBigIntAsDecimal } from "~/lib/utils";
 import { validatorStatusToDisplay } from "~/lib/validator-status";
@@ -27,7 +28,6 @@ export const ValidatorsPage: FC = () => {
   const [q, setQ] = useState("");
   const { sortKey, sortDir, toggleSort, sortArrow } =
     useSortableTable<SortKey>("stake");
-  const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
     let rows = validators ?? [];
@@ -57,8 +57,7 @@ export const ValidatorsPage: FC = () => {
     });
   }, [validators, filter, q, sortKey, sortDir]);
 
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const { page, setPage, paged, totalPages } = usePaginated(filtered, PAGE_SIZE);
 
   const total = totals ? totals.validating + totals.nonValidating : validators?.length ?? 0;
   const validating = totals?.validating ?? filtered.filter(v => validatorStatusToDisplay(v.status) === "validating").length;

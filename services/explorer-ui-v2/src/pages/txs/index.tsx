@@ -9,6 +9,7 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks/api";
+import { usePaginated } from "~/hooks/use-paginated";
 import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
 
 type Filter = "mined" | "pending";
@@ -23,7 +24,6 @@ export const TxsPage: FC = () => {
     return (p.get("filter") as Filter) || "mined";
   })();
   const [filter, setFilter] = useState<Filter>(initialFilter);
-  const [page, setPage] = useState(0);
 
   const { data: mined } = useLatestTableTxEffects();
   const { data: pending } = usePendingTxs();
@@ -31,13 +31,15 @@ export const TxsPage: FC = () => {
   const { data: txEffects24h } = useTotalTxEffectsLast24h();
   const { data: averageFees } = useAverageFees();
 
-  const rows = useMemo(() => {
+  type Row =
+    | NonNullable<typeof mined>[number]
+    | NonNullable<typeof pending>[number];
+  const rows = useMemo<Row[]>(() => {
     if (filter === "pending") {return pending ?? [];}
     return mined ?? [];
   }, [filter, mined, pending]);
 
-  const paged = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const { page, setPage, paged, totalPages } = usePaginated(rows, PAGE_SIZE);
 
   const avgFee = averageFees ? formatFees(averageFees, 18, 5) : null;
 

@@ -3,6 +3,7 @@ import { type FC, useMemo, useState } from "react";
 import { CopyableAddress, Pagination } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainInfo, useL1ContractEvents } from "~/hooks/api";
+import { usePaginated } from "~/hooks/use-paginated";
 import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
 import {
   argsPreview,
@@ -69,7 +70,6 @@ export const L1EventsPage: FC = () => {
   const [eventFilter, setEventFilter] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [window, setWindow] = useState<TimeWindow>("24h");
-  const [page, setPage] = useState(0);
 
   /** Map a ContractKey to an actual L1 address using live chain info. */
   const contractAddrByKey = useMemo<Partial<Record<ContractKey, string>>>(
@@ -195,8 +195,7 @@ export const L1EventsPage: FC = () => {
   }, [allEvents]);
   const sparkMax = Math.max(...sparkData, 1);
 
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const { page, setPage, paged, totalPages } = usePaginated(filtered, PAGE_SIZE);
 
   const toggleEvtType = (t: string): void => {
     setEventFilter((prev) => {
