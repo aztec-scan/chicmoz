@@ -380,10 +380,15 @@
   color: var(--ink-4);
 }
 
-/* ===== stats strip ===== */
+/* ===== stats strip =====
+   `auto-fit` + `minmax(0, 1fr)` makes the grid spread the children evenly
+   regardless of how many `.sc` cells the page renders (4 on landing, 5
+   on block-detail, etc.). Pre-empts the old hard-coded `repeat(4, 1fr)`
+   that wrapped the 5th cell to a new row. */
 .stats-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--bg-1);
