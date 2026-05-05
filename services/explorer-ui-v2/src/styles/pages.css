@@ -537,7 +537,7 @@
 }
 
 .blocks-cols {
-  grid-template-columns: 100px 1fr 90px 70px 110px 100px 90px;
+  grid-template-columns: 100px 1fr 90px 70px 110px 90px;
 }
 .txs-cols {
   grid-template-columns: 1fr 100px 100px 100px 90px;

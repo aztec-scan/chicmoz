@@ -146,7 +146,6 @@ export const BlocksPage: FC = () => {
             Txs{sortArrow("txEffectsLength")}
           </div>
           <div className="right">Status</div>
-          <div className="right">Size</div>
           <div className="right">Proposer</div>
           <div
             className="sortable right"
@@ -175,7 +174,6 @@ export const BlocksPage: FC = () => {
                 <span className="status-cell">
                   <StatusPill status={status} />
                 </span>
-                <span className="num">—</span>
                 <span className="hash" title={b.proposer ?? undefined}>
                   {b.proposer ? truncateHashString(b.proposer, 6, 4) : "—"}
                 </span>
