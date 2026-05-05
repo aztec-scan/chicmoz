@@ -7,13 +7,32 @@ import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { L1L2ValidatorAPI } from "~/api";
 import { LONG_STALE_TIME, queryKeyGenerator } from "./utils";
 
+// The /api/l1/l2-validators route schema caps `limit` at 100 and defaults
+// to 20 when omitted. Page through until exhausted so stats (totalStake,
+// validatingStake, etc.) and in-memory filter/sort cover every validator.
+const PAGE_SIZE = 100;
+const MAX_PAGES = 100; // hard stop at 10k validators to bound the loop
+
+const fetchAllValidators = async (): Promise<ChicmozL1L2Validator[]> => {
+  const all: ChicmozL1L2Validator[] = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const batch = await L1L2ValidatorAPI.getValidators(
+      PAGE_SIZE,
+      page * PAGE_SIZE,
+    );
+    all.push(...batch);
+    if (batch.length < PAGE_SIZE) {break;}
+  }
+  return all;
+};
+
 export const useL1L2Validators = (): UseQueryResult<
   ChicmozL1L2Validator[],
   Error
 > => {
   return useQuery<ChicmozL1L2Validator[], Error>({
     queryKey: queryKeyGenerator.l1L2Validators,
-    queryFn: () => L1L2ValidatorAPI.getValidators(),
+    queryFn: fetchAllValidators,
     staleTime: LONG_STALE_TIME,
   });
 };
