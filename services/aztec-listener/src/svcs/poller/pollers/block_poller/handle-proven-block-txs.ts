@@ -53,6 +53,7 @@ export const handleProvenTransactions = async (block: L2Block) => {
           contractAddress: provenTx.feePayer,
           balance: balance.toBigInt().toString(),
           timestamp: new Date().getTime(),
+          sourceTxHash: provenTx.txHash,
         });
 
         await txsController.storeOrUpdate(provenTx, "proven");

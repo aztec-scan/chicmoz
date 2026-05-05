@@ -55,6 +55,7 @@ export const updateBlock = (
         txEffectsLength: block.body.txEffects.length,
         timestamp: block.header.globalVariables.timestamp,
         blockStatus: block.finalizationStatus,
+        orphan: false,
       };
       return [...oldData, mapedWebsockketBlock].sort((a, b) => {
         if (b.height === a.height) {

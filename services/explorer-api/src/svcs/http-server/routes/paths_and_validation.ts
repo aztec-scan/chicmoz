@@ -85,18 +85,21 @@ export const paths = {
 
   statsTotalTxEffects: "/l2/stats/total-tx-effects",
   statsTotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
+  statsDroppedTxsLast24h: "/l2/stats/dropped-txs-last-24h",
   statsTotalContracts: "/l2/stats/total-contracts",
   statsTotalContractInstances: "/l2/stats/total-contract-instances",
   statsTotalContractInstancesByContractClassId: `/l2/stats/total-contract-instances/:${contractClassId}`,
   statsTotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
   statsAverageFees: "/l2/stats/average-fees",
   statsAverageBlockTime: "/l2/stats/average-block-time",
+  statsAverageTxsPerBlock: "/l2/stats/average-txs-per-block",
 
   l1l2Validators: "/l1/l2-validators",
   l1l2ValidatorTotals: "/l1/l2-validators/totals",
   l1l2Validator: "/l1/l2-validators/:attesterAddress",
   l1l2ValidatorHistory: "/l1/l2-validators/:attesterAddress/history",
   l1ContractEvents: "/l1/contract-events",
+  l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
 
   chainInfo: "/l2/info",
   chainErrors: "/l2/errors",
@@ -284,9 +287,21 @@ export const getL1L2ValidatorSchema = z.object({
   }),
 });
 
+export const getL1ContractEventsHourlyCountsSchema = z.object({
+  query: z.object({
+    // Window in hours. 24h default matches the L1 events sparkline; capped
+    // at 168h (7d) to bound the result set and DB scan.
+    hours: z.coerce.number().int().min(1).max(168).optional().default(24),
+  }),
+});
+
 export const getL1L2ValidatorsPaginatedSchema = z.object({
   query: z.object({
-    limit: z.coerce.number().min(1).max(100).optional().default(20),
+    // Cap raised from 100 → 1000 so the UI can fetch the full validator set
+    // in a single roundtrip for client-side filter/search/sort. Server-side
+    // q/status filtering is the longer-term fix; until then a higher cap
+    // avoids the page-through-100s-at-a-time loop in useL1L2Validators.
+    limit: z.coerce.number().min(1).max(1000).optional().default(20),
     offset: z.coerce.number().min(0).optional().default(0),
   }),
 });

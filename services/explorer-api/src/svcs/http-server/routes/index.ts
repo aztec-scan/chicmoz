@@ -67,6 +67,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L1_L2_VALIDATOR_HISTORY,
 
   ...controller.openapi_GET_L1_CONTRACT_EVENTS,
+  ...controller.openapi_GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
 
   ...controller.openapi_GET_CHAIN_INFO,
   ...controller.openapi_GET_CHAIN_ERRORS,
@@ -91,6 +92,10 @@ const otherPaths = [
     controller: controller.GET_STATS_TOTAL_TX_EFFECTS_LAST_24H,
   },
   {
+    path: paths.statsDroppedTxsLast24h,
+    controller: controller.GET_STATS_DROPPED_TXS_LAST_24H,
+  },
+  {
     path: paths.statsTotalContracts,
     controller: controller.GET_STATS_TOTAL_CONTRACTS,
   },
@@ -109,6 +114,10 @@ const otherPaths = [
   {
     path: paths.statsAverageBlockTime,
     controller: controller.GET_STATS_AVERAGE_BLOCK_TIME,
+  },
+  {
+    path: paths.statsAverageTxsPerBlock,
+    controller: controller.GET_STATS_AVERAGE_TXS_PER_BLOCK,
   },
   {
     path: paths.statsTotalContractInstancesByContractClassId,
@@ -282,6 +291,10 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L1_L2_VALIDATOR_HISTORY,
   );
 
+  router.get(
+    paths.l1ContractEventsHourlyCounts,
+    controller.GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
+  );
   router.get(paths.l1ContractEvents, controller.GET_L1_CONTRACT_EVENTS);
 
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);

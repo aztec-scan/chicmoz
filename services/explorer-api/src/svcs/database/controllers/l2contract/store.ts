@@ -18,7 +18,10 @@ import {
   l2UtilityFunction,
 } from "../../../database/schema/l2contract/index.js";
 import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
-import { buildSelectorMap } from "../../../../utils/resolve-artifact-names.js";
+import {
+  buildSelectorMap,
+  selectorMapValueToFunctionName,
+} from "../../../../utils/resolve-artifact-names.js";
 import { logger } from "../../../../logger.js";
 
 export const storeContractInstanceDeployed = async (
@@ -184,9 +187,13 @@ export const backfillPublicCallRequestNames = async ({
   // Update each row using the pre-built selectorMap — O(1) per row, no artifact parsing
   await Promise.all(
     candidateRows.map((row) => {
-      const functionName = row.functionSelector
-        ? (selectorMap[row.functionSelector] ?? null)
-        : null;
+      const selectorEntry = row.functionSelector
+        ? selectorMap[row.functionSelector]
+        : undefined;
+      const functionName =
+        selectorEntry !== undefined
+          ? selectorMapValueToFunctionName(selectorEntry)
+          : null;
 
       return db()
         .update(l2TxPublicCallRequest)

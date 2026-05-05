@@ -38,6 +38,15 @@ export const chicmozL1L2ValidatorTotalsSchema = z.object({
   validating: z.number().nonnegative(),
   nonValidating: z.number().nonnegative(),
   statusCounts: z.record(z.string(), z.number().nonnegative()),
+  // Stake aggregates are computed server-side so the UI doesn't need to load
+  // every validator to render the strip. Optional for backwards-compat with
+  // older API responses; current backend always populates them.
+  totalStake: z.coerce.bigint().nonnegative().optional(),
+  validatingStake: z.coerce.bigint().nonnegative().optional(),
+  maxStake: z.coerce.bigint().nonnegative().optional(),
+  stakeByStatus: z
+    .record(z.string(), z.coerce.bigint().nonnegative())
+    .optional(),
 });
 
 export type ChicmozL1L2ValidatorTotals = z.infer<

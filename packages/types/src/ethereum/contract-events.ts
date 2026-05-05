@@ -46,3 +46,21 @@ export const chicmozL1GenericContractEventSchema = z.object({
 export type ChicmozL1GenericContractEvent = z.infer<
   typeof chicmozL1GenericContractEventSchema
 >;
+
+/**
+ * Per-hour bucket of L1 contract events. Sparse — buckets with zero events
+ * are omitted; the consumer fills in the missing hours.
+ */
+export const chicmozL1ContractEventsHourlyBucketSchema = z.object({
+  hourStartMs: z.coerce.number().int().nonnegative(),
+  count: z.coerce.number().int().nonnegative(),
+});
+export const chicmozL1ContractEventsHourlyCountsSchema = z.array(
+  chicmozL1ContractEventsHourlyBucketSchema,
+);
+export type ChicmozL1ContractEventsHourlyBucket = z.infer<
+  typeof chicmozL1ContractEventsHourlyBucketSchema
+>;
+export type ChicmozL1ContractEventsHourlyCounts = z.infer<
+  typeof chicmozL1ContractEventsHourlyCountsSchema
+>;

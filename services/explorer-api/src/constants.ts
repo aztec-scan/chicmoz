@@ -16,6 +16,7 @@ export const AZTEC_SCAN_NOTES: Record<
       name: "Example",
       origin: "This is an example note",
       comment: "EXAMPLE",
+      category: "dev",
       relatedL1ContractAddresses: [
         {
           address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -31,6 +32,7 @@ export const AZTEC_SCAN_NOTES: Record<
       name: "Bridged USDC",
       origin: "Raven House",
       comment: "Available at: https://bridge.ravenhouse.xyz",
+      category: "bridge",
       relatedL1ContractAddresses: [
         {
           address: "0x3c7E4990F18bd36029CC562B336022C657427c6A",

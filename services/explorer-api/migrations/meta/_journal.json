@@ -134,6 +134,20 @@
       "when": 1776859200000,
       "tag": "0018_flippant_thunderbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1778198400000,
+      "tag": "0019_drop_reason_and_balance_source_tx",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1778284800000,
+      "tag": "0020_aztec_scan_note_category",
+      "breakpoints": true
     }
   ]
 }

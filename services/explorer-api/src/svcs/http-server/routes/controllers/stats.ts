@@ -20,6 +20,16 @@ export const GET_STATS_TOTAL_TX_EFFECTS_LAST_24H = asyncHandler(
   },
 );
 
+export const GET_STATS_DROPPED_TXS_LAST_24H = asyncHandler(
+  async (_req, res) => {
+    const total = await dbWrapper.getLatest(
+      ["stats", "droppedTxsLast24h"],
+      () => db.droppedTx.getTotalDroppedTxsLast24h(),
+    );
+    res.status(200).json(JSON.parse(total));
+  },
+);
+
 export const GET_STATS_TOTAL_CONTRACTS = asyncHandler(async (_req, res) => {
   const total = await dbWrapper.getLatest(["stats", "totalContracts"], () =>
     db.l2Contract.getTotalContracts(),
@@ -57,6 +67,16 @@ export const GET_STATS_AVERAGE_BLOCK_TIME = asyncHandler(async (_req, res) => {
   );
   res.status(200).json(JSON.parse(average));
 });
+
+export const GET_STATS_AVERAGE_TXS_PER_BLOCK = asyncHandler(
+  async (_req, res) => {
+    const average = await dbWrapper.getLatest(
+      ["stats", "averageTxsPerBlock"],
+      () => db.l2Block.getAverageTxsPerBlock(),
+    );
+    res.status(200).json(JSON.parse(average));
+  },
+);
 
 export const GET_STATS_TOTAL_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID =
   asyncHandler(async (req, res) => {

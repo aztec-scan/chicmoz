@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: explorer-ui-v2-testnet
+  namespace: chicmoz
+  labels:
+    app.kubernetes.io/name: explorer-ui-v2
+    app.kubernetes.io/part-of: chicmoz-local
+spec:
+  parentRefs:
+    - name: chicmoz-gateway
+      sectionName: ui-v2-testnet
+  hostnames:
+    - v2.testnet.chicmoz.localhost
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: explorer-ui-v2-testnet-service
+          port: 80
