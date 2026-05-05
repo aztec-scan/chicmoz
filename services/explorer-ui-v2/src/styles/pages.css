@@ -3088,6 +3088,103 @@
   color: white;
 }
 
+/* ===== tx-detail logs panel ===== */
+.logs-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.log-section-head h4 {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.log-section-head h4 .c {
+  color: var(--ink-3);
+  font-size: 10px;
+}
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.log-entry {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: var(--bg-1);
+}
+.log-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.log-entry-head .idx {
+  color: var(--ink-3);
+  min-width: 26px;
+}
+.log-entry-head .meta {
+  color: var(--ink-3);
+  font-size: 11px;
+  margin-left: auto;
+}
+.log-entry-head .meta .sep {
+  margin: 0 6px;
+  color: var(--line);
+}
+.log-fields {
+  margin-top: 6px;
+}
+.log-fields > summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--purple);
+  padding: 4px 0;
+}
+.log-fields > summary::marker {
+  color: var(--ink-3);
+}
+.log-fields-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line-soft);
+}
+.log-field-row {
+  display: flex;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  align-items: baseline;
+}
+.log-field-row .idx {
+  color: var(--ink-3);
+  min-width: 28px;
+}
+.log-field-row .v {
+  color: var(--ink-1);
+  word-break: break-all;
+}
+
 /* ===== footer ===== */
 .footer {
   margin-top: 48px;

@@ -10,6 +10,7 @@ import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { HashList } from "./hash-list";
+import { LogsPanel } from "./logs-panel";
 import {
   useDroppedTxByHash,
   useGetTxEffectByHash,
@@ -258,13 +259,11 @@ export const TxDetailPage: FC = () => {
               <HashList items={l2ToL1Msgs} emptyMessage="no L2 → L1 messages" />
             )}
             {tab === "logs" && (
-              <div className="kv-grid">
-                <DetailField label="Private logs">{privateLogs.length}</DetailField>
-                <DetailField label="Public logs">{publicLogs.length}</DetailField>
-                <DetailField label="Contract class logs">
-                  {contractClassLogs.length}
-                </DetailField>
-              </div>
+              <LogsPanel
+                privateLogs={privateLogs}
+                publicLogs={publicLogs}
+                contractClassLogs={contractClassLogs}
+              />
             )}
             {tab === "calls" && (
               <PublicCallRequestsTable data={minedPublicCalls} />
