@@ -1,7 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 import { fontFamily } from "tailwindcss/defaultTheme";
+import tailwindcssAnimate from "tailwindcss-animate";
 
-module.exports = {
+export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
@@ -85,7 +86,7 @@ module.exports = {
         },
         scroll: {
           to: {
-            transform: "translate(calc(-50% - 0.5rem)",
+            transform: "translate(calc(-50% - 0.5rem))",
           },
         },
       },
@@ -96,5 +97,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 };

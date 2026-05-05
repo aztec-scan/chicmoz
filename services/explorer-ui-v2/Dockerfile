@@ -35,13 +35,13 @@ ENV VITE_X_URL $VITE_X_URL
 ARG VITE_VERSION_STRING
 ENV VITE_VERSION_STRING $VITE_VERSION_STRING
 
-RUN yarn workspaces focus @chicmoz/explorer-ui
+RUN yarn workspaces focus @chicmoz/explorer-ui-v2
 
 FROM deps as build
 
 ENV GENERATE_SOURCEMAP false
 
-WORKDIR /usr/main/services/explorer-ui
+WORKDIR /usr/main/services/explorer-ui-v2
 
 COPY . .
 COPY --from=deps /usr/main /usr/main
@@ -50,6 +50,6 @@ RUN yarn build
 FROM nginx:1.21-alpine as runner
 
 RUN sed -i '/location \//a try_files $uri $uri/ /index.html;' /etc/nginx/conf.d/default.conf
-COPY --from=build /usr/main/services/explorer-ui/dist /usr/share/nginx/html
+COPY --from=build /usr/main/services/explorer-ui-v2/dist /usr/share/nginx/html
 
 CMD ["nginx", "-g", "daemon off;"]
