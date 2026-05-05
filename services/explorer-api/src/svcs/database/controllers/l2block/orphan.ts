@@ -194,6 +194,9 @@ const storeOrphanedTxEffectsAsDropped = async (
         txHash: tx.txHash,
         createdAsPendingAt: tx.txBirthTimestamp,
         droppedAt: timestamp,
+        // Block was reorged out — tx returns to dropped-state with this
+        // reason so the UI can show "(reorg)" rather than just a timestamp.
+        dropReason: "orphaned",
       });
     } catch (error) {
       const errorMessage =

@@ -5,7 +5,7 @@ import {
   chicmozL1L2ValidatorSchema,
   L1L2ValidatorStatus,
 } from "@chicmoz-pkg/types";
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import { L2_NETWORK_ID } from "../../../../../environment.js";
 import { logger } from "../../../../../logger.js";
 import {
@@ -213,11 +213,26 @@ export async function getValidatorTotals(): Promise<ChicmozL1L2ValidatorTotals> 
       )
       .as("latest_statuses");
 
-    // Count validators by status, filtered by rollup address
+    const latestStakes = dbTx
+      .selectDistinctOn([l1L2ValidatorStakeTable.attesterAddress], {
+        attesterAddress: l1L2ValidatorStakeTable.attesterAddress,
+        stake: l1L2ValidatorStakeTable.stake,
+      })
+      .from(l1L2ValidatorStakeTable)
+      .orderBy(
+        l1L2ValidatorStakeTable.attesterAddress,
+        desc(l1L2ValidatorStakeTable.timestamp),
+      )
+      .as("latest_stakes");
+
+    // Count + stake aggregates by status, filtered by rollup address.
+    // sum/max on numeric(77,0) come back as strings — pass through to bigint.
     const result = await dbTx
       .select({
         status: latestStatuses.status,
         count: count(),
+        sumStake: sql<string>`coalesce(sum(${latestStakes.stake})::text, '0')`,
+        maxStake: sql<string>`coalesce(max(${latestStakes.stake})::text, '0')`,
       })
       .from(latestStatuses)
       .innerJoin(
@@ -226,6 +241,10 @@ export async function getValidatorTotals(): Promise<ChicmozL1L2ValidatorTotals> 
           latestStatuses.attesterAddress,
           latestRollupAddresses.attesterAddress,
         ),
+      )
+      .leftJoin(
+        latestStakes,
+        eq(latestStakes.attesterAddress, latestStatuses.attesterAddress),
       )
       .where(
         eq(
@@ -250,6 +269,19 @@ export async function getValidatorTotals(): Promise<ChicmozL1L2ValidatorTotals> 
       return acc;
     }, {});
 
+    const stakeByStatus = result.reduce<Record<string, bigint>>((acc, row) => {
+      const statusName =
+        row.status !== null && row.status !== undefined
+          ? L1L2ValidatorStatus[row.status]
+          : "UNKNOWN";
+
+      if (statusName) {
+        acc[statusName] = BigInt(row.sumStake);
+      }
+
+      return acc;
+    }, {});
+
     const validating =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       result.find((row) => row.status === L1L2ValidatorStatus.VALIDATING)
@@ -260,6 +292,29 @@ export async function getValidatorTotals(): Promise<ChicmozL1L2ValidatorTotals> 
       .filter((row) => row.status !== L1L2ValidatorStatus.VALIDATING)
       .reduce((sum, row) => sum + row.count, 0);
 
-    return { total, validating, nonValidating, statusCounts };
+    const totalStake = result.reduce(
+      (sum, row) => sum + BigInt(row.sumStake),
+      0n,
+    );
+    const validatingStake = BigInt(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      result.find((row) => row.status === L1L2ValidatorStatus.VALIDATING)
+        ?.sumStake ?? "0",
+    );
+    const maxStake = result.reduce(
+      (m, row) => (BigInt(row.maxStake) > m ? BigInt(row.maxStake) : m),
+      0n,
+    );
+
+    return {
+      total,
+      validating,
+      nonValidating,
+      statusCounts,
+      totalStake,
+      validatingStake,
+      maxStake,
+      stakeByStatus,
+    };
   });
 }

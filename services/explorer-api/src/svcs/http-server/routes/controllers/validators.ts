@@ -136,6 +136,16 @@ export const openapi_GET_L1_L2_VALIDATOR_TOTALS: OpenAPIObject["paths"] = {
                     type: "object",
                     additionalProperties: { type: "integer" },
                   },
+                  totalStake: { type: "string", description: "uint256" },
+                  validatingStake: { type: "string", description: "uint256" },
+                  maxStake: { type: "string", description: "uint256" },
+                  stakeByStatus: {
+                    type: "object",
+                    additionalProperties: {
+                      type: "string",
+                      description: "uint256",
+                    },
+                  },
                 },
                 required: [
                   "total",

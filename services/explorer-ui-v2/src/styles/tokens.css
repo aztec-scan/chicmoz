@@ -1,0 +1,40 @@
+/* Design tokens for aztec-scan v2.1 — dark-first with light override. */
+
+:root {
+  --purple-deep: #302249;
+  --purple: #715ec2;
+  --purple-soft: #9d8fe1;
+  --purple-glow: rgba(113, 94, 194, 0.35);
+  --green: #31a67b;
+  --yellow: #ffe471;
+  --red: #ff7764;
+  --blue: #456cf7;
+  --bg-0: #0c0815;
+  --bg-1: #13101f;
+  --bg-2: #1a1530;
+  --bg-3: #221c3f;
+  --line: #2a2348;
+  --line-soft: #1e1836;
+  --ink-1: #ece8f8;
+  --ink-2: #a89fcc;
+  --ink-3: #6f6690;
+  --ink-4: #453f66;
+  --radius: 6px;
+  --radius-lg: 14px;
+  --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+.light {
+  --bg-0: #f4f2f8;
+  --bg-1: #ffffff;
+  --bg-2: #faf9fd;
+  --bg-3: #ece9f4;
+  --line: #e3dff0;
+  --line-soft: #ecebf3;
+  --ink-1: #1f1634;
+  --ink-2: #5a4f7c;
+  --ink-3: #8a83a8;
+  --ink-4: #c2bcd8;
+  --purple-glow: rgba(113, 94, 194, 0.18);
+}

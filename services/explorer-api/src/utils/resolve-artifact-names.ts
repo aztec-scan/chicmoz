@@ -1,16 +1,38 @@
-import { loadContractArtifact, FunctionSelector } from "@aztec/stdlib/abi";
+import {
+  decodeFunctionSignature,
+  loadContractArtifact,
+  FunctionSelector,
+} from "@aztec/stdlib/abi";
 import { type NoirCompiledContract } from "@aztec/aztec.js/abi";
 
 /**
- * Builds a mapping of 4-byte function selector hex → function name for all
- * functions in a contract artifact (both private/utility in `artifact.functions`
- * and public non-dispatch functions in `artifact.nonDispatchPublicFunctions`).
+ * Extracts the function name from a selector-map value.
+ *
+ * Values are the canonical function signature (e.g.
+ * `transfer_from(AztecAddress,AztecAddress,Field,Field)`) for entries written
+ * by the current `buildSelectorMap`. Older rows persisted before signatures
+ * were added carry just the bare function name (no parens). Splitting on the
+ * first `(` returns the name in both cases.
+ */
+export const selectorMapValueToFunctionName = (value: string): string =>
+  value.split("(")[0] ?? value;
+
+/**
+ * Builds a mapping of 4-byte function selector hex → canonical function
+ * signature for all functions in a contract artifact (both private/utility in
+ * `artifact.functions` and public non-dispatch functions in
+ * `artifact.nonDispatchPublicFunctions`).
+ *
+ * The signature format matches what the Aztec selector hash is computed over:
+ * `name(Type1,Type2,...)`. The frontend renders this directly on the contract
+ * class detail page; backend consumers that only need the function name extract
+ * it via `selectorMapValueToFunctionName`.
  *
  * This is computed once at artifact upload time and stored in the DB as a JSONB
  * column, so the hot path (pending tx ingestion) only needs a simple map lookup.
  *
  * @param artifactJson - Stringified NoirCompiledContract JSON (as stored in DB)
- * @returns A map of { "0x86500181": "transfer", ... } or empty object on failure
+ * @returns A map of { "0x86500181": "transfer(AztecAddress,Field)", ... } or empty on failure
  */
 export const buildSelectorMap = async (
   artifactJson: string,
@@ -40,7 +62,8 @@ export const buildSelectorMap = async (
             fn.name,
             fn.parameters,
           );
-          return [selector.toString(), fn.name] as [string, string];
+          const signature = decodeFunctionSignature(fn.name, fn.parameters);
+          return [selector.toString(), signature] as [string, string];
         } catch {
           return null;
         }
@@ -75,5 +98,6 @@ export const getFunctionNameFromArtifact = async (
   functionSelectorHex: string,
 ): Promise<string | undefined> => {
   const map = await buildSelectorMap(artifactJson);
-  return map[functionSelectorHex];
+  const value = map[functionSelectorHex];
+  return value !== undefined ? selectorMapValueToFunctionName(value) : undefined;
 };

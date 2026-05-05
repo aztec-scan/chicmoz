@@ -8,4 +8,5 @@ export const droppedTx = pgTable("dropped_tx", {
     "created_as_pending_at",
   ).notNull(),
   droppedAt: generateTimestampColumn("dropped_at").notNull(),
+  dropReason: varchar("drop_reason"),
 });

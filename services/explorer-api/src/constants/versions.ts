@@ -13,10 +13,23 @@ export const v4_1_0_testnet_rc_2 = "4127419662";
 export const v4_1_3 = "2934756905";
 export const sandbox_v4_1_3 = "231905116";
 
-// Current active version to use for fetching blocks
-// NOTE: must match the aztec version running in the environment.
+// Current active version to use for fetching blocks.
+// NOTE: must match the aztec version running in the environment. Operators
+// can override at runtime with `OVERRIDE_ROLLUP_VERSION=<numeric_version>`
+// without a code change — useful when the testnet rollup gets bumped.
+const networkDefaultRollupVersion = (() => {
+  switch (process.env.L2_NETWORK_ID) {
+    case "SANDBOX":
+      return sandbox_v4_1_3;
+    case "TESTNET":
+      return v4_1_0_testnet_rc_2;
+    default:
+      return v4_1_3;
+  }
+})();
+
 export const CURRENT_ROLLUP_VERSION =
-  process.env.L2_NETWORK_ID === "SANDBOX" ? sandbox_v4_1_3 : v4_1_3;
+  process.env.OVERRIDE_ROLLUP_VERSION ?? networkDefaultRollupVersion;
 
 export const CURRENT_ROLLUP_VERSION_NUMBER = Number(CURRENT_ROLLUP_VERSION);
 export const CURRENT_ROLLUP_VERSION_BIGINT = BigInt(CURRENT_ROLLUP_VERSION);

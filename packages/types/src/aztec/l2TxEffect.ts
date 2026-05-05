@@ -94,10 +94,24 @@ export const chicmozL2PendingTxSchema = z.object({
     .optional(),
 });
 
+/**
+ * Known reasons a tx is dropped. Stored as a free-form string so upstream
+ * sources (sequencer, RPC) can supply richer values (e.g. `fee-too-low`,
+ * `simulate-failed`) without needing a schema change. The values below are
+ * the reasons our own pipeline produces today.
+ */
+export const dropReasons = ["expired", "orphaned"] as const;
+// Union of known reasons with `string` so editors autocomplete the known
+// values without preventing upstream sequencer reasons from passing through.
+export type DropReason =
+  | (typeof dropReasons)[number]
+  | (string & NonNullable<unknown>);
+
 export const chicmozL2DroppedTxSchema = z.object({
   txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
   createdAsPendingAt: z.coerce.number(),
   droppedAt: z.coerce.number().default(() => new Date().getTime()),
+  dropReason: z.string().optional(),
 });
 
 export const chicmozL2TxEffectSchema = z.object({

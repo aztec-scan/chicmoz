@@ -29,6 +29,9 @@ export type ContractInstanceBalanceEvent = {
   contractAddress: ChicmozL2ContractInstanceDeployedEvent["address"];
   balance: string;
   timestamp: number;
+  // Hash of the L2 tx whose execution caused the balance change. Optional
+  // for backwards compatibility with subscribers that haven't been updated.
+  sourceTxHash?: string;
 };
 
 export type CatchupBlockEvent = NewBlockEvent;

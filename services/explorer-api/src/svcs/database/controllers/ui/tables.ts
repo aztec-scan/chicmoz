@@ -43,25 +43,24 @@ export const getBlocksForUiTable = async ({
   const rollupVersion =
     (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
 
-  // Initial query to get basic block information
+  // Initial query to get basic block information.
+  // Orphans are intentionally INCLUDED here — rows surface the orphan flag
+  // so the UI can render an "orphaned" pill rather than silently dropping
+  // the row (the page has an "orphaned" filter chip).
   const dbRes = await db()
     .select({
       height: getTableColumns(l2Block).height,
       hash: getTableColumns(l2Block).hash,
       timestamp: getTableColumns(globalVariables).timestamp,
+      coinbase: getTableColumns(globalVariables).coinbase,
+      orphanTimestamp: getTableColumns(l2Block).orphan_timestamp,
       bodyId: body.id,
     })
     .from(l2Block)
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
-    .where(
-      and(
-        whereRange,
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, rollupVersion),
-      ),
-    )
+    .where(and(whereRange, eq(l2Block.version, rollupVersion)))
     .orderBy(desc(l2Block.height))
     .limit(DB_MAX_BLOCKS)
     .execute();
@@ -142,6 +141,8 @@ export const getBlocksForUiTable = async ({
       blockStatus: finalizationStatusValue,
       timestamp: result.timestamp,
       txEffectsLength: txCountMap.get(result.bodyId) ?? 0,
+      orphan: result.orphanTimestamp != null,
+      coinbase: result.coinbase,
     };
     blocks.push(await uiBlockTableSchema.parseAsync(blockData));
   }

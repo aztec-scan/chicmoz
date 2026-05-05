@@ -136,6 +136,7 @@ export const l2ContractInstanceAztecScanNotes = pgTable(
     name: varchar("name").notNull(),
     origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
+    category: varchar("category"),
     relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")

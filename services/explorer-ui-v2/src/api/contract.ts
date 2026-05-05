@@ -1,0 +1,171 @@
+import {
+  type ChicmozContractInstanceBalance,
+  type ChicmozL2ContractClassRegisteredEvent,
+  type ChicmozL2ContractInstanceDeluxe,
+  type ChicmozL2PrivateFunctionBroadcastedEvent,
+  type ChicmozL2UtilityFunctionBroadcastedEvent,
+  chicmozContractInstanceBalanceSchema,
+  chicmozL2ContractClassRegisteredEventSchema,
+  chicmozL2ContractInstanceDeluxeSchema,
+  chicmozL2PrivateFunctionBroadcastedEventSchema,
+  chicmozL2UtilityFunctionBroadcastedEventSchema,
+  sourceCodeEntrySchema,
+} from "@chicmoz-pkg/types";
+import { z } from "zod";
+import { aztecExplorer } from "~/service/constants";
+import client, { validateResponse } from "./client";
+
+const contractClassSourceResponseSchema = z.object({
+  contractClassId: z.string(),
+  version: z.number(),
+  sourceCodeUrl: z.string().nullable().optional(),
+  sourceCodeCommitHash: z.string().nullable().optional(),
+  gitRef: z.string().nullable().optional(),
+  aztecVersion: z.string().nullable().optional(),
+  sourceCode: sourceCodeEntrySchema.array(),
+});
+
+export type ContractClassSourceResponse = z.infer<
+  typeof contractClassSourceResponseSchema
+>;
+
+export const ContractL2API = {
+  getContractClass: async ({
+    classId,
+    version,
+  }: {
+    classId: string;
+    version: string;
+  }): Promise<ChicmozL2ContractClassRegisteredEvent> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractClassByIdAndVersion(classId, version),
+    );
+    return validateResponse(
+      chicmozL2ContractClassRegisteredEventSchema,
+      response.data,
+    );
+  },
+  getContractClasses: async (
+    classId?: string,
+    verifiedSourceOnly?: boolean,
+  ): Promise<ChicmozL2ContractClassRegisteredEvent[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractClasses(classId),
+      { params: classId ? undefined : { verifiedSourceOnly } },
+    );
+    return validateResponse(
+      chicmozL2ContractClassRegisteredEventSchema.array(),
+      response.data,
+    );
+  },
+  getContractClassPrivateFunctions: async (
+    classId: string,
+  ): Promise<ChicmozL2PrivateFunctionBroadcastedEvent[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractClassPrivateFunctions(classId),
+    );
+    return validateResponse(
+      chicmozL2PrivateFunctionBroadcastedEventSchema.array(),
+      response.data,
+    );
+  },
+  getContractClassUtilityFunctions: async (
+    classId: string,
+  ): Promise<ChicmozL2UtilityFunctionBroadcastedEvent[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractClassUtilityFunctions(classId),
+    );
+    return validateResponse(
+      chicmozL2UtilityFunctionBroadcastedEventSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstance: async (
+    address: string,
+  ): Promise<ChicmozL2ContractInstanceDeluxe> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstance(address),
+    );
+    return validateResponse(
+      chicmozL2ContractInstanceDeluxeSchema,
+      response.data,
+    );
+  },
+  getContractInstanceBalance: async (
+    address: string,
+  ): Promise<ChicmozContractInstanceBalance> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstanceBalance(address),
+    );
+    return validateResponse(
+      chicmozContractInstanceBalanceSchema,
+      response.data,
+    );
+  },
+  getContractInstanceBalanceHistory: async (
+    address: string,
+  ): Promise<ChicmozContractInstanceBalance[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstanceBalanceHistory(address),
+    );
+    return validateResponse(
+      chicmozContractInstanceBalanceSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstances: async (): Promise<
+    ChicmozL2ContractInstanceDeluxe[]
+  > => {
+    const response = await client.get(aztecExplorer.getL2ContractInstances);
+    return validateResponse(
+      chicmozL2ContractInstanceDeluxeSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstancesByClassId: async (
+    classId: string,
+  ): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstancesByClassId(classId),
+    );
+    return validateResponse(
+      chicmozL2ContractInstanceDeluxeSchema.array(),
+      response.data,
+    );
+  },
+  getContractClassSource: async ({
+    classId,
+    version,
+  }: {
+    classId: string;
+    version: string;
+  }): Promise<ContractClassSourceResponse> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractClassSource(classId, version),
+    );
+    return validateResponse(contractClassSourceResponseSchema, response.data);
+  },
+  submitStandardContract: async ({
+    classId,
+    version,
+    standardVersion,
+    standardName,
+  }: {
+    classId: string;
+    version: string;
+    standardVersion: string;
+    standardName: string;
+  }): Promise<ChicmozL2ContractClassRegisteredEvent> => {
+    const response = await client.post(
+      aztecExplorer.postL2ContractClassStandardArtifact(classId, version),
+      {
+        version: standardVersion,
+        name: standardName,
+      },
+    );
+    return validateResponse(
+      chicmozL2ContractClassRegisteredEventSchema,
+      response.data,
+    );
+  },
+};

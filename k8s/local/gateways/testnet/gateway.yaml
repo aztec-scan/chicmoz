@@ -51,6 +51,13 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: ui-v2-testnet
+      hostname: v2.testnet.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     - name: kafka
       hostname: kafka.localhost
       port: 80

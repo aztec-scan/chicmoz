@@ -40,9 +40,14 @@ export const parseDeluxe = ({
         constructorArgs: unknown;
       })
     | null;
+  // `category` widens to `string | null` here because the DB column has no
+  // enum constraint — the runtime parse at the bottom rejects unknown
+  // values via the zod enum, so bad data surfaces noisily rather than
+  // silently passing through.
   aztecScanNotes:
-    | (Omit<AztecScanNote, "relatedL1ContractAddresses"> & {
+    | (Omit<AztecScanNote, "relatedL1ContractAddresses" | "category"> & {
         relatedL1ContractAddresses: unknown;
+        category: string | null;
       })
     | null;
   isOrphaned: boolean;

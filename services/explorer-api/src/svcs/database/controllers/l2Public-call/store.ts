@@ -7,6 +7,7 @@ import {
 } from "../../schema/l2contract/index.js";
 import { l2TxPublicCallRequest } from "../../schema/l2public-call/index.js";
 import { logger } from "../../../../logger.js";
+import { selectorMapValueToFunctionName } from "../../../../utils/resolve-artifact-names.js";
 import { deletePublicCall } from "./delete.js";
 
 /**
@@ -48,9 +49,11 @@ const resolveArtifactNames = async (
 
   const { artifactContractName, selectorMap } = rows[0];
 
+  const selectorEntry =
+    functionSelector && selectorMap ? selectorMap[functionSelector] : undefined;
   const functionName =
-    functionSelector && selectorMap
-      ? (selectorMap[functionSelector] ?? null)
+    selectorEntry !== undefined
+      ? selectorMapValueToFunctionName(selectorEntry)
       : null;
 
   return { contractName: artifactContractName, functionName };
