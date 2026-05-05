@@ -302,7 +302,7 @@
   gap: 10px;
 }
 .row-head.block-cols {
-  grid-template-columns: 100px 1fr 60px 90px 90px 80px;
+  grid-template-columns: 100px 1fr 60px 90px 80px;
 }
 .row-head.tx-cols {
   grid-template-columns: 1fr 100px 80px 80px;
@@ -1563,10 +1563,8 @@
   }
   .row-block > :nth-child(4),
   .row-block > :nth-child(5),
-  .row-block > :nth-child(6),
   .row-head.block-cols > :nth-child(4),
-  .row-head.block-cols > :nth-child(5),
-  .row-head.block-cols > :nth-child(6) {
+  .row-head.block-cols > :nth-child(5) {
     display: none;
   }
   .row-tx,
