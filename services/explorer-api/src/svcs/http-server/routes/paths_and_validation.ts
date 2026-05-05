@@ -288,7 +288,11 @@ export const getL1L2ValidatorSchema = z.object({
 
 export const getL1L2ValidatorsPaginatedSchema = z.object({
   query: z.object({
-    limit: z.coerce.number().min(1).max(100).optional().default(20),
+    // Cap raised from 100 → 1000 so the UI can fetch the full validator set
+    // in a single roundtrip for client-side filter/search/sort. Server-side
+    // q/status filtering is the longer-term fix; until then a higher cap
+    // avoids the page-through-100s-at-a-time loop in useL1L2Validators.
+    limit: z.coerce.number().min(1).max(1000).optional().default(20),
     offset: z.coerce.number().min(0).optional().default(0),
   }),
 });

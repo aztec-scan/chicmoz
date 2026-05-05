@@ -351,6 +351,11 @@ export const TxDetailPage: FC = () => {
             <DetailField label="Dropped at" width="extra-wide">
               {toIsoUtc(dropped.droppedAt)}
             </DetailField>
+            {dropped.dropReason && (
+              <DetailField label="Reason" width="extra-wide">
+                {dropped.dropReason}
+              </DetailField>
+            )}
           </div>
         </div>
       )}

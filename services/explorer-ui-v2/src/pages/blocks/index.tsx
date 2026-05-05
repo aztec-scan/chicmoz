@@ -35,7 +35,7 @@ export const BlocksPage: FC = () => {
     let rows = blocks ?? [];
     if (statusFilter !== "all") {
       rows = rows.filter(
-        (b) => blockStatusToDisplay(b.blockStatus) === statusFilter,
+        (b) => blockStatusToDisplay(b.blockStatus, b.orphan) === statusFilter,
       );
     }
     return [...rows].sort((a, b) => {
@@ -157,7 +157,7 @@ export const BlocksPage: FC = () => {
         </div>
         <div>
           {filtered.map((b) => {
-            const status = blockStatusToDisplay(b.blockStatus);
+            const status = blockStatusToDisplay(b.blockStatus, b.orphan);
             const ts = Number(b.timestamp);
             return (
               <Link

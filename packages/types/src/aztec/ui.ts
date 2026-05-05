@@ -11,6 +11,10 @@ export const uiBlockTableSchema = z.object({
   timestamp: frTimestampSchema,
   txEffectsLength: z.number(),
   blockStatus: chicmozL2BlockFinalizationStatusSchema,
+  // True when the block has been reorged out. The row should still be shown
+  // (the design has an "orphaned" filter chip) but the StatusPill must
+  // collapse to "orphaned" rather than its pre-orphan finalization status.
+  orphan: z.boolean().default(false),
 });
 
 export type UiBlockTable = z.infer<typeof uiBlockTableSchema>;

@@ -269,6 +269,7 @@ export const ContractInstancePage: FC = () => {
           <>
             <div className="hist-head">
               <div>Balance (FJ)</div>
+              <div>Tx</div>
               <div className="right">Timestamp</div>
               <div className="right">Age</div>
             </div>
@@ -276,6 +277,18 @@ export const ContractInstancePage: FC = () => {
               <div key={i} className="hist-row">
                 <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
                   {formatFees(h.balance)}
+                </span>
+                <span className="hash">
+                  {h.sourceTxHash ? (
+                    <Link
+                      to="/tx-effects/$hash"
+                      params={{ hash: h.sourceTxHash }}
+                    >
+                      {truncateHashString(h.sourceTxHash, 8, 6)}
+                    </Link>
+                  ) : (
+                    <span style={{ color: "var(--ink-3)" }}>—</span>
+                  )}
                 </span>
                 <span className="num">
                   {new Date(h.timestamp)

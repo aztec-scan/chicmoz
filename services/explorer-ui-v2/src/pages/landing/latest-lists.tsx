@@ -30,7 +30,7 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
       </div>
       <div className="rows">
         {blocks.map((b) => {
-          const status = blockStatusToDisplay(b.blockStatus);
+          const status = blockStatusToDisplay(b.blockStatus, b.orphan);
           const ts = Number(b.timestamp);
           return (
             <Link

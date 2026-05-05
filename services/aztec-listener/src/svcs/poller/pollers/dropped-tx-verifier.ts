@@ -99,6 +99,9 @@ const verifyDroppedTransactions = async () => {
           txHash: tx.txHash,
           createdAsPendingAt: tx.birthTimestamp,
           droppedAt: new Date().getTime(),
+          // Tx exceeded DROPPED_TX_AGE_THRESHOLD_MS without appearing in
+          // recent blocks within DROPPED_TX_BLOCK_LOOKBACK.
+          dropReason: "expired",
         })),
       });
 
