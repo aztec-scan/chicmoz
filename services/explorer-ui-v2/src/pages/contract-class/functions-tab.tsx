@@ -9,6 +9,13 @@ export interface FunctionEntry {
 interface Props {
   kind: "priv" | "util";
   entries: FunctionEntry[] | undefined;
+  /**
+   * Selector → signature map from the contract class's artifact (e.g.
+   * `{"0x86500181": "transfer_from(AztecAddress,AztecAddress,Field,Field)"}`).
+   * Older artifacts carry just the bare name; the renderer handles both.
+   * Pass `undefined` when no artifact has been uploaded for the class.
+   */
+  selectorMap?: Record<string, string> | null;
 }
 
 const EMPTY_MESSAGE: Record<Props["kind"], string> = {
@@ -25,7 +32,14 @@ const bytecodeLen = (bc: FunctionEntry["bytecode"]): number | null => {
   return null;
 };
 
-export const FunctionsTab: FC<Props> = ({ kind, entries }) => {
+/** 4-byte selector number → 0x-prefixed 8-char hex (matches the map keys). */
+const selectorToHex = (value: number | string): string => {
+  const n = typeof value === "string" ? Number(value) : value;
+  if (!Number.isFinite(n)) {return "";}
+  return "0x" + n.toString(16).padStart(8, "0");
+};
+
+export const FunctionsTab: FC<Props> = ({ kind, entries, selectorMap }) => {
   const rows = entries ?? [];
   return (
     <>
@@ -37,10 +51,14 @@ export const FunctionsTab: FC<Props> = ({ kind, entries }) => {
       </div>
       {rows.map((f) => {
         const len = bytecodeLen(f.bytecode);
+        const hex = selectorToHex(f.selector.value);
+        const signature = selectorMap?.[hex];
         return (
           <div key={`${f.selector.value}`} className="fn-row">
             <span className={`kind ${kind}`}>{kind}</span>
-            <span className="name">selector {f.selector.value}</span>
+            <span className="name">
+              {signature ?? <em>selector {f.selector.value}</em>}
+            </span>
             <span className="sel">{f.selector.value}</span>
             <span className="size">
               {len !== null ? `${fmtNum(len)} B` : "—"}

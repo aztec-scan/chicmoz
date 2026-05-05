@@ -205,12 +205,14 @@ export const ContractClassPage: FC = () => {
           <FunctionsTab
             kind="priv"
             entries={privateFns?.map((f) => f.privateFunction)}
+            selectorMap={classData.selectorMap}
           />
         )}
         {tab === "utility" && (
           <FunctionsTab
             kind="util"
             entries={utilityFns?.map((f) => f.utilityFunction)}
+            selectorMap={classData.selectorMap}
           />
         )}
         {tab === "instances" && <InstancesTab instances={instances} />}
