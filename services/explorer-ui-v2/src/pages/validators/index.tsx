@@ -3,6 +3,7 @@ import { type FC, useMemo, useState } from "react";
 import { Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useL1L2Validators, useValidatorTotals } from "~/hooks/api";
+import { useSortableTable } from "~/hooks/use-sortable-table";
 import { ageStr, fmtNum, parseBigIntAsDecimal } from "~/lib/utils";
 import { validatorStatusToDisplay } from "~/lib/validator-status";
 
@@ -24,8 +25,8 @@ export const ValidatorsPage: FC = () => {
 
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("stake");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const { sortKey, sortDir, toggleSort, sortArrow } =
+    useSortableTable<SortKey>("stake");
   const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
@@ -58,18 +59,6 @@ export const ValidatorsPage: FC = () => {
 
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-
-  const toggleSort = (k: SortKey) => {
-    if (sortKey === k) {setSortDir(sortDir === "asc" ? "desc" : "asc");}
-    else {
-      setSortKey(k);
-      setSortDir("desc");
-    }
-  };
-  const sortArrow = (k: SortKey) =>
-    sortKey === k ? (
-      <span className="arr">{sortDir === "asc" ? "↑" : "↓"}</span>
-    ) : null;
 
   const total = totals ? totals.validating + totals.nonValidating : validators?.length ?? 0;
   const validating = totals?.validating ?? filtered.filter(v => validatorStatusToDisplay(v.status) === "validating").length;

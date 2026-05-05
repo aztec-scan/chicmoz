@@ -2,18 +2,18 @@ import { type FC, useMemo, useState } from "react";
 import { CopyableAddress } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainInfo, useFeeRecipients } from "~/hooks/api";
+import { useSortableTable } from "~/hooks/use-sortable-table";
 import { fmtNum, formatFees, truncateHashString } from "~/lib/utils";
 
 type SortKey = "feesReceived" | "nbrOfBlocks" | "share";
-type SortDir = "asc" | "desc";
 
 export const FeeRecipientsPage: FC = () => {
   const { data: feeRecipients, isLoading } = useFeeRecipients();
   const { data: chainInfo } = useChainInfo();
 
   const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("feesReceived");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const { sortKey, sortDir, toggleSort, sortArrow } =
+    useSortableTable<SortKey>("feesReceived");
 
   const decimals = chainInfo?.feeJuiceDecimals ?? 18;
   const symbol = chainInfo?.feeJuiceSymbol ?? "FJ";
@@ -51,20 +51,6 @@ export const FeeRecipientsPage: FC = () => {
       return sortDir === "asc" ? d : -d;
     });
   }, [feeRecipients, query, sortKey, sortDir]);
-
-  const toggleSort = (k: SortKey): void => {
-    if (sortKey === k) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(k);
-      setSortDir("desc");
-    }
-  };
-
-  const sortArrow = (k: SortKey) =>
-    sortKey === k ? (
-      <span className="arr">{sortDir === "asc" ? "↑" : "↓"}</span>
-    ) : null;
 
   return (
     <Shell active="health">

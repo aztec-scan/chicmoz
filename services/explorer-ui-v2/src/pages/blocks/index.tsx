@@ -7,6 +7,7 @@ import {
   useLatestBlock,
   usePaginatedTableBlocks,
 } from "~/hooks/api";
+import { useSortableTable } from "~/hooks/use-sortable-table";
 import { blockStatusToDisplay } from "~/lib/block-status";
 import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
 
@@ -20,8 +21,8 @@ export const BlocksPage: FC = () => {
   const { data: blocksByStatus } = useBlocksByFinalizationStatus();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("height");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const { sortKey, sortDir, toggleSort, sortArrow } =
+    useSortableTable<SortKey>("height");
   const [page, setPage] = useState(0);
 
   const { data: blocks } = usePaginatedTableBlocks(page, PAGE_SIZE);
@@ -48,20 +49,6 @@ export const BlocksPage: FC = () => {
   const finalized = blocksByStatus?.find(
     (b) => blockStatusToDisplay(b.finalizationStatus) === "finalized",
   );
-
-  const toggleSort = (k: SortKey) => {
-    if (sortKey === k) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(k);
-      setSortDir("desc");
-    }
-  };
-
-  const sortArrow = (k: SortKey) =>
-    sortKey === k ? (
-      <span className="arr">{sortDir === "asc" ? "↑" : "↓"}</span>
-    ) : null;
 
   // We page server-side at PAGE_SIZE at a time; totalPages is best-effort.
   const totalPages = latestHeight
