@@ -2,7 +2,11 @@ import { type ChicmozL1GenericContractEvent } from "@chicmoz-pkg/types";
 import { type FC, useMemo, useState } from "react";
 import { CopyableAddress, Pagination } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
-import { useChainInfo, useL1ContractEvents } from "~/hooks/api";
+import {
+  useChainInfo,
+  useL1ContractEvents,
+  useL1ContractEventsHourlyCounts,
+} from "~/hooks/api";
 import { usePaginated } from "~/hooks/use-paginated";
 import { useReactiveTime } from "~/hooks/use-reactive-time";
 import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
@@ -91,6 +95,7 @@ const CONTRACT_TABS: ContractTab[] = [
 export const L1EventsPage: FC = () => {
   const { data: chainInfo } = useChainInfo();
   const { data: events } = useL1ContractEvents();
+  const { data: hourlyCounts } = useL1ContractEventsHourlyCounts(24);
 
   const [contractKey, setContractKey] = useState<ContractKey>("all");
   const [eventFilter, setEventFilter] = useState<Set<string>>(new Set());
@@ -217,18 +222,23 @@ export const L1EventsPage: FC = () => {
     [allEvents, now, day],
   );
 
-  /** Sparkline — per-hour bin count over the last 24h. */
+  /** Sparkline — per-hour bin count over the last 24h.
+   *  Backend returns sparse buckets (zero hours omitted); we expand to a
+   *  fixed 24-bin array anchored on the current hour boundary. */
   const sparkData = useMemo(() => {
     const bins = Array(24).fill(0) as number[];
-    allEvents.forEach((e) => {
-      const ts = eventTimestampMs(e);
-      if (ts === null) {return;}
-      const hoursAgo = Math.floor((now - ts) / 3_600_000);
-      if (hoursAgo >= 0 && hoursAgo < 24) {bins[23 - hoursAgo] += 1;}
-    });
+    if (!hourlyCounts) {return bins;}
+    const HOUR = 3_600_000;
+    // Anchor the rightmost bin on the current hour.
+    const currentHourStart = Math.floor(now / HOUR) * HOUR;
+    for (const bucket of hourlyCounts) {
+      const hoursAgo = Math.floor(
+        (currentHourStart - bucket.hourStartMs) / HOUR,
+      );
+      if (hoursAgo >= 0 && hoursAgo < 24) {bins[23 - hoursAgo] = bucket.count;}
+    }
     return bins;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allEvents]);
+  }, [hourlyCounts, now]);
   const sparkMax = Math.max(...sparkData, 1);
 
   const { page, setPage, paged, totalPages } = usePaginated(filtered, PAGE_SIZE);

@@ -128,6 +128,11 @@ export const queryKeyGenerator = {
   chainErrors: ["chainErrors"],
   feeRecipients: ["feeRecipients"],
   l1ContractEvents: ["l1ContractEvents"],
+  l1ContractEventsHourlyCounts: (hours: number) => [
+    "l1ContractEvents",
+    "hourlyCounts",
+    hours,
+  ],
   rpcNodes: ["rpcNodes"],
   l1L2Validators: ["l1L2Validators"],
   l1L2ValidatorTotals: ["l1L2ValidatorTotals"],

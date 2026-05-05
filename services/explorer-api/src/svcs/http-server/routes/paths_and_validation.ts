@@ -99,6 +99,7 @@ export const paths = {
   l1l2Validator: "/l1/l2-validators/:attesterAddress",
   l1l2ValidatorHistory: "/l1/l2-validators/:attesterAddress/history",
   l1ContractEvents: "/l1/contract-events",
+  l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
 
   chainInfo: "/l2/info",
   chainErrors: "/l2/errors",
@@ -283,6 +284,14 @@ export const getSearchPublicLogsSchema = z.object({
 export const getL1L2ValidatorSchema = z.object({
   params: z.object({
     attesterAddress: ethAddressSchema,
+  }),
+});
+
+export const getL1ContractEventsHourlyCountsSchema = z.object({
+  query: z.object({
+    // Window in hours. 24h default matches the L1 events sparkline; capped
+    // at 168h (7d) to bound the result set and DB scan.
+    hours: z.coerce.number().int().min(1).max(168).optional().default(24),
   }),
 });
 

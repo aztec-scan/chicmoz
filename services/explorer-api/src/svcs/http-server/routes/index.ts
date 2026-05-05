@@ -67,6 +67,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L1_L2_VALIDATOR_HISTORY,
 
   ...controller.openapi_GET_L1_CONTRACT_EVENTS,
+  ...controller.openapi_GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
 
   ...controller.openapi_GET_CHAIN_INFO,
   ...controller.openapi_GET_CHAIN_ERRORS,
@@ -290,6 +291,10 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L1_L2_VALIDATOR_HISTORY,
   );
 
+  router.get(
+    paths.l1ContractEventsHourlyCounts,
+    controller.GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
+  );
   router.get(paths.l1ContractEvents, controller.GET_L1_CONTRACT_EVENTS);
 
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);
