@@ -75,10 +75,12 @@ export const queryKeyGenerator = {
 
   totalTxEffects: [statsKey, "totalTxEffects"],
   totalTxEffectsLast24h: [statsKey, "totalTxEffectsLast24h"],
+  droppedTxsLast24h: [statsKey, "droppedTxsLast24h"],
   totalContracts: [statsKey, "totalContracts"],
   totalContractsLast24h: [statsKey, "totalContractsLast24h"],
   averageFees: [statsKey, "averageFees"],
   averageBlockTime: [statsKey, "averageBlockTime"],
+  averageTxsPerBlock: [statsKey, "averageTxsPerBlock"],
   amountContractClassInstances: (classId: string) => [
     "amountOfInstances",
     classId,

@@ -85,12 +85,14 @@ export const paths = {
 
   statsTotalTxEffects: "/l2/stats/total-tx-effects",
   statsTotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
+  statsDroppedTxsLast24h: "/l2/stats/dropped-txs-last-24h",
   statsTotalContracts: "/l2/stats/total-contracts",
   statsTotalContractInstances: "/l2/stats/total-contract-instances",
   statsTotalContractInstancesByContractClassId: `/l2/stats/total-contract-instances/:${contractClassId}`,
   statsTotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
   statsAverageFees: "/l2/stats/average-fees",
   statsAverageBlockTime: "/l2/stats/average-block-time",
+  statsAverageTxsPerBlock: "/l2/stats/average-txs-per-block",
 
   l1l2Validators: "/l1/l2-validators",
   l1l2ValidatorTotals: "/l1/l2-validators/totals",

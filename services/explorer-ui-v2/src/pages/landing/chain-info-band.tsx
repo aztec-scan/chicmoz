@@ -16,6 +16,7 @@ interface Props {
   reorgs: ChicmozReorg[] | undefined;
   chainErrors: ChicmozL2RpcNodeError[] | undefined;
   averageBlockTime: number | string | undefined;
+  droppedTxs24h: string | undefined;
 }
 
 interface TickerEvent {
@@ -63,6 +64,7 @@ export const ChainInfoBand: FC<Props> = ({
   reorgs,
   chainErrors,
   averageBlockTime,
+  droppedTxs24h,
 }) => {
   const avgSec = averageBlockTime
     ? Math.max(1, Math.round(Number(averageBlockTime) / 1000))
@@ -156,8 +158,10 @@ export const ChainInfoBand: FC<Props> = ({
             </div>
             <div>
               <div className="lbl">Dropped 24h</div>
-              <div className="big">—</div>
-              <div className="sub">no bulk feed yet</div>
+              <div className="big">
+                {droppedTxs24h !== undefined ? fmtNum(droppedTxs24h) : "—"}
+              </div>
+              <div className="sub">last 24h</div>
             </div>
           </div>
           <div

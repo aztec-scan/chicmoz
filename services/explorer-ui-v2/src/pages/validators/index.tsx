@@ -68,14 +68,26 @@ export const ValidatorsPage: FC = () => {
 
   const toStake = (v: { stake: bigint | string | number }) =>
     parseBigIntAsDecimal(v.stake);
-  const totalStake = (validators ?? []).reduce((s, v) => s + toStake(v), 0);
-  const validatingStake = (validators ?? [])
-    .filter((v) => validatorStatusToDisplay(v.status) === "validating")
-    .reduce((s, v) => s + toStake(v), 0);
-  const maxStake = (validators ?? []).reduce(
-    (m, v) => (toStake(v) > m ? toStake(v) : m),
-    0,
-  );
+  // Stake aggregates are computed server-side on /totals so we don't need to
+  // load every validator to render the strip. Fall back to the client-side
+  // reduce only if the API hasn't populated them yet (older response cache).
+  const totalStake =
+    totals?.totalStake !== undefined
+      ? parseBigIntAsDecimal(totals.totalStake)
+      : (validators ?? []).reduce((s, v) => s + toStake(v), 0);
+  const validatingStake =
+    totals?.validatingStake !== undefined
+      ? parseBigIntAsDecimal(totals.validatingStake)
+      : (validators ?? [])
+          .filter((v) => validatorStatusToDisplay(v.status) === "validating")
+          .reduce((s, v) => s + toStake(v), 0);
+  const maxStake =
+    totals?.maxStake !== undefined
+      ? parseBigIntAsDecimal(totals.maxStake)
+      : (validators ?? []).reduce(
+          (m, v) => (toStake(v) > m ? toStake(v) : m),
+          0,
+        );
   const avgStake = total ? totalStake / total : 0;
 
   return (

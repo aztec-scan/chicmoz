@@ -1,9 +1,11 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
 import {
+  body,
   globalVariables,
   header,
   l2Block,
+  txEffect,
 } from "../../../database/schema/index.js";
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { getExistingRollupVersion } from "./get-latest.js";
@@ -29,6 +31,44 @@ export const getAverageFees = async (): Promise<string> => {
   }
 
   return averageStr.split(".")[0] ?? "0";
+};
+
+export const getAverageTxsPerBlock = async (): Promise<string> => {
+  const rollupVersion =
+    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+
+  const [blockCountRes, txCountRes] = await Promise.all([
+    db()
+      .select({ count: count() })
+      .from(l2Block)
+      .where(
+        and(
+          isNull(l2Block.orphan_timestamp),
+          eq(l2Block.version, rollupVersion),
+        ),
+      )
+      .execute(),
+    db()
+      .select({ count: count() })
+      .from(txEffect)
+      .innerJoin(body, eq(body.id, txEffect.bodyId))
+      .innerJoin(l2Block, eq(l2Block.hash, body.blockHash))
+      .where(
+        and(
+          isNull(l2Block.orphan_timestamp),
+          eq(l2Block.version, rollupVersion),
+        ),
+      )
+      .execute(),
+  ]);
+
+  const blocks = blockCountRes[0]?.count ?? 0;
+  if (blocks === 0) {
+    return "0";
+  }
+  const txs = txCountRes[0]?.count ?? 0;
+  // Two-decimal precision matches the design's "12.34 txs/block" cell.
+  return (txs / blocks).toFixed(2);
 };
 
 export const getAverageBlockTime = async (): Promise<string> => {

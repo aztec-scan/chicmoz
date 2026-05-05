@@ -11,6 +11,10 @@ export const statsL2Api = {
     const response = await client.get(aztecExplorer.getL2TotalTxEffectsLast24h);
     return validateResponse(z.coerce.string(), response.data);
   },
+  getL2DroppedTxsLast24h: async (): Promise<string> => {
+    const response = await client.get(aztecExplorer.getL2DroppedTxsLast24h);
+    return validateResponse(z.coerce.string(), response.data);
+  },
   getL2TotalContracts: async (): Promise<string> => {
     const response = await client.get(aztecExplorer.getL2TotalContracts);
     return validateResponse(z.coerce.string(), response.data);
@@ -25,6 +29,10 @@ export const statsL2Api = {
   },
   getL2AverageBlockTime: async (): Promise<string> => {
     const response = await client.get(aztecExplorer.getL2AverageBlockTime);
+    return validateResponse(z.coerce.string(), response.data);
+  },
+  getL2AverageTxsPerBlock: async (): Promise<string> => {
+    const response = await client.get(aztecExplorer.getL2AverageTxsPerBlock);
     return validateResponse(z.coerce.string(), response.data);
   },
   getAmountContractClassInstances: async (

@@ -3,13 +3,15 @@ import { type FC, useMemo, useState } from "react";
 import { Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
+  useAverageFees,
+  useAverageTxsPerBlock,
   useBlocksByFinalizationStatus,
   useLatestBlock,
   usePaginatedTableBlocks,
 } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
 import { blockStatusToDisplay } from "~/lib/block-status";
-import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
+import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
 
 type StatusFilter = "all" | "proposed" | "proven" | "finalized" | "orphaned";
 type SortKey = "height" | "txEffectsLength" | "timestamp";
@@ -26,6 +28,8 @@ export const BlocksPage: FC = () => {
   const [page, setPage] = useState(0);
 
   const { data: blocks } = usePaginatedTableBlocks(page, PAGE_SIZE);
+  const { data: averageFees } = useAverageFees();
+  const { data: averageTxsPerBlock } = useAverageTxsPerBlock();
 
   const filtered = useMemo(() => {
     let rows = blocks ?? [];
@@ -89,17 +93,20 @@ export const BlocksPage: FC = () => {
           <div className="sub">L1-anchored</div>
         </div>
         <div className="mc">
-          <div className="lbl">Page size</div>
+          <div className="lbl">Avg fees</div>
           <div className="val">
-            {PAGE_SIZE}
-            <span className="u">blocks</span>
+            {averageFees ? formatFees(averageFees) : "—"}
+            <span className="u">FJ</span>
           </div>
-          <div className="sub">from server</div>
+          <div className="sub">non-orphan blocks</div>
         </div>
         <div className="mc">
-          <div className="lbl">Rows shown</div>
-          <div className="val">{filtered.length}</div>
-          <div className="sub">after filter</div>
+          <div className="lbl">Avg txs / block</div>
+          <div className="val">
+            {averageTxsPerBlock ?? "—"}
+            <span className="u">tx</span>
+          </div>
+          <div className="sub">non-orphan blocks</div>
         </div>
       </div>
 

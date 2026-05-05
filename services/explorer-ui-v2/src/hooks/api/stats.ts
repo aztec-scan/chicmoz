@@ -23,6 +23,13 @@ export const useTotalTxEffectsLast24h = (): UseQueryResult<string, Error> =>
     ...statsOpts,
   });
 
+export const useDroppedTxsLast24h = (): UseQueryResult<string, Error> =>
+  useQuery<string, Error>({
+    queryKey: queryKeyGenerator.droppedTxsLast24h,
+    queryFn: statsL2Api.getL2DroppedTxsLast24h,
+    ...statsOpts,
+  });
+
 export const useTotalContracts = (): UseQueryResult<string, Error> =>
   useQuery<string, Error>({
     queryKey: queryKeyGenerator.totalContracts,
@@ -48,6 +55,13 @@ export const useAverageBlockTime = (): UseQueryResult<string, Error> =>
   useQuery<string, Error>({
     queryKey: queryKeyGenerator.averageBlockTime,
     queryFn: statsL2Api.getL2AverageBlockTime,
+    ...statsOpts,
+  });
+
+export const useAverageTxsPerBlock = (): UseQueryResult<string, Error> =>
+  useQuery<string, Error>({
+    queryKey: queryKeyGenerator.averageTxsPerBlock,
+    queryFn: statsL2Api.getL2AverageTxsPerBlock,
     ...statsOpts,
   });
 

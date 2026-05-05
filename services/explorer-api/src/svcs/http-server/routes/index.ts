@@ -91,6 +91,10 @@ const otherPaths = [
     controller: controller.GET_STATS_TOTAL_TX_EFFECTS_LAST_24H,
   },
   {
+    path: paths.statsDroppedTxsLast24h,
+    controller: controller.GET_STATS_DROPPED_TXS_LAST_24H,
+  },
+  {
     path: paths.statsTotalContracts,
     controller: controller.GET_STATS_TOTAL_CONTRACTS,
   },
@@ -109,6 +113,10 @@ const otherPaths = [
   {
     path: paths.statsAverageBlockTime,
     controller: controller.GET_STATS_AVERAGE_BLOCK_TIME,
+  },
+  {
+    path: paths.statsAverageTxsPerBlock,
+    controller: controller.GET_STATS_AVERAGE_TXS_PER_BLOCK,
   },
   {
     path: paths.statsTotalContractInstancesByContractClassId,

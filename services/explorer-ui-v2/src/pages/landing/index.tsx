@@ -6,6 +6,7 @@ import {
   useBlocksByFinalizationStatus,
   useChainErrors,
   useChainInfo,
+  useDroppedTxsLast24h,
   useLatestBlock,
   useLatestTableBlocks,
   useLatestTableTxEffects,
@@ -27,6 +28,7 @@ export const Landing: FC = () => {
   const { data: tableBlocks } = useLatestTableBlocks();
   const { data: tableTxs } = useLatestTableTxEffects();
   const { data: pendingTxs } = usePendingTxs();
+  const { data: droppedTxs24h } = useDroppedTxsLast24h();
   const { data: reorgs } = useReorgs();
   const { data: chainErrors } = useChainErrors();
   const { data: chainInfo } = useChainInfo();
@@ -91,6 +93,7 @@ export const Landing: FC = () => {
         reorgs={reorgs}
         chainErrors={chainErrors}
         averageBlockTime={averageBlockTime}
+        droppedTxs24h={droppedTxs24h}
       />
     </Shell>
   );
