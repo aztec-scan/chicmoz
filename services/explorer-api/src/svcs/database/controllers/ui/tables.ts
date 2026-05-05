@@ -52,6 +52,7 @@ export const getBlocksForUiTable = async ({
       height: getTableColumns(l2Block).height,
       hash: getTableColumns(l2Block).hash,
       timestamp: getTableColumns(globalVariables).timestamp,
+      coinbase: getTableColumns(globalVariables).coinbase,
       orphanTimestamp: getTableColumns(l2Block).orphan_timestamp,
       bodyId: body.id,
     })
@@ -141,6 +142,7 @@ export const getBlocksForUiTable = async ({
       timestamp: result.timestamp,
       txEffectsLength: txCountMap.get(result.bodyId) ?? 0,
       orphan: result.orphanTimestamp != null,
+      proposer: result.coinbase,
     };
     blocks.push(await uiBlockTableSchema.parseAsync(blockData));
   }

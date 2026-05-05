@@ -85,11 +85,19 @@ export const parseBigIntAsDecimal = (
   }
 };
 
-/** Fee-juice formatting to a fixed precision with graceful fallback. */
+/**
+ * Fee-juice formatting to a fixed precision with graceful fallback.
+ *
+ * Adds thousands separators to the integer portion by default — keeps a
+ * 12,480.3342 FJ balance readable rather than 12480.3342. Pass
+ * `withSeparators=false` for raw output (e.g. when piping into another
+ * formatter or fitting tight cells).
+ */
 export const formatFees = (
   value: bigint | string | number | null | undefined,
   decimals = 18,
   precision = 4,
+  withSeparators = true,
 ): string => {
   if (value === null || value === undefined) {return "—";}
   try {
@@ -99,7 +107,10 @@ export const formatFees = (
     const whole = big / scale;
     const fraction = big % scale;
     const fractionStr = fraction.toString().padStart(decimals, "0").slice(0, precision);
-    return `${whole.toString()}.${fractionStr}`;
+    const wholeStr = withSeparators
+      ? whole.toLocaleString("en-US")
+      : whole.toString();
+    return `${wholeStr}.${fractionStr}`;
   } catch {
     return "—";
   }

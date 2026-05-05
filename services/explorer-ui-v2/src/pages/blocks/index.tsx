@@ -147,7 +147,7 @@ export const BlocksPage: FC = () => {
           </div>
           <div className="right">Status</div>
           <div className="right">Size</div>
-          <div className="right">—</div>
+          <div className="right">Proposer</div>
           <div
             className="sortable right"
             onClick={() => toggleSort("timestamp")}
@@ -176,7 +176,9 @@ export const BlocksPage: FC = () => {
                   <StatusPill status={status} />
                 </span>
                 <span className="num">—</span>
-                <span className="num">—</span>
+                <span className="hash" title={b.proposer ?? undefined}>
+                  {b.proposer ? truncateHashString(b.proposer, 6, 4) : "—"}
+                </span>
                 <span className="age">{ageStr(ts)}</span>
               </Link>
             );

@@ -198,6 +198,63 @@ export const ContractInstancePage: FC = () => {
         </div>
       </div>
 
+      {instance.deployerMetadata && (
+        <div className="panel">
+          <div className="panel-head">
+            <h3>
+              Deployer metadata
+              <span className="tag">deployerMetadata</span>
+            </h3>
+            {instance.deployerMetadata.reviewedAt && (
+              <span className="tag-chip tag-chip-ok" title="Reviewed by aztec-scan">
+                ✓ reviewed
+              </span>
+            )}
+          </div>
+          <div className="kv-grid">
+            <DetailField label="Creator">
+              {instance.deployerMetadata.creatorName}
+            </DetailField>
+            <DetailField label="Contact">
+              {instance.deployerMetadata.creatorContact}
+            </DetailField>
+            <DetailField label="Identifier" width="extra-wide">
+              {instance.deployerMetadata.contractIdentifier}
+            </DetailField>
+            <DetailField label="Details" width="extra-wide">
+              {instance.deployerMetadata.details}
+            </DetailField>
+            {instance.deployerMetadata.appUrl && (
+              <DetailField label="App" width="extra-wide">
+                <a
+                  href={instance.deployerMetadata.appUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {instance.deployerMetadata.appUrl} ↗
+                </a>
+              </DetailField>
+            )}
+            {instance.deployerMetadata.repoUrl && (
+              <DetailField label="Repository" width="extra-wide">
+                <a
+                  href={instance.deployerMetadata.repoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {instance.deployerMetadata.repoUrl} ↗
+                </a>
+              </DetailField>
+            )}
+            <DetailField label="Uploaded">
+              {new Date(instance.deployerMetadata.uploadedAt)
+                .toISOString()
+                .slice(0, 10)}
+            </DetailField>
+          </div>
+        </div>
+      )}
+
       <div className="panel">
         <div className="tabs">
           <button

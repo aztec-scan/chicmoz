@@ -35,6 +35,25 @@ export const NetworkHealthPage: FC = () => {
     0,
   );
 
+  // Bucket the last 7 days into per-day max-depth bins for the chart.
+  // Buckets are oldest→newest so the chart reads left-to-right.
+  const todayStart = new Date(now);
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const reorgDailyMaxDepth = Array.from({ length: 7 }, (_, i) => {
+    const dayStart = todayStart.getTime() - (6 - i) * ONE_DAY_MS;
+    const dayEnd = dayStart + ONE_DAY_MS;
+    const inDay = reorgs7d.filter((r) => {
+      const t = r.timestamp.getTime();
+      return t >= dayStart && t < dayEnd;
+    });
+    const maxDepth = inDay.reduce(
+      (m, r) => (r.nbrOfOrphanedBlocks > m ? r.nbrOfOrphanedBlocks : m),
+      0,
+    );
+    return { dayStart, depth: maxDepth, count: inDay.length };
+  });
+  const chartMax = Math.max(...reorgDailyMaxDepth.map((b) => b.depth), 1);
+
   const heroClass =
     status.level === "ok"
       ? "status-ok"
@@ -217,6 +236,44 @@ export const NetworkHealthPage: FC = () => {
                 />
               </span>
             </div>
+          </div>
+        </div>
+
+        <div className="panel">
+          <div className="panel-head">
+            <h3>
+              Reorg depth · 7d<span className="tag">max depth per day</span>
+            </h3>
+            <span className="mute">
+              {reorgs7d.length} reorgs · max depth {maxDepth7d}
+            </span>
+          </div>
+          <div className="reorg-chart">
+            {reorgDailyMaxDepth.map((b, i) => {
+              const dayLabel = new Date(b.dayStart).toLocaleDateString(
+                "en-US",
+                { weekday: "short" },
+              );
+              const heightPct = (b.depth / chartMax) * 100;
+              const isToday = i === reorgDailyMaxDepth.length - 1;
+              return (
+                <div key={b.dayStart} className="reorg-chart-col">
+                  <div className="reorg-chart-bar-wrap">
+                    {b.depth > 0 && (
+                      <span
+                        className="reorg-chart-bar"
+                        style={{ height: `${heightPct}%` }}
+                        title={`depth ${b.depth} · ${b.count} reorg${b.count === 1 ? "" : "s"}`}
+                      />
+                    )}
+                  </div>
+                  <div className="reorg-chart-axis">
+                    <span className={isToday ? "today" : ""}>{dayLabel}</span>
+                    <span className="depth">{b.depth || "—"}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

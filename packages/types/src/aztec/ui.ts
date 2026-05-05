@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   chicmozL2BlockFinalizationStatusSchema,
+  ethAddressSchema,
   hexStringSchema,
 } from "../index.js";
 import { frDecimalStringSchema, frTimestampSchema } from "./utils.js";
@@ -15,6 +16,10 @@ export const uiBlockTableSchema = z.object({
   // (the design has an "orphaned" filter chip) but the StatusPill must
   // collapse to "orphaned" rather than its pre-orphan finalization status.
   orphan: z.boolean().default(false),
+  // L1 coinbase / proposer of the block — surfaced from `globalVariables`
+  // so the table can show a truncated address cell without a follow-up
+  // request to the block-detail endpoint.
+  proposer: ethAddressSchema.optional(),
 });
 
 export type UiBlockTable = z.infer<typeof uiBlockTableSchema>;

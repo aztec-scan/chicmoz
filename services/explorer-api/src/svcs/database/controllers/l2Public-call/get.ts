@@ -39,9 +39,9 @@ export const getPublicCallRequestsByTxHashes = async (
 
   const result = new Map<HexString, PublicCallRequest[]>();
   for (const row of rows) {
-    const list = result.get(row.txHash as HexString) ?? [];
+    const list = result.get(row.txHash ) ?? [];
     list.push(row as PublicCallRequest);
-    result.set(row.txHash as HexString, list);
+    result.set(row.txHash , list);
   }
   return result;
 };
