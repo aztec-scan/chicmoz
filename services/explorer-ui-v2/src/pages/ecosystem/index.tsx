@@ -1,6 +1,8 @@
 import {
+  type AztecScanNoteCategory,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeluxe,
+  aztecScanNoteCategories,
 } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
@@ -11,7 +13,7 @@ import {
 } from "~/hooks/api";
 import { truncateHashString } from "~/lib/utils";
 
-type Filter = "all" | "standard" | "community";
+type Filter = "all" | AztecScanNoteCategory;
 
 interface NotedInstance extends ChicmozL2ContractInstanceDeluxe {
   aztecScanNotes: NonNullable<ChicmozL2ContractInstanceDeluxe["aztecScanNotes"]>;
@@ -21,9 +23,8 @@ const hasNote = (i: ChicmozL2ContractInstanceDeluxe): i is NotedInstance =>
   !!i.aztecScanNotes && !!i.aztecScanNotes.name;
 
 const filterNoted = (rows: NotedInstance[], filter: Filter): NotedInstance[] => {
-  if (filter === "standard") {return rows.filter((r) => !!r.standardContractType);}
-  if (filter === "community") {return rows.filter((r) => !r.standardContractType);}
-  return rows;
+  if (filter === "all") {return rows;}
+  return rows.filter((r) => r.aztecScanNotes.category === filter);
 };
 
 const PROJECT_PR_URL =
@@ -64,11 +65,16 @@ export const EcosystemPage: FC = () => {
     });
   }, [noted, filter, query]);
 
-  const filterCounts: Record<Filter, number> = {
-    all: noted.length,
-    standard: standardCount,
-    community: noted.length - standardCount,
-  };
+  const filterCounts = useMemo(() => {
+    const counts: Record<Filter, number> = { all: noted.length } as Record<
+      Filter,
+      number
+    >;
+    for (const c of aztecScanNoteCategories) {
+      counts[c] = noted.filter((i) => i.aztecScanNotes.category === c).length;
+    }
+    return counts;
+  }, [noted]);
 
   return (
     <Shell active="ecosystem">
@@ -201,7 +207,7 @@ export const EcosystemPage: FC = () => {
 
       <div className="filters-bar">
         <div className="tabs-pill">
-          {(["all", "standard", "community"] as Filter[]).map((f) => (
+          {(["all", ...aztecScanNoteCategories] as Filter[]).map((f) => (
             <button
               key={f}
               className={filter === f ? "on" : ""}
@@ -255,9 +261,12 @@ export const EcosystemPage: FC = () => {
               </div>
               <div className="comment">{note.comment}</div>
               <div className="foot">
+                {note.category && (
+                  <span className="tag-chip tag-chip-ok">{note.category}</span>
+                )}
                 <span className="tag-chip">{note.origin}</span>
                 {isStandard && (
-                  <span className="tag-chip tag-chip-ok">standard</span>
+                  <span className="tag-chip">standard</span>
                 )}
               </div>
             </Link>

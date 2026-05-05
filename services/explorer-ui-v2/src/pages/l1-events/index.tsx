@@ -19,6 +19,7 @@ type TimeWindow = "24h" | "7d" | "all";
 type ContractKey =
   | "all"
   | "rollup"
+  | "staking"
   | "registry"
   | "inbox"
   | "outbox"
@@ -30,6 +31,25 @@ interface ContractTab {
   desc: string;
 }
 
+/**
+ * Staking-related events are emitted by the Rollup contract itself (deposits,
+ * withdrawals, slashing, validator membership). Match by event-name substring
+ * so the Staking tab pulls them out of the Rollup tab.
+ */
+const STAKING_EVENT_PATTERNS = [
+  "deposit",
+  "withdraw",
+  "slash",
+  "validator",
+  "attester",
+  "stake",
+];
+
+const isStakingEvent = (eventName: string): boolean => {
+  const n = eventName.toLowerCase();
+  return STAKING_EVENT_PATTERNS.some((p) => n.includes(p));
+};
+
 const CONTRACT_TABS: ContractTab[] = [
   {
     key: "all",
@@ -40,6 +60,11 @@ const CONTRACT_TABS: ContractTab[] = [
     key: "rollup",
     name: "Rollup",
     desc: "Core rollup contract. Emits block proposal & proof events; state root anchor.",
+  },
+  {
+    key: "staking",
+    name: "Staking",
+    desc: "Validator deposits, withdrawals, and slashing. Emitted from the Rollup contract.",
   },
   {
     key: "inbox",
@@ -78,6 +103,9 @@ export const L1EventsPage: FC = () => {
       const a = chainInfo?.l1ContractAddresses;
       return {
         rollup: a?.rollupAddress,
+        // Staking events come from the Rollup contract — same address; the
+        // distinction is on event-name only.
+        staking: a?.rollupAddress,
         registry: a?.registryAddress,
         inbox: a?.inboxAddress,
         outbox: a?.outboxAddress,
@@ -95,7 +123,13 @@ export const L1EventsPage: FC = () => {
     if (key === "all") {return true;}
     const tabAddr = contractAddrByKey[key];
     if (!tabAddr) {return false;}
-    return evt.l1ContractAddress.toLowerCase() === tabAddr.toLowerCase();
+    if (evt.l1ContractAddress.toLowerCase() !== tabAddr.toLowerCase()) {
+      return false;
+    }
+    // Rollup and Staking share an address — split on event-name.
+    if (key === "staking") {return isStakingEvent(evt.eventName);}
+    if (key === "rollup") {return !isStakingEvent(evt.eventName);}
+    return true;
   };
 
   const allEvents = useMemo(() => events ?? [], [events]);
@@ -105,6 +139,7 @@ export const L1EventsPage: FC = () => {
     const counts: Record<ContractKey, number> = {
       all: allEvents.length,
       rollup: 0,
+      staking: 0,
       registry: 0,
       inbox: 0,
       outbox: 0,
@@ -254,7 +289,7 @@ export const L1EventsPage: FC = () => {
         </div>
         <div className="sc">
           <div className="lbl">Contracts tracked</div>
-          <div className="val">{CONTRACT_TABS.length - 1}</div>
+          <div className="val">{CONTRACT_TABS.length - 2}</div>
           <div className="sub">rollup · inbox · outbox · …</div>
         </div>
       </div>

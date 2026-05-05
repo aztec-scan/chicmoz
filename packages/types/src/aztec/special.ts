@@ -13,10 +13,27 @@ import {
 } from "./l2Contract.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
 
+export const aztecScanNoteCategories = [
+  "defi",
+  "bridge",
+  "privacy",
+  "infra",
+  "nft",
+  "gaming",
+  "social",
+  "dev",
+] as const;
+export const aztecScanNoteCategorySchema = z.enum(aztecScanNoteCategories);
+export type AztecScanNoteCategory = z.infer<typeof aztecScanNoteCategorySchema>;
+
 export const aztecScanNoteSchema = z.object({
   name: z.string(),
   origin: z.string(),
   comment: z.string(),
+  // Drives the Ecosystem page's category filter. Optional because legacy
+  // entries seeded before the migration won't have one — those land under
+  // an "uncategorised" bucket.
+  category: aztecScanNoteCategorySchema.nullable().optional(),
   relatedL1ContractAddresses: z
     .array(
       z
