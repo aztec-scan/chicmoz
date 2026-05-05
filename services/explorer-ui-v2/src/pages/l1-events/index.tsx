@@ -4,6 +4,7 @@ import { CopyableAddress, Pagination } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainInfo, useL1ContractEvents } from "~/hooks/api";
 import { usePaginated } from "~/hooks/use-paginated";
+import { useReactiveTime } from "~/hooks/use-reactive-time";
 import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
 import {
   argsPreview,
@@ -138,7 +139,7 @@ export const L1EventsPage: FC = () => {
     [typeCounts],
   );
 
-  const now = Date.now();
+  const now = useReactiveTime(30_000);
   const day = 24 * 3_600_000;
   const cutoff = window === "24h" ? now - day : window === "7d" ? now - 7 * day : 0;
 
