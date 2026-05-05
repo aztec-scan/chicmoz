@@ -275,10 +275,19 @@
 .row .h .pfx {
   color: var(--ink-3);
 }
-.row .hash {
+/* Hash cell base. `HashCell` measures the container width via a
+   ResizeObserver and renders an exact char-count slice with a literal `…`
+   between the head and tail — so there's no CSS truncation gap. We just
+   need the cell to constrain its width inside the parent grid track. */
+.row .hash,
+.trow .hash,
+.block-tx-row .hash,
+.inst-row .hash {
   color: var(--purple);
+  display: block;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .row .age {
   color: var(--ink-3);
@@ -302,10 +311,10 @@
   gap: 10px;
 }
 .row-head.block-cols {
-  grid-template-columns: 100px 1fr 60px 90px 80px;
+  grid-template-columns: 100px minmax(0, 1fr) 60px 90px 80px;
 }
 .row-head.tx-cols {
-  grid-template-columns: 1fr 100px 80px 80px;
+  grid-template-columns: minmax(0, 1fr) 100px 80px 80px;
 }
 .row .status-cell {
   justify-self: end;
@@ -509,11 +518,6 @@
 .trow .h-purple {
   color: var(--purple-soft);
 }
-.trow .hash {
-  color: var(--purple);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .trow .num {
   color: var(--ink-2);
   text-align: right;
@@ -537,10 +541,10 @@
 }
 
 .blocks-cols {
-  grid-template-columns: 100px 1fr 90px 70px 110px 90px;
+  grid-template-columns: 100px minmax(0, 1fr) 70px 110px 130px 90px;
 }
 .txs-cols {
-  grid-template-columns: 1fr 100px 100px 100px 90px;
+  grid-template-columns: minmax(0, 1fr) 100px 100px 100px 90px;
 }
 .validator-cols {
   grid-template-columns: 40px 1fr 140px 110px 130px 100px;
@@ -742,11 +746,6 @@
 }
 .block-tx-row:hover {
   background: var(--bg-2);
-}
-.block-tx-row .hash {
-  color: var(--purple);
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .block-tx-row .num {
   color: var(--ink-2);
@@ -1024,11 +1023,6 @@
 }
 .inst-row:hover {
   background: var(--bg-2);
-}
-.inst-row .hash {
-  color: var(--purple);
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .inst-row .num {
   color: var(--ink-2);

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { Pagination, StatusPill } from "~/components/common";
+import { HashCell, Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useAverageFees,
@@ -142,7 +142,7 @@ export const TxsPage: FC = () => {
                   to="/tx-effects/$hash"
                   params={{ hash: row.txHash }}
                 >
-                  <span className="hash">{truncateHashString(row.txHash, 14, 12)}</span>
+                  <HashCell value={row.txHash} />
                   <span className="num">#{fmtNum(Number(row.blockNumber))}</span>
                   <span className="num">{formatFees(row.transactionFee, 18, 5)}</span>
                   <span className="status-cell">
@@ -167,7 +167,7 @@ export const TxsPage: FC = () => {
                   to="/tx-effects/$hash"
                   params={{ hash: row.txHash }}
                 >
-                  <span className="hash">{truncateHashString(row.txHash, 14, 12)}</span>
+                  <HashCell value={row.txHash} />
                   <span className="num">
                     {truncateHashString(row.feePayer, 8, 6)}
                   </span>

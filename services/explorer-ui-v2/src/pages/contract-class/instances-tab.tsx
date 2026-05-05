@@ -1,6 +1,7 @@
 import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
+import { HashCell } from "~/components/common";
 import { truncateHashString } from "~/lib/utils";
 
 interface Props {
@@ -23,7 +24,7 @@ export const InstancesTab: FC<Props> = ({ instances }) => {
           to="/contracts/instances/$address"
           params={{ address: i.address }}
         >
-          <span className="hash">{i.address}</span>
+          <HashCell value={i.address} />
           <span className="num">{truncateHashString(i.deployer, 8, 6)}</span>
           <span className="age">{i.isOrphaned ? "orphaned" : "active"}</span>
         </Link>

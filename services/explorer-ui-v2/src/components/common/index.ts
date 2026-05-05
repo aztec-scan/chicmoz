@@ -4,5 +4,6 @@ export * from "./countdown";
 export * from "./detail-empty-state";
 export * from "./detail-field";
 export * from "./fee-payment-method-badge";
+export * from "./hash-cell";
 export * from "./pagination";
 export * from "./status-pill";

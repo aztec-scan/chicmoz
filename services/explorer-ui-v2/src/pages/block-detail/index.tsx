@@ -3,6 +3,7 @@ import { type FC, useState } from "react";
 import {
   DetailEmptyState,
   DetailField,
+  HashCell,
   StatusPill,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
@@ -263,7 +264,7 @@ export const BlockDetailPage: FC = () => {
                 to="/tx-effects/$hash"
                 params={{ hash: t.txHash }}
               >
-                <span className="hash">{t.txHash}</span>
+                <HashCell value={t.txHash} />
                 <span className="idx">{i}</span>
                 <span className="num">{formatFees(t.transactionFee)}</span>
               </Link>

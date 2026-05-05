@@ -1,9 +1,9 @@
 import { type UiBlockTable, type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
-import { StatusPill } from "~/components/common";
+import { HashCell, StatusPill } from "~/components/common";
 import { blockStatusToDisplay } from "~/lib/block-status";
-import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import { ageStr, fmtNum, formatFees } from "~/lib/utils";
 
 interface Props {
   blocks: UiBlockTable[];
@@ -43,9 +43,7 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
                 <span className="pfx">#</span>
                 {fmtNum(Number(b.height))}
               </span>
-              <span className="hash">
-                {truncateHashString(b.blockHash, 14, 12)}
-              </span>
+              <HashCell value={b.blockHash} />
               <span className="num">{b.txEffectsLength}</span>
               <span className="status-cell">
                 <StatusPill status={status} />
@@ -85,7 +83,7 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
               to="/tx-effects/$hash"
               params={{ hash: t.txHash }}
             >
-              <span className="hash">{truncateHashString(t.txHash, 14, 12)}</span>
+              <HashCell value={t.txHash} />
               <span className="num">#{fmtNum(Number(t.blockNumber))}</span>
               <span className="num">{formatFees(t.transactionFee)}</span>
               <span className="age">{ageStr(ts)}</span>

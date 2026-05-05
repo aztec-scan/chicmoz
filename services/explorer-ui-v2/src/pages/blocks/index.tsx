@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { Pagination, StatusPill } from "~/components/common";
+import { HashCell, Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useAverageFees,
@@ -169,7 +169,7 @@ export const BlocksPage: FC = () => {
                   <span className="pfx">#</span>
                   {fmtNum(Number(b.height))}
                 </span>
-                <span className="hash">{truncateHashString(b.blockHash, 12, 10)}</span>
+                <HashCell value={b.blockHash} />
                 <span className="num">{b.txEffectsLength}</span>
                 <span className="status-cell">
                   <StatusPill status={status} />
