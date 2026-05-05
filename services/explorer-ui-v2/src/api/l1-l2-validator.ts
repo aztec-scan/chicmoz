@@ -1,8 +1,10 @@
 import {
   type ChicmozL1L2Validator,
   type ChicmozL1L2ValidatorHistory,
+  type ChicmozL1L2ValidatorTotals,
   chicmozL1L2ValidatorHistorySchema,
   chicmozL1L2ValidatorSchema,
+  chicmozL1L2ValidatorTotalsSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { aztecExplorer } from "~/service/constants";
@@ -35,17 +37,8 @@ export const L1L2ValidatorAPI = {
     );
     return validateResponse(chicmozL1L2ValidatorHistorySchema, response.data);
   },
-  getValidatorTotals: async (): Promise<{
-    validating: number;
-    nonValidating: number;
-  }> => {
+  getValidatorTotals: async (): Promise<ChicmozL1L2ValidatorTotals> => {
     const response = await client.get(aztecExplorer.getL1L2ValidatorTotals);
-    return validateResponse(
-      z.object({
-        validating: z.number(),
-        nonValidating: z.number(),
-      }),
-      response.data,
-    );
+    return validateResponse(chicmozL1L2ValidatorTotalsSchema, response.data);
   },
 };

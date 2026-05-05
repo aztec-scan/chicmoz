@@ -49,7 +49,7 @@ export const findL2BlockNumber = (
   if (!args) {return null;}
   const candidates = ["l2BlockNumber", "l2Block", "blockNumber"];
   for (const k of candidates) {
-    const v = (args as Record<string, unknown>)[k];
+    const v = args[k];
     if (typeof v === "bigint") {return Number(v);}
     if (typeof v === "number" && Number.isFinite(v)) {return v;}
     if (typeof v === "string" && /^\d+$/.test(v)) {return Number(v);}

@@ -7,7 +7,7 @@ import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
  * when they know a block was orphaned.
  */
 export const blockStatusToDisplay = (
-  status: ChicmozL2BlockFinalizationStatus | number | undefined,
+  status: ChicmozL2BlockFinalizationStatus | undefined,
   orphaned?: boolean,
 ): "proposed" | "proven" | "finalized" | "orphaned" | "pending" => {
   if (orphaned) {return "orphaned";}

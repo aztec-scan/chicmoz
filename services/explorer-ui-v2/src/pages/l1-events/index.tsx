@@ -98,7 +98,7 @@ export const L1EventsPage: FC = () => {
     return evt.l1ContractAddress.toLowerCase() === tabAddr.toLowerCase();
   };
 
-  const allEvents = events ?? [];
+  const allEvents = useMemo(() => events ?? [], [events]);
 
   /** Per-contract event counts. */
   const byContract: Record<ContractKey, number> = useMemo(() => {
@@ -171,7 +171,7 @@ export const L1EventsPage: FC = () => {
         const ts = eventTimestampMs(e);
         return ts !== null && ts >= now - day;
       }).length,
-    [allEvents, now],
+    [allEvents, now, day],
   );
   const last7d = useMemo(
     () =>
@@ -179,7 +179,7 @@ export const L1EventsPage: FC = () => {
         const ts = eventTimestampMs(e);
         return ts !== null && ts >= now - 7 * day;
       }).length,
-    [allEvents, now],
+    [allEvents, now, day],
   );
 
   /** Sparkline — per-hour bin count over the last 24h. */

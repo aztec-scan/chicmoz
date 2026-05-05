@@ -59,9 +59,12 @@ export const ValidatorsPage: FC = () => {
 
   const { page, setPage, paged, totalPages } = usePaginated(filtered, PAGE_SIZE);
 
-  const total = totals ? totals.validating + totals.nonValidating : validators?.length ?? 0;
-  const validating = totals?.validating ?? filtered.filter(v => validatorStatusToDisplay(v.status) === "validating").length;
-  const nonValidating = total - validating;
+  const total = totals?.total ?? validators?.length ?? 0;
+  const validating =
+    totals?.validating ??
+    filtered.filter((v) => validatorStatusToDisplay(v.status) === "validating")
+      .length;
+  const nonValidating = totals?.nonValidating ?? total - validating;
 
   const toStake = (v: { stake: bigint | string | number }) =>
     parseBigIntAsDecimal(v.stake);

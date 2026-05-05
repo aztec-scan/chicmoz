@@ -34,7 +34,7 @@ interface Props {
 type NavGroup = "main" | "aztec" | "dev";
 
 interface NavItem {
-  key: TopBarActive | string;
+  key: string;
   label: string;
   to: string;
   /** Group the item belongs to in the More-menu dropdown. */

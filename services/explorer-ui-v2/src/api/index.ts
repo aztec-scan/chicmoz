@@ -6,7 +6,7 @@ export * from "./fee-recipient";
 export * from "./l1-contract-event";
 export * from "./l1-l2-validator";
 export * from "./search";
-export * from "./sequencer";
+export * from "./rpc-node";
 export * from "./stats";
 export * from "./tx";
 export * from "./tx-effect";

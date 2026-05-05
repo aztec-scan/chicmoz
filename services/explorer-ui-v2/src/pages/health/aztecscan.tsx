@@ -1,10 +1,10 @@
 import {
   type ChicmozL2RpcNodeError,
-  type ChicmozL2Sequencer,
+  type PublicChicmozL2RpcNode,
 } from "@chicmoz-pkg/types";
 import { type FC, useMemo } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
-import { useChainErrors, useSequencers } from "~/hooks/api";
+import { useChainErrors, useRpcNodes } from "~/hooks/api";
 import {
   type ComponentHealthStatus,
   useSystemHealth,
@@ -27,59 +27,42 @@ const STATUS_TONE: Record<ComponentHealthStatus, string> = {
 const ONE_HOUR = 60 * 60 * 1_000;
 const FIVE_MIN = 5 * 60 * 1_000;
 
-/** Deduplicate sequencers by rpcUrl, keeping the most recently seen. */
-const dedupeSequencers = (
-  rows: ChicmozL2Sequencer[] | undefined,
-): ChicmozL2Sequencer[] => {
+/** Deduplicate by rpcNodeName, keeping the most recently seen. */
+const dedupeRpcNodes = (
+  rows: PublicChicmozL2RpcNode[] | undefined,
+): PublicChicmozL2RpcNode[] => {
   const list = [...(rows ?? [])].sort(
     (a, b) => b.lastSeenAt.getTime() - a.lastSeenAt.getTime(),
   );
   const seen = new Set<string>();
-  return list.filter((s) => {
-    const key = s.rpcUrl ?? s.enr;
-    if (seen.has(key)) {return false;}
-    seen.add(key);
+  return list.filter((n) => {
+    if (seen.has(n.rpcNodeName)) {return false;}
+    seen.add(n.rpcNodeName);
     return true;
   });
 };
 
-const errorsForSequencer = (
+const errorsForRpcNode = (
   all: ChicmozL2RpcNodeError[] | undefined,
-  sequencer: ChicmozL2Sequencer,
+  rpcNode: PublicChicmozL2RpcNode,
 ): ChicmozL2RpcNodeError[] => {
   if (!all) {return [];}
-  return all.filter(
-    (e) =>
-      (sequencer.rpcUrl && e.rpcUrl === sequencer.rpcUrl) ||
-      (sequencer.rpcNodeName && e.rpcNodeName === sequencer.rpcNodeName),
-  );
+  return all.filter((e) => e.rpcNodeName === rpcNode.rpcNodeName);
 };
 
 const unmatchedErrors = (
   all: ChicmozL2RpcNodeError[] | undefined,
-  sequencers: ChicmozL2Sequencer[],
+  rpcNodes: PublicChicmozL2RpcNode[],
 ): ChicmozL2RpcNodeError[] => {
   if (!all) {return [];}
-  const rpcUrls = new Set(
-    sequencers.map((s) => s.rpcUrl).filter(Boolean) as string[],
-  );
-  const names = new Set(
-    sequencers.map((s) => s.rpcNodeName).filter(Boolean) as string[],
-  );
-  return all.filter((e) => {
-    const u = e.rpcUrl;
-    const n = e.rpcNodeName;
-    const matched =
-      (u !== undefined && rpcUrls.has(u)) ||
-      (n !== undefined && names.has(n));
-    return !matched;
-  });
+  const names = new Set(rpcNodes.map((n) => n.rpcNodeName));
+  return all.filter((e) => !names.has(e.rpcNodeName));
 };
 
-const SequencerCard: FC<{
-  sequencer: ChicmozL2Sequencer;
+const RpcNodeCard: FC<{
+  rpcNode: PublicChicmozL2RpcNode;
   errors: ChicmozL2RpcNodeError[];
-}> = ({ sequencer, errors }) => {
+}> = ({ rpcNode, errors }) => {
   const now = Date.now();
   const recent1h = errors.filter(
     (e) => now - e.lastSeenAt.getTime() < ONE_HOUR,
@@ -88,18 +71,17 @@ const SequencerCard: FC<{
     (e) => now - e.lastSeenAt.getTime() < FIVE_MIN,
   );
   const totalOccurrences = errors.reduce((s, e) => s + e.count, 0);
-  const name = sequencer.rpcNodeName ?? "Unknown sequencer";
 
   return (
-    <div className="panel sequencer-card">
+    <div className="panel rpc-node-card">
       <div className="panel-head">
-        <h3>{name}</h3>
-        <div className="sequencer-meta">
+        <h3>{rpcNode.rpcNodeName}</h3>
+        <div className="rpc-node-meta">
           <span>
-            last seen <em>{ageStr(sequencer.lastSeenAt.getTime())}</em>
+            last seen <em>{ageStr(rpcNode.lastSeenAt.getTime())}</em>
           </span>
-          <span className="chip">node {sequencer.nodeVersion}</span>
-          <span className="chip">rollup v{sequencer.rollupVersion.toString()}</span>
+          <span className="chip">node {rpcNode.nodeVersion}</span>
+          <span className="chip">rollup v{rpcNode.rollupVersion.toString()}</span>
         </div>
       </div>
       <div className="stats-strip inner">
@@ -141,7 +123,7 @@ const SequencerCard: FC<{
 
       {errors.length === 0 ? (
         <div className="empty-state" style={{ color: "var(--green)" }}>
-          no errors detected for this sequencer
+          no errors detected for this rpc node
         </div>
       ) : (
         <div className="events-list">
@@ -165,15 +147,12 @@ const SequencerCard: FC<{
 export const AztecscanHealthPage: FC = () => {
   const system = useSystemHealth();
   const { data: chainErrors } = useChainErrors();
-  const { data: sequencersRaw } = useSequencers();
+  const { data: rpcNodesRaw } = useRpcNodes();
 
-  const sequencers = useMemo(
-    () => dedupeSequencers(sequencersRaw),
-    [sequencersRaw],
-  );
+  const rpcNodes = useMemo(() => dedupeRpcNodes(rpcNodesRaw), [rpcNodesRaw]);
   const orphanErrors = useMemo(
-    () => unmatchedErrors(chainErrors, sequencers),
-    [chainErrors, sequencers],
+    () => unmatchedErrors(chainErrors, rpcNodes),
+    [chainErrors, rpcNodes],
   );
 
   const overall = system.systemHealth.health;
@@ -188,7 +167,7 @@ export const AztecscanHealthPage: FC = () => {
           { label: "health", to: "/health" },
           { label: "aztecscan", active: true },
         ]}
-        comment="api · indexer · websocket · sequencers"
+        comment="api · indexer · websocket · rpc nodes"
       />
 
       <HealthTabs active="aztecscan" />
@@ -203,9 +182,9 @@ export const AztecscanHealthPage: FC = () => {
           <div className="sub">{system.systemHealth.reason}</div>
         </div>
         <div className="hero-cell">
-          <div className="kicker">Sequencers tracked</div>
-          <div className="big">{fmtNum(sequencers.length)}</div>
-          <div className="sub">deduplicated by rpcUrl</div>
+          <div className="kicker">RPC nodes tracked</div>
+          <div className="big">{fmtNum(rpcNodes.length)}</div>
+          <div className="sub">deduplicated by name</div>
         </div>
         <div className="hero-cell">
           <div className="kicker">Chain errors</div>
@@ -238,19 +217,19 @@ export const AztecscanHealthPage: FC = () => {
         ))}
       </div>
 
-      {sequencers.length === 0 ? (
+      {rpcNodes.length === 0 ? (
         <div className="panel">
           <div className="panel-head">
-            <h3>Sequencer health</h3>
+            <h3>RPC node health</h3>
           </div>
-          <div className="empty-state">no sequencer data currently available</div>
+          <div className="empty-state">no rpc node data currently available</div>
         </div>
       ) : (
-        sequencers.map((s) => (
-          <SequencerCard
-            key={s.enr}
-            sequencer={s}
-            errors={errorsForSequencer(chainErrors, s)}
+        rpcNodes.map((n) => (
+          <RpcNodeCard
+            key={n.rpcNodeName}
+            rpcNode={n}
+            errors={errorsForRpcNode(chainErrors, n)}
           />
         ))
       )}

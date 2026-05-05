@@ -6,8 +6,8 @@ import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
-  useLatestContractClasses,
   useLatestContractInstances,
+  useVerifiedSourceContractClasses,
 } from "~/hooks/api";
 import { truncateHashString } from "~/lib/utils";
 
@@ -32,7 +32,7 @@ const SDK_URL = "https://github.com/aztec-scan/aztec-scan-sdk";
 
 export const EcosystemPage: FC = () => {
   const { data: instances } = useLatestContractInstances();
-  const { data: classes } = useLatestContractClasses();
+  const { data: classes } = useVerifiedSourceContractClasses();
 
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -47,10 +47,7 @@ export const EcosystemPage: FC = () => {
     [noted],
   );
 
-  const verifiedClasses: ChicmozL2ContractClassRegisteredEvent[] = useMemo(
-    () => (classes ?? []).filter((c) => !!c.sourceCodeUrl),
-    [classes],
-  );
+  const verifiedClasses: ChicmozL2ContractClassRegisteredEvent[] = classes ?? [];
 
   const filtered = useMemo(() => {
     const base = filterNoted(noted, filter);

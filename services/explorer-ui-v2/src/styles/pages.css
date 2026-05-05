@@ -2841,11 +2841,11 @@
   background: var(--purple);
 }
 
-/* ===== sequencer card (aztecscan health) ===== */
-.sequencer-card {
+/* ===== rpc-node card (aztecscan health) ===== */
+.rpc-node-card {
   margin-bottom: 18px;
 }
-.sequencer-card .panel-head .sequencer-meta {
+.rpc-node-card .panel-head .rpc-node-meta {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--ink-3);
@@ -2854,11 +2854,11 @@
   gap: 12px;
   flex-wrap: wrap;
 }
-.sequencer-card .sequencer-meta em {
+.rpc-node-card .rpc-node-meta em {
   color: var(--ink-1);
   font-style: normal;
 }
-.sequencer-card .sequencer-meta .chip {
+.rpc-node-card .rpc-node-meta .chip {
   font-family: var(--mono);
   font-size: 9px;
   letter-spacing: 0.12em;

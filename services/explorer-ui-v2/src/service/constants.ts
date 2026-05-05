@@ -59,7 +59,7 @@ export const aztecExplorer = {
   getL1L2ValidatorHistory: (address: string) =>
     `/l1/l2-validators/${address}/history`,
   getL1ContractEvents: "/l1/contract-events",
-  getL2Sequencers: "/l2/sequencers",
+  getL2RpcNodes: "/l2/rpc-nodes",
 
   getTableBlocks: "/l2/ui/blocks-for-table",
   getTableTxEffects: "/l2/ui/tx-effects-for-table",

@@ -53,7 +53,9 @@ export const CopyableAddress: FC<Props> = ({
     <button
       type="button"
       className={`copyable${copied ? " copied" : ""}${className ? ` ${className}` : ""}`}
-      onClick={handleCopy}
+      onClick={() => {
+        void handleCopy();
+      }}
       title={copied ? "Copied" : title}
       aria-label={copied ? "Copied to clipboard" : title}
     >

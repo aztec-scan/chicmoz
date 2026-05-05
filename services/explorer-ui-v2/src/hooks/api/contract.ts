@@ -34,6 +34,18 @@ export const useLatestContractClasses = (): UseQueryResult<
   });
 };
 
+export const useVerifiedSourceContractClasses = (): UseQueryResult<
+  ChicmozL2ContractClassRegisteredEvent[],
+  Error
+> => {
+  return useQuery<ChicmozL2ContractClassRegisteredEvent[], Error>({
+    queryKey: queryKeyGenerator.contractClass({ verifiedSourceOnly: true }),
+    queryFn: () => ContractL2API.getContractClasses(undefined, true),
+    refetchInterval: SLOW_REFETCH_INTERVAL,
+    staleTime: LONG_STALE_TIME,
+  });
+};
+
 export const useContractClass = ({
   classId,
   version,
