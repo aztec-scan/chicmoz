@@ -142,7 +142,7 @@ export const getBlocksForUiTable = async ({
       timestamp: result.timestamp,
       txEffectsLength: txCountMap.get(result.bodyId) ?? 0,
       orphan: result.orphanTimestamp != null,
-      proposer: result.coinbase,
+      coinbase: result.coinbase,
     };
     blocks.push(await uiBlockTableSchema.parseAsync(blockData));
   }

@@ -289,6 +289,14 @@
   overflow: hidden;
   white-space: nowrap;
 }
+/* Right-aligned hash cells (e.g. the coinbase column on /blocks) — match
+   the alignment of sibling .num/.age cells so the table reads cleanly. */
+.row .hash.right,
+.trow .hash.right,
+.block-tx-row .hash.right,
+.inst-row .hash.right {
+  text-align: right;
+}
 .row .age {
   color: var(--ink-3);
   text-align: right;

@@ -11,7 +11,7 @@ import {
 } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
 import { blockStatusToDisplay } from "~/lib/block-status";
-import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import { ageStr, fmtNum, formatFees } from "~/lib/utils";
 
 type StatusFilter = "all" | "proposed" | "proven" | "finalized" | "orphaned";
 type SortKey = "height" | "txEffectsLength" | "timestamp";
@@ -146,7 +146,7 @@ export const BlocksPage: FC = () => {
             Txs{sortArrow("txEffectsLength")}
           </div>
           <div className="right">Status</div>
-          <div className="right">Proposer</div>
+          <div className="right">Coinbase</div>
           <div
             className="sortable right"
             onClick={() => toggleSort("timestamp")}
@@ -174,9 +174,11 @@ export const BlocksPage: FC = () => {
                 <span className="status-cell">
                   <StatusPill status={status} />
                 </span>
-                <span className="hash" title={b.proposer ?? undefined}>
-                  {b.proposer ? truncateHashString(b.proposer, 6, 4) : "—"}
-                </span>
+                {b.coinbase ? (
+                  <HashCell value={b.coinbase} className="right" />
+                ) : (
+                  <span className="hash right">—</span>
+                )}
                 <span className="age">{ageStr(ts)}</span>
               </Link>
             );
