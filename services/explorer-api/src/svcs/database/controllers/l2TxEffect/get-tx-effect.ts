@@ -27,6 +27,10 @@ import {
   publicDataWrite,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
+import {
+  getPublicCallRequestsByTxHash,
+  getPublicCallRequestsByTxHashes,
+} from "../l2Public-call/get.js";
 
 enum GetTypes {
   BlockHeightRange,
@@ -167,6 +171,11 @@ const _getTxEffects = async (
 
   const dbRes = await whereQuery.execute();
 
+  // Fetch all public call requests in a single query, then group by txHash in memory
+  const publicCallRequestsMap = await getPublicCallRequestsByTxHashes(
+    dbRes.map((row) => row.txHash),
+  );
+
   // Process the results directly without additional queries
   const txEffects: ChicmozL2TxEffectDeluxe[] = dbRes.map((txEffect) => {
     // Ensure publicDataWrites is properly cast to the expected type
@@ -178,7 +187,11 @@ const _getTxEffects = async (
       ...txEffect,
       txBirthTimestamp: txEffect.txBirthTimestamp,
       publicDataWrites,
+      publicCallRequests: publicCallRequestsMap.get(txEffect.txHash) ?? [],
       revertCode: { code: txEffect.revertCode },
+      feePayer: txEffect.feePayer ?? undefined,
+      feePaymentMethod: txEffect.feePaymentMethod ?? undefined,
+      initiator: txEffect.initiator ?? undefined,
       noteHashes: Array.isArray(txEffect.noteHashes)
         ? txEffect.noteHashes
         : ([] as string[]),
@@ -247,11 +260,19 @@ export const getTxEffectDynamicWhere = async (
     ? dbRes[0].publicDataWrites
     : [];
 
+  const publicCallRequests = await getPublicCallRequestsByTxHash(
+    dbRes[0].txHash ,
+  );
+
   const toParse: ChicmozL2TxEffectDeluxe = {
     ...dbRes[0],
     txBirthTimestamp: dbRes[0].txBirthTimestamp,
     publicDataWrites,
+    publicCallRequests,
     revertCode: { code: dbRes[0].revertCode },
+    feePayer: dbRes[0].feePayer ?? undefined,
+    feePaymentMethod: dbRes[0].feePaymentMethod ?? undefined,
+    initiator: dbRes[0].initiator ?? undefined,
     noteHashes: (Array.isArray(dbRes[0].noteHashes)
       ? dbRes[0].noteHashes
       : []) as string[],

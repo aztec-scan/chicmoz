@@ -120,6 +120,20 @@
       "when": 1776464400000,
       "tag": "0016_solid_butterfly",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1776772800000,
+      "tag": "0017_merge_l2_sequencer_into_rpc_node",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1776859200000,
+      "tag": "0018_flippant_thunderbolt",
+      "breakpoints": true
     }
   ]
 }

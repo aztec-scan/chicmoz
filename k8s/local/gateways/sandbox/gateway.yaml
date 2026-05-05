@@ -44,6 +44,13 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: aztec-sandbox-remote
+      hostname: aztec.remote.chicmoz.localhost
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     - name: eth-sandbox
       hostname: eth.sandbox.chicmoz.localhost
       port: 80

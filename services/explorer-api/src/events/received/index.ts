@@ -14,14 +14,14 @@ import {
   l2RpcNodeAliveHandler,
   l2RpcNodeErrorHandler,
 } from "./on-l2-rpc-node.js";
+import { l2RpcNodeInfoHandler } from "./on-rpc-node-info.js";
 import { pendingTxHandler } from "./on-pending-txs.js";
-import { sequencerInfoHandler } from "./on-sequencer-info.js";
 import { stakingAssetInfoHandler } from "./on-staking-asset-info.js";
 
 export const subscribeHandlers = async () => {
   await Promise.all([
     startSubscribe(chainInfoHandler),
-    startSubscribe(sequencerInfoHandler),
+    startSubscribe(l2RpcNodeInfoHandler),
     startSubscribe(l2RpcNodeAliveHandler),
     startSubscribe(l2RpcNodeErrorHandler),
     startSubscribe(blockHandler),

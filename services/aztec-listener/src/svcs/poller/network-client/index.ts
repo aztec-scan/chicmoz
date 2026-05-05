@@ -2,7 +2,7 @@
 import { deriveStorageSlotInMap } from "@aztec/stdlib/hash";
 import {
   ChicmozChainInfo,
-  ChicmozL2Sequencer,
+  ChicmozL2RpcNode,
   NODE_ENV,
   NodeEnv,
 } from "@chicmoz-pkg/types";
@@ -14,7 +14,7 @@ import {
 import {
   onChainInfo,
   onL2RpcNodeAlive,
-  onL2SequencerInfo,
+  onL2RpcNodeInfo,
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
 import {
@@ -27,7 +27,7 @@ import {
 } from "./pool.js";
 import {
   getChicmozChainInfoFromNodeInfo,
-  getSequencerFromNodeInfo,
+  getRpcNodeFromNodeInfo,
 } from "./utils.js";
 import { AztecNode, NodeInfo } from "@aztec/aztec.js/node";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
@@ -120,14 +120,14 @@ export const init = async () => {
 
 export const getFreshInfo = async (): Promise<{
   chainInfo: ChicmozChainInfo;
-  sequencers: ChicmozL2Sequencer[];
+  rpcNodes: ChicmozL2RpcNode[];
 }> => {
   const allNodes = getAllRpcNodes();
   if (allNodes.length === 0) {
     throw new Error("No Aztec nodes available in the pool");
   }
   let chainInfo: ChicmozChainInfo | undefined = undefined;
-  const sequencers: ChicmozL2Sequencer[] = [];
+  const rpcNodes: ChicmozL2RpcNode[] = [];
   for (const node of allNodes) {
     try {
       const {
@@ -157,16 +157,17 @@ export const getFreshInfo = async (): Promise<{
         chainInfo = cInfo;
       }
 
-      const sequencer = getSequencerFromNodeInfo(
+      const rpcNode = getRpcNodeFromNodeInfo(
         L2_NETWORK_ID,
+        node.name,
         node.url,
         nodeInfo,
       );
-      sequencers.push(sequencer);
+      rpcNodes.push(rpcNode);
 
-      await onL2SequencerInfo(sequencer).catch((e) => {
+      await onL2RpcNodeInfo(rpcNode).catch((e) => {
         logger.error(
-          `Aztec failed to publish sequencer info: ${(e as Error).message}`,
+          `Aztec failed to publish rpc node info: ${(e as Error).message}`,
         );
       });
     } catch (e) {
@@ -183,7 +184,7 @@ export const getFreshInfo = async (): Promise<{
 
   return {
     chainInfo,
-    sequencers,
+    rpcNodes,
   };
 };
 

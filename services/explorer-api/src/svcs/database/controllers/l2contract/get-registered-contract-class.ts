@@ -3,7 +3,7 @@ import {
   chicmozL2ContractClassRegisteredEventSchema,
   type ChicmozL2ContractClassRegisteredEvent,
 } from "@chicmoz-pkg/types";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
@@ -28,16 +28,18 @@ export const getL2RegisteredContractClasses = async ({
   contractClassId,
   version,
   includeArtifactJson,
+  verifiedSourceOnly,
 }: {
   contractClassId?: ChicmozL2ContractClassRegisteredEvent["contractClassId"];
   version?: ChicmozL2ContractClassRegisteredEvent["version"];
   includeArtifactJson?: boolean;
+  verifiedSourceOnly?: boolean;
 }): Promise<Array<ChicmozL2ContractClassRegisteredEvent>> => {
   if (contractClassId === undefined && version !== undefined) {
     throw new Error("Specifying version but not classId is not allowed");
   }
   if (contractClassId === undefined) {
-    return getLatestL2RegisteredContractClasses();
+    return getLatestL2RegisteredContractClasses({ verifiedSourceOnly });
   }
   const whereQuery = version
     ? and(
@@ -57,10 +59,21 @@ export const getL2RegisteredContractClasses = async ({
   return z.array(chicmozL2ContractClassRegisteredEventSchema).parse(result);
 };
 
-export const getLatestL2RegisteredContractClasses = async (): Promise<
-  Array<ChicmozL2ContractClassRegisteredEvent>
-> => {
-  const result = await db()
+export const getLatestL2RegisteredContractClasses = async ({
+  verifiedSourceOnly,
+}: {
+  verifiedSourceOnly?: boolean;
+} = {}): Promise<Array<ChicmozL2ContractClassRegisteredEvent>> => {
+  const filters = [
+    isNull(l2Block.orphan_timestamp),
+    eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+  ];
+
+  if (verifiedSourceOnly) {
+    filters.push(isNotNull(l2ContractClassRegistered.sourceCodeUrl));
+  }
+
+  const baseQuery = db()
     .select({
       blockHash: l2ContractClassRegistered.blockHash,
       contractClassId: l2ContractClassRegistered.contractClassId,
@@ -76,14 +89,12 @@ export const getLatestL2RegisteredContractClasses = async (): Promise<
     })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
-    .where(
-      and(
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
-      ),
-    )
-    .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height))
-    .limit(DB_MAX_CONTRACTS);
+    .where(and(...filters))
+    .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height));
+
+  const result = verifiedSourceOnly
+    ? await baseQuery
+    : await baseQuery.limit(DB_MAX_CONTRACTS);
 
   return result.map((r) =>
     chicmozL2ContractClassRegisteredEventSchema.parse(r),

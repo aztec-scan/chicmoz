@@ -25,6 +25,12 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH,
 
   ...controller.openapi_GET_PENDING_TXS,
+  ...controller.openapi_GET_PENDING_TX_BY_HASH,
+  ...controller.openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  ...controller.openapi_GET_PUBLIC_CALL_REQUESTS,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_TX_HASH,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_CONTRACT_ADDRESS,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_RECIPIENT,
   ...controller.openapi_GET_DROPPED_TX_BY_HASH,
 
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASS,
@@ -65,10 +71,14 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_CHAIN_INFO,
   ...controller.openapi_GET_CHAIN_ERRORS,
 
-  ...controller.openapi_GET_L2_SEQUENCER,
-  ...controller.openapi_GET_L2_SEQUENCERS,
+  ...controller.openapi_GET_L2_RPC_NODE,
+  ...controller.openapi_GET_L2_RPC_NODES,
 
   ...controller.openapi_L2_SEARCH_PUBLIC_LOGS,
+
+  ...controller.openapi_GET_BLOCK_UI_TABLE_DATA,
+  ...controller.openapi_GET_TX_EFFECTS_UI_TABLE_DATA,
+  ...controller.openapi_GET_TX_EFFECTS_BY_BLOCK_HEIGHT_UI_TABLE,
 };
 
 const otherPaths = [
@@ -127,7 +137,6 @@ const checkDocsStatus = () => {
 
 export const init = ({ router }: { router: Router }) => {
   checkDocsStatus();
-  router.get("/l2/index", controller.GET_ROUTES);
 
   router.get(paths.latestHeight, controller.GET_LATEST_HEIGHT);
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);
@@ -161,7 +170,22 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.txs, controller.GET_PENDING_TXS);
   router.get(paths.txByHash, controller.GET_PENDING_TX_BY_HASH);
+  router.get(
+    paths.publicCallRequestsByTxHash,
+    controller.GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  );
+  router.get(paths.publicCallRequests, controller.GET_PUBLIC_CALL_REQUESTS);
   router.get(paths.droppedTxByHash, controller.GET_DROPPED_TX_BY_HASH);
+
+  router.get(paths.l2ToL1MsgsByTx, controller.GET_L2_TO_L1_MSGS_BY_TX_HASH);
+  router.get(
+    paths.l2ToL1MsgsByContract,
+    controller.GET_L2_TO_L1_MSGS_BY_CONTRACT_ADDRESS,
+  );
+  router.get(
+    paths.l2ToL1MsgsByRecipient,
+    controller.GET_L2_TO_L1_MSGS_BY_RECIPIENT,
+  );
 
   router.get(paths.contractClass, controller.GET_L2_REGISTERED_CONTRACT_CLASS);
   router.get(
@@ -263,8 +287,8 @@ export const init = ({ router }: { router: Router }) => {
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);
   router.get(paths.chainErrors, controller.GET_CHAIN_ERRORS);
 
-  router.get(paths.sequencer, controller.GET_L2_SEQUENCER);
-  router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
+  router.get(paths.rpcNode, controller.GET_L2_RPC_NODE);
+  router.get(paths.rpcNodes, controller.GET_L2_RPC_NODES);
 
   router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
   router.get(paths.uiTxEffectTable, controller.GET_TX_EFFECTS_UI_TABLE_DATA);

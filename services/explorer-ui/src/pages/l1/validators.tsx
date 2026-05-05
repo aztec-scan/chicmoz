@@ -30,8 +30,8 @@ export const ValidatorsPage: FC = () => {
   const hasPreviousPage = currentPage > 0;
 
   const validatingCount = totalsData?.validating ?? 0;
-  const exitingCount = totalsData?.nonValidating ?? 0;
-  const totalCount = validatingCount + exitingCount;
+  const nonValidatingCount = totalsData?.nonValidating ?? 0;
+  const totalCount = totalsData?.total ?? 0;
 
   const validatorsData = data;
 
@@ -74,7 +74,7 @@ export const ValidatorsPage: FC = () => {
           title="Non-Validating Validators"
           isLoading={isLoading}
           error={error}
-          data={exitingCount.toString()}
+          data={nonValidatingCount.toString()}
         />
       </div>
 

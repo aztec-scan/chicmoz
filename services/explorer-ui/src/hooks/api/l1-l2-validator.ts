@@ -1,6 +1,7 @@
 import {
   ChicmozL1L2ValidatorHistory,
   type ChicmozL1L2Validator,
+  type ChicmozL1L2ValidatorTotals,
 } from "@chicmoz-pkg/types";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { L1L2ValidatorAPI } from "~/api/l1-l2-validator";
@@ -38,10 +39,10 @@ export const useL1L2ValidatorHistory = (
 };
 
 export const useValidatorTotals = (): UseQueryResult<
-  { validating: number; nonValidating: number },
+  ChicmozL1L2ValidatorTotals,
   Error
 > => {
-  return useQuery<{ validating: number; nonValidating: number }, Error>({
+  return useQuery<ChicmozL1L2ValidatorTotals, Error>({
     queryKey: queryKeyGenerator.l1L2ValidatorTotals,
     queryFn: () => L1L2ValidatorAPI.getValidatorTotals(),
   });

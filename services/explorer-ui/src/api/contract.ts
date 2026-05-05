@@ -76,9 +76,13 @@ export const ContractL2API = {
   },
   getContractClasses: async (
     classId?: string,
+    verifiedSourceOnly?: boolean,
   ): Promise<ChicmozL2ContractClassRegisteredEvent[]> => {
     const response = await client.get(
       aztecExplorer.getL2ContractClasses(classId),
+      {
+        params: classId ? undefined : { verifiedSourceOnly },
+      },
     );
     return validateResponse(
       chicmozL2ContractClassRegisteredEventSchema.array(),

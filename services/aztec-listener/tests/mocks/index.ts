@@ -36,8 +36,32 @@ export const createMockAztecTx = (
   feePayer = "0x1234567890abcdef",
 ) => ({
   getTxHash: vi.fn().mockReturnValue({ toString: () => txHash }),
+  getStats: vi.fn().mockReturnValue({ feePaymentMethod: "fee_juice" }),
   data: {
     feePayer: { toString: () => feePayer },
+    expirationTimestamp: BigInt(0),
+    gasUsed: { daGas: 0, l2Gas: 0 },
+    constants: {
+      txContext: {
+        gasSettings: {
+          gasLimits: { daGas: 0, l2Gas: 0 },
+          teardownGasLimits: { daGas: 0, l2Gas: 0 },
+          maxFeesPerGas: {
+            feePerDaGas: BigInt(0),
+            feePerL2Gas: BigInt(0),
+          },
+          maxPriorityFeesPerGas: {
+            feePerDaGas: BigInt(0),
+            feePerL2Gas: BigInt(0),
+          },
+        },
+      },
+    },
+    forPublic: null,
+    getNonEmptyNoteHashes: vi.fn().mockReturnValue([]),
+    getNonEmptyNullifiers: vi.fn().mockReturnValue([]),
+    getNonEmptyL2ToL1Msgs: vi.fn().mockReturnValue([]),
+    getNonEmptyPrivateLogs: vi.fn().mockReturnValue([]),
   },
 });
 

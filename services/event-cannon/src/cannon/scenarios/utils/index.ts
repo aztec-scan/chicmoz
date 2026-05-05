@@ -18,7 +18,8 @@ import {
   Contract,
   type ContractInstanceWithAddress,
   DeployMethod,
- TxSendResultMined } from "@aztec/aztec.js/contracts";
+  TxSendResultMined,
+} from "@aztec/aztec.js/contracts";
 import { FunctionType, NoirCompiledContract } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
 import { Fr } from "@aztec/aztec.js/fields";
@@ -45,9 +46,7 @@ export const logAndWaitForTx = async (
     "receipt" in result ? result.receipt : result,
   );
   const hash = receipt.txHash.toString();
-  logger.info(
-    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
-  );
+  logger.info(`⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`);
   return receipt;
 };
 
@@ -79,9 +78,7 @@ export const simulateThenSend = async ({
 
   const { receipt } = await method.send({ from });
   const hash = receipt.txHash.toString();
-  logger.info(
-    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
-  );
+  logger.info(`⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`);
   return receipt;
 };
 
@@ -279,9 +276,7 @@ export const publicDeployAccounts = async (
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
-      logger.warn(
-        `🚨 Contract instance not found for contract isIntialized: ${contractMetadata.isContractInitialized}`,
-      );
+      logger.warn(`🚨 Contract instance not found (contract not initialized)`);
       continue;
     }
     await wallet.registerContract(contractMetadata.instance);

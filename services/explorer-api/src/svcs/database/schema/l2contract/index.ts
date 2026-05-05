@@ -93,6 +93,7 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
+    selectorMap: jsonb("selector_map").$type<Record<string, string>>(),
     standardContractType: varchar("contract_type"),
     standardContractVersion: varchar("contract_version"),
     sourceCodeUrl: varchar("source_code_url"),
