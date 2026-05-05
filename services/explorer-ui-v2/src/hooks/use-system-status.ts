@@ -1,5 +1,4 @@
-import { useChainErrors } from "~/hooks/api";
-import { useWebSocketConnection } from "~/hooks/websocket";
+import { useSystemHealth } from "~/hooks/use-system-health";
 
 export type SystemStatusLevel = "ok" | "unhealthy" | "down";
 
@@ -9,33 +8,17 @@ interface SystemStatus {
   dotClass: string;
 }
 
-const FIVE_MIN_MS = 5 * 60 * 1000;
+const STATUS_MAP: Record<"UP" | "UNHEALTHY" | "DOWN", SystemStatus> = {
+  UP: { level: "ok", label: "CHAIN OK", dotClass: "dot" },
+  UNHEALTHY: { level: "unhealthy", label: "CHAIN UNHEALTHY", dotClass: "dot warn" },
+  DOWN: { level: "down", label: "CHAIN DOWN", dotClass: "dot down" },
+};
 
 /**
- * Surfaces a coarse "CHAIN OK / CHAIN UNHEALTHY / CHAIN DOWN" pill for the topbar.
- * Considers both live websocket state and recent chain-error payloads from the indexer.
+ * Coarse pill summary derived from useSystemHealth — single source of truth
+ * for system state. Used in the topbar and network health header.
  */
 export const useSystemStatus = (): SystemStatus => {
-  const ws = useWebSocketConnection();
-  const { data: chainErrors, error: chainErrorsError } = useChainErrors();
-
-  const now = Date.now();
-  const recentChainError = chainErrors?.some(
-    (e) => now - e.lastSeenAt.getTime() < FIVE_MIN_MS,
-  );
-
-  if (ws === "CLOSED" || chainErrorsError) {
-    return { level: "down", label: "CHAIN DOWN", dotClass: "dot down" };
-  }
-  if (ws !== "OPEN" && ws !== "TAB_INACTIVE") {
-    return { level: "unhealthy", label: "CONNECTING", dotClass: "dot warn" };
-  }
-  if (recentChainError) {
-    return {
-      level: "unhealthy",
-      label: "CHAIN UNHEALTHY",
-      dotClass: "dot warn",
-    };
-  }
-  return { level: "ok", label: "CHAIN OK", dotClass: "dot" };
+  const { systemHealth } = useSystemHealth();
+  return STATUS_MAP[systemHealth.health];
 };
