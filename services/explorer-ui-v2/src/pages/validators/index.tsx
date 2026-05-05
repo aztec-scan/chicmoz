@@ -3,7 +3,7 @@ import { type FC, useMemo, useState } from "react";
 import { Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useL1L2Validators, useValidatorTotals } from "~/hooks/api";
-import { ageStr, fmtNum } from "~/lib/utils";
+import { ageStr, fmtNum, parseBigIntAsDecimal } from "~/lib/utils";
 import { validatorStatusToDisplay } from "~/lib/validator-status";
 
 type Filter =
@@ -75,17 +75,8 @@ export const ValidatorsPage: FC = () => {
   const validating = totals?.validating ?? filtered.filter(v => validatorStatusToDisplay(v.status) === "validating").length;
   const nonValidating = total - validating;
 
-  // Stake comes as a bigint (in 18-decimal wei-like units). Divide early so
-  // aggregates don't overflow Number precision.
-  const STAKE_SCALE = 1e18;
-  const toStake = (v: { stake: bigint | string | number }) => {
-    try {
-      const big = typeof v.stake === "bigint" ? v.stake : BigInt(v.stake);
-      return Number(big / 10n ** 15n) / 1_000; // preserve ~3 fractional digits
-    } catch {
-      return Number(v.stake) / STAKE_SCALE;
-    }
-  };
+  const toStake = (v: { stake: bigint | string | number }) =>
+    parseBigIntAsDecimal(v.stake);
   const totalStake = (validators ?? []).reduce((s, v) => s + toStake(v), 0);
   const validatingStake = (validators ?? [])
     .filter((v) => validatorStatusToDisplay(v.status) === "validating")

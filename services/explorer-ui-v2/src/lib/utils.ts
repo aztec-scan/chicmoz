@@ -61,6 +61,30 @@ export const toIsoUtc = (ts: number | Date | null | undefined): string => {
   return `${new Date(millis).toISOString().replace("T", " ").slice(0, 19)} UTC`;
 };
 
+/**
+ * Scale a fixed-point bigint to a JS number — for arithmetic (sum/avg/max),
+ * not display. Pre-divides by `10^(decimals - 6)` so the final divide stays in
+ * Number range; loses precision below ~6 fractional digits which is fine for
+ * stake aggregates and chart inputs. Use `formatFees` instead when you need
+ * exact-string output.
+ */
+export const parseBigIntAsDecimal = (
+  value: bigint | string | number | null | undefined,
+  decimals = 18,
+): number => {
+  if (value === null || value === undefined) {return 0;}
+  try {
+    const big = typeof value === "bigint" ? value : BigInt(value);
+    const preserveDigits = 6;
+    const preScale = decimals > preserveDigits ? decimals - preserveDigits : 0;
+    const scaled = preScale > 0 ? big / 10n ** BigInt(preScale) : big;
+    return Number(scaled) / 10 ** Math.min(decimals, preserveDigits);
+  } catch {
+    const n = Number(value);
+    return Number.isFinite(n) ? n / 10 ** decimals : 0;
+  }
+};
+
 /** Fee-juice formatting to a fixed precision with graceful fallback. */
 export const formatFees = (
   value: bigint | string | number | null | undefined,
