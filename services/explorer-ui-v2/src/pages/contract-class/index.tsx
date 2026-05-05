@@ -14,6 +14,9 @@ import {
   useDeployedContractInstances,
 } from "~/hooks/api";
 import { fmtNum, truncateHashString } from "~/lib/utils";
+import { FunctionsTab } from "./functions-tab";
+import { InstancesTab } from "./instances-tab";
+import { SourceTab } from "./source-tab";
 
 type Tab = "source" | "private" | "utility" | "instances";
 
@@ -197,155 +200,20 @@ export const ContractClassPage: FC = () => {
           </button>
         </div>
 
-        {tab === "source" && (
-          <div className="source-block">
-            <div className="source-meta">
-              {source?.sourceCodeUrl && (
-                <div>
-                  <span className="k">Source</span>
-                  <a
-                    href={source.sourceCodeUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {source.sourceCodeUrl.replace("https://", "")}
-                  </a>
-                </div>
-              )}
-              {source?.sourceCodeCommitHash && (
-                <div>
-                  <span className="k">Commit</span>
-                  {source.sourceCodeCommitHash.slice(0, 8)}
-                </div>
-              )}
-              {source?.aztecVersion && (
-                <div>
-                  <span className="k">Aztec version</span>
-                  {source.aztecVersion}
-                </div>
-              )}
-              {source && (
-                <div>
-                  <span className="k">Match</span>
-                  <span style={{ color: "var(--green)" }}>
-                    ● bytecode verified
-                  </span>
-                </div>
-              )}
-            </div>
-            {source?.sourceCode?.length ? (
-              source.sourceCode.slice(0, 3).map((entry, i) => (
-                <pre key={`${entry.path}-${i}`} className="code">
-                  <span className="cmt">// {entry.path}</span>
-                  {"\n"}
-                  {entry.content ?? ""}
-                </pre>
-              ))
-            ) : (
-              <div
-                className="empty-state"
-                style={{ background: "var(--bg-1)" }}
-              >
-                {verified
-                  ? "source not yet fetched"
-                  : "contract class is unverified — submit source to verify"}
-              </div>
-            )}
-          </div>
-        )}
-
+        {tab === "source" && <SourceTab source={source} verified={verified} />}
         {tab === "private" && (
-          <>
-            <div className="fn-head">
-              <div>Kind</div>
-              <div>Signature</div>
-              <div className="right">Selector</div>
-              <div className="right">Bytecode</div>
-            </div>
-            {(privateFns ?? []).map((f) => (
-              <div
-                key={`${f.privateFunction.selector.value}`}
-                className="fn-row"
-              >
-                <span className="kind priv">priv</span>
-                <span className="name">
-                  selector {f.privateFunction.selector.value}
-                </span>
-                <span className="sel">
-                  {f.privateFunction.selector.value}
-                </span>
-                <span className="size">
-                  {f.privateFunction.bytecode
-                    ? `${fmtNum(f.privateFunction.bytecode.length)} B`
-                    : "—"}
-                </span>
-              </div>
-            ))}
-            {(!privateFns || privateFns.length === 0) && (
-              <div className="empty-state">no private functions broadcast</div>
-            )}
-          </>
+          <FunctionsTab
+            kind="priv"
+            entries={privateFns?.map((f) => f.privateFunction)}
+          />
         )}
-
         {tab === "utility" && (
-          <>
-            <div className="fn-head">
-              <div>Kind</div>
-              <div>Signature</div>
-              <div className="right">Selector</div>
-              <div className="right">Bytecode</div>
-            </div>
-            {(utilityFns ?? []).map((f) => (
-              <div
-                key={`${f.utilityFunction.selector.value}`}
-                className="fn-row"
-              >
-                <span className="kind util">util</span>
-                <span className="name">
-                  selector {f.utilityFunction.selector.value}
-                </span>
-                <span className="sel">
-                  {f.utilityFunction.selector.value}
-                </span>
-                <span className="size">
-                  {f.utilityFunction.bytecode
-                    ? `${fmtNum(f.utilityFunction.bytecode.length)} B`
-                    : "—"}
-                </span>
-              </div>
-            ))}
-            {(!utilityFns || utilityFns.length === 0) && (
-              <div className="empty-state">no utility functions broadcast</div>
-            )}
-          </>
+          <FunctionsTab
+            kind="util"
+            entries={utilityFns?.map((f) => f.utilityFunction)}
+          />
         )}
-
-        {tab === "instances" && (
-          <>
-            <div className="inst-head">
-              <div>Address</div>
-              <div className="right">Deployer</div>
-              <div className="right">Status</div>
-            </div>
-            {(instances ?? []).map((i) => (
-              <Link
-                key={i.address}
-                className="inst-row"
-                to="/contracts/instances/$address"
-                params={{ address: i.address }}
-              >
-                <span className="hash">{i.address}</span>
-                <span className="num">
-                  {truncateHashString(i.deployer, 8, 6)}
-                </span>
-                <span className="age">{i.isOrphaned ? "orphaned" : "active"}</span>
-              </Link>
-            ))}
-            {(!instances || instances.length === 0) && (
-              <div className="empty-state">no instances</div>
-            )}
-          </>
-        )}
+        {tab === "instances" && <InstancesTab instances={instances} />}
       </div>
     </Shell>
   );

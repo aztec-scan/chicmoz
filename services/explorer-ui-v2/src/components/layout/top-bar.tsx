@@ -7,8 +7,11 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
+import {
+  type ResponsiveBreakpoint,
+  useResponsiveNavItems,
+} from "~/hooks/use-responsive-nav-items";
 import { useSystemStatus } from "~/hooks/use-system-status";
 import { L2_NETWORK_ID } from "~/service/constants";
 import { BrandLogo } from "./brand-logo";
@@ -78,26 +81,12 @@ const MORE_NAV_ITEMS: NavItem[] = [
 const ENV_LABEL = (L2_NETWORK_ID ?? "MAINNET").toString().toUpperCase();
 
 /** Primary nav collapses right-to-left into the More menu as the viewport shrinks. */
-const BREAKPOINTS: { maxWidth: number; visible: number }[] = [
+const BREAKPOINTS: ResponsiveBreakpoint[] = [
   { maxWidth: 560, visible: 0 },
   { maxWidth: 720, visible: 1 },
   { maxWidth: 900, visible: 2 },
   { maxWidth: 1100, visible: 3 },
 ];
-
-const subscribeToResize = (cb: () => void): (() => void) => {
-  window.addEventListener("resize", cb);
-  return () => window.removeEventListener("resize", cb);
-};
-
-const getVisiblePrimaryCount = (): number => {
-  if (typeof window === "undefined") {return PRIMARY_NAV_ITEMS.length;}
-  const w = window.innerWidth;
-  for (const bp of BREAKPOINTS) {
-    if (w <= bp.maxWidth) {return bp.visible;}
-  }
-  return PRIMARY_NAV_ITEMS.length;
-};
 
 const SunIcon: FC = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -165,18 +154,10 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
   const { label: statusLabel, dotClass } = useSystemStatus();
   const { theme, setTheme } = useTheme();
 
-  const visibleCount = useSyncExternalStore(
-    subscribeToResize,
-    getVisiblePrimaryCount,
-    () => PRIMARY_NAV_ITEMS.length,
+  const { primaryVisible, primaryOverflow } = useResponsiveNavItems(
+    PRIMARY_NAV_ITEMS,
+    BREAKPOINTS,
   );
-
-  const { primaryVisible, primaryOverflow } = useMemo(() => {
-    return {
-      primaryVisible: PRIMARY_NAV_ITEMS.slice(0, visibleCount),
-      primaryOverflow: PRIMARY_NAV_ITEMS.slice(visibleCount),
-    };
-  }, [visibleCount]);
 
   /** Dropdown items grouped in source order by `group`. */
   const dropdownGroups: { group: NavGroup; items: NavItem[] }[] = useMemo(() => {
