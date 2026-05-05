@@ -8,6 +8,7 @@ export const TabIds = [
   "noteHashes",
   "l2ToL1Msgs",
   "publicDataWrites",
+  "publicCallRequests",
 ] as const;
 
 export const tabIdSchema = z.enum(TabIds);
@@ -27,4 +28,5 @@ export const txEffectTabs: Tab[] = [
   { id: "noteHashes", label: "Note hashes" },
   { id: "l2ToL1Msgs", label: "L2 to L1 messages" },
   { id: "publicDataWrites", label: "Public data writes" },
+  { id: "publicCallRequests", label: "Public Call Requests" },
 ];

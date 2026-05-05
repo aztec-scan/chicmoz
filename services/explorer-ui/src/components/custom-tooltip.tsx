@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 
-interface CustomTooltipProps {
+export interface CustomTooltipProps {
   children: React.ReactNode;
   content: React.ReactNode;
   open?: boolean;
