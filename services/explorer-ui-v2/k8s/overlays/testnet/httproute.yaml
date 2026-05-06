@@ -2,6 +2,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: explorer-ui-v2
+  namespace: chicmoz-prod
   labels:
     app.kubernetes.io/name: explorer-ui-v2
     app.kubernetes.io/part-of: chicmoz-prod
@@ -19,5 +20,5 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: explorer-ui-v2
+        - name: explorer-ui-v2-testnet
           port: 80
