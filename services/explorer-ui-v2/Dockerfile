@@ -38,6 +38,7 @@ WORKDIR /app
 
 # Copy monorepo root package files (yarn.lock and .yarnrc.yml live at repo root)
 COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn/ ./.yarn/
 
 # Copy workspace packages needed by the frontend
 COPY packages/ ./packages/
