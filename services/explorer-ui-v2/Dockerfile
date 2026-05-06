@@ -47,6 +47,9 @@ COPY services/explorer-ui-v2/ ./services/explorer-ui-v2/
 # Install only the deps needed for this workspace
 RUN yarn workspaces focus @chicmoz/explorer-ui-v2
 
+# Build internal workspace dependencies first
+RUN yarn workspace @chicmoz-pkg/types build
+
 # Build the frontend workspace
 RUN yarn workspace @chicmoz/explorer-ui-v2 build
 

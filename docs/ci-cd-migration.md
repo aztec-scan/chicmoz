@@ -305,6 +305,28 @@ Currently secrets are injected via `kubectl create secret generic` in the deploy
 
 Services that run DB migrations via an init container (e.g. `explorer-api`, `aztec-listener`) keep the same `initContainers` pattern in the base `deployment.yaml` — Kustomize carries these through to the overlay unchanged.
 
+### Building internal workspace package dependencies
+
+In the `chicmoz-base` pattern, all internal packages (e.g. `@chicmoz-pkg/types`) were pre-built as part of constructing the base image. In the new pattern there is no base image — `yarn workspaces focus` only installs npm dependencies, it does **not** compile workspace packages.
+
+Any `workspace:^` dependency listed in the service's `package.json` must be explicitly built in the Dockerfile **before** the service build step:
+
+```dockerfile
+# Install only the deps needed for this workspace
+RUN yarn workspaces focus @chicmoz/<service>
+
+# Build internal workspace dependencies first
+RUN yarn workspace @chicmoz-pkg/types build
+# Add one line per internal workspace:^ dependency
+
+# Build the service
+RUN yarn workspace @chicmoz/<service> build
+```
+
+**How to find which packages to build:** check `dependencies` in the service's `package.json` for entries with `"workspace:^"`. Each one needs a `yarn workspace <name> build` step.
+
+**`.dockerignore` note:** the `!packages/<name>` entries in `.dockerignore` whitelist the full package directory tree (source, tsconfig, etc.), so no additional entries are needed for packages already listed there. If you add a new internal package dependency that isn't yet whitelisted, add `!packages/<name>` to `.dockerignore`.
+
 ### VITE\_\* build args (frontend only)
 
 Only frontend services (`explorer-ui`, `explorer-ui-v2`) use `build-args` in the Docker build step. Backend services have no build-time env vars — all config is injected at runtime via K8s Secrets or ConfigMaps.
