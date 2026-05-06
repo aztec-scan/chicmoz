@@ -308,3 +308,27 @@ Services that run DB migrations via an init container (e.g. `explorer-api`, `azt
 ### VITE\_\* build args (frontend only)
 
 Only frontend services (`explorer-ui`, `explorer-ui-v2`) use `build-args` in the Docker build step. Backend services have no build-time env vars — all config is injected at runtime via K8s Secrets or ConfigMaps.
+
+### `.dockerignore` whitelist — new-pattern services only
+
+The root `.dockerignore` starts with `*` (exclude everything) and then whitelists specific files. For the **old `chicmoz-base` pattern** (`explorer-ui` and all backend services), this is fine — the base image already contains the full monorepo, and the service Dockerfile only needs `package.json` from the root context.
+
+For **new-pattern services** (like `explorer-ui-v2`) that build from the monorepo root without `chicmoz-base`, the `.dockerignore` must explicitly whitelist every file the build needs. The `package.json` entry alone is not enough.
+
+When migrating a service to the new pattern, add all of the following to `.dockerignore`:
+
+```
+!services/<service>/package.json
+!services/<service>/tsconfig.json
+!services/<service>/tsconfig.app.json
+!services/<service>/tsconfig.node.json
+!services/<service>/vite.config.ts      # frontend only
+!services/<service>/index.html          # frontend only
+!services/<service>/postcss.config.js   # frontend only
+!services/<service>/tailwind.config.js  # frontend only
+!services/<service>/src
+```
+
+For backend services, replace the frontend-specific entries with whatever config files the service needs (e.g. `tsconfig.json`, `src/`).
+
+> **Symptom if missing:** The Docker build will fail with `Cannot read file '/app/services/<service>/tsconfig.json'` or similar — TypeScript or Vite can't find files that were excluded by `.dockerignore` before they reached the build context.

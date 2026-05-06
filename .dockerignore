@@ -23,6 +23,14 @@
 !services/explorer-api/package.json
 !services/explorer-ui/package.json
 !services/explorer-ui-v2/package.json
+!services/explorer-ui-v2/tsconfig.json
+!services/explorer-ui-v2/tsconfig.app.json
+!services/explorer-ui-v2/tsconfig.node.json
+!services/explorer-ui-v2/vite.config.ts
+!services/explorer-ui-v2/index.html
+!services/explorer-ui-v2/postcss.config.js
+!services/explorer-ui-v2/tailwind.config.js
+!services/explorer-ui-v2/src
 !services/websocket-event-publisher/package.json
 # find . -name 'package.json' -not -path './.yarn/*' -not -path './services/*' -maxdepth 3 | sed -e 's/^.\//!/'
 !packages/logger-server

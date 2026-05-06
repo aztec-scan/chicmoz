@@ -111,7 +111,7 @@ export const chicmozL2DroppedTxSchema = z.object({
   txHash: z.lazy(() => chicmozL2TxEffectSchema.shape.txHash),
   createdAsPendingAt: z.coerce.number(),
   droppedAt: z.coerce.number().default(() => new Date().getTime()),
-  dropReason: z.string().optional(),
+  dropReason: z.string().nullish(),
 });
 
 export const chicmozL2TxEffectSchema = z.object({
