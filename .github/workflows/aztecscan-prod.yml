@@ -110,6 +110,11 @@ jobs:
           chmod +x tools/*
           echo "$PWD/tools" >> $GITHUB_PATH
 
+      - name: Install Skaffold
+        run: |
+          curl -Lo tools/skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+          chmod +x tools/skaffold
+
       - name: Configure doctl
         uses: digitalocean/action-doctl@v2
         with:
