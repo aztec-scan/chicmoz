@@ -7,39 +7,71 @@ import {
   chicmozSearchResultsSchema,
   type ChicmozSearchResults,
 } from "@chicmoz-pkg/types";
-import { and, eq, or, sql, isNull } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   droppedTx,
+  globalVariables,
+  header,
   l2Block,
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
   l2Tx,
+  l2TxPublicCallRequest,
   txEffect,
 } from "../../schema/index.js";
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
 
-const getBlockHashByHeight = async (
-  height: bigint,
+const getBlockHashesByHeightOrSlot = async (
+  blockNumber: bigint,
 ): Promise<ChicmozSearchResults["results"]["blocks"]> => {
-  const res = await db()
+  const blocksByHeight = await db()
     .select({
       hash: l2Block.hash,
+      blockNumber: globalVariables.blockNumber,
+      slotNumber: globalVariables.slotNumber,
     })
     .from(l2Block)
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
-        eq(l2Block.height, height),
+        eq(l2Block.height, blockNumber),
         isNull(l2Block.orphan_timestamp),
         eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();
-  if (res.length === 0) {
+
+  const slotNumber = Number(blockNumber);
+  const blocksBySlot = Number.isSafeInteger(slotNumber)
+    ? await db()
+        .select({
+          hash: l2Block.hash,
+          blockNumber: globalVariables.blockNumber,
+          slotNumber: globalVariables.slotNumber,
+        })
+        .from(l2Block)
+        .innerJoin(header, eq(l2Block.hash, header.blockHash))
+        .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+        .where(
+          and(
+            eq(globalVariables.slotNumber, slotNumber),
+            isNull(l2Block.orphan_timestamp),
+            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+          ),
+        )
+        .execute()
+    : [];
+
+  const uniqueBlocks = new Map(
+    [...blocksByHeight, ...blocksBySlot].map((block) => [block.hash, block]),
+  );
+  if (uniqueBlocks.size === 0) {
     return [];
   }
-  return [{ hash: res[0].hash }];
+  return [...uniqueBlocks.values()];
 };
 
 const matchBlock = async (
@@ -48,14 +80,18 @@ const matchBlock = async (
   const res = await db()
     .select({
       hash: l2Block.hash,
+      blockNumber: globalVariables.blockNumber,
+      slotNumber: globalVariables.slotNumber,
     })
     .from(l2Block)
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(eq(l2Block.hash, hash))
     .execute();
   if (res.length === 0) {
     return [];
   }
-  return [{ hash: res[0].hash }];
+  return [{ ...res[0] }];
 };
 
 const matchTxEffect = async (
@@ -120,6 +156,23 @@ const matchValidator = async (
     return [];
   }
   return [{ validatorAddress: res[0].attester }];
+};
+
+const matchAccountByPublicCallRequestSender = async (
+  address: HexString,
+): Promise<ChicmozSearchResults["results"]["accounts"]> => {
+  const res = await db()
+    .select({
+      address: l2TxPublicCallRequest.msgSender,
+    })
+    .from(l2TxPublicCallRequest)
+    .where(eq(l2TxPublicCallRequest.msgSender, address))
+    .limit(1)
+    .execute();
+  if (res.length === 0) {
+    return [];
+  }
+  return [{ address: res[0].address }];
 };
 
 const matchContractClass = async (
@@ -200,13 +253,14 @@ export const search = async (
     return {
       searchPhrase: query.toString(),
       results: {
-        blocks: await getBlockHashByHeight(query),
+        blocks: await getBlockHashesByHeightOrSlot(query),
         txEffects: [],
         droppedTx: [],
         pendingTx: [],
         registeredContractClasses: [],
         contractInstances: [],
         validators: [],
+        accounts: [],
       },
     };
   }
@@ -218,6 +272,7 @@ export const search = async (
     registeredContractClasses,
     contractInstances,
     validators,
+    accounts,
   ] = await Promise.all([
     matchBlock(query),
     matchTxEffect(query),
@@ -226,6 +281,7 @@ export const search = async (
     matchContractClass(query),
     matchContractInstance(query),
     matchValidator(query),
+    matchAccountByPublicCallRequestSender(query),
   ]);
 
   return chicmozSearchResultsSchema.parse({
@@ -238,6 +294,7 @@ export const search = async (
       registeredContractClasses,
       contractInstances,
       validators,
+      accounts,
     },
   });
 };

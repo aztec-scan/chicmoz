@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTheme } from "next-themes";
 import {
   type FC,
@@ -14,6 +14,8 @@ import {
 } from "~/hooks/use-responsive-nav-items";
 import { useSystemStatus } from "~/hooks/use-system-status";
 import { L2_NETWORK_ID } from "~/service/constants";
+import { searchL2Api } from "~/api";
+import { getSingleSearchDestination } from "~/lib/search-results";
 import { BrandLogo } from "./brand-logo";
 
 export type TopBarActive =
@@ -147,7 +149,6 @@ const MoonIcon: FC = () => (
 );
 
 export const TopBar: FC<Props> = ({ active = "home" }) => {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -223,27 +224,31 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
     };
   }, []);
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSearch = async () => {
     const q = query.trim();
     if (!q) {
       return;
     }
-    if (q.startsWith("0x")) {
-      if (q.length <= 20) {
-        void navigate({
-          to: "/contracts/instances/$address",
-          params: { address: q },
-        });
-      } else {
-        void navigate({ to: "/tx-effects/$hash", params: { hash: q } });
+
+    try {
+      const searchResults = await searchL2Api.search(q);
+      const singleDestination = getSingleSearchDestination(
+        searchResults.results,
+      );
+      if (singleDestination) {
+        window.location.assign(singleDestination.href);
+        return;
       }
-    } else if (/^\d+$/.test(q)) {
-      void navigate({
-        to: "/blocks/$blockNumber",
-        params: { blockNumber: q },
-      });
+    } catch {
+      // Let the search page own error presentation for failed searches.
     }
+
+    window.location.assign(`/search?q=${encodeURIComponent(q)}`);
+  };
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    void handleSearch();
   };
 
   const moreActive = dropdownGroups
@@ -265,7 +270,13 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       </Link>
 
       <div
-        className={`chainpill ${dotClass === "dot" ? "" : dotClass === "dot warn" ? "unhealthy" : "down"}`}
+        className={`chainpill ${
+          dotClass === "dot"
+            ? ""
+            : dotClass === "dot warn"
+              ? "unhealthy"
+              : "down"
+        }`}
       >
         <span className={`dot pulse`} />
         <span>{statusLabel}</span>
@@ -298,7 +309,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       <div className="more-menu" ref={menuRef}>
         <button
           type="button"
-          className={`more-btn${moreActive ? " active" : ""}${menuOpen ? " on" : ""}`}
+          className={`more-btn${moreActive ? " active" : ""}${
+            menuOpen ? " on" : ""
+          }`}
           aria-label="More navigation"
           aria-haspopup="menu"
           aria-expanded={menuOpen}
@@ -333,7 +346,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                       key={item.key}
                       to={item.to}
                       role="menuitem"
-                      className={`dd-link${active === item.key ? " active" : ""}`}
+                      className={`dd-link${
+                        active === item.key ? " active" : ""
+                      }`}
                       onClick={() => setMenuOpen(false)}
                     >
                       {item.label}
@@ -348,7 +363,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={currentTheme === "light"}
-                className={`dd-theme-btn${currentTheme === "light" ? " active" : ""}`}
+                className={`dd-theme-btn${
+                  currentTheme === "light" ? " active" : ""
+                }`}
                 onClick={() => setTheme("light")}
               >
                 <SunIcon />
@@ -358,7 +375,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={currentTheme === "dark"}
-                className={`dd-theme-btn${currentTheme === "dark" ? " active" : ""}`}
+                className={`dd-theme-btn${
+                  currentTheme === "dark" ? " active" : ""
+                }`}
                 onClick={() => setTheme("dark")}
               >
                 <MoonIcon />
@@ -368,7 +387,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={currentTheme === "system"}
-                className={`dd-theme-btn${currentTheme === "system" ? " active" : ""}`}
+                className={`dd-theme-btn${
+                  currentTheme === "system" ? " active" : ""
+                }`}
                 onClick={() => setTheme("system")}
               >
                 <SystemIcon />
