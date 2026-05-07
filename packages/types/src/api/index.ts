@@ -5,6 +5,7 @@ import {
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
   chicmozL2TxEffectSchema,
+  chicmozL2PendingTxSchema,
   hexStringSchema,
 } from "../index.js";
 
@@ -73,6 +74,11 @@ export const chicmozSearchResultsSchema = z.lazy(() =>
       validators: z.array(
         z.object({
           validatorAddress: chicmozL1L2ValidatorSchema.shape.attester,
+        }),
+      ),
+      accounts: z.array(
+        z.object({
+          address: chicmozL2PendingTxSchema.shape.feePayer,
         }),
       ),
     }),

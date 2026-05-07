@@ -88,5 +88,14 @@ export const getSingleSearchDestination = (
     };
   }
 
+  const [account] = results.accounts;
+  if (account) {
+    return {
+      label: "account",
+      href: `/address/${account.address}`,
+      params: { address: account.address },
+    };
+  }
+
   return undefined;
 };

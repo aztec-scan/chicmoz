@@ -17,6 +17,7 @@ import {
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
   l2Tx,
+  l2TxPublicCallRequest,
   txEffect,
 } from "../../schema/index.js";
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
@@ -157,6 +158,23 @@ const matchValidator = async (
   return [{ validatorAddress: res[0].attester }];
 };
 
+const matchAccountByPublicCallRequestSender = async (
+  address: HexString,
+): Promise<ChicmozSearchResults["results"]["accounts"]> => {
+  const res = await db()
+    .select({
+      address: l2TxPublicCallRequest.msgSender,
+    })
+    .from(l2TxPublicCallRequest)
+    .where(eq(l2TxPublicCallRequest.msgSender, address))
+    .limit(1)
+    .execute();
+  if (res.length === 0) {
+    return [];
+  }
+  return [{ address: res[0].address }];
+};
+
 const matchContractClass = async (
   contractClassId: HexString,
 ): Promise<ChicmozSearchResults["results"]["registeredContractClasses"]> => {
@@ -242,6 +260,7 @@ export const search = async (
         registeredContractClasses: [],
         contractInstances: [],
         validators: [],
+        accounts: [],
       },
     };
   }
@@ -253,6 +272,7 @@ export const search = async (
     registeredContractClasses,
     contractInstances,
     validators,
+    accounts,
   ] = await Promise.all([
     matchBlock(query),
     matchTxEffect(query),
@@ -261,6 +281,7 @@ export const search = async (
     matchContractClass(query),
     matchContractInstance(query),
     matchValidator(query),
+    matchAccountByPublicCallRequestSender(query),
   ]);
 
   return chicmozSearchResultsSchema.parse({
@@ -273,6 +294,7 @@ export const search = async (
       registeredContractClasses,
       contractInstances,
       validators,
+      accounts,
     },
   });
 };

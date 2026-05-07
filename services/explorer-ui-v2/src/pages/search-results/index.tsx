@@ -90,7 +90,7 @@ export const SearchResultsPage: FC = () => {
       <div className="detail-header">
         <div>
           <div className="kicker">Search results</div>
-          <h1>{query || "empty query"}</h1>
+          <h1 className="search-query-title">{query || "empty query"}</h1>
           <div className="hash">
             {isLoading
               ? "searching…"
@@ -234,6 +234,22 @@ export const SearchResultsPage: FC = () => {
                 to="/validators/$attesterAddress"
                 params={{ attesterAddress: validator.validatorAddress }}
                 value={validator.validatorAddress}
+              />
+            ))}
+          </SearchResultSection>
+
+          <SearchResultSection
+            title="Accounts"
+            count={data.results.accounts.length}
+          >
+            {data.results.accounts.map((account) => (
+              <SearchResultLink
+                key={account.address}
+                label="account"
+                meta="activity →"
+                to="/address/$address"
+                params={{ address: account.address }}
+                value={account.address}
               />
             ))}
           </SearchResultSection>

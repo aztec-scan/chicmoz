@@ -673,6 +673,13 @@
   word-break: break-all;
   line-height: 1.3;
 }
+.detail-header h1.search-query-title {
+  font-size: clamp(18px, 3vw, 44px);
+  line-height: 1.2;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .detail-header h1.sans {
   font-family: var(--sans);
   font-size: 32px;
