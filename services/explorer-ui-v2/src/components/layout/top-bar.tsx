@@ -150,6 +150,7 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { label: statusLabel, dotClass } = useSystemStatus();
   const { theme, setTheme } = useTheme();
@@ -160,16 +161,19 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
   );
 
   /** Dropdown items grouped in source order by `group`. */
-  const dropdownGroups: { group: NavGroup; items: NavItem[] }[] = useMemo(() => {
-    const all = [...primaryOverflow, ...MORE_NAV_ITEMS];
-    const order: NavGroup[] = ["main", "aztec", "dev"];
-    return order
-      .map((g) => ({ group: g, items: all.filter((i) => i.group === g) }))
-      .filter((entry) => entry.items.length > 0);
-  }, [primaryOverflow]);
+  const dropdownGroups: { group: NavGroup; items: NavItem[] }[] =
+    useMemo(() => {
+      const all = [...primaryOverflow, ...MORE_NAV_ITEMS];
+      const order: NavGroup[] = ["main", "aztec", "dev"];
+      return order
+        .map((g) => ({ group: g, items: all.filter((i) => i.group === g) }))
+        .filter((entry) => entry.items.length > 0);
+    }, [primaryOverflow]);
 
   useEffect(() => {
-    if (!menuOpen) {return;}
+    if (!menuOpen) {
+      return;
+    }
     const handleDocClick = (e: MouseEvent) => {
       if (
         menuRef.current &&
@@ -180,7 +184,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {setMenuOpen(false);}
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleDocClick);
     document.addEventListener("keydown", handleEsc);
@@ -190,13 +196,45 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    const handleSearchShortcut = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+      }
+
+      const { activeElement } = document;
+      const isTyping =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        (activeElement instanceof HTMLElement &&
+          activeElement.isContentEditable);
+
+      if (isTyping) {
+        return;
+      }
+
+      e.preventDefault();
+      searchInputRef.current?.focus();
+    };
+
+    document.addEventListener("keydown", handleSearchShortcut);
+    return () => {
+      document.removeEventListener("keydown", handleSearchShortcut);
+    };
+  }, []);
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    if (!q) {return;}
+    if (!q) {
+      return;
+    }
     if (q.startsWith("0x")) {
       if (q.length <= 20) {
-        void navigate({ to: "/contracts/instances/$address", params: { address: q } });
+        void navigate({
+          to: "/contracts/instances/$address",
+          params: { address: q },
+        });
       } else {
         void navigate({ to: "/tx-effects/$hash", params: { hash: q } });
       }
@@ -226,7 +264,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
         <div className="brand-env">{ENV_LABEL}</div>
       </Link>
 
-      <div className={`chainpill ${dotClass === "dot" ? "" : dotClass === "dot warn" ? "unhealthy" : "down"}`}>
+      <div
+        className={`chainpill ${dotClass === "dot" ? "" : dotClass === "dot warn" ? "unhealthy" : "down"}`}
+      >
         <span className={`dot pulse`} />
         <span>{statusLabel}</span>
       </div>
@@ -234,6 +274,7 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       <form className="search" onSubmit={onSubmit}>
         <span className="prompt">{"›"}</span>
         <input
+          ref={searchInputRef}
           placeholder="search block height · hash · tx · contract · class · address…"
           spellCheck={false}
           value={query}
