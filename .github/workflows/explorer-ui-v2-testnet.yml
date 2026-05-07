@@ -154,7 +154,7 @@ jobs:
         run: kubectl apply -k services/explorer-ui-v2/k8s/overlays/testnet/
 
       - name: Restart deployment
-        run: kubectl rollout restart deployment/explorer-ui-v2 -n chicmoz-prod
+        run: kubectl rollout restart deployment/explorer-ui-v2-testnet -n chicmoz-prod
 
       - name: Wait for rollout
-        run: kubectl rollout status deployment/explorer-ui-v2 -n chicmoz-prod --timeout=300s
+        run: kubectl rollout status deployment/explorer-ui-v2-testnet -n chicmoz-prod --timeout=300s

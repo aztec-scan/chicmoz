@@ -53,8 +53,8 @@ Every push to `production-testnet` rebuilds and redeploys **all services**, even
   ├── set-up job   → install doctl + kubectl, cache tools
   ├── build job    → docker buildx + push, GHA layer cache, sha + network-latest tags
   └── deploy job   → kubectl apply -k services/<service>/k8s/overlays/{network}/
-                      kubectl rollout restart deployment/<service> -n chicmoz-prod
-                      kubectl rollout status deployment/<service> -n chicmoz-prod
+                      kubectl rollout restart deployment/<service>-{network} -n chicmoz-prod
+                      kubectl rollout status deployment/<service>-{network} -n chicmoz-prod
 ```
 
 Each workflow is **path-filtered** — only triggers when files under `services/<service>/` change. Services deploy independently.
@@ -69,18 +69,32 @@ Each service gets a `k8s/` directory co-located inside its service folder:
 services/<service>/
 └── k8s/
     ├── base/
-    │   ├── kustomization.yaml   ← lists resources (deployment, service, httproute)
+    │   ├── kustomization.yaml   ← lists resources (deployment, service only — NOT httproute)
     │   ├── deployment.yaml      ← no namespace, no image tag — just the shape
-    │   ├── service.yaml
-    │   └── httproute.yaml
+    │   └── service.yaml
     └── overlays/
         ├── testnet/
-        │   └── kustomization.yaml   ← namespace: chicmoz-prod, image newTag: testnet-latest
+        │   ├── kustomization.yaml   ← namespace, nameSuffix: -testnet, image newTag: testnet-latest
+        │   └── httproute.yaml       ← testnet-specific: parentRefs, hostname, backendRef
         ├── mainnet/
-        │   └── kustomization.yaml   ← namespace: chicmoz-prod, image newTag: mainnet-latest
+        │   ├── kustomization.yaml   ← namespace, nameSuffix: -mainnet, image newTag: mainnet-latest
+        │   └── httproute.yaml       ← mainnet-specific: parentRefs, hostname, backendRef
         └── devnet/
-            └── kustomization.yaml   ← namespace: chicmoz-prod, image newTag: devnet-latest
+            ├── kustomization.yaml   ← namespace, nameSuffix: -devnet, image newTag: devnet-latest
+            └── httproute.yaml       ← devnet-specific: parentRefs, hostname, backendRef
 ```
+
+### Why `httproute.yaml` lives in the overlay, not the base
+
+The `HTTPRoute` resource is **entirely network-specific** — every field differs per network:
+
+- `parentRefs.sectionName` — the gateway listener (e.g. `ui-v2-testnet-http` vs `ui-v2-mainnet-http`)
+- `hostnames` — the public hostname (e.g. `v2.testnet.aztecscan.xyz` vs `v2.aztecscan.xyz`)
+- `backendRefs.name` — the service name including network suffix (e.g. `explorer-ui-v2-testnet`)
+
+There is no meaningful "base" for an httproute. Putting it in the base would require overriding every field via patches, which is more complex than just writing a plain file per overlay.
+
+> **`backendRefs.name` must be hardcoded** to the suffixed service name (e.g. `explorer-ui-v2-testnet`). Kustomize's `nameSuffix` does **not** automatically update `backendRefs` references — it only transforms `metadata.name`. The httproute's own `metadata.name` can use the base name (e.g. `explorer-ui-v2`) and `nameSuffix` will append the suffix correctly. But `backendRefs.name` must explicitly reference the final suffixed service name.
 
 ### `base/kustomization.yaml`
 
@@ -101,29 +115,41 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 namespace: chicmoz-prod
+nameSuffix: -testnet
 
 resources:
   - ../../base
+  - httproute.yaml
 
 images:
   - name: registry.digitalocean.com/aztlan-containers/<service>
     newTag: testnet-latest
+```
 
-# Optional: network-specific patches
-patches:
-  - patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: <service>
-      spec:
-        template:
-          spec:
-            containers:
-              - name: <service>
-                env:
-                  - name: SOME_NETWORK_SPECIFIC_VAR
-                    value: "testnet-value"
+### `overlays/testnet/httproute.yaml`
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: <service> # nameSuffix appends -testnet → becomes <service>-testnet
+  namespace: chicmoz-prod
+spec:
+  parentRefs:
+    - name: aztecscan-gateway
+      sectionName: <service>-testnet-http
+    - name: aztecscan-gateway
+      sectionName: <service>-testnet-https
+  hostnames:
+    - <subdomain>.testnet.aztecscan.xyz
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: <service>-testnet # hardcoded — nameSuffix does NOT transform backendRefs
+          port: 80
 ```
 
 ---

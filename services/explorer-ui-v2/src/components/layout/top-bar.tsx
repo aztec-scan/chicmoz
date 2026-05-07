@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTheme } from "next-themes";
 import {
   type FC,
@@ -14,6 +14,8 @@ import {
 } from "~/hooks/use-responsive-nav-items";
 import { useSystemStatus } from "~/hooks/use-system-status";
 import { L2_NETWORK_ID } from "~/service/constants";
+import { searchL2Api } from "~/api";
+import { getSingleSearchDestination } from "~/lib/search-results";
 import { BrandLogo } from "./brand-logo";
 
 export type TopBarActive =
@@ -147,9 +149,9 @@ const MoonIcon: FC = () => (
 );
 
 export const TopBar: FC<Props> = ({ active = "home" }) => {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { label: statusLabel, dotClass } = useSystemStatus();
   const { theme, setTheme } = useTheme();
@@ -160,16 +162,19 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
   );
 
   /** Dropdown items grouped in source order by `group`. */
-  const dropdownGroups: { group: NavGroup; items: NavItem[] }[] = useMemo(() => {
-    const all = [...primaryOverflow, ...MORE_NAV_ITEMS];
-    const order: NavGroup[] = ["main", "aztec", "dev"];
-    return order
-      .map((g) => ({ group: g, items: all.filter((i) => i.group === g) }))
-      .filter((entry) => entry.items.length > 0);
-  }, [primaryOverflow]);
+  const dropdownGroups: { group: NavGroup; items: NavItem[] }[] =
+    useMemo(() => {
+      const all = [...primaryOverflow, ...MORE_NAV_ITEMS];
+      const order: NavGroup[] = ["main", "aztec", "dev"];
+      return order
+        .map((g) => ({ group: g, items: all.filter((i) => i.group === g) }))
+        .filter((entry) => entry.items.length > 0);
+    }, [primaryOverflow]);
 
   useEffect(() => {
-    if (!menuOpen) {return;}
+    if (!menuOpen) {
+      return;
+    }
     const handleDocClick = (e: MouseEvent) => {
       if (
         menuRef.current &&
@@ -180,7 +185,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {setMenuOpen(false);}
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleDocClick);
     document.addEventListener("keydown", handleEsc);
@@ -190,22 +197,58 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    const handleSearchShortcut = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+      }
+
+      const { activeElement } = document;
+      const isTyping =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        (activeElement instanceof HTMLElement &&
+          activeElement.isContentEditable);
+
+      if (isTyping) {
+        return;
+      }
+
+      e.preventDefault();
+      searchInputRef.current?.focus();
+    };
+
+    document.addEventListener("keydown", handleSearchShortcut);
+    return () => {
+      document.removeEventListener("keydown", handleSearchShortcut);
+    };
+  }, []);
+
+  const handleSearch = async () => {
+    const q = query.trim();
+    if (!q) {
+      return;
+    }
+
+    try {
+      const searchResults = await searchL2Api.search(q);
+      const singleDestination = getSingleSearchDestination(
+        searchResults.results,
+      );
+      if (singleDestination) {
+        window.location.assign(singleDestination.href);
+        return;
+      }
+    } catch {
+      // Let the search page own error presentation for failed searches.
+    }
+
+    window.location.assign(`/search?q=${encodeURIComponent(q)}`);
+  };
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const q = query.trim();
-    if (!q) {return;}
-    if (q.startsWith("0x")) {
-      if (q.length <= 20) {
-        void navigate({ to: "/contracts/instances/$address", params: { address: q } });
-      } else {
-        void navigate({ to: "/tx-effects/$hash", params: { hash: q } });
-      }
-    } else if (/^\d+$/.test(q)) {
-      void navigate({
-        to: "/blocks/$blockNumber",
-        params: { blockNumber: q },
-      });
-    }
+    void handleSearch();
   };
 
   const moreActive = dropdownGroups
@@ -226,7 +269,15 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
         <div className="brand-env">{ENV_LABEL}</div>
       </Link>
 
-      <div className={`chainpill ${dotClass === "dot" ? "" : dotClass === "dot warn" ? "unhealthy" : "down"}`}>
+      <div
+        className={`chainpill ${
+          dotClass === "dot"
+            ? ""
+            : dotClass === "dot warn"
+              ? "unhealthy"
+              : "down"
+        }`}
+      >
         <span className={`dot pulse`} />
         <span>{statusLabel}</span>
       </div>
@@ -234,6 +285,7 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       <form className="search" onSubmit={onSubmit}>
         <span className="prompt">{"›"}</span>
         <input
+          ref={searchInputRef}
           placeholder="search block height · hash · tx · contract · class · address…"
           spellCheck={false}
           value={query}
@@ -257,7 +309,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       <div className="more-menu" ref={menuRef}>
         <button
           type="button"
-          className={`more-btn${moreActive ? " active" : ""}${menuOpen ? " on" : ""}`}
+          className={`more-btn${moreActive ? " active" : ""}${
+            menuOpen ? " on" : ""
+          }`}
           aria-label="More navigation"
           aria-haspopup="menu"
           aria-expanded={menuOpen}
@@ -292,7 +346,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                       key={item.key}
                       to={item.to}
                       role="menuitem"
-                      className={`dd-link${active === item.key ? " active" : ""}`}
+                      className={`dd-link${
+                        active === item.key ? " active" : ""
+                      }`}
                       onClick={() => setMenuOpen(false)}
                     >
                       {item.label}
@@ -307,7 +363,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={currentTheme === "light"}
-                className={`dd-theme-btn${currentTheme === "light" ? " active" : ""}`}
+                className={`dd-theme-btn${
+                  currentTheme === "light" ? " active" : ""
+                }`}
                 onClick={() => setTheme("light")}
               >
                 <SunIcon />
@@ -317,7 +375,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={currentTheme === "dark"}
-                className={`dd-theme-btn${currentTheme === "dark" ? " active" : ""}`}
+                className={`dd-theme-btn${
+                  currentTheme === "dark" ? " active" : ""
+                }`}
                 onClick={() => setTheme("dark")}
               >
                 <MoonIcon />
@@ -327,7 +387,9 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={currentTheme === "system"}
-                className={`dd-theme-btn${currentTheme === "system" ? " active" : ""}`}
+                className={`dd-theme-btn${
+                  currentTheme === "system" ? " active" : ""
+                }`}
                 onClick={() => setTheme("system")}
               >
                 <SystemIcon />

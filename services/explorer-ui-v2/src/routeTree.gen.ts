@@ -18,6 +18,7 @@ import { Route as rootRoute } from './routes/__root'
 
 const TermsAndConditionsLazyImport = createFileRoute('/terms-and-conditions')()
 const StakingLazyImport = createFileRoute('/staking')()
+const SearchLazyImport = createFileRoute('/search')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const EcosystemLazyImport = createFileRoute('/ecosystem')()
@@ -61,6 +62,11 @@ const StakingLazyRoute = StakingLazyImport.update({
   path: '/staking',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/staking.lazy').then((d) => d.Route))
+
+const SearchLazyRoute = SearchLazyImport.update({
+  path: '/search',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/search.lazy').then((d) => d.Route))
 
 const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
   path: '/privacy-policy',
@@ -239,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyPolicyLazyImport
       parentRoute: typeof rootRoute
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/staking': {
       id: '/staking'
       path: '/staking'
@@ -369,6 +382,7 @@ export const routeTree = rootRoute.addChildren({
   EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
+  SearchLazyRoute,
   StakingLazyRoute,
   TermsAndConditionsLazyRoute,
   AddressAddressLazyRoute,
@@ -403,6 +417,7 @@ export const routeTree = rootRoute.addChildren({
         "/ecosystem",
         "/fee-recipients",
         "/privacy-policy",
+        "/search",
         "/staking",
         "/terms-and-conditions",
         "/address/$address",
@@ -435,6 +450,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
+    },
+    "/search": {
+      "filePath": "search.lazy.tsx"
     },
     "/staking": {
       "filePath": "staking.lazy.tsx"
