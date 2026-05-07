@@ -3,7 +3,12 @@ import { CopyableAddress } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainInfo, useFeeRecipients } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
-import { fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import {
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  truncateHashString,
+} from "~/lib/utils";
 
 type SortKey = "feesReceived" | "nbrOfBlocks" | "share";
 
@@ -16,15 +21,19 @@ export const FeeRecipientsPage: FC = () => {
     useSortableTable<SortKey>("feesReceived");
 
   const decimals = chainInfo?.feeJuiceDecimals ?? 18;
-  const symbol = chainInfo?.feeJuiceSymbol ?? "FJ";
+  const symbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
 
   const totalReceived = useMemo(() => {
-    if (!feeRecipients) {return 0n;}
+    if (!feeRecipients) {
+      return 0n;
+    }
     return feeRecipients.reduce((acc, r) => acc + r.feesReceived, 0n);
   }, [feeRecipients]);
 
   const totalBlocks = useMemo(() => {
-    if (!feeRecipients) {return 0;}
+    if (!feeRecipients) {
+      return 0;
+    }
     return feeRecipients.reduce((acc, r) => acc + r.nbrOfBlocks, 0);
   }, [feeRecipients]);
 
@@ -133,7 +142,9 @@ export const FeeRecipientsPage: FC = () => {
                   />
                 </span>
                 <span className="num">{fmtNum(r.nbrOfBlocks)}</span>
-                <span className="num">{formatFees(r.feesReceived, decimals)}</span>
+                <span className="num">
+                  {formatFees(r.feesReceived, decimals)}
+                </span>
                 <span className="num share-cell">
                   <span className="share-bar">
                     <span

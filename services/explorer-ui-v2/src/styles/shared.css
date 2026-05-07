@@ -911,3 +911,7 @@
 .copyable.copied .copyable-icon {
   color: var(--green);
 }
+.copyable.copyable-amount {
+  justify-content: flex-end;
+  font-family: var(--mono);
+}

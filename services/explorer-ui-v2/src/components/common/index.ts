@@ -1,4 +1,5 @@
 export * from "./address-link";
+export * from "./copyable-amount";
 export * from "./copyable-address";
 export * from "./countdown";
 export * from "./detail-empty-state";

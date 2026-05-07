@@ -1,10 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import {
-  DetailEmptyState,
-  DetailField,
-  StatusPill,
-} from "~/components/common";
+import { DetailEmptyState, DetailField, StatusPill } from "~/components/common";
 import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
 import { ConsoleHead, Shell } from "~/components/layout";
@@ -12,10 +8,17 @@ import {
   useContractInstance,
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
+  useChainInfo,
   useL2ToL1MsgsByContract,
   usePublicCallRequestsByContract,
 } from "~/hooks/api";
-import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  truncateHashString,
+} from "~/lib/utils";
 
 type Tab = "balance" | "history" | "calls" | "l2l1";
 
@@ -24,6 +27,7 @@ export const ContractInstancePage: FC = () => {
   const { data: instance, isLoading } = useContractInstance(address);
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
+  const { data: chainInfo } = useChainInfo();
   const { data: publicCalls } = usePublicCallRequestsByContract(address);
   const { data: l2ToL1Msgs } = useL2ToL1MsgsByContract(address);
 
@@ -56,9 +60,16 @@ export const ContractInstancePage: FC = () => {
 
   const verified = !!instance.verifiedDeploymentArguments;
   const className =
-    instance.artifactContractName ?? instance.standardContractType ?? "Contract";
+    instance.artifactContractName ??
+    instance.standardContractType ??
+    "Contract";
 
-  const balanceValue = balance?.balance ? formatFees(balance.balance) : "—";
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const balanceValue =
+    balance?.balance !== undefined && balance.balance !== null
+      ? formatFees(balance.balance, feeJuiceDecimals)
+      : "—";
 
   const maxBal = history?.length
     ? Number(
@@ -71,8 +82,9 @@ export const ContractInstancePage: FC = () => {
 
   const latest = history?.[history.length - 1];
   const prev24 = history?.[Math.max(0, history.length - 25)];
-  const delta =
-    latest && prev24 ? Number(latest.balance) - Number(prev24.balance) : 0;
+  const delta = latest && prev24 ? latest.balance - prev24.balance : 0n;
+  const deltaAbs = delta < 0n ? -delta : delta;
+  const deltaValue = formatFees(deltaAbs, feeJuiceDecimals);
 
   return (
     <Shell active="contracts">
@@ -124,14 +136,14 @@ export const ContractInstancePage: FC = () => {
           <div className="lbl">Balance</div>
           <div className="val">
             {balanceValue}
-            <span className="u">FJ</span>
+            <span className="u">{feeJuiceSymbol}</span>
           </div>
           <div className="sub">
-            {delta === 0
+            {delta === 0n
               ? "no change · 24h"
-              : delta > 0
-                ? `▲ ${fmtNum(delta)} · 24h`
-                : `▼ ${fmtNum(Math.abs(delta))} · 24h`}
+              : delta > 0n
+                ? `▲ ${deltaValue} · 24h`
+                : `▼ ${deltaValue} · 24h`}
           </div>
         </div>
         <div className="sc">
@@ -206,7 +218,10 @@ export const ContractInstancePage: FC = () => {
               <span className="tag">deployerMetadata</span>
             </h3>
             {instance.deployerMetadata.reviewedAt && (
-              <span className="tag-chip tag-chip-ok" title="Reviewed by aztec-scan">
+              <span
+                className="tag-chip tag-chip-ok"
+                title="Reviewed by aztec-scan"
+              >
                 ✓ reviewed
               </span>
             )}
@@ -289,14 +304,14 @@ export const ContractInstancePage: FC = () => {
           <div className="balance-block">
             <div className="balance-big">
               {balanceValue}
-              <span className="u">FJ</span>
+              <span className="u">{feeJuiceSymbol}</span>
             </div>
             <div className="balance-sub">
-              {delta === 0
+              {delta === 0n
                 ? "no change · 24h"
-                : delta > 0
-                  ? `+${fmtNum(delta)} · 24h`
-                  : `${fmtNum(delta)} · 24h`}{" "}
+                : delta > 0n
+                  ? `+${deltaValue} · 24h`
+                  : `-${deltaValue} · 24h`}{" "}
               · {history?.length ?? 0} snapshots
             </div>
             {history && history.length > 1 && maxBal > 0 && (
@@ -309,7 +324,7 @@ export const ContractInstancePage: FC = () => {
                       style={{
                         height: `${(Number(b.balance) / maxBal) * 100}%`,
                       }}
-                      title={`${formatFees(b.balance)} FJ · ${ageStr(b.timestamp)}`}
+                      title={`${formatFees(b.balance, feeJuiceDecimals)} ${feeJuiceSymbol} · ${ageStr(b.timestamp)}`}
                     />
                   ))}
                 </div>
@@ -325,37 +340,43 @@ export const ContractInstancePage: FC = () => {
         {tab === "history" && (
           <>
             <div className="hist-head">
-              <div>Balance (FJ)</div>
+              <div>Balance ({feeJuiceSymbol})</div>
               <div>Tx</div>
               <div className="right">Timestamp</div>
               <div className="right">Age</div>
             </div>
-            {(history ?? []).slice().reverse().map((h, i) => (
-              <div key={i} className="hist-row">
-                <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
-                  {formatFees(h.balance)}
-                </span>
-                <span className="hash">
-                  {h.sourceTxHash ? (
-                    <Link
-                      to="/tx-effects/$hash"
-                      params={{ hash: h.sourceTxHash }}
-                    >
-                      {truncateHashString(h.sourceTxHash, 8, 6)}
-                    </Link>
-                  ) : (
-                    <span style={{ color: "var(--ink-3)" }}>—</span>
-                  )}
-                </span>
-                <span className="num">
-                  {new Date(h.timestamp)
-                    .toISOString()
-                    .slice(0, 19)
-                    .replace("T", " ")}
-                </span>
-                <span className="age">{ageStr(h.timestamp)}</span>
-              </div>
-            ))}
+            {(history ?? [])
+              .slice()
+              .reverse()
+              .map((h, i) => (
+                <div key={i} className="hist-row">
+                  <span
+                    className="num"
+                    style={{ textAlign: "left", color: "var(--ink-1)" }}
+                  >
+                    {formatFees(h.balance, feeJuiceDecimals)}
+                  </span>
+                  <span className="hash">
+                    {h.sourceTxHash ? (
+                      <Link
+                        to="/tx-effects/$hash"
+                        params={{ hash: h.sourceTxHash }}
+                      >
+                        {truncateHashString(h.sourceTxHash, 8, 6)}
+                      </Link>
+                    ) : (
+                      <span style={{ color: "var(--ink-3)" }}>—</span>
+                    )}
+                  </span>
+                  <span className="num">
+                    {new Date(h.timestamp)
+                      .toISOString()
+                      .slice(0, 19)
+                      .replace("T", " ")}
+                  </span>
+                  <span className="age">{ageStr(h.timestamp)}</span>
+                </div>
+              ))}
             {(!history || history.length === 0) && (
               <div className="empty-state">no balance history</div>
             )}

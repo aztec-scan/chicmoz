@@ -17,7 +17,7 @@ import {
   useTotalTxEffects,
   useTotalTxEffectsLast24h,
 } from "~/hooks/api";
-import { fmtNum, formatFees } from "~/lib/utils";
+import { fmtNum, formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 import { ChainInfoBand } from "./chain-info-band";
 import { HeroTip } from "./hero-tip";
 import { LatestLists } from "./latest-lists";
@@ -42,6 +42,8 @@ export const Landing: FC = () => {
 
   const blockRows = (tableBlocks ?? []).slice(0, 10);
   const txRows = (tableTxs ?? []).slice(0, 10);
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
 
   return (
     <Shell active="home">
@@ -70,8 +72,8 @@ export const Landing: FC = () => {
         <div className="sc">
           <div className="lbl">Avg fees</div>
           <div className="val">
-            {formatFees(averageFees)}
-            <span className="u">FJ</span>
+            {formatFees(averageFees, feeJuiceDecimals)}
+            <span className="u">{feeJuiceSymbol}</span>
           </div>
           <div className="sub">last 100 blocks</div>
         </div>
@@ -85,7 +87,12 @@ export const Landing: FC = () => {
         </div>
       </div>
 
-      <LatestLists blocks={blockRows} txs={txRows} />
+      <LatestLists
+        blocks={blockRows}
+        txs={txRows}
+        feeJuiceDecimals={feeJuiceDecimals}
+        feeJuiceSymbol={feeJuiceSymbol}
+      />
 
       <ChainInfoBand
         chainInfo={chainInfo}

@@ -6,12 +6,13 @@ import {
   useAverageFees,
   useAverageTxsPerBlock,
   useBlocksByFinalizationStatus,
+  useChainInfo,
   useLatestBlock,
   usePaginatedTableBlocks,
 } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
 import { blockStatusToDisplay } from "~/lib/block-status";
-import { ageStr, fmtNum, formatFees } from "~/lib/utils";
+import { ageStr, fmtNum, formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 
 type StatusFilter = "all" | "proposed" | "proven" | "finalized" | "orphaned";
 type SortKey = "height" | "txEffectsLength" | "timestamp";
@@ -28,8 +29,11 @@ export const BlocksPage: FC = () => {
   const [page, setPage] = useState(0);
 
   const { data: blocks } = usePaginatedTableBlocks(page, PAGE_SIZE);
+  const { data: chainInfo } = useChainInfo();
   const { data: averageFees } = useAverageFees();
   const { data: averageTxsPerBlock } = useAverageTxsPerBlock();
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
 
   const filtered = useMemo(() => {
     let rows = blocks ?? [];
@@ -52,7 +56,8 @@ export const BlocksPage: FC = () => {
     return display === "proven" || display === "finalized";
   });
   const finalized = blocksByStatus?.find(
-    (b) => blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
+    (b) =>
+      blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
   );
 
   // We page server-side at PAGE_SIZE at a time; totalPages is best-effort.
@@ -82,7 +87,9 @@ export const BlocksPage: FC = () => {
             {provenHead ? `#${fmtNum(Number(provenHead.height))}` : "—"}
           </div>
           <div className="sub" style={{ color: "var(--green)" }}>
-            {provenHead ? `${latestHeight - Number(provenHead.height)} behind tip` : "—"}
+            {provenHead
+              ? `${latestHeight - Number(provenHead.height)} behind tip`
+              : "—"}
           </div>
         </div>
         <div className="mc">
@@ -95,8 +102,8 @@ export const BlocksPage: FC = () => {
         <div className="mc">
           <div className="lbl">Avg fees</div>
           <div className="val">
-            {averageFees ? formatFees(averageFees) : "—"}
-            <span className="u">FJ</span>
+            {averageFees ? formatFees(averageFees, feeJuiceDecimals) : "—"}
+            <span className="u">{feeJuiceSymbol}</span>
           </div>
           <div className="sub">non-orphan blocks</div>
         </div>
@@ -117,20 +124,26 @@ export const BlocksPage: FC = () => {
           </h3>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <div className="filter-group">
-              {(["all", "proposed", "proven", "finalized", "orphaned"] as StatusFilter[]).map(
-                (s) => (
-                  <button
-                    key={s}
-                    className={statusFilter === s ? "on" : ""}
-                    onClick={() => {
-                      setStatusFilter(s);
-                      setPage(0);
-                    }}
-                  >
-                    {s}
-                  </button>
-                ),
-              )}
+              {(
+                [
+                  "all",
+                  "proposed",
+                  "proven",
+                  "finalized",
+                  "orphaned",
+                ] as StatusFilter[]
+              ).map((s) => (
+                <button
+                  key={s}
+                  className={statusFilter === s ? "on" : ""}
+                  onClick={() => {
+                    setStatusFilter(s);
+                    setPage(0);
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
         </div>

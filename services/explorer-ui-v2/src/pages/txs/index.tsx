@@ -3,6 +3,7 @@ import { type FC, useMemo, useState } from "react";
 import { HashCell, Pagination, StatusPill } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
+  useChainInfo,
   useAverageFees,
   useLatestTableTxEffects,
   usePendingTxs,
@@ -10,7 +11,13 @@ import {
   useTotalTxEffectsLast24h,
 } from "~/hooks/api";
 import { usePaginated } from "~/hooks/use-paginated";
-import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  truncateHashString,
+} from "~/lib/utils";
 
 type Filter = "mined" | "pending";
 const PAGE_SIZE = 20;
@@ -19,7 +26,9 @@ export const TxsPage: FC = () => {
   // Read `filter` from URL without coupling to a typed search schema — the
   // router plugin will happily preserve it and this keeps the route config lean.
   const initialFilter = (() => {
-    if (typeof window === "undefined") {return "mined" as Filter;}
+    if (typeof window === "undefined") {
+      return "mined" as Filter;
+    }
     const p = new URLSearchParams(window.location.search);
     return (p.get("filter") as Filter) || "mined";
   })();
@@ -30,18 +39,25 @@ export const TxsPage: FC = () => {
   const { data: totalTxEffects } = useTotalTxEffects();
   const { data: txEffects24h } = useTotalTxEffectsLast24h();
   const { data: averageFees } = useAverageFees();
+  const { data: chainInfo } = useChainInfo();
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
 
   type Row =
     | NonNullable<typeof mined>[number]
     | NonNullable<typeof pending>[number];
   const rows = useMemo<Row[]>(() => {
-    if (filter === "pending") {return pending ?? [];}
+    if (filter === "pending") {
+      return pending ?? [];
+    }
     return mined ?? [];
   }, [filter, mined, pending]);
 
   const { page, setPage, paged, totalPages } = usePaginated(rows, PAGE_SIZE);
 
-  const avgFee = averageFees ? formatFees(averageFees, 18, 5) : null;
+  const avgFee = averageFees
+    ? formatFees(averageFees, feeJuiceDecimals, 5)
+    : null;
 
   return (
     <Shell active="txs">
@@ -73,7 +89,7 @@ export const TxsPage: FC = () => {
           <div className="lbl">Avg fee</div>
           <div className="val">
             {avgFee ?? "—"}
-            <span className="u">FJ</span>
+            <span className="u">{feeJuiceSymbol}</span>
           </div>
           <div className="sub">from stats</div>
         </div>
@@ -106,11 +122,14 @@ export const TxsPage: FC = () => {
             {filter === "mined" ? (
               <>
                 Mined tx-effects
-                <span className="c">· {paged.length} of {fmtNum(rows.length)}</span>
+                <span className="c">
+                  · {paged.length} of {fmtNum(rows.length)}
+                </span>
               </>
             ) : (
               <>
-                Pending mempool<span className="c">· {fmtNum(rows.length)}</span>
+                Pending mempool
+                <span className="c">· {fmtNum(rows.length)}</span>
               </>
             )}
           </h3>
@@ -118,8 +137,10 @@ export const TxsPage: FC = () => {
 
         <div className="table-head txs-cols">
           <div>Tx hash</div>
-          <div className="right">{filter === "pending" ? "Fee payer" : "Block"}</div>
-          <div className="right">Fee (FJ)</div>
+          <div className="right">
+            {filter === "pending" ? "Fee payer" : "Block"}
+          </div>
+          <div className="right">Fee ({feeJuiceSymbol})</div>
           <div className="right">Status</div>
           <div className="right">Age</div>
         </div>
@@ -143,8 +164,12 @@ export const TxsPage: FC = () => {
                   params={{ hash: row.txHash }}
                 >
                   <HashCell value={row.txHash} />
-                  <span className="num">#{fmtNum(Number(row.blockNumber))}</span>
-                  <span className="num">{formatFees(row.transactionFee, 18, 5)}</span>
+                  <span className="num">
+                    #{fmtNum(Number(row.blockNumber))}
+                  </span>
+                  <span className="num">
+                    {formatFees(row.transactionFee, feeJuiceDecimals, 5)}
+                  </span>
                   <span className="status-cell">
                     <StatusPill status="mined" />
                   </span>
@@ -181,7 +206,9 @@ export const TxsPage: FC = () => {
             })}
           {paged.length === 0 && (
             <div className="empty-state">
-              {filter === "mined" ? "no mined transactions yet" : "no pending transactions"}
+              {filter === "mined"
+                ? "no mined transactions yet"
+                : "no pending transactions"}
             </div>
           )}
         </div>

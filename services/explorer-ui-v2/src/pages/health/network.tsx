@@ -9,7 +9,13 @@ import {
   useReorgs,
 } from "~/hooks/api";
 import { useSystemStatus } from "~/hooks/use-system-status";
-import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  truncateHashString,
+} from "~/lib/utils";
 import { BLOCK_TIME_TARGET_SECONDS } from "~/service/constants";
 import { HealthTabs } from "./tabs";
 
@@ -22,6 +28,8 @@ export const NetworkHealthPage: FC = () => {
   const { data: reorgs } = useReorgs();
   const { data: feeRecipients } = useFeeRecipients();
   const status = useSystemStatus();
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
 
   const now = Date.now();
   const errs24h = (chainErrors ?? []).filter(
@@ -63,7 +71,11 @@ export const NetworkHealthPage: FC = () => {
   const heroDot =
     status.level === "ok" ? "" : status.level === "unhealthy" ? "warn" : "down";
   const heroBigClass =
-    status.level === "ok" ? "ok" : status.level === "unhealthy" ? "warn" : "down";
+    status.level === "ok"
+      ? "ok"
+      : status.level === "unhealthy"
+        ? "warn"
+        : "down";
   const heroLabel =
     status.level === "ok"
       ? "OK"
@@ -96,9 +108,7 @@ export const NetworkHealthPage: FC = () => {
         <div className="hero-cell">
           <div className="kicker">Latest reorg</div>
           <div className="big">
-            {reorgs?.[0]
-              ? `depth ${reorgs[0].nbrOfOrphanedBlocks}`
-              : "none"}
+            {reorgs?.[0] ? `depth ${reorgs[0].nbrOfOrphanedBlocks}` : "none"}
           </div>
           <div className="sub">
             {reorgs?.[0]
@@ -110,15 +120,13 @@ export const NetworkHealthPage: FC = () => {
           <div className="kicker">Errors · last 24h</div>
           <div className="big">{errs24h.length}</div>
           <div className="sub">
-            {
-              errs24h.reduce(
-                (s, e) => ({
-                  ...s,
-                  [e.name]: (s[e.name] ?? 0) + 1,
-                }),
-                {} as Record<string, number>,
-              ) && `${errs24h.length} distinct error signatures`
-            }
+            {errs24h.reduce(
+              (s, e) => ({
+                ...s,
+                [e.name]: (s[e.name] ?? 0) + 1,
+              }),
+              {} as Record<string, number>,
+            ) && `${errs24h.length} distinct error signatures`}
           </div>
         </div>
       </div>
@@ -347,13 +355,15 @@ export const NetworkHealthPage: FC = () => {
           <div className="fee-head">
             <div>Address</div>
             <div className="right">Blocks</div>
-            <div className="right">Fees (FJ)</div>
+            <div className="right">Fees ({feeJuiceSymbol})</div>
           </div>
           {(feeRecipients ?? []).slice(0, 10).map((r) => (
             <div key={r.l2Address} className="fee-row">
               <span className="addr">{r.l2Address}</span>
               <span className="num">{fmtNum(r.nbrOfBlocks)}</span>
-              <span className="num">{formatFees(r.feesReceived)}</span>
+              <span className="num">
+                {formatFees(r.feesReceived, feeJuiceDecimals)}
+              </span>
             </div>
           ))}
           {(!feeRecipients || feeRecipients.length === 0) && (

@@ -8,9 +8,16 @@ import { ageStr, fmtNum, formatFees } from "~/lib/utils";
 interface Props {
   blocks: UiBlockTable[];
   txs: UiTxEffectTable[];
+  feeJuiceDecimals: number;
+  feeJuiceSymbol: string;
 }
 
-export const LatestLists: FC<Props> = ({ blocks, txs }) => (
+export const LatestLists: FC<Props> = ({
+  blocks,
+  txs,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
+}) => (
   <div className="split">
     <div className="panel">
       <div className="panel-head">
@@ -70,7 +77,7 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
       <div className="row-head tx-cols">
         <div>Tx hash</div>
         <div style={{ textAlign: "right" }}>Block</div>
-        <div style={{ textAlign: "right" }}>Fee (FJ)</div>
+        <div style={{ textAlign: "right" }}>Fee ({feeJuiceSymbol})</div>
         <div style={{ textAlign: "right" }}>Age</div>
       </div>
       <div className="rows">
@@ -85,7 +92,9 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
             >
               <HashCell value={t.txHash} />
               <span className="num">#{fmtNum(Number(t.blockNumber))}</span>
-              <span className="num">{formatFees(t.transactionFee)}</span>
+              <span className="num">
+                {formatFees(t.transactionFee, feeJuiceDecimals)}
+              </span>
               <span className="age">{ageStr(ts)}</span>
             </Link>
           );

@@ -3,6 +3,7 @@ import { type FC, useState } from "react";
 import {
   DetailField,
   FeePaymentMethodBadge,
+  CopyableAmount,
   L2AddressLink,
   StatusPill,
 } from "~/components/common";
@@ -16,8 +17,16 @@ import {
   useGetTxEffectByHash,
   usePendingTxsByHash,
   usePublicCallRequestsByTxHash,
+  useChainInfo,
 } from "~/hooks/api";
-import { ageStr, fmtNum, formatFees, toIsoUtc, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  toIsoUtc,
+  truncateHashString,
+} from "~/lib/utils";
 
 type Tab = "notes" | "nulls" | "public" | "l1" | "logs" | "calls";
 
@@ -28,9 +37,12 @@ export const TxDetailPage: FC = () => {
   const { data: effect } = useGetTxEffectByHash(hash);
   const { data: pending } = usePendingTxsByHash(hash);
   const { data: dropped } = useDroppedTxByHash(hash);
+  const { data: chainInfo } = useChainInfo();
   const { data: minedPublicCalls } = usePublicCallRequestsByTxHash(
     effect ? hash : "",
   );
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
 
   const mined = !!effect;
   const status = mined
@@ -71,9 +83,7 @@ export const TxDetailPage: FC = () => {
       />
 
       <div className="detail-header">
-        <div className="kicker">
-          Tx effect · {ts ? ageStr(ts) : "—"}
-        </div>
+        <div className="kicker">Tx effect · {ts ? ageStr(ts) : "—"}</div>
         <h1 className="hash-sized">{hash}</h1>
         <div className="meta-row">
           <StatusPill status={status} />
@@ -89,10 +99,7 @@ export const TxDetailPage: FC = () => {
             </span>
           )}
           {dropped && (
-            <span
-              className="meta-line"
-              style={{ color: "var(--red)" }}
-            >
+            <span className="meta-line" style={{ color: "var(--red)" }}>
               dropped at {toIsoUtc(dropped.droppedAt)}
             </span>
           )}
@@ -105,8 +112,15 @@ export const TxDetailPage: FC = () => {
             <div className="sc">
               <div className="lbl">Fee paid</div>
               <div className="val">
-                {formatFees(effect.transactionFee, 18, 5)}
-                <span className="u">FJ</span>
+                <CopyableAmount
+                  displayAmount={formatFees(
+                    effect.transactionFee,
+                    feeJuiceDecimals,
+                    5,
+                  )}
+                  rawAmount={effect.transactionFee}
+                />
+                <span className="u">{feeJuiceSymbol}</span>
               </div>
             </div>
             <div className="sc">
@@ -155,10 +169,19 @@ export const TxDetailPage: FC = () => {
                 {effect.blockHash}
               </DetailField>
               <DetailField label="Timestamp" width="extra-wide">
-                {toIsoUtc(ts)} <span className="mute">· {ts ? ageStr(ts) : "—"}</span>
+                {toIsoUtc(ts)}{" "}
+                <span className="mute">· {ts ? ageStr(ts) : "—"}</span>
               </DetailField>
               <DetailField label="Transaction fee" width="extra-wide">
-                {formatFees(effect.transactionFee, 18, 5)} FJ
+                <CopyableAmount
+                  displayAmount={formatFees(
+                    effect.transactionFee,
+                    feeJuiceDecimals,
+                    5,
+                  )}
+                  rawAmount={effect.transactionFee}
+                />{" "}
+                {feeJuiceSymbol}
               </DetailField>
               {effect.feePayer && (
                 <DetailField label="Fee payer" width="extra-wide">
@@ -208,7 +231,8 @@ export const TxDetailPage: FC = () => {
                 className={tab === "public" ? "on" : ""}
                 onClick={() => setTab("public")}
               >
-                Public writes<span className="c">{publicDataWrites.length}</span>
+                Public writes
+                <span className="c">{publicDataWrites.length}</span>
               </button>
               <button
                 className={tab === "l1" ? "on" : ""}
@@ -277,7 +301,10 @@ export const TxDetailPage: FC = () => {
           <div className="panel">
             <div className="panel-head">
               <h3>
-                Pending<span className="tag">/api/l2/txs/{truncateHashString(hash, 6, 4)}</span>
+                Pending
+                <span className="tag">
+                  /api/l2/txs/{truncateHashString(hash, 6, 4)}
+                </span>
               </h3>
             </div>
             <div className="kv-grid">
@@ -337,7 +364,10 @@ export const TxDetailPage: FC = () => {
         <div className="panel">
           <div className="panel-head">
             <h3>
-              Dropped<span className="tag">/api/l2/dropped-txs/{truncateHashString(hash, 6, 4)}</span>
+              Dropped
+              <span className="tag">
+                /api/l2/dropped-txs/{truncateHashString(hash, 6, 4)}
+              </span>
             </h3>
           </div>
           <div className="kv-grid">
