@@ -32,6 +32,12 @@ export const chicmozSearchResultsSchema = z.lazy(() =>
       blocks: z.array(
         z.object({
           hash: chicmozL2BlockSchema.shape.hash,
+          blockNumber:
+            chicmozL2BlockSchema.shape.header.shape.globalVariables.shape
+              .blockNumber,
+          slotNumber:
+            chicmozL2BlockSchema.shape.header.shape.globalVariables.shape
+              .slotNumber,
         }),
       ),
       txEffects: z.array(

@@ -145,4 +145,6 @@ export const queryKeyGenerator = {
     page,
     pageSize,
   ],
+
+  search: (query: string) => ["search", query],
 };

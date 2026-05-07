@@ -7,10 +7,12 @@ import {
   chicmozSearchResultsSchema,
   type ChicmozSearchResults,
 } from "@chicmoz-pkg/types";
-import { and, eq, or, sql, isNull } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   droppedTx,
+  globalVariables,
+  header,
   l2Block,
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -20,26 +22,55 @@ import {
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
 
-const getBlockHashByHeight = async (
-  height: bigint,
+const getBlockHashesByHeightOrSlot = async (
+  blockNumber: bigint,
 ): Promise<ChicmozSearchResults["results"]["blocks"]> => {
-  const res = await db()
+  const blocksByHeight = await db()
     .select({
       hash: l2Block.hash,
+      blockNumber: globalVariables.blockNumber,
+      slotNumber: globalVariables.slotNumber,
     })
     .from(l2Block)
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(
       and(
-        eq(l2Block.height, height),
+        eq(l2Block.height, blockNumber),
         isNull(l2Block.orphan_timestamp),
         eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
       ),
     )
     .execute();
-  if (res.length === 0) {
+
+  const slotNumber = Number(blockNumber);
+  const blocksBySlot = Number.isSafeInteger(slotNumber)
+    ? await db()
+        .select({
+          hash: l2Block.hash,
+          blockNumber: globalVariables.blockNumber,
+          slotNumber: globalVariables.slotNumber,
+        })
+        .from(l2Block)
+        .innerJoin(header, eq(l2Block.hash, header.blockHash))
+        .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
+        .where(
+          and(
+            eq(globalVariables.slotNumber, slotNumber),
+            isNull(l2Block.orphan_timestamp),
+            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+          ),
+        )
+        .execute()
+    : [];
+
+  const uniqueBlocks = new Map(
+    [...blocksByHeight, ...blocksBySlot].map((block) => [block.hash, block]),
+  );
+  if (uniqueBlocks.size === 0) {
     return [];
   }
-  return [{ hash: res[0].hash }];
+  return [...uniqueBlocks.values()];
 };
 
 const matchBlock = async (
@@ -48,14 +79,18 @@ const matchBlock = async (
   const res = await db()
     .select({
       hash: l2Block.hash,
+      blockNumber: globalVariables.blockNumber,
+      slotNumber: globalVariables.slotNumber,
     })
     .from(l2Block)
+    .innerJoin(header, eq(l2Block.hash, header.blockHash))
+    .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .where(eq(l2Block.hash, hash))
     .execute();
   if (res.length === 0) {
     return [];
   }
-  return [{ hash: res[0].hash }];
+  return [{ ...res[0] }];
 };
 
 const matchTxEffect = async (
@@ -200,7 +235,7 @@ export const search = async (
     return {
       searchPhrase: query.toString(),
       results: {
-        blocks: await getBlockHashByHeight(query),
+        blocks: await getBlockHashesByHeightOrSlot(query),
         txEffects: [],
         droppedTx: [],
         pendingTx: [],

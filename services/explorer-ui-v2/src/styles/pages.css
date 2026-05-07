@@ -557,6 +557,37 @@
 .validator-cols {
   grid-template-columns: 40px 1fr 140px 110px 130px 100px;
 }
+.search-results-grid {
+  display: grid;
+  gap: 18px;
+}
+.search-results-panel + .search-results-panel {
+  margin-top: 0;
+}
+.search-result-row {
+  grid-template-columns: 130px minmax(0, 1fr) 190px 90px;
+}
+.search-result-kind {
+  color: var(--purple-soft);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.search-result-meta {
+  color: var(--ink-3);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-align: right;
+  text-transform: uppercase;
+}
+.search-result-details {
+  color: var(--ink-2);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  min-width: 0;
+  white-space: nowrap;
+}
 
 /* meta strip (5 cells) */
 .meta-strip {
