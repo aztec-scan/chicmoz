@@ -1,9 +1,6 @@
 import { z } from "zod";
-import {
-  chicmozL2BlockFinalizationStatusSchema,
-  ethAddressSchema,
-  hexStringSchema,
-} from "../index.js";
+import { ethAddressSchema, hexStringSchema } from "../general.js";
+import { chicmozL2BlockFinalizationStatusSchema } from "./l2Block.js";
 import { frDecimalStringSchema, frTimestampSchema } from "./utils.js";
 
 export const uiBlockTableSchema = z.object({
