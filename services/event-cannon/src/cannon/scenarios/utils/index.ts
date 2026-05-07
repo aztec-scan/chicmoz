@@ -1,3 +1,4 @@
+import { ContractInitializationStatus, Wallet } from "@aztec/aztec.js/wallet";
 import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
 import { publishContractClass } from "@aztec/aztec.js/deployment";
 import {
@@ -27,7 +28,6 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-import { Wallet } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
@@ -46,7 +46,9 @@ export const logAndWaitForTx = async (
     "receipt" in result ? result.receipt : result,
   );
   const hash = receipt.txHash.toString();
-  logger.info(`⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`);
+  logger.info(
+    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
+  );
   return receipt;
 };
 
@@ -78,7 +80,9 @@ export const simulateThenSend = async ({
 
   const { receipt } = await method.send({ from });
   const hash = receipt.txHash.toString();
-  logger.info(`⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`);
+  logger.info(
+    `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
+  );
   return receipt;
 };
 
@@ -264,7 +268,11 @@ export const publicDeployAccounts = async (
       return contractMetadata;
     }),
   ).then((results) =>
-    results.filter((result) => !result.isContractInitialized),
+    results.filter(
+      (result) =>
+        result.initializationStatus !==
+        ContractInitializationStatus.INITIALIZED,
+    ),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
     return;
