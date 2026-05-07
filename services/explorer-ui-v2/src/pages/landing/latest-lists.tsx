@@ -1,7 +1,7 @@
 import { type UiBlockTable, type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
-import { HashCell, StatusPill } from "~/components/common";
+import { HashCell, StatusPill, TokenEtherscanLink } from "~/components/common";
 import { blockStatusToDisplay } from "~/lib/block-status";
 import { ageStr, fmtNum, formatFees } from "~/lib/utils";
 
@@ -10,6 +10,7 @@ interface Props {
   txs: UiTxEffectTable[];
   feeJuiceDecimals: number;
   feeJuiceSymbol: string;
+  feeJuiceAddress?: string;
 }
 
 export const LatestLists: FC<Props> = ({
@@ -17,6 +18,7 @@ export const LatestLists: FC<Props> = ({
   txs,
   feeJuiceDecimals,
   feeJuiceSymbol,
+  feeJuiceAddress,
 }) => (
   <div className="split">
     <div className="panel">
@@ -94,6 +96,11 @@ export const LatestLists: FC<Props> = ({
               <span className="num">#{fmtNum(Number(t.blockNumber))}</span>
               <span className="num">
                 {formatFees(t.transactionFee, feeJuiceDecimals)}
+                <TokenEtherscanLink
+                  symbol={feeJuiceSymbol}
+                  address={feeJuiceAddress}
+                  className="u"
+                />
               </span>
               <span className="age">{ageStr(ts)}</span>
             </Link>

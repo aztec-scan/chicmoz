@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { HashCell, Pagination, StatusPill } from "~/components/common";
+import {
+  HashCell,
+  Pagination,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useAverageFees,
@@ -34,6 +39,7 @@ export const BlocksPage: FC = () => {
   const { data: averageTxsPerBlock } = useAverageTxsPerBlock();
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
 
   const filtered = useMemo(() => {
     let rows = blocks ?? [];
@@ -103,7 +109,11 @@ export const BlocksPage: FC = () => {
           <div className="lbl">Avg fees</div>
           <div className="val">
             {averageFees ? formatFees(averageFees, feeJuiceDecimals) : "—"}
-            <span className="u">{feeJuiceSymbol}</span>
+            <TokenEtherscanLink
+              symbol={feeJuiceSymbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
           <div className="sub">non-orphan blocks</div>
         </div>

@@ -5,6 +5,7 @@ import {
   DetailField,
   HashCell,
   StatusPill,
+  TokenEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
@@ -68,6 +69,7 @@ export const BlockDetailPage: FC = () => {
   const ts = Number(block.header.globalVariables.timestamp);
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const totalFees = formatFees(block.header.totalFees, feeJuiceDecimals);
   const totalManaUsed = block.header.totalManaUsed?.toString?.() ?? "0";
   const txCount = block.body.txEffects.length;
@@ -141,7 +143,11 @@ export const BlockDetailPage: FC = () => {
           <div className="lbl">Total fees</div>
           <div className="val">
             {totalFees}
-            <span className="u">{feeJuiceSymbol}</span>
+            <TokenEtherscanLink
+              symbol={feeJuiceSymbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
         </div>
         <div className="sc">
@@ -283,6 +289,11 @@ export const BlockDetailPage: FC = () => {
                 <span className="idx">{i}</span>
                 <span className="num">
                   {formatFees(t.transactionFee, feeJuiceDecimals)}
+                  <TokenEtherscanLink
+                    symbol={feeJuiceSymbol}
+                    address={feeJuiceAddress}
+                    className="u"
+                  />
                 </span>
               </Link>
             ))}

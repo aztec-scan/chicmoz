@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { HashCell, Pagination, StatusPill } from "~/components/common";
+import {
+  HashCell,
+  Pagination,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useChainInfo,
@@ -42,6 +47,7 @@ export const TxsPage: FC = () => {
   const { data: chainInfo } = useChainInfo();
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
 
   type Row =
     | NonNullable<typeof mined>[number]
@@ -89,7 +95,11 @@ export const TxsPage: FC = () => {
           <div className="lbl">Avg fee</div>
           <div className="val">
             {avgFee ?? "—"}
-            <span className="u">{feeJuiceSymbol}</span>
+            <TokenEtherscanLink
+              symbol={feeJuiceSymbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
           <div className="sub">from stats</div>
         </div>
@@ -169,6 +179,11 @@ export const TxsPage: FC = () => {
                   </span>
                   <span className="num">
                     {formatFees(row.transactionFee, feeJuiceDecimals, 5)}
+                    <TokenEtherscanLink
+                      symbol={feeJuiceSymbol}
+                      address={feeJuiceAddress}
+                      className="u"
+                    />
                   </span>
                   <span className="status-cell">
                     <StatusPill status="mined" />

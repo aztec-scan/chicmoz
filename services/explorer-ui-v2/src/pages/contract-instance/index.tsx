@@ -1,6 +1,11 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { DetailEmptyState, DetailField, StatusPill } from "~/components/common";
+import {
+  DetailEmptyState,
+  DetailField,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
 import { ConsoleHead, Shell } from "~/components/layout";
@@ -66,6 +71,7 @@ export const ContractInstancePage: FC = () => {
 
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const balanceValue =
     balance?.balance !== undefined && balance.balance !== null
       ? formatFees(balance.balance, feeJuiceDecimals)
@@ -136,7 +142,11 @@ export const ContractInstancePage: FC = () => {
           <div className="lbl">Balance</div>
           <div className="val">
             {balanceValue}
-            <span className="u">{feeJuiceSymbol}</span>
+            <TokenEtherscanLink
+              symbol={feeJuiceSymbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
           <div className="sub">
             {delta === 0n
@@ -304,7 +314,11 @@ export const ContractInstancePage: FC = () => {
           <div className="balance-block">
             <div className="balance-big">
               {balanceValue}
-              <span className="u">{feeJuiceSymbol}</span>
+              <TokenEtherscanLink
+                symbol={feeJuiceSymbol}
+                address={feeJuiceAddress}
+                className="u"
+              />
             </div>
             <div className="balance-sub">
               {delta === 0n
@@ -355,6 +369,11 @@ export const ContractInstancePage: FC = () => {
                     style={{ textAlign: "left", color: "var(--ink-1)" }}
                   >
                     {formatFees(h.balance, feeJuiceDecimals)}
+                    <TokenEtherscanLink
+                      symbol={feeJuiceSymbol}
+                      address={feeJuiceAddress}
+                      className="u"
+                    />
                   </span>
                   <span className="hash">
                     {h.sourceTxHash ? (

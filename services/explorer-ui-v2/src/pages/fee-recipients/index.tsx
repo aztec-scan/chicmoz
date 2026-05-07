@@ -1,5 +1,5 @@
 import { type FC, useMemo, useState } from "react";
-import { CopyableAddress } from "~/components/common";
+import { CopyableAddress, TokenEtherscanLink } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainInfo, useFeeRecipients } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
@@ -22,6 +22,7 @@ export const FeeRecipientsPage: FC = () => {
 
   const decimals = chainInfo?.feeJuiceDecimals ?? 18;
   const symbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
 
   const totalReceived = useMemo(() => {
     if (!feeRecipients) {
@@ -81,7 +82,11 @@ export const FeeRecipientsPage: FC = () => {
           <div className="lbl">Total fees received</div>
           <div className="val">
             {formatFees(totalReceived, decimals)}
-            <span className="u">{symbol}</span>
+            <TokenEtherscanLink
+              symbol={symbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
           <div className="sub">across all recipients</div>
         </div>
@@ -144,6 +149,11 @@ export const FeeRecipientsPage: FC = () => {
                 <span className="num">{fmtNum(r.nbrOfBlocks)}</span>
                 <span className="num">
                   {formatFees(r.feesReceived, decimals)}
+                  <TokenEtherscanLink
+                    symbol={symbol}
+                    address={feeJuiceAddress}
+                    className="u"
+                  />
                 </span>
                 <span className="num share-cell">
                   <span className="share-bar">

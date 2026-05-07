@@ -417,6 +417,7 @@
   letter-spacing: -0.01em;
 }
 .stats-strip .sc .val .u {
+  display: inline-flex;
   color: var(--ink-3);
   font-size: 12px;
   margin-left: 4px;
@@ -914,4 +915,18 @@
 .copyable.copyable-amount {
   justify-content: flex-end;
   font-family: var(--mono);
+}
+.etherscan-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+}
+.etherscan-link:hover {
+  color: var(--purple);
+}
+.etherscan-link svg {
+  flex-shrink: 0;
 }

@@ -1,6 +1,11 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
-import { DetailEmptyState, DetailField, StatusPill } from "~/components/common";
+import {
+  DetailEmptyState,
+  DetailField,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useChainInfo,
@@ -53,6 +58,8 @@ export const ValidatorDetailPage: FC = () => {
   const stakingAssetSymbol = getStakingAssetSymbol(
     chainInfo?.stakingAssetSymbol,
   );
+  const stakingAssetAddress =
+    chainInfo?.l1ContractAddresses?.stakingAssetAddress;
 
   return (
     <Shell active="validators">
@@ -89,7 +96,11 @@ export const ValidatorDetailPage: FC = () => {
           <div className="lbl">Current stake</div>
           <div className="val">
             {formatFees(validator.stake, stakingAssetDecimals, 2)}
-            <span className="u">{stakingAssetSymbol}</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub">on-chain</div>
         </div>
@@ -138,7 +149,10 @@ export const ValidatorDetailPage: FC = () => {
           </DetailField>
           <DetailField label="Stake" width="wide">
             {formatFees(validator.stake, stakingAssetDecimals, 4)}{" "}
-            {stakingAssetSymbol}
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+            />
           </DetailField>
           <DetailField label="First seen" width="wide">
             {toIsoUtc(validator.firstSeenAt)}

@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { Pagination, StatusPill } from "~/components/common";
+import {
+  Pagination,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useChainInfo,
@@ -37,6 +41,8 @@ export const ValidatorsPage: FC = () => {
   const stakingAssetSymbol = getStakingAssetSymbol(
     chainInfo?.stakingAssetSymbol,
   );
+  const stakingAssetAddress =
+    chainInfo?.l1ContractAddresses?.stakingAssetAddress;
 
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
@@ -139,7 +145,11 @@ export const ValidatorsPage: FC = () => {
           <div className="lbl">Total stake</div>
           <div className="val">
             {fmtNum(Math.round(totalStake))}
-            <span className="u">{stakingAssetSymbol}</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub">max {fmtNum(Math.round(maxStake))}</div>
         </div>
@@ -147,7 +157,11 @@ export const ValidatorsPage: FC = () => {
           <div className="lbl">Validating stake</div>
           <div className="val">
             {fmtNum(Math.round(validatingStake))}
-            <span className="u">{stakingAssetSymbol}</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub" style={{ color: "var(--green)" }}>
             {totalStake
@@ -159,7 +173,11 @@ export const ValidatorsPage: FC = () => {
           <div className="lbl">Avg stake</div>
           <div className="val">
             {avgStake.toFixed(1)}
-            <span className="u">{stakingAssetSymbol}</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub">across all</div>
         </div>
@@ -266,7 +284,14 @@ export const ValidatorsPage: FC = () => {
                       }}
                     />
                   </span>
-                  <span className="v">{toStake(v).toFixed(1)}</span>
+                  <span className="v">
+                    {toStake(v).toFixed(1)}
+                    <TokenEtherscanLink
+                      symbol={stakingAssetSymbol}
+                      address={stakingAssetAddress}
+                      className="u"
+                    />
+                  </span>
                 </span>
                 <span className="status-cell">
                   <StatusPill status={status} />

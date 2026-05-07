@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
-import { CopyableAddress } from "~/components/common";
+import {
+  CopyableAddress,
+  EtherscanAddressLink,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useChainErrors,
@@ -30,6 +34,9 @@ export const NetworkHealthPage: FC = () => {
   const status = useSystemStatus();
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
+  const stakingAssetAddress =
+    chainInfo?.l1ContractAddresses?.stakingAssetAddress;
 
   const now = Date.now();
   const errs24h = (chainErrors ?? []).filter(
@@ -229,19 +236,29 @@ export const NetworkHealthPage: FC = () => {
             <div className="kv wide">
               <span className="k">Fee juice</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.feeJuiceAddress}
-                  title="Copy fee juice address"
-                />
+                {feeJuiceAddress ? (
+                  <EtherscanAddressLink
+                    content={feeJuiceAddress}
+                    endpoint={`/token/${feeJuiceAddress}`}
+                    title="View fee juice token on Etherscan"
+                  />
+                ) : (
+                  "—"
+                )}
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Staking asset</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.stakingAssetAddress}
-                  title="Copy staking asset address"
-                />
+                {stakingAssetAddress ? (
+                  <EtherscanAddressLink
+                    content={stakingAssetAddress}
+                    endpoint={`/token/${stakingAssetAddress}`}
+                    title="View staking token on Etherscan"
+                  />
+                ) : (
+                  "—"
+                )}
               </span>
             </div>
           </div>
@@ -363,6 +380,11 @@ export const NetworkHealthPage: FC = () => {
               <span className="num">{fmtNum(r.nbrOfBlocks)}</span>
               <span className="num">
                 {formatFees(r.feesReceived, feeJuiceDecimals)}
+                <TokenEtherscanLink
+                  symbol={feeJuiceSymbol}
+                  address={feeJuiceAddress}
+                  className="u"
+                />
               </span>
             </div>
           ))}

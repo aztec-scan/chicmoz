@@ -6,6 +6,7 @@ import {
   CopyableAmount,
   L2AddressLink,
   StatusPill,
+  TokenEtherscanLink,
 } from "~/components/common";
 import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
@@ -43,6 +44,7 @@ export const TxDetailPage: FC = () => {
   );
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
 
   const mined = !!effect;
   const status = mined
@@ -120,7 +122,11 @@ export const TxDetailPage: FC = () => {
                   )}
                   rawAmount={effect.transactionFee}
                 />
-                <span className="u">{feeJuiceSymbol}</span>
+                <TokenEtherscanLink
+                  symbol={feeJuiceSymbol}
+                  address={feeJuiceAddress}
+                  className="u"
+                />
               </div>
             </div>
             <div className="sc">
@@ -181,7 +187,10 @@ export const TxDetailPage: FC = () => {
                   )}
                   rawAmount={effect.transactionFee}
                 />{" "}
-                {feeJuiceSymbol}
+                <TokenEtherscanLink
+                  symbol={feeJuiceSymbol}
+                  address={feeJuiceAddress}
+                />
               </DetailField>
               {effect.feePayer && (
                 <DetailField label="Fee payer" width="extra-wide">
