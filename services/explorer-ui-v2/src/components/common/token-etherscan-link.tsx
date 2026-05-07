@@ -1,28 +1,81 @@
 import { type FC } from "react";
 import { EtherscanAddressLink } from "./etherscan-address-link";
 
-interface Props {
+type EtherscanResource = "address" | "block" | "token" | "tx";
+
+interface EtherscanResourceLinkProps {
+  content: string;
+  address?: string;
+  resource: EtherscanResource;
+  className?: string;
+  showExternalLinkIcon?: boolean;
+  title?: string;
+}
+
+export const EtherscanResourceLink: FC<EtherscanResourceLinkProps> = ({
+  content,
+  address,
+  resource,
+  className,
+  showExternalLinkIcon = false,
+  title,
+}) => {
+  if (!address) {
+    return <span className={className}>{content}</span>;
+  }
+
+  return (
+    <EtherscanAddressLink
+      content={content}
+      endpoint={`/${resource}/${address}`}
+      className={className}
+      showExternalLinkIcon={showExternalLinkIcon}
+      title={title ?? `View ${resource} on Etherscan`}
+    />
+  );
+};
+
+interface TokenEtherscanLinkProps {
   symbol: string;
   address?: string;
   className?: string;
 }
 
-export const TokenEtherscanLink: FC<Props> = ({
+export const TokenEtherscanLink: FC<TokenEtherscanLinkProps> = ({
   symbol,
   address,
   className,
-}) => {
-  if (!address) {
-    return <span className={className}>{symbol}</span>;
-  }
+}) => (
+  <EtherscanResourceLink
+    content={symbol}
+    address={address}
+    resource="token"
+    className={className}
+    title="View token on Etherscan"
+  />
+);
 
-  return (
-    <EtherscanAddressLink
-      content={symbol}
-      endpoint={`/token/${address}`}
-      className={className}
-      showExternalLinkIcon={false}
-      title="View token on Etherscan"
-    />
-  );
-};
+interface AddressEtherscanLinkProps {
+  address?: string;
+  content?: string;
+  className?: string;
+  showExternalLinkIcon?: boolean;
+  title?: string;
+}
+
+export const AddressEtherscanLink: FC<AddressEtherscanLinkProps> = ({
+  address,
+  content,
+  className,
+  showExternalLinkIcon,
+  title,
+}) => (
+  <EtherscanResourceLink
+    content={content ?? address ?? "—"}
+    address={address}
+    resource="address"
+    className={className}
+    showExternalLinkIcon={showExternalLinkIcon}
+    title={title ?? "View address on Etherscan"}
+  />
+);

@@ -1,6 +1,7 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import {
+  AddressEtherscanLink,
   DetailEmptyState,
   DetailField,
   HashCell,
@@ -233,7 +234,9 @@ export const BlockDetailPage: FC = () => {
               {block.proposedOnL1?.l1BlockHash ?? "—"}
             </DetailField>
             <DetailField label="Rollup contract" width="wide">
-              {block.proposedOnL1?.l1ContractAddress ?? "—"}
+              <AddressEtherscanLink
+                address={block.proposedOnL1?.l1ContractAddress}
+              />
             </DetailField>
             <DetailField label="Prover" width="wide">
               {block.proofVerifiedOnL1?.proverId

@@ -1,6 +1,7 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
+  AddressEtherscanLink,
   DetailEmptyState,
   DetailField,
   StatusPill,
@@ -81,7 +82,9 @@ export const ValidatorDetailPage: FC = () => {
           {ageStr(validator.latestSeenChangeAt)}
         </div>
         <h1 className="sans">Validator</h1>
-        <div className="subhash">{validator.attester}</div>
+        <div className="subhash">
+          <AddressEtherscanLink address={validator.attester} />
+        </div>
         <div className="meta-row">
           <StatusPill status={status} />
           <span className="meta-line">
@@ -136,16 +139,16 @@ export const ValidatorDetailPage: FC = () => {
         </div>
         <div className="kv-grid">
           <DetailField label="Attester" width="wide">
-            {validator.attester}
+            <AddressEtherscanLink address={validator.attester} />
           </DetailField>
           <DetailField label="Withdrawer" width="wide">
-            {validator.withdrawer}
+            <AddressEtherscanLink address={validator.withdrawer} />
           </DetailField>
           <DetailField label="Proposer" width="wide">
-            {validator.proposer}
+            <AddressEtherscanLink address={validator.proposer} />
           </DetailField>
           <DetailField label="Rollup contract" width="wide">
-            {validator.rollupAddress}
+            <AddressEtherscanLink address={validator.rollupAddress} />
           </DetailField>
           <DetailField label="Stake" width="wide">
             {formatFees(validator.stake, stakingAssetDecimals, 4)}{" "}

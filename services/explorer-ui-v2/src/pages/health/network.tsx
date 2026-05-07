@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
+  AddressEtherscanLink,
   CopyableAddress,
   EtherscanAddressLink,
   TokenEtherscanLink,
@@ -204,6 +205,10 @@ export const NetworkHealthPage: FC = () => {
                   value={chainInfo?.l1ContractAddresses?.rollupAddress}
                   title="Copy rollup address"
                 />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.rollupAddress}
+                  content="etherscan"
+                />
               </span>
             </div>
             <div className="kv wide">
@@ -212,6 +217,10 @@ export const NetworkHealthPage: FC = () => {
                 <CopyableAddress
                   value={chainInfo?.l1ContractAddresses?.registryAddress}
                   title="Copy registry address"
+                />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.registryAddress}
+                  content="etherscan"
                 />
               </span>
             </div>
@@ -222,6 +231,10 @@ export const NetworkHealthPage: FC = () => {
                   value={chainInfo?.l1ContractAddresses?.inboxAddress}
                   title="Copy inbox address"
                 />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.inboxAddress}
+                  content="etherscan"
+                />
               </span>
             </div>
             <div className="kv wide">
@@ -230,6 +243,10 @@ export const NetworkHealthPage: FC = () => {
                 <CopyableAddress
                   value={chainInfo?.l1ContractAddresses?.outboxAddress}
                   title="Copy outbox address"
+                />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.outboxAddress}
+                  content="etherscan"
                 />
               </span>
             </div>

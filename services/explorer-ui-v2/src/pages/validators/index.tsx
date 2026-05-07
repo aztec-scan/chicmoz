@@ -1,6 +1,7 @@
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import {
+  AddressEtherscanLink,
   Pagination,
   StatusPill,
   TokenEtherscanLink,
@@ -34,6 +35,7 @@ type SortKey = "stake" | "firstSeenAt" | "latestSeenChangeAt";
 const PAGE_SIZE = 20;
 
 export const ValidatorsPage: FC = () => {
+  const navigate = useNavigate();
   const { data: validators } = useL1L2Validators();
   const { data: totals } = useValidatorTotals();
   const { data: chainInfo } = useChainInfo();
@@ -264,14 +266,39 @@ export const ValidatorsPage: FC = () => {
           {paged.map((v, i) => {
             const status = validatorStatusToDisplay(v.status);
             return (
-              <Link
+              <div
                 key={v.attester}
                 className="trow validator-cols"
-                to="/validators/$attesterAddress"
-                params={{ attesterAddress: v.attester }}
+                role="link"
+                tabIndex={0}
+                onClick={() => {
+                  void navigate({
+                    to: "/validators/$attesterAddress",
+                    params: { attesterAddress: v.attester },
+                  });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" && e.key !== " ") {
+                    return;
+                  }
+                  e.preventDefault();
+                  void navigate({
+                    to: "/validators/$attesterAddress",
+                    params: { attesterAddress: v.attester },
+                  });
+                }}
               >
                 <span className="rank">{page * PAGE_SIZE + i + 1}</span>
-                <span className="addr">{v.attester}</span>
+                <span
+                  className="addr"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
+                  <AddressEtherscanLink
+                    address={v.attester}
+                    showExternalLinkIcon={false}
+                  />
+                </span>
                 <span className="stakebar">
                   <span className="bar">
                     <span
@@ -298,7 +325,7 @@ export const ValidatorsPage: FC = () => {
                 </span>
                 <span className="age">{ageStr(v.firstSeenAt)}</span>
                 <span className="age">{ageStr(v.latestSeenChangeAt)}</span>
-              </Link>
+              </div>
             );
           })}
           {paged.length === 0 && (
