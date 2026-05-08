@@ -74,10 +74,16 @@ export const BlocksPage: FC = () => {
       blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
   );
 
-  // We page server-side at PAGE_SIZE at a time; totalPages is best-effort.
-  const totalPages = latestHeight
-    ? Math.max(1, Math.ceil(latestHeight / PAGE_SIZE))
-    : 1;
+  // totalPages is only meaningful for the unfiltered "all" view.
+  const totalPages =
+    backendStatusFilter === undefined && latestHeight
+      ? Math.max(1, Math.ceil(latestHeight / PAGE_SIZE))
+      : undefined;
+
+  // In filtered views we don't know the total. Disable "next" when the
+  // current page is short (i.e. we've reached the end of the filter set).
+  const hasMore =
+    totalPages !== undefined || (blocks ? blocks.length === PAGE_SIZE : true);
 
   return (
     <Shell active="blocks">
@@ -215,6 +221,7 @@ export const BlocksPage: FC = () => {
         <Pagination
           page={page}
           totalPages={totalPages}
+          hasMore={hasMore}
           onPageChange={(n) => setPage(n)}
         />
       </div>
