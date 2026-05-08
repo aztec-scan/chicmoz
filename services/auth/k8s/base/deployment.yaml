@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  labels:
+    app: auth
+    app.kubernetes.io/name: auth
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      containers:
+        - name: auth
+          image: registry.digitalocean.com/aztlan-containers/auth
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 400Mi
+              cpu: 300m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+          env:
+            - name: PORT
+              value: "80"
+            - name: POSTGRES_DB_NAME
+              value: "auth"
+            - name: REDIS_HOST
+              value: "redis-cache"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: NODE_ENV
+              value: "production"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

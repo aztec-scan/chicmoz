@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service # hardcoded — must remain auth-service for securitypolicy extAuth reference
+  labels:
+    app.kubernetes.io/name: auth
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  selector:
+    app: auth
+  ports:
+    - name: http-app
+      protocol: TCP
+      port: 80
+      targetPort: http-app-port
