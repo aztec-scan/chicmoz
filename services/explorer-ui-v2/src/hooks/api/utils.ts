@@ -77,6 +77,8 @@ export const queryKeyGenerator = {
   totalTxEffectsLast24h: [statsKey, "totalTxEffectsLast24h"],
   droppedTxsLast24h: [statsKey, "droppedTxsLast24h"],
   totalContracts: [statsKey, "totalContracts"],
+  totalContractInstances: [statsKey, "totalContractInstances"],
+  contractClassesSummary: [statsKey, "contractClassesSummary"],
   totalContractsLast24h: [statsKey, "totalContractsLast24h"],
   averageFees: [statsKey, "averageFees"],
   averageBlockTime: [statsKey, "averageBlockTime"],
@@ -104,6 +106,12 @@ export const queryKeyGenerator = {
     classId,
   ],
   latestContractClasses: ["latestContractClasses"],
+  paginatedContractClasses: (offset: number, limit: number, filter: string) => [
+    "latestContractClasses",
+    offset,
+    limit,
+    filter,
+  ],
   contractInstance: (address: string) => ["contractInstance", address],
   contractInstanceBalance: (address: string) => [
     "contractInstanceBalance",
@@ -114,6 +122,11 @@ export const queryKeyGenerator = {
     address,
   ],
   latestContractInstances: ["latestContractInstances"],
+  paginatedContractInstances: (
+    offset: number,
+    limit: number,
+    filter: string,
+  ) => ["latestContractInstances", offset, limit, filter],
   deployedContractInstances: (classId: string) => [
     "deployedContractInstances",
     classId,

@@ -1,36 +1,34 @@
 import { type ChicmozL2ContractClassRegisteredEvent } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
-import { type FC, useMemo, useState } from "react";
+import { type FC } from "react";
+import { Pagination } from "~/components/common";
+import { type ContractFilter } from "~/hooks/api/contract";
 import { fmtNum, truncateHashString } from "~/lib/utils";
 import { Glyph } from "./glyph";
 
-type Filter = "all" | "verified" | "protocol";
-
-const filterRows = (
-  rows: ChicmozL2ContractClassRegisteredEvent[],
-  filter: Filter,
-): ChicmozL2ContractClassRegisteredEvent[] => {
-  if (filter === "verified") {
-    return rows.filter(
-      (r) => !!r.sourceCodeUrl || !!r.artifactJson || !!r.artifactContractName,
-    );
-  }
-  if (filter === "protocol") {
-    return rows.filter((r) => !!r.standardContractType);
-  }
-  return rows;
-};
-
 interface Props {
   classes: ChicmozL2ContractClassRegisteredEvent[] | undefined;
+  totalClasses: number;
+  page: number;
+  onPageChange: (next: number) => void;
+  pageSize: number;
+  filter: ContractFilter;
+  onFilterChange: (next: ContractFilter) => void;
 }
 
-export const ClassesPanel: FC<Props> = ({ classes }) => {
-  const [filter, setFilter] = useState<Filter>("all");
-  const list = useMemo(
-    () => filterRows(classes ?? [], filter),
-    [classes, filter],
-  );
+const FILTERS: ContractFilter[] = ["all", "verified", "protocol"];
+
+export const ClassesPanel: FC<Props> = ({
+  classes,
+  totalClasses,
+  page,
+  onPageChange,
+  pageSize,
+  filter,
+  onFilterChange,
+}) => {
+  const totalPages = Math.max(1, Math.ceil(totalClasses / pageSize));
+  const list = classes ?? [];
 
   return (
     <div className="panel">
@@ -54,11 +52,11 @@ export const ClassesPanel: FC<Props> = ({ classes }) => {
       </div>
       <div className="filter-bar">
         <span className="lbl">Filter</span>
-        {(["all", "verified", "protocol"] as Filter[]).map((f) => (
+        {FILTERS.map((f) => (
           <button
             key={f}
             className={"chip" + (filter === f ? " on" : "")}
-            onClick={() => setFilter(f)}
+            onClick={() => onFilterChange(f)}
           >
             {f}
           </button>
@@ -70,7 +68,7 @@ export const ClassesPanel: FC<Props> = ({ classes }) => {
         <div className="right">ID</div>
         <div className="right">Size</div>
       </div>
-      {list.slice(0, 14).map((c) => {
+      {list.map((c) => {
         const verified = !!c.sourceCodeUrl;
         const protocol = !!c.standardContractType;
         const name =
@@ -119,7 +117,12 @@ export const ClassesPanel: FC<Props> = ({ classes }) => {
         <div className="empty-state">no contract classes</div>
       )}
       <div className="panel-foot">
-        <div className="count">{list.length} classes</div>
+        <div className="count">{totalClasses} classes</div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       </div>
     </div>
   );

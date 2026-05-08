@@ -91,6 +91,7 @@ export const paths = {
   statsTotalContractInstances: "/l2/stats/total-contract-instances",
   statsTotalContractInstancesByContractClassId: `/l2/stats/total-contract-instances/:${contractClassId}`,
   statsTotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
+  statsContractClassesSummary: "/l2/stats/contract-classes-summary",
   statsAverageFees: "/l2/stats/average-fees",
   statsAverageBlockTime: "/l2/stats/average-block-time",
   statsAverageTxsPerBlock: "/l2/stats/average-txs-per-block",
@@ -180,6 +181,10 @@ export const getContractInstancesSchema = z.object({
   query: z.object({
     fromHeight: chicmozL2BlockSchema.shape.height.optional(),
     toHeight: chicmozL2BlockSchema.shape.height.optional(),
+    offset: z.coerce.number().nonnegative().optional(),
+    limit: z.coerce.number().positive().optional(),
+    verified: z.coerce.boolean().optional(),
+    protocol: z.coerce.boolean().optional(),
   }),
 });
 
@@ -212,6 +217,10 @@ export const getContractClassesByCurrentClassIdSchema = z.object({
 export const getContractClassesSchema = z.object({
   query: z.object({
     verifiedSourceOnly: z.coerce.boolean().optional(),
+    offset: z.coerce.number().nonnegative().optional(),
+    limit: z.coerce.number().positive().optional(),
+    verified: z.coerce.boolean().optional(),
+    protocol: z.coerce.boolean().optional(),
   }),
 });
 

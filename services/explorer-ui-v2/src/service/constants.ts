@@ -56,6 +56,8 @@ export const aztecExplorer = {
   getL2TotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
   getL2DroppedTxsLast24h: "/l2/stats/dropped-txs-last-24h",
   getL2TotalContracts: "/l2/stats/total-contracts",
+  getL2TotalContractInstances: "/l2/stats/total-contract-instances",
+  getL2ContractClassesSummary: "/l2/stats/contract-classes-summary",
   getL2TotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
   getL2AverageFees: "/l2/stats/average-fees",
   getL2AverageBlockTime: "/l2/stats/average-block-time",

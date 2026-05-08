@@ -48,10 +48,33 @@ export const ContractL2API = {
   getContractClasses: async (
     classId?: string,
     verifiedSourceOnly?: boolean,
+    offset?: number,
+    limit?: number,
+    verified?: boolean,
+    protocol?: boolean,
   ): Promise<ChicmozL2ContractClassRegisteredEvent[]> => {
+    const params: Record<string, string | boolean | number | undefined> = {};
+    if (classId) {
+      params.classId = classId;
+    }
+    if (verifiedSourceOnly !== undefined) {
+      params.verifiedSourceOnly = verifiedSourceOnly;
+    }
+    if (offset !== undefined) {
+      params.offset = offset;
+    }
+    if (limit !== undefined) {
+      params.limit = limit;
+    }
+    if (verified !== undefined) {
+      params.verified = verified;
+    }
+    if (protocol !== undefined) {
+      params.protocol = protocol;
+    }
     const response = await client.get(
       aztecExplorer.getL2ContractClasses(classId),
-      { params: classId ? undefined : { verifiedSourceOnly } },
+      { params: classId ? undefined : params },
     );
     return validateResponse(
       chicmozL2ContractClassRegisteredEventSchema.array(),
@@ -113,10 +136,28 @@ export const ContractL2API = {
       response.data,
     );
   },
-  getContractInstances: async (): Promise<
-    ChicmozL2ContractInstanceDeluxe[]
-  > => {
-    const response = await client.get(aztecExplorer.getL2ContractInstances);
+  getContractInstances: async (
+    offset?: number,
+    limit?: number,
+    verified?: boolean,
+    protocol?: boolean,
+  ): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
+    const params: Record<string, number | boolean | undefined> = {};
+    if (offset !== undefined) {
+      params.offset = offset;
+    }
+    if (limit !== undefined) {
+      params.limit = limit;
+    }
+    if (verified !== undefined) {
+      params.verified = verified;
+    }
+    if (protocol !== undefined) {
+      params.protocol = protocol;
+    }
+    const response = await client.get(aztecExplorer.getL2ContractInstances, {
+      params,
+    });
     return validateResponse(
       chicmozL2ContractInstanceDeluxeSchema.array(),
       response.data,

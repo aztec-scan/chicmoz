@@ -1,40 +1,34 @@
 import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
-import { type FC, useMemo, useState } from "react";
+import { type FC } from "react";
+import { Pagination } from "~/components/common";
+import { type ContractFilter } from "~/hooks/api/contract";
 import { truncateHashString } from "~/lib/utils";
 import { Glyph } from "./glyph";
 
-type Filter = "all" | "verified" | "protocol";
-
-const filterRows = (
-  rows: ChicmozL2ContractInstanceDeluxe[],
-  filter: Filter,
-): ChicmozL2ContractInstanceDeluxe[] => {
-  if (filter === "verified") {
-    return rows.filter(
-      (r) =>
-        !!r.verifiedDeploymentArguments ||
-        !!r.deployerMetadata ||
-        !!r.artifactContractName ||
-        !!r.artifactJson,
-    );
-  }
-  if (filter === "protocol") {
-    return rows.filter((r) => !!r.standardContractType);
-  }
-  return rows;
-};
-
 interface Props {
   instances: ChicmozL2ContractInstanceDeluxe[] | undefined;
+  totalInstances: number;
+  page: number;
+  onPageChange: (next: number) => void;
+  pageSize: number;
+  filter: ContractFilter;
+  onFilterChange: (next: ContractFilter) => void;
 }
 
-export const InstancesPanel: FC<Props> = ({ instances }) => {
-  const [filter, setFilter] = useState<Filter>("all");
-  const list = useMemo(
-    () => filterRows(instances ?? [], filter),
-    [instances, filter],
-  );
+const FILTERS: ContractFilter[] = ["all", "verified", "protocol"];
+
+export const InstancesPanel: FC<Props> = ({
+  instances,
+  totalInstances,
+  page,
+  onPageChange,
+  pageSize,
+  filter,
+  onFilterChange,
+}) => {
+  const totalPages = Math.max(1, Math.ceil(totalInstances / pageSize));
+  const list = instances ?? [];
 
   return (
     <div className="panel">
@@ -58,11 +52,11 @@ export const InstancesPanel: FC<Props> = ({ instances }) => {
       </div>
       <div className="filter-bar">
         <span className="lbl">Filter</span>
-        {(["all", "verified", "protocol"] as Filter[]).map((f) => (
+        {FILTERS.map((f) => (
           <button
             key={f}
             className={"chip" + (filter === f ? " on" : "")}
-            onClick={() => setFilter(f)}
+            onClick={() => onFilterChange(f)}
           >
             {f}
           </button>
@@ -73,7 +67,7 @@ export const InstancesPanel: FC<Props> = ({ instances }) => {
         <div>Class</div>
         <div className="right">Class id</div>
       </div>
-      {list.slice(0, 14).map((inst) => {
+      {list.map((inst) => {
         const verified = !!inst.verifiedDeploymentArguments;
         const protocol = !!inst.standardContractType;
         const name =
@@ -113,7 +107,12 @@ export const InstancesPanel: FC<Props> = ({ instances }) => {
         <div className="empty-state">no contract instances</div>
       )}
       <div className="panel-foot">
-        <div className="count">{list.length} instances</div>
+        <div className="count">{totalInstances} instances</div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       </div>
     </div>
   );

@@ -149,26 +149,40 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES: OpenAPIObject["paths"] 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
   async (req, res) => {
     const includeArtifactJson = false;
-    const { verifiedSourceOnly } = getContractClassesSchema.parse(req).query;
+    const { verifiedSourceOnly, offset, limit, verified, protocol } =
+      getContractClassesSchema.parse(req).query;
     const contractClasses = await dbWrapper.getLatest(
       [
         "l2",
         "contract-classes",
         verifiedSourceOnly ? "verified-source" : "all",
+        offset,
+        limit,
+        verified ? "v" : undefined,
+        protocol ? "p" : undefined,
       ],
       () =>
         db.l2Contract.getL2RegisteredContractClasses({
           includeArtifactJson,
           verifiedSourceOnly,
+          offset,
+          limit,
+          verified,
+          protocol,
         }),
     );
     const parsedClasses = JSON.parse(
       contractClasses,
     ) as ChicmozL2ContractClassRegisteredEvent[];
     // Merge protocol contract classes so they appear in the PROTOCOL filter.
-    // Only merge when no verifiedSourceOnly filter is applied.
+    // Merge when: on the first page (or non-paginated) AND the active filter is
+    // NOT "verified" or "verifiedSourceOnly" (those exclude non-verified protocol
+    // classes, which would bypass the filter). The "protocol" filter and "all"
+    // filter both allow protocol classes.
+    const excludesProtocol = verifiedSourceOnly === true || verified === true;
+    const isFirstPageOrNonPaginated = offset === undefined || offset === 0;
     const protocolClasses =
-      verifiedSourceOnly === undefined || verifiedSourceOnly === false
+      !excludesProtocol && isFirstPageOrNonPaginated
         ? getAllProtocolContractClasses()
         : [];
     // Deduplicate: don't add protocol classes that already exist in the DB results

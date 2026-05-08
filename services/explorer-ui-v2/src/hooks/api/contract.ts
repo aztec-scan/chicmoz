@@ -34,6 +34,36 @@ export const useLatestContractClasses = (): UseQueryResult<
   });
 };
 
+export type ContractFilter = "all" | "verified" | "protocol";
+
+export const usePaginatedContractClasses = (
+  page: number,
+  pageSize: number,
+  filter: ContractFilter = "all",
+): UseQueryResult<ChicmozL2ContractClassRegisteredEvent[], Error> => {
+  const offset = page * pageSize;
+  const verified = filter === "verified" ? true : undefined;
+  const protocol = filter === "protocol" ? true : undefined;
+  return useQuery<ChicmozL2ContractClassRegisteredEvent[], Error>({
+    queryKey: queryKeyGenerator.paginatedContractClasses(
+      offset,
+      pageSize,
+      filter,
+    ),
+    queryFn: () =>
+      ContractL2API.getContractClasses(
+        undefined,
+        undefined,
+        offset,
+        pageSize,
+        verified,
+        protocol,
+      ),
+    placeholderData: (previousData) => previousData,
+    staleTime: 30_000,
+  });
+};
+
 export const useVerifiedSourceContractClasses = (): UseQueryResult<
   ChicmozL2ContractClassRegisteredEvent[],
   Error
@@ -143,6 +173,27 @@ export const useLatestContractInstances = (): UseQueryResult<
     queryFn: () => ContractL2API.getContractInstances(),
     refetchInterval: SLOW_REFETCH_INTERVAL,
     staleTime: LONG_STALE_TIME,
+  });
+};
+
+export const usePaginatedContractInstances = (
+  page: number,
+  pageSize: number,
+  filter: ContractFilter = "all",
+): UseQueryResult<ChicmozL2ContractInstanceDeluxe[], Error> => {
+  const offset = page * pageSize;
+  const verified = filter === "verified" ? true : undefined;
+  const protocol = filter === "protocol" ? true : undefined;
+  return useQuery<ChicmozL2ContractInstanceDeluxe[], Error>({
+    queryKey: queryKeyGenerator.paginatedContractInstances(
+      offset,
+      pageSize,
+      filter,
+    ),
+    queryFn: () =>
+      ContractL2API.getContractInstances(offset, pageSize, verified, protocol),
+    placeholderData: (previousData) => previousData,
+    staleTime: 30_000,
   });
 };
 
