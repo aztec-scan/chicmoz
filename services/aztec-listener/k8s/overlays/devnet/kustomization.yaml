@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -devnet
+
+resources:
+  - ../../base
+  - postgres-config.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/aztec-listener
+    newName: registry.digitalocean.com/aztlan-containers/aztec-listener-devnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: aztec-listener
+      spec:
+        template:
+          spec:
+            containers:
+              - name: aztec-listener
+                env:
+                  - name: INSTANCE_NAME
+                    value: "devnet_aztec-listener"
+                  - name: L2_NETWORK_ID
+                    value: "DEVNET"
+                  - name: AZTEC_RPC_URLS
+                    valueFrom:
+                      secretKeyRef:
+                        name: devnet-config
+                        key: AZTEC_RPC_NODES_DEVNET
