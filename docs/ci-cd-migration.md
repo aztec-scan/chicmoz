@@ -367,22 +367,29 @@ The flat per-network manifests under `k8s/production/<service>/` are superseded 
 
 ## Services Migration Status
 
-| Service                     | Networks                 | Old Skaffold files                                         | New workflow         | Status     |
-| --------------------------- | ------------------------ | ---------------------------------------------------------- | -------------------- | ---------- |
-| `explorer-ui-v2`            | testnet, mainnet, devnet | — (new service)                                            | `explorer-ui-v2.yml` | ✅ Done    |
-| `explorer-ui`               | mainnet, testnet, devnet | `k8s/production/explorer-ui/skaffold.*.yaml`               | —                    | ⏳ Pending |
-| `explorer-api`              | mainnet, testnet, devnet | `k8s/production/explorer-api/skaffold.*.yaml`              | —                    | ⏳ Pending |
-| `aztec-listener`            | mainnet, testnet, devnet | `k8s/production/aztec-listener/skaffold.*.yaml`            | —                    | ⏳ Pending |
-| `ethereum-listener`         | mainnet, testnet, devnet | `k8s/production/ethereum-listener/skaffold.*.yaml`         | —                    | ⏳ Pending |
-| `websocket-event-publisher` | mainnet, testnet, devnet | `k8s/production/websocket-event-publisher/skaffold.*.yaml` | —                    | ⏳ Pending |
-| `auth`                      | mainnet                  | `k8s/production/auth/skaffold.yaml`                        | —                    | ⏳ Pending |
-| `compiler-orchestrator`     | mainnet, testnet, devnet | `k8s/production/compiler-orchestrator/skaffold.*.yaml`     | —                    | ⏳ Pending |
+| Service                     | Networks                 | Old Skaffold files                                         | New workflow                    | Status  |
+| --------------------------- | ------------------------ | ---------------------------------------------------------- | ------------------------------- | ------- |
+| `explorer-ui-v2`            | testnet, mainnet, devnet | — (new service)                                            | `explorer-ui-v2.yml`            | ✅ Done |
+| `explorer-ui`               | mainnet, testnet, devnet | `k8s/production/explorer-ui/skaffold.*.yaml`               | `explorer-ui.yml`               | ✅ Done |
+| `explorer-api`              | mainnet, testnet, devnet | `k8s/production/explorer-api/skaffold.*.yaml`              | `explorer-api.yml`              | ✅ Done |
+| `aztec-listener`            | mainnet, testnet, devnet | `k8s/production/aztec-listener/skaffold.*.yaml`            | `aztec-listener.yml`            | ✅ Done |
+| `ethereum-listener`         | mainnet, testnet, devnet | `k8s/production/ethereum-listener/skaffold.*.yaml`         | `ethereum-listener.yml`         | ✅ Done |
+| `websocket-event-publisher` | mainnet, testnet, devnet | `k8s/production/websocket-event-publisher/skaffold.*.yaml` | `websocket-event-publisher.yml` | ✅ Done |
+| `auth`                      | mainnet                  | `k8s/production/auth/skaffold.yaml`                        | `auth.yml`                      | ✅ Done |
+| `compiler-orchestrator`     | mainnet, testnet, devnet | `k8s/production/compiler-orchestrator/skaffold.*.yaml`     | `compiler-orchestrator.yml`     | ✅ Done |
 
 ---
 
 ## Notes on Backend Services
 
 Backend services (everything except the UI services) have additional concerns vs the frontend:
+
+### Building the chicmoz-base image
+
+Backend services depend on a shared base image (`chicmoz-base`) built from the root `Dockerfile`.
+In the new per-service workflows, a `build-base` job builds and pushes this image before the
+service build job runs. GHA layer caching (`scope=chicmoz-base`) is shared across all service
+workflows, so the base is only rebuilt when the root `Dockerfile` or monorepo package files change.
 
 ### Secrets injection
 
