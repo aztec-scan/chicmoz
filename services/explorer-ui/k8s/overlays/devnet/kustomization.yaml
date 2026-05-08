@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -devnet
+
+resources:
+  - ../../base
+  - httproute.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/explorer-ui
+    newName: registry.digitalocean.com/aztlan-containers/explorer-ui-devnet
+    newTag: latest
