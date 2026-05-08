@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -testnet
+
+resources:
+  - ../../base
+  - httproute.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/websocket-event-publisher
+    newName: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        template:
+          spec:
+            containers:
+              - name: websocket-event-publisher
+                env:
+                  - name: INSTANCE_NAME
+                    value: "testnet_websocket-event-publisher"
+                  - name: L2_NETWORK_ID
+                    value: "TESTNET"
