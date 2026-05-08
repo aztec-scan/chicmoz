@@ -1,12 +1,23 @@
-name: CI/CD Explorer UI v2 — Testnet
+name: CI/CD Explorer UI v2
 
 on:
   push:
     branches:
       - production-testnet
+      - production
+      - production-devnet
     paths:
       - "services/explorer-ui-v2/**"
   workflow_dispatch:
+    inputs:
+      network:
+        description: "Network to deploy to"
+        required: true
+        type: choice
+        options:
+          - testnet
+          - mainnet
+          - devnet
 
 env:
   REGISTRY: registry.digitalocean.com/aztlan-containers
@@ -18,12 +29,29 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tools-cache-key: ${{ steps.cache-key.outputs.key }}
+      network: ${{ steps.network.outputs.network }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Determine network
+        id: network
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "network=${{ inputs.network }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "production" ]; then
+            echo "network=mainnet" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "production-testnet" ]; then
+            echo "network=testnet" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "production-devnet" ]; then
+            echo "network=devnet" >> $GITHUB_OUTPUT
+          else
+            echo "ERROR: Cannot determine network from branch ${{ github.ref_name }}" >&2
+            exit 1
+          fi
 
       - name: Set up tools directory
         run: mkdir -p tools
@@ -86,14 +114,40 @@ jobs:
 
       - run: doctl registry login --expiry-seconds 1200
 
+      - name: Resolve network-specific build args
+        id: build-args
+        run: |
+          NETWORK="${{ needs.set-up.outputs.network }}"
+          case "$NETWORK" in
+            mainnet)
+              echo "l2_network_id=MAINNET" >> $GITHUB_OUTPUT
+              echo "api_url=https://api.aztecscan.xyz/v1" >> $GITHUB_OUTPUT
+              echo "ws_url=wss://ws.aztecscan.xyz" >> $GITHUB_OUTPUT
+              ;;
+            testnet)
+              echo "l2_network_id=TESTNET" >> $GITHUB_OUTPUT
+              echo "api_url=https://api.testnet.aztecscan.xyz/v1" >> $GITHUB_OUTPUT
+              echo "ws_url=wss://ws.testnet.aztecscan.xyz" >> $GITHUB_OUTPUT
+              ;;
+            devnet)
+              echo "l2_network_id=DEVNET" >> $GITHUB_OUTPUT
+              echo "api_url=https://api.devnet.aztecscan.xyz/v1" >> $GITHUB_OUTPUT
+              echo "ws_url=wss://ws.devnet.aztecscan.xyz" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "ERROR: Unknown network: $NETWORK" >&2
+              exit 1
+              ;;
+          esac
+
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix=testnet-
-            type=raw,value=testnet-latest
+            type=sha,prefix=${{ needs.set-up.outputs.network }}-
+            type=raw,value=${{ needs.set-up.outputs.network }}-latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -104,11 +158,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_ENV=production
-            VITE_L2_NETWORK_ID=TESTNET
+            VITE_L2_NETWORK_ID=${{ steps.build-args.outputs.l2_network_id }}
             VITE_CHICMOZ_ALL_UI_URLS=Mainnet|https://aztecscan.xyz,Testnet|https://testnet.aztecscan.xyz,Devnet|https://devnet.aztecscan.xyz
-            VITE_API_URL=https://api.testnet.aztecscan.xyz/v1
+            VITE_API_URL=${{ steps.build-args.outputs.api_url }}
             VITE_API_KEY=temporary-api-key
-            VITE_WS_URL=wss://ws.testnet.aztecscan.xyz
+            VITE_WS_URL=${{ steps.build-args.outputs.ws_url }}
             VITE_DISCORD_URL=https://discord.gg/xnw7fVXB7m
             VITE_GITHUB_URL=https://github.com/aztec-scan/chicmoz
             VITE_X_URL=https://x.com/aztecscan
@@ -151,10 +205,10 @@ jobs:
           doctl registries kubernetes-manifest aztlan-containers --namespace chicmoz-prod | kubectl apply -f -
 
       - name: Apply manifests
-        run: kubectl apply -k services/explorer-ui-v2/k8s/overlays/testnet/
+        run: kubectl apply -k services/explorer-ui-v2/k8s/overlays/${{ needs.set-up.outputs.network }}/
 
       - name: Restart deployment
-        run: kubectl rollout restart deployment/explorer-ui-v2-testnet -n chicmoz-prod
+        run: kubectl rollout restart deployment/explorer-ui-v2-${{ needs.set-up.outputs.network }} -n chicmoz-prod
 
       - name: Wait for rollout
-        run: kubectl rollout status deployment/explorer-ui-v2-testnet -n chicmoz-prod --timeout=300s
+        run: kubectl rollout status deployment/explorer-ui-v2-${{ needs.set-up.outputs.network }} -n chicmoz-prod --timeout=300s

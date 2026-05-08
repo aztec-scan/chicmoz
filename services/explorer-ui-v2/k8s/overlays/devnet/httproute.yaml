@@ -1,0 +1,24 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: explorer-ui-v2
+  namespace: chicmoz-prod
+  labels:
+    app.kubernetes.io/name: explorer-ui-v2
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  parentRefs:
+    - name: aztecscan-gateway
+      sectionName: ui-v2-devnet-http
+    - name: aztecscan-gateway
+      sectionName: ui-v2-devnet-https
+  hostnames:
+    - v2.devnet.aztecscan.xyz
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: explorer-ui-v2-devnet # hardcoded — nameSuffix does NOT transform backendRefs
+          port: 80
