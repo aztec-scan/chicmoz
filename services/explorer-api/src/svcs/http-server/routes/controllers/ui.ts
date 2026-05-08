@@ -1,13 +1,15 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { controllers as db } from "../../../database/index.js";
-import { dbWrapper ,
+import {
+  dbWrapper,
   uiBlockTableResponseArray,
   uiTxEffectTableResponseArray,
 } from "./utils/index.js";
 import {
-  getBlocksSchema,
+  getUiBlocksSchema,
   getTxEffectsByBlockHeightSchema,
+  getBlocksSchema,
 } from "../paths_and_validation.js";
 
 export const openapi_GET_BLOCK_UI_TABLE_DATA: OpenAPIObject["paths"] = {
@@ -30,6 +32,14 @@ export const openapi_GET_BLOCK_UI_TABLE_DATA: OpenAPIObject["paths"] = {
             type: "integer",
           },
         },
+        {
+          name: "status",
+          in: "query",
+          schema: {
+            type: "string",
+            enum: ["proposed", "proven", "finalized", "orphaned"],
+          },
+        },
       ],
       responses: uiBlockTableResponseArray,
     },
@@ -37,10 +47,10 @@ export const openapi_GET_BLOCK_UI_TABLE_DATA: OpenAPIObject["paths"] = {
 };
 
 export const GET_BLOCK_UI_TABLE_DATA = asyncHandler(async (req, res) => {
-  const { from, to } = getBlocksSchema.parse(req).query;
+  const { from, to, status } = getUiBlocksSchema.parse(req).query;
   const blocksData = await dbWrapper.getLatest(
-    ["l2", "blocks", "ui", from, to],
-    () => db.ui.getBlocksForUiTable({ from, to }),
+    ["l2", "blocks", "ui", from, to, status],
+    () => db.ui.getBlocksForUiTable({ from, to, status }),
   );
   res.status(200).json(JSON.parse(blocksData));
 });
