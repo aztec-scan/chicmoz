@@ -1,0 +1,24 @@
+FROM node:20-slim AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends jq python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/main
+
+COPY .yarn .yarn
+COPY .yarnrc.yml .yarnrc.yml
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY services services
+COPY packages packages
+
+RUN yarn workspaces focus @chicmoz/auth
+RUN yarn run build:packages
+
+WORKDIR /usr/main/services/auth
+RUN yarn build
+
+FROM node:20-slim
+WORKDIR /usr/main/services/auth
+COPY --from=build /usr/main /usr/main
+
+CMD ["yarn", "run", "start"]

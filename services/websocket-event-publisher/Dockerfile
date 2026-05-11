@@ -11,4 +11,3 @@ WORKDIR /usr/main/services/websocket-event-publisher
 COPY --from=BUILD /usr/main /usr/main
 
 CMD ["yarn", "run", "start"]
-
