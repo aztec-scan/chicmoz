@@ -44,7 +44,7 @@ ENV VITE_X_URL $VITE_X_URL
 ARG VITE_VERSION_STRING
 ENV VITE_VERSION_STRING $VITE_VERSION_STRING
 
-RUN yarn workspaces focus @chicmoz/explorer-ui
+RUN yarn install
 RUN yarn run build:packages
 
 WORKDIR /usr/main/services/explorer-ui

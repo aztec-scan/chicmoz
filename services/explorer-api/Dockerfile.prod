@@ -14,7 +14,7 @@ COPY packages packages
 ARG VERSION_STRING
 ENV VERSION_STRING $VERSION_STRING
 
-RUN yarn workspaces focus @chicmoz/explorer-api
+RUN yarn install
 RUN yarn run build:packages
 
 WORKDIR /usr/main/services/explorer-api
