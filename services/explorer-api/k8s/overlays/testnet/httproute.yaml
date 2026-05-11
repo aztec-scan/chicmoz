@@ -30,5 +30,5 @@ spec:
             kind: HTTPRouteFilter
             name: explorer-api-rewrite-testnet # hardcoded — nameSuffix does NOT transform extensionRef
       backendRefs:
-        - name: explorer-api-testnet-service # hardcoded — nameSuffix does NOT transform backendRefs
+        - name: explorer-api-testnet # hardcoded — nameSuffix does NOT transform backendRefs
           port: 80

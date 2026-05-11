@@ -29,3 +29,27 @@ patches:
                     value: "mainnet_websocket-event-publisher"
                   - name: L2_NETWORK_ID
                     value: "MAINNET"
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        selector:
+          matchLabels:
+            app: websocket-event-publisher
+            network: mainnet
+        template:
+          metadata:
+            labels:
+              app: websocket-event-publisher
+              network: mainnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        selector:
+          app: websocket-event-publisher
+          network: mainnet

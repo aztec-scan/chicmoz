@@ -39,3 +39,27 @@ patches:
                 env:
                   - name: INSTANCE_NAME
                     value: "devnet_explorer-api"
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: explorer-api
+      spec:
+        selector:
+          matchLabels:
+            app: explorer-api
+            network: devnet
+        template:
+          metadata:
+            labels:
+              app: explorer-api
+              network: devnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: explorer-api
+      spec:
+        selector:
+          app: explorer-api
+          network: devnet

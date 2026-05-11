@@ -16,7 +16,7 @@ spec:
     - devnet.aztecscan.xyz
   rules:
     - backendRefs:
-        - name: explorer-ui-devnet-service # hardcoded — nameSuffix does NOT transform backendRefs
+        - name: explorer-ui-devnet # hardcoded — nameSuffix does NOT transform backendRefs
           port: 80
       matches:
         - path:

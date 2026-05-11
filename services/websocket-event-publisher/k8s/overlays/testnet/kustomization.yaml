@@ -29,3 +29,27 @@ patches:
                     value: "testnet_websocket-event-publisher"
                   - name: L2_NETWORK_ID
                     value: "TESTNET"
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        selector:
+          matchLabels:
+            app: websocket-event-publisher
+            network: testnet
+        template:
+          metadata:
+            labels:
+              app: websocket-event-publisher
+              network: testnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        selector:
+          app: websocket-event-publisher
+          network: testnet

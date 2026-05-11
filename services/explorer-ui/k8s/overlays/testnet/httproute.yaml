@@ -20,7 +20,7 @@ spec:
     - testnet.aztecscan.xyz
   rules:
     - backendRefs:
-        - name: explorer-ui-testnet-service # hardcoded — nameSuffix does NOT transform backendRefs
+        - name: explorer-ui-testnet # hardcoded — nameSuffix does NOT transform backendRefs
           port: 80
       matches:
         - path:

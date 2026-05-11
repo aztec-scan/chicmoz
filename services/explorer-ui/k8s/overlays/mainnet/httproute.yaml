@@ -29,7 +29,7 @@ spec:
     - mainnet.aztecscan.xyz
   rules:
     - backendRefs:
-        - name: explorer-ui-mainnet-service # hardcoded — nameSuffix does NOT transform backendRefs
+        - name: explorer-ui-mainnet # hardcoded — nameSuffix does NOT transform backendRefs
           port: 80
       matches:
         - path:
