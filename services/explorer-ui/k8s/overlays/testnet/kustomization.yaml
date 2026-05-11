@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -testnet
+
+resources:
+  - ../../base
+  - httproute.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/explorer-ui
+    newName: registry.digitalocean.com/aztlan-containers/explorer-ui-testnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: explorer-ui
+      spec:
+        selector:
+          matchLabels:
+            app: explorer-ui
+            network: testnet
+        template:
+          metadata:
+            labels:
+              app: explorer-ui
+              network: testnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: explorer-ui
+      spec:
+        selector:
+          app: explorer-ui
+          network: testnet

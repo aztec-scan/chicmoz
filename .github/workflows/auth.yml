@@ -1,0 +1,170 @@
+name: CI/CD Auth
+
+on:
+  push:
+    branches:
+      - production
+    paths:
+      - "services/auth/**"
+  workflow_dispatch: # no network input — always mainnet
+
+env:
+  REGISTRY: registry.digitalocean.com/aztlan-containers
+  CLUSTER_NAME: aztecscan-prod
+  IMAGE_NAME: auth-mainnet
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    outputs:
+      tools-cache-key: ${{ steps.cache-key.outputs.key }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up tools directory
+        run: mkdir -p tools
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Copy doctl to tools directory
+        run: |
+          cp $(which doctl) tools/
+          chmod +x tools/doctl
+
+      - name: Install kubectl
+        run: |
+          curl -Lo tools/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x tools/kubectl
+
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=${{ runner.os }}-tools-$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: tools/doctl registry login --expiry-seconds 1200
+
+  build-base:
+    runs-on: ubuntu-latest
+    needs: set-up
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DigitalOcean Container Registry
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - run: doctl registry login --expiry-seconds 1200
+
+      - name: Build and push chicmoz-base
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: registry.digitalocean.com/aztlan-containers/chicmoz-base:latest
+          cache-from: type=gha,scope=chicmoz-base
+          cache-to: type=gha,scope=chicmoz-base,mode=max
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [set-up, build-base]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Log in to DigitalOcean Container Registry
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - run: doctl registry login --expiry-seconds 1200
+
+      - name: Build and push service image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/auth/Dockerfile
+          push: true
+          tags: |
+            registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:latest
+            registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          build-args: |
+            BASE=registry.digitalocean.com/aztlan-containers/chicmoz-base:latest
+          cache-from: type=gha,scope=auth-mainnet
+          cache-to: type=gha,scope=auth-mainnet,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [set-up, build]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
+
+      - name: Ensure DigitalOcean registry credentials exist in cluster
+        run: |
+          doctl registries kubernetes-manifest aztlan-containers --namespace chicmoz-prod | kubectl apply -f -
+
+      - name: Apply manifests
+        run: kubectl apply -k services/auth/k8s/overlays/mainnet/
+
+      - name: Restart deployment
+        run: kubectl rollout restart deployment/auth -n chicmoz-prod
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/auth -n chicmoz-prod --timeout=300s

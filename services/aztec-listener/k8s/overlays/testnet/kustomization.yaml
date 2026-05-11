@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -testnet
+
+resources:
+  - ../../base
+  - postgres-config.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/aztec-listener
+    newName: registry.digitalocean.com/aztlan-containers/aztec-listener-testnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: aztec-listener
+      spec:
+        template:
+          spec:
+            containers:
+              - name: aztec-listener
+                env:
+                  - name: INSTANCE_NAME
+                    value: "testnet_aztec-listener"
+                  - name: L2_NETWORK_ID
+                    value: "TESTNET"
+                  - name: AZTEC_RPC_URLS
+                    valueFrom:
+                      secretKeyRef:
+                        name: aztec-listener-testnet
+                        key: AZTEC_RPC_NODES_TESTNET
+                  - name: AZTEC_DISABLE_ETERNAL_CATCHUP
+                    value: "false"
+                  - name: NODE_OPTIONS
+                    value: "--max-old-space-size=1536"

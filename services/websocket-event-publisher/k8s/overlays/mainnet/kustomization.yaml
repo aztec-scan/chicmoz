@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -mainnet
+
+resources:
+  - ../../base
+  - httproute.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/websocket-event-publisher
+    newName: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-mainnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        template:
+          spec:
+            containers:
+              - name: websocket-event-publisher
+                env:
+                  - name: INSTANCE_NAME
+                    value: "mainnet_websocket-event-publisher"
+                  - name: L2_NETWORK_ID
+                    value: "MAINNET"
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        selector:
+          matchLabels:
+            app: websocket-event-publisher
+            network: mainnet
+        template:
+          metadata:
+            labels:
+              app: websocket-event-publisher
+              network: mainnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: websocket-event-publisher
+      spec:
+        selector:
+          app: websocket-event-publisher
+          network: mainnet
