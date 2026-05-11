@@ -16,9 +16,11 @@ RUN yarn run build:packages
 
 WORKDIR /usr/main/services/websocket-event-publisher
 RUN yarn build
+RUN yarn workspaces focus @chicmoz/websocket-event-publisher --production
 
-FROM node:20-slim
+FROM node:22-trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/main/services/websocket-event-publisher
 COPY --from=build /usr/main /usr/main
 
-CMD ["yarn", "run", "start"]
+CMD ["yarn", "node", "--unhandled-rejections=strict", "--enable-source-maps", "build/index.js"]
