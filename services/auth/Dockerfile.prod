@@ -1,6 +1,6 @@
-FROM node:20-alpine AS build
+FROM node:20-slim AS build
 
-RUN apk update && apk add jq python3 make g++
+RUN apt-get update && apt-get install -y --no-install-recommends jq python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/main
 
@@ -17,7 +17,7 @@ RUN yarn run build:packages
 WORKDIR /usr/main/services/auth
 RUN yarn build
 
-FROM node:22-trixie-slim
+FROM node:20-slim
 WORKDIR /usr/main/services/auth
 COPY --from=build /usr/main /usr/main
 
