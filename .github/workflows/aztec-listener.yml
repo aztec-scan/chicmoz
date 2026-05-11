@@ -200,17 +200,17 @@ jobs:
           NETWORK="${{ needs.set-up.outputs.network }}"
           case "$NETWORK" in
             mainnet)
-              kubectl create secret generic mainnet-config \
+              kubectl create secret generic aztec-listener-mainnet \
                 --from-literal=AZTEC_RPC_NODES_MAINNET=$AZTEC_RPC_NODES_MAINNET \
                 --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
               ;;
             testnet)
-              kubectl create secret generic testnet-config \
+              kubectl create secret generic aztec-listener-testnet \
                 --from-literal=AZTEC_RPC_NODES_TESTNET=$AZTEC_RPC_NODES_TESTNET \
                 --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
               ;;
             devnet)
-              kubectl create secret generic devnet-config \
+              kubectl create secret generic aztec-listener-devnet \
                 --from-literal=AZTEC_RPC_NODES_DEVNET=$AZTEC_RPC_NODES_DEVNET \
                 --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
               ;;

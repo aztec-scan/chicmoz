@@ -205,21 +205,21 @@ jobs:
           NETWORK="${{ needs.set-up.outputs.network }}"
           case "$NETWORK" in
             mainnet)
-              kubectl create secret generic mainnet-config \
+              kubectl create secret generic ethereum-listener-mainnet \
                 --from-literal=MAINNET_AZTEC_L1_HTTP=$MAINNET_AZTEC_L1_HTTP \
                 --from-literal=MAINNET_AZTEC_L1_WS=$MAINNET_AZTEC_L1_WS \
                 --from-literal=ETHEREUM_HTTP_ALCHEMY_MAINNET_URL=$ETHEREUM_HTTP_ALCHEMY_MAINNET_URL \
                 --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
               ;;
             testnet)
-              kubectl create secret generic testnet-config \
+              kubectl create secret generic ethereum-listener-testnet \
                 --from-literal=TESTNET_AZTEC_L1_HTTP=$TESTNET_AZTEC_L1_HTTP \
                 --from-literal=TESTNET_AZTEC_L1_WS=$TESTNET_AZTEC_L1_WS \
                 --from-literal=ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL=$ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL \
                 --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
               ;;
             devnet)
-              kubectl create secret generic devnet-config \
+              kubectl create secret generic ethereum-listener-devnet \
                 --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
                 --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
                 --from-literal=ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL=$ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL \

@@ -32,7 +32,7 @@ patches:
                   - name: AZTEC_RPC_URLS
                     valueFrom:
                       secretKeyRef:
-                        name: testnet-config
+                        name: aztec-listener-testnet
                         key: AZTEC_RPC_NODES_TESTNET
                   - name: AZTEC_DISABLE_ETERNAL_CATCHUP
                     value: "false"

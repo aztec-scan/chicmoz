@@ -32,5 +32,5 @@ patches:
                   - name: AZTEC_RPC_URLS
                     valueFrom:
                       secretKeyRef:
-                        name: devnet-config
+                        name: aztec-listener-devnet
                         key: AZTEC_RPC_NODES_DEVNET
