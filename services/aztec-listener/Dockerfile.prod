@@ -18,6 +18,7 @@ WORKDIR /usr/main/services/aztec-listener
 RUN yarn build
 
 FROM node:20-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/main/services/aztec-listener
 COPY --from=build /usr/main /usr/main
 

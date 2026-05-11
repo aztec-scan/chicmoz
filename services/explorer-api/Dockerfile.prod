@@ -22,6 +22,7 @@ RUN yarn build
 RUN yarn workspaces focus @chicmoz/explorer-api --production
 
 FROM node:20-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/main/services/explorer-api
 
 ARG VERSION_STRING
