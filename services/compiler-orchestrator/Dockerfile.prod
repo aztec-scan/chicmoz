@@ -11,7 +11,7 @@ COPY yarn.lock yarn.lock
 COPY services services
 COPY packages packages
 
-RUN yarn workspaces focus @chicmoz/compiler-orchestrator
+RUN yarn install
 RUN yarn run build:packages
 
 WORKDIR /usr/main/services/compiler-orchestrator

@@ -11,7 +11,7 @@ COPY yarn.lock yarn.lock
 COPY services services
 COPY packages packages
 
-RUN yarn workspaces focus @chicmoz/websocket-event-publisher
+RUN yarn install
 RUN yarn run build:packages
 
 WORKDIR /usr/main/services/websocket-event-publisher
