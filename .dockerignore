@@ -24,12 +24,15 @@
 !services/event-cannon/package.json
 !services/aztec-listener/package.json
 !services/aztec-listener/tsconfig.json
+!services/aztec-listener/scripts
 !services/aztec-listener/src
 !services/ethereum-listener/package.json
 !services/ethereum-listener/tsconfig.json
+!services/ethereum-listener/scripts
 !services/ethereum-listener/src
 !services/explorer-api/package.json
 !services/explorer-api/tsconfig.json
+!services/explorer-api/scripts
 !services/explorer-api/src
 !services/explorer-ui/package.json
 !services/explorer-ui/tsconfig.json
