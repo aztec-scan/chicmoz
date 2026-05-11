@@ -126,7 +126,7 @@ jobs:
             registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:latest
             registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha,scope=compiler-orchestrator-${{ env.NETWORK }}
-          cache-to: type=gha,scope=compiler-orchestrator-${{ env.NETWORK }},mode=max
+          cache-to: type=gha,scope=compiler-orchestrator-${{ env.NETWORK }},mode=min
 
   deploy:
     runs-on: ubuntu-latest

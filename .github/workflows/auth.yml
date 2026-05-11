@@ -96,7 +96,7 @@ jobs:
             registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:latest
             registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha,scope=auth-mainnet
-          cache-to: type=gha,scope=auth-mainnet,mode=max
+          cache-to: type=gha,scope=auth-mainnet,mode=min
 
   deploy:
     runs-on: ubuntu-latest

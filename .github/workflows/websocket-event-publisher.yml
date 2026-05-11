@@ -125,7 +125,7 @@ jobs:
             registry.digitalocean.com/aztlan-containers/websocket-event-publisher-${{ env.NETWORK }}:latest
             registry.digitalocean.com/aztlan-containers/websocket-event-publisher-${{ env.NETWORK }}:${{ github.sha }}
           cache-from: type=gha,scope=websocket-event-publisher-${{ env.NETWORK }}
-          cache-to: type=gha,scope=websocket-event-publisher-${{ env.NETWORK }},mode=max
+          cache-to: type=gha,scope=websocket-event-publisher-${{ env.NETWORK }},mode=min
 
   deploy:
     runs-on: ubuntu-latest

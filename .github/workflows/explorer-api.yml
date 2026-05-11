@@ -125,7 +125,7 @@ jobs:
             registry.digitalocean.com/aztlan-containers/explorer-api-${{ env.NETWORK }}:latest
             registry.digitalocean.com/aztlan-containers/explorer-api-${{ env.NETWORK }}:${{ github.sha }}
           cache-from: type=gha,scope=explorer-api-${{ env.NETWORK }}
-          cache-to: type=gha,scope=explorer-api-${{ env.NETWORK }},mode=max
+          cache-to: type=gha,scope=explorer-api-${{ env.NETWORK }},mode=min
 
   deploy:
     runs-on: ubuntu-latest
