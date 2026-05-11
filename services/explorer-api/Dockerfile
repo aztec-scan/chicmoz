@@ -1,30 +1,38 @@
-ARG BASE
+FROM node:20-alpine AS build
 
-FROM $BASE as BUILD
-WORKDIR /usr/main/services/explorer-api
+RUN apk update && apk add jq python3 make g++
 
-# Add VERSION_STRING as build arg
+WORKDIR /usr/main
+
+COPY .yarn .yarn
+COPY .yarnrc.yml .yarnrc.yml
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY services services
+COPY packages packages
+
 ARG VERSION_STRING
 ENV VERSION_STRING $VERSION_STRING
 
 RUN yarn workspaces focus @chicmoz/explorer-api
-COPY . .
+RUN yarn run build:packages
+
+WORKDIR /usr/main/services/explorer-api
 RUN yarn build
 RUN yarn workspaces focus @chicmoz/explorer-api --production
 
 FROM node:22-trixie-slim
 WORKDIR /usr/main/services/explorer-api
 
-# Pass VERSION_STRING to the runtime environment
 ARG VERSION_STRING
 ENV VERSION_STRING $VERSION_STRING
 
-COPY --from=BUILD /usr/main/.yarn /usr/main/.yarn
-COPY --from=BUILD /usr/main/.yarnrc.yml /usr/main/.yarnrc.yml
-COPY --from=BUILD /usr/main/package.json /usr/main/package.json
-COPY --from=BUILD /usr/main/yarn.lock /usr/main/yarn.lock
-COPY --from=BUILD /usr/main/node_modules /usr/main/node_modules
-COPY --from=BUILD /usr/main/packages /usr/main/packages
-COPY --from=BUILD /usr/main/services/explorer-api /usr/main/services/explorer-api
+COPY --from=build /usr/main/.yarn /usr/main/.yarn
+COPY --from=build /usr/main/.yarnrc.yml /usr/main/.yarnrc.yml
+COPY --from=build /usr/main/package.json /usr/main/package.json
+COPY --from=build /usr/main/yarn.lock /usr/main/yarn.lock
+COPY --from=build /usr/main/node_modules /usr/main/node_modules
+COPY --from=build /usr/main/packages /usr/main/packages
+COPY --from=build /usr/main/services/explorer-api /usr/main/services/explorer-api
 
 CMD ["yarn", "run", "start"]

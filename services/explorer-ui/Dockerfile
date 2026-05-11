@@ -1,9 +1,18 @@
-ARG BASE
-FROM $BASE as deps
+FROM node:20-alpine AS build
 
-WORKDIR /usr/main/services/explorer-ui
+RUN apk update && apk add jq python3 make g++
+
+WORKDIR /usr/main
+
+COPY .yarn .yarn
+COPY .yarnrc.yml .yarnrc.yml
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY services services
+COPY packages packages
 
 ENV SKIP_ENV_VALIDATION true
+ENV GENERATE_SOURCEMAP false
 
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
@@ -36,18 +45,12 @@ ARG VITE_VERSION_STRING
 ENV VITE_VERSION_STRING $VITE_VERSION_STRING
 
 RUN yarn workspaces focus @chicmoz/explorer-ui
-
-FROM deps as build
-
-ENV GENERATE_SOURCEMAP false
+RUN yarn run build:packages
 
 WORKDIR /usr/main/services/explorer-ui
-
-COPY . .
-COPY --from=deps /usr/main /usr/main
 RUN yarn build
 
-FROM nginx:1.21-alpine as runner
+FROM nginx:1.21-alpine AS runner
 
 RUN sed -i '/location \//a try_files $uri $uri/ /index.html;' /etc/nginx/conf.d/default.conf
 COPY --from=build /usr/main/services/explorer-ui/dist /usr/share/nginx/html

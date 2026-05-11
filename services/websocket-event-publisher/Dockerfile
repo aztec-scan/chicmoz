@@ -1,14 +1,24 @@
-ARG BASE
+FROM node:20-alpine AS build
 
-FROM $BASE as BUILD
-WORKDIR /usr/main/services/websocket-event-publisher
+RUN apk update && apk add jq python3 make g++
+
+WORKDIR /usr/main
+
+COPY .yarn .yarn
+COPY .yarnrc.yml .yarnrc.yml
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY services services
+COPY packages packages
+
 RUN yarn workspaces focus @chicmoz/websocket-event-publisher
-COPY . .
+RUN yarn run build:packages
+
+WORKDIR /usr/main/services/websocket-event-publisher
 RUN yarn build
 
 FROM node:22-trixie-slim
 WORKDIR /usr/main/services/websocket-event-publisher
-COPY --from=BUILD /usr/main /usr/main
+COPY --from=build /usr/main /usr/main
 
 CMD ["yarn", "run", "start"]
-
