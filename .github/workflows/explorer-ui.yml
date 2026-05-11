@@ -141,7 +141,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: services/explorer-ui/Dockerfile
+          file: services/explorer-ui/Dockerfile.prod
           push: true
           tags: |
             registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:latest

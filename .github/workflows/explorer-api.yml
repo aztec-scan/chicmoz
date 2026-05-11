@@ -119,7 +119,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: services/explorer-api/Dockerfile
+          file: services/explorer-api/Dockerfile.prod
           push: true
           tags: |
             registry.digitalocean.com/aztlan-containers/explorer-api-${{ env.NETWORK }}:latest

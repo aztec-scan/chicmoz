@@ -120,7 +120,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: services/compiler-orchestrator/Dockerfile
+          file: services/compiler-orchestrator/Dockerfile.prod
           push: true
           tags: |
             registry.digitalocean.com/aztlan-containers/${{ env.IMAGE_NAME }}:latest

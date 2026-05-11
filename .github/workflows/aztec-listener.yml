@@ -119,7 +119,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: services/aztec-listener/Dockerfile
+          file: services/aztec-listener/Dockerfile.prod
           push: true
           tags: |
             registry.digitalocean.com/aztlan-containers/aztec-listener-${{ env.NETWORK }}:latest
