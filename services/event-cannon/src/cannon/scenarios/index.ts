@@ -10,3 +10,4 @@ export { run as deployAztecStandardTokenContractCurrent } from "./deploy-aztec-s
 export { run as deployAztecStandardTokenContractLegacy } from "./deploy-aztec-standard-token-contract-legacy.js";
 export { run as verifySourceCode } from "./verify-source-code.js";
 export { run as deployAndInteractWithFpc } from "./deploy-and-interact-with-fpc.js";
+export { run as deployAndInteractExplorerShowcase } from "./deploy-and-interact-explorer-showcase.js";
