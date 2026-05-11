@@ -16,8 +16,10 @@ RUN yarn run build:packages
 
 WORKDIR /usr/main/services/auth
 RUN yarn build
+RUN yarn workspaces focus @chicmoz/auth --production
 
-FROM node:20-slim
+FROM node:22-trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/main/services/auth
 COPY --from=build /usr/main /usr/main
 
