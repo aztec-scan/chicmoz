@@ -14,7 +14,10 @@ export const ContractsPage: FC = () => {
 
   const totalClasses = classes?.length ?? 0;
   const totalInstances = instances?.length ?? 0;
-  const verifiedCount = classes?.filter((c) => !!c.sourceCodeUrl).length ?? 0;
+  const verifiedCount =
+    classes?.filter(
+      (c) => !!c.sourceCodeUrl || !!c.artifactJson || !!c.artifactContractName,
+    ).length ?? 0;
   const protocolCount =
     classes?.filter((c) => !!c.standardContractType).length ?? 0;
   const verifiedPct = totalClasses

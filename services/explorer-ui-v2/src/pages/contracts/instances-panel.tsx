@@ -10,12 +10,18 @@ const filterRows = (
   rows: ChicmozL2ContractInstanceDeluxe[],
   filter: Filter,
 ): ChicmozL2ContractInstanceDeluxe[] => {
-  if (filter === "verified")
-    {return rows.filter(
-      (r) => !!r.verifiedDeploymentArguments || !!r.deployerMetadata,
-    );}
-  if (filter === "protocol")
-    {return rows.filter((r) => !!r.standardContractType);}
+  if (filter === "verified") {
+    return rows.filter(
+      (r) =>
+        !!r.verifiedDeploymentArguments ||
+        !!r.deployerMetadata ||
+        !!r.artifactContractName ||
+        !!r.artifactJson,
+    );
+  }
+  if (filter === "protocol") {
+    return rows.filter((r) => !!r.standardContractType);
+  }
   return rows;
 };
 

@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -testnet
+
+resources:
+  - ../../base
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/compiler-orchestrator
+    newName: registry.digitalocean.com/aztlan-containers/compiler-orchestrator-testnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: compiler-orchestrator
+      spec:
+        template:
+          spec:
+            containers:
+              - name: compiler-orchestrator
+                env:
+                  - name: INSTANCE_NAME
+                    value: "testnet_compiler-orchestrator"
+                  - name: L2_NETWORK_ID
+                    value: "TESTNET"
+                  - name: COMPILER_IMAGE
+                    value: "registry.digitalocean.com/aztlan-containers/contract-compiler-testnet:4.2.0"

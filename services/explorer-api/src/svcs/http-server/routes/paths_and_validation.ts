@@ -9,6 +9,7 @@ import {
   contractStandardSchema,
   ethAddressSchema,
   hexStringSchema,
+  uiBlockStatusFilterSchema,
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
@@ -121,6 +122,14 @@ export const getBlocksSchema = z.object({
   query: z.object({
     from: chicmozL2BlockSchema.shape.height.optional(),
     to: chicmozL2BlockSchema.shape.height.optional(),
+  }),
+});
+
+export const getUiBlocksSchema = z.object({
+  query: z.object({
+    from: chicmozL2BlockSchema.shape.height.optional(),
+    to: chicmozL2BlockSchema.shape.height.optional(),
+    status: uiBlockStatusFilterSchema.optional(),
   }),
 });
 

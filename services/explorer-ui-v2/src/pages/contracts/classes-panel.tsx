@@ -10,9 +10,14 @@ const filterRows = (
   rows: ChicmozL2ContractClassRegisteredEvent[],
   filter: Filter,
 ): ChicmozL2ContractClassRegisteredEvent[] => {
-  if (filter === "verified") {return rows.filter((r) => !!r.sourceCodeUrl);}
-  if (filter === "protocol")
-    {return rows.filter((r) => !!r.standardContractType);}
+  if (filter === "verified") {
+    return rows.filter(
+      (r) => !!r.sourceCodeUrl || !!r.artifactJson || !!r.artifactContractName,
+    );
+  }
+  if (filter === "protocol") {
+    return rows.filter((r) => !!r.standardContractType);
+  }
   return rows;
 };
 
@@ -105,9 +110,7 @@ export const ClassesPanel: FC<Props> = ({ classes }) => {
               {truncateHashString(c.contractClassId, 5, 4)}
             </div>
             <div className="right" style={{ color: "var(--ink-3)" }}>
-              {c.packedBytecode
-                ? `${fmtNum(c.packedBytecode.length)} B`
-                : "—"}
+              {c.packedBytecode ? `${fmtNum(c.packedBytecode.length)} B` : "—"}
             </div>
           </Link>
         );

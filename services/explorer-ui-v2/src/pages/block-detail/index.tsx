@@ -1,18 +1,28 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import {
+  AddressEtherscanLink,
   DetailEmptyState,
   DetailField,
   HashCell,
   StatusPill,
+  TokenEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
+  useChainInfo,
   useGetBlockByIdentifier,
   useGetTableTxEffectsByBlockHeight,
 } from "~/hooks/api";
 import { blockStatusToDisplay } from "~/lib/block-status";
-import { ageStr, fmtNum, formatFees, toIsoUtc, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  toIsoUtc,
+  truncateHashString,
+} from "~/lib/utils";
 
 type Tab = "txs" | "roots" | "contracts";
 
@@ -20,7 +30,12 @@ export const BlockDetailPage: FC = () => {
   const { blockNumber = "" } = useParams({ strict: false });
   const [tab, setTab] = useState<Tab>("txs");
 
-  const { data: block, isLoading, isError } = useGetBlockByIdentifier(blockNumber);
+  const {
+    data: block,
+    isLoading,
+    isError,
+  } = useGetBlockByIdentifier(blockNumber);
+  const { data: chainInfo } = useChainInfo();
   const height = block?.height ? Number(block.height) : undefined;
   const { data: txs } = useGetTableTxEffectsByBlockHeight(
     block?.height !== undefined ? block.height : undefined,
@@ -53,7 +68,10 @@ export const BlockDetailPage: FC = () => {
 
   const status = blockStatusToDisplay(block.finalizationStatus, !!block.orphan);
   const ts = Number(block.header.globalVariables.timestamp);
-  const totalFees = formatFees(block.header.totalFees);
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
+  const totalFees = formatFees(block.header.totalFees, feeJuiceDecimals);
   const totalManaUsed = block.header.totalManaUsed?.toString?.() ?? "0";
   const txCount = block.body.txEffects.length;
 
@@ -92,7 +110,7 @@ export const BlockDetailPage: FC = () => {
                 color: "var(--ink-3)",
               }}
             >
-              {txCount} txs · {totalFees} FJ
+              {txCount} txs · {totalFees} {feeJuiceSymbol}
             </span>
           </div>
           <div className="hash">{block.hash}</div>
@@ -126,7 +144,11 @@ export const BlockDetailPage: FC = () => {
           <div className="lbl">Total fees</div>
           <div className="val">
             {totalFees}
-            <span className="u">FJ</span>
+            <TokenEtherscanLink
+              symbol={feeJuiceSymbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
         </div>
         <div className="sc">
@@ -212,7 +234,9 @@ export const BlockDetailPage: FC = () => {
               {block.proposedOnL1?.l1BlockHash ?? "—"}
             </DetailField>
             <DetailField label="Rollup contract" width="wide">
-              {block.proposedOnL1?.l1ContractAddress ?? "—"}
+              <AddressEtherscanLink
+                address={block.proposedOnL1?.l1ContractAddress}
+              />
             </DetailField>
             <DetailField label="Prover" width="wide">
               {block.proofVerifiedOnL1?.proverId
@@ -255,7 +279,7 @@ export const BlockDetailPage: FC = () => {
             <div className="block-tx-head">
               <div>Tx hash</div>
               <div style={{ textAlign: "right" }}>Idx</div>
-              <div style={{ textAlign: "right" }}>Fee (FJ)</div>
+              <div style={{ textAlign: "right" }}>Fee ({feeJuiceSymbol})</div>
             </div>
             {(txs ?? []).map((t, i) => (
               <Link
@@ -266,7 +290,14 @@ export const BlockDetailPage: FC = () => {
               >
                 <HashCell value={t.txHash} />
                 <span className="idx">{i}</span>
-                <span className="num">{formatFees(t.transactionFee)}</span>
+                <span className="num">
+                  {formatFees(t.transactionFee, feeJuiceDecimals)}
+                  <TokenEtherscanLink
+                    symbol={feeJuiceSymbol}
+                    address={feeJuiceAddress}
+                    className="u"
+                  />
+                </span>
               </Link>
             ))}
             {(!txs || txs.length === 0) && (

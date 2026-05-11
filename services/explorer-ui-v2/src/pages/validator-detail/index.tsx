@@ -1,19 +1,33 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
+  AddressEtherscanLink,
   DetailEmptyState,
   DetailField,
   StatusPill,
+  TokenEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
-import { useL1L2Validator, useL1L2ValidatorHistory } from "~/hooks/api";
-import { ageStr, fmtNum, formatFees, toIsoUtc, truncateHashString } from "~/lib/utils";
+import {
+  useChainInfo,
+  useL1L2Validator,
+  useL1L2ValidatorHistory,
+} from "~/hooks/api";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getStakingAssetSymbol,
+  toIsoUtc,
+  truncateHashString,
+} from "~/lib/utils";
 import { validatorStatusToDisplay } from "~/lib/validator-status";
 
 export const ValidatorDetailPage: FC = () => {
   const { attesterAddress = "" } = useParams({ strict: false });
   const { data: validator, isLoading } = useL1L2Validator(attesterAddress);
   const { data: history } = useL1L2ValidatorHistory(attesterAddress);
+  const { data: chainInfo } = useChainInfo();
 
   const stubCrumbs = [
     { label: "aztec-scan", to: "/" },
@@ -40,9 +54,13 @@ export const ValidatorDetailPage: FC = () => {
   }
 
   const status = validatorStatusToDisplay(validator.status);
-  const daysSeen = Math.floor(
-    (Date.now() - validator.firstSeenAt) / 86400000,
+  const daysSeen = Math.floor((Date.now() - validator.firstSeenAt) / 86400000);
+  const stakingAssetDecimals = chainInfo?.stakingAssetDecimals ?? 18;
+  const stakingAssetSymbol = getStakingAssetSymbol(
+    chainInfo?.stakingAssetSymbol,
   );
+  const stakingAssetAddress =
+    chainInfo?.l1ContractAddresses?.stakingAssetAddress;
 
   return (
     <Shell active="validators">
@@ -64,12 +82,14 @@ export const ValidatorDetailPage: FC = () => {
           {ageStr(validator.latestSeenChangeAt)}
         </div>
         <h1 className="sans">Validator</h1>
-        <div className="subhash">{validator.attester}</div>
+        <div className="subhash">
+          <AddressEtherscanLink address={validator.attester} />
+        </div>
         <div className="meta-row">
           <StatusPill status={status} />
           <span className="meta-line">
-            staked {formatFees(validator.stake, 18, 2)} · first seen{" "}
-            {ageStr(validator.firstSeenAt)}
+            staked {formatFees(validator.stake, stakingAssetDecimals, 2)} ·
+            first seen {ageStr(validator.firstSeenAt)}
           </span>
         </div>
       </div>
@@ -78,8 +98,12 @@ export const ValidatorDetailPage: FC = () => {
         <div className="sc">
           <div className="lbl">Current stake</div>
           <div className="val">
-            {formatFees(validator.stake, 18, 2)}
-            <span className="u">STK</span>
+            {formatFees(validator.stake, stakingAssetDecimals, 2)}
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub">on-chain</div>
         </div>
@@ -115,19 +139,23 @@ export const ValidatorDetailPage: FC = () => {
         </div>
         <div className="kv-grid">
           <DetailField label="Attester" width="wide">
-            {validator.attester}
+            <AddressEtherscanLink address={validator.attester} />
           </DetailField>
           <DetailField label="Withdrawer" width="wide">
-            {validator.withdrawer}
+            <AddressEtherscanLink address={validator.withdrawer} />
           </DetailField>
           <DetailField label="Proposer" width="wide">
-            {validator.proposer}
+            <AddressEtherscanLink address={validator.proposer} />
           </DetailField>
           <DetailField label="Rollup contract" width="wide">
-            {validator.rollupAddress}
+            <AddressEtherscanLink address={validator.rollupAddress} />
           </DetailField>
           <DetailField label="Stake" width="wide">
-            {formatFees(validator.stake, 18, 4)} STK
+            {formatFees(validator.stake, stakingAssetDecimals, 4)}{" "}
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+            />
           </DetailField>
           <DetailField label="First seen" width="wide">
             {toIsoUtc(validator.firstSeenAt)}
@@ -151,9 +179,7 @@ export const ValidatorDetailPage: FC = () => {
           {(history ?? []).map(([ts, prev, next], i) => (
             <div key={i} className="tl-item">
               <div className="tl-date">
-                {ts instanceof Date
-                  ? ts.toISOString().slice(0, 10)
-                  : "—"}
+                {ts instanceof Date ? ts.toISOString().slice(0, 10) : "—"}
                 <br />
                 <span style={{ color: "var(--ink-4)" }}>
                   {ts instanceof Date ? ageStr(ts.getTime()) : ""}

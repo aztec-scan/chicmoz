@@ -1,10 +1,16 @@
 import { z } from "zod";
-import {
-  chicmozL2BlockFinalizationStatusSchema,
-  ethAddressSchema,
-  hexStringSchema,
-} from "../index.js";
+import { ethAddressSchema, hexStringSchema } from "../general.js";
+import { chicmozL2BlockFinalizationStatusSchema } from "./l2Block.js";
 import { frDecimalStringSchema, frTimestampSchema } from "./utils.js";
+
+export const uiBlockStatusFilterSchema = z.enum([
+  "proposed",
+  "proven",
+  "finalized",
+  "orphaned",
+]);
+
+export type UiBlockStatusFilter = z.infer<typeof uiBlockStatusFilterSchema>;
 
 export const uiBlockTableSchema = z.object({
   blockHash: hexStringSchema,

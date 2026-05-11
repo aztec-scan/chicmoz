@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -mainnet
+
+resources:
+  - ../../base
+  - httproute.yaml
+  - postgres-config.yaml
+  - http-filter.yaml
+  - securitypolicy.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/explorer-api
+    newName: registry.digitalocean.com/aztlan-containers/explorer-api-mainnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: explorer-api
+      spec:
+        template:
+          spec:
+            containers:
+              - name: explorer-api
+                env:
+                  - name: INSTANCE_NAME
+                    value: "mainnet_explorer-api"
+                  - name: L2_NETWORK_ID
+                    value: "MAINNET"
+            initContainers:
+              - name: run-migrations
+                env:
+                  - name: INSTANCE_NAME
+                    value: "mainnet_explorer-api"
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: explorer-api
+      spec:
+        selector:
+          matchLabels:
+            app: explorer-api
+            network: mainnet
+        template:
+          metadata:
+            labels:
+              app: explorer-api
+              network: mainnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: explorer-api
+      spec:
+        selector:
+          app: explorer-api
+          network: mainnet

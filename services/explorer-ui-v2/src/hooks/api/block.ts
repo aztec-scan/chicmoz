@@ -2,6 +2,7 @@ import {
   type ChicmozL2BlockLight,
   type ChicmozReorg,
   type UiBlockTable,
+  type UiBlockStatusFilter,
 } from "@chicmoz-pkg/types";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { BlockAPI } from "~/api";
@@ -91,17 +92,25 @@ export const useReorgs = (): UseQueryResult<ChicmozReorg[], Error> => {
 export const usePaginatedTableBlocks = (
   page = 0,
   pageSize = 20,
+  status?: UiBlockStatusFilter,
 ): UseQueryResult<UiBlockTable[], Error> => {
   return useQuery<UiBlockTable[], Error>({
-    queryKey: queryKeyGenerator.paginatedTableBlocks(page, pageSize),
+    queryKey: queryKeyGenerator.paginatedTableBlocks(page, pageSize, status),
     queryFn: async () => {
       const latestHeight = await BlockAPI.getLatestHeight();
-      const endHeight = latestHeight - page * pageSize;
-      const startHeight = Math.max(1, endHeight - pageSize + 1);
-      if (endHeight < 1) {return [];}
+      const endHeight = status
+        ? latestHeight - page * pageSize + 1
+        : latestHeight - page * pageSize;
+      const startHeight = status
+        ? undefined
+        : Math.max(1, endHeight - pageSize + 1);
+      if (endHeight < 1) {
+        return [];
+      }
       return BlockAPI.getLatestTableBlocksByHeightRange(
         startHeight,
         endHeight + 1,
+        status,
       );
     },
     placeholderData: (previousData) => previousData,

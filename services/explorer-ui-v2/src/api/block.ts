@@ -2,6 +2,7 @@ import {
   type ChicmozL2BlockLight,
   type ChicmozReorg,
   type UiBlockTable,
+  type UiBlockStatusFilter,
   chicmozL2BlockLightSchema,
   chicmozReorgSchema,
   uiBlockTableSchema,
@@ -22,10 +23,19 @@ export const BlockAPI = {
   getLatestTableBlocksByHeightRange: async (
     start?: number,
     end?: number,
+    status?: UiBlockStatusFilter,
   ): Promise<UiBlockTable[]> => {
-    const params: { from?: number; to?: number } = {};
-    if (start) {params.from = start;}
-    if (end) {params.to = end;}
+    const params: { from?: number; to?: number; status?: UiBlockStatusFilter } =
+      {};
+    if (start) {
+      params.from = start;
+    }
+    if (end) {
+      params.to = end;
+    }
+    if (status) {
+      params.status = status;
+    }
     const response = await client.get(aztecExplorer.getTableBlocks, { params });
     return validateResponse(z.array(uiBlockTableSchema), response.data);
   },
@@ -62,8 +72,12 @@ export const BlockAPI = {
     end?: number,
   ): Promise<ChicmozL2BlockLight[]> => {
     const params: { from?: number; to?: number } = {};
-    if (start) {params.from = start;}
-    if (end) {params.to = end;}
+    if (start) {
+      params.from = start;
+    }
+    if (end) {
+      params.to = end;
+    }
     const response = await client.get(aztecExplorer.getL2BlocksByHeightRange, {
       params,
     });

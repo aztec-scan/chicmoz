@@ -13,13 +13,17 @@ import {
   NodeEnv,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
+  type ChicmozL2ContractInstanceDeluxe,
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { z } from "zod";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { getProtocolContractInstance } from "../../../../utils/protocol-contracts.js";
+import {
+  getAllProtocolContractInstances,
+  getProtocolContractInstance,
+} from "../../../../utils/protocol-contracts.js";
 import { l2Contract } from "../../../database/controllers/index.js";
 import { controllers as db } from "../../../database/index.js";
 import {
@@ -175,7 +179,24 @@ export const GET_L2_CONTRACT_INSTANCES = asyncHandler(async (req, res) => {
         includeArtifactJson,
       }),
   );
-  res.status(200).json(JSON.parse(instances));
+  const parsedInstances = JSON.parse(
+    instances,
+  ) as ChicmozL2ContractInstanceDeluxe[];
+  // Merge protocol contract instances into the response so they appear in the
+  // PROTOCOL filter. Only merge when no height-range filter is applied (the
+  // "latest" listing the UI uses), since protocol contracts don't have real
+  // block heights.
+  const protocolInstances =
+    fromHeight === undefined && toHeight === undefined
+      ? getAllProtocolContractInstances()
+      : [];
+  // Deduplicate: don't add protocol instances that already exist in the DB results
+  const dbAddresses = new Set(parsedInstances.map((i) => i.address));
+  const merged = [
+    ...parsedInstances,
+    ...protocolInstances.filter((pi) => !dbAddresses.has(pi.address)),
+  ];
+  res.status(200).json(merged);
 });
 
 export const openapi_GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH: OpenAPIObject["paths"] =

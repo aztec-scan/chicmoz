@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aztec-listener
+  labels:
+    app: aztec-listener
+    app.kubernetes.io/name: aztec-listener
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aztec-listener
+  template:
+    metadata:
+      labels:
+        app: aztec-listener
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - name: run-migrations
+          image: registry.digitalocean.com/aztlan-containers/aztec-listener
+          command: ["yarn", "run", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener # nameSuffix appends network suffix
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - name: aztec-listener
+          image: registry.digitalocean.com/aztlan-containers/aztec-listener
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 2000Mi
+              cpu: 1000m
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener # nameSuffix appends network suffix
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: IGNORE_PROCESSED_HEIGHT
+              value: "false"
+            - name: AZTEC_LISTEN_FOR_BLOCKS
+              value: "true"
+            - name: AZTEC_LISTEN_FOR_PENDING_TXS
+              value: "true"

@@ -1,16 +1,25 @@
 import { type UiBlockTable, type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
-import { HashCell, StatusPill } from "~/components/common";
+import { HashCell, StatusPill, TokenEtherscanLink } from "~/components/common";
 import { blockStatusToDisplay } from "~/lib/block-status";
 import { ageStr, fmtNum, formatFees } from "~/lib/utils";
 
 interface Props {
   blocks: UiBlockTable[];
   txs: UiTxEffectTable[];
+  feeJuiceDecimals: number;
+  feeJuiceSymbol: string;
+  feeJuiceAddress?: string;
 }
 
-export const LatestLists: FC<Props> = ({ blocks, txs }) => (
+export const LatestLists: FC<Props> = ({
+  blocks,
+  txs,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
+  feeJuiceAddress,
+}) => (
   <div className="split">
     <div className="panel">
       <div className="panel-head">
@@ -70,7 +79,7 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
       <div className="row-head tx-cols">
         <div>Tx hash</div>
         <div style={{ textAlign: "right" }}>Block</div>
-        <div style={{ textAlign: "right" }}>Fee (FJ)</div>
+        <div style={{ textAlign: "right" }}>Fee ({feeJuiceSymbol})</div>
         <div style={{ textAlign: "right" }}>Age</div>
       </div>
       <div className="rows">
@@ -85,7 +94,14 @@ export const LatestLists: FC<Props> = ({ blocks, txs }) => (
             >
               <HashCell value={t.txHash} />
               <span className="num">#{fmtNum(Number(t.blockNumber))}</span>
-              <span className="num">{formatFees(t.transactionFee)}</span>
+              <span className="num">
+                {formatFees(t.transactionFee, feeJuiceDecimals)}
+                <TokenEtherscanLink
+                  symbol={feeJuiceSymbol}
+                  address={feeJuiceAddress}
+                  className="u"
+                />
+              </span>
               <span className="age">{ageStr(ts)}</span>
             </Link>
           );

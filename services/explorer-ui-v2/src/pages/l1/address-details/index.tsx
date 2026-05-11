@@ -1,5 +1,6 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC, useMemo } from "react";
+import { AddressEtherscanLink } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { useL2ToL1MsgsByRecipient } from "~/hooks/api";
@@ -39,14 +40,7 @@ export const L1AddressDetailsPage: FC = () => {
         <div className="kicker">L1 address · L2 → L1 message activity</div>
         <h1 className="hash-sized">{address}</h1>
         <div className="meta-row">
-          <a
-            className="etherscan-link"
-            href={`https://etherscan.io/address/${address}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            etherscan ↗
-          </a>
+          <AddressEtherscanLink address={address} content="etherscan" />
         </div>
       </div>
 

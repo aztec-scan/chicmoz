@@ -23,11 +23,11 @@ export const queryKeyGenerator = {
     from,
     to,
   ],
-  paginatedTableBlocks: (page: number, pageSize: number) => [
-    "paginatedTableBlocks",
-    page,
-    pageSize,
-  ],
+  paginatedTableBlocks: (
+    page: number,
+    pageSize: number,
+    status: string | undefined,
+  ) => ["paginatedTableBlocks", page, pageSize, status],
   blockByHeight: (height: string) => ["blockByHeight", height],
   blockByRange: (min: number, max: number) => ["blockRange", min, max],
   blocksByStatus: ["blocks", "by-status"],

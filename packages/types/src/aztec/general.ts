@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { aztecAddressSchema, hexStringSchema } from "../index.js";
+import { aztecAddressSchema, hexStringSchema } from "../general.js";
 import { l2NetworkIdSchema } from "../network-ids.js";
 
 export const CHICMOZ_TYPES_AZTEC_VERSION = "4.2.0";

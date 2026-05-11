@@ -1,50 +1,68 @@
+import { type UiBlockStatusFilter } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { HashCell, Pagination, StatusPill } from "~/components/common";
+import {
+  HashCell,
+  Pagination,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useAverageFees,
   useAverageTxsPerBlock,
   useBlocksByFinalizationStatus,
+  useChainInfo,
   useLatestBlock,
   usePaginatedTableBlocks,
 } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
 import { blockStatusToDisplay } from "~/lib/block-status";
-import { ageStr, fmtNum, formatFees } from "~/lib/utils";
+import { ageStr, fmtNum, formatFees, getFeeJuiceSymbol } from "~/lib/utils";
 
-type StatusFilter = "all" | "proposed" | "proven" | "finalized" | "orphaned";
 type SortKey = "height" | "txEffectsLength" | "timestamp";
+type StatusFilter = "all" | UiBlockStatusFilter;
 
 const PAGE_SIZE = 20;
+const statusFilters: StatusFilter[] = [
+  "all",
+  "proposed",
+  "proven",
+  "finalized",
+  "orphaned",
+];
 
 export const BlocksPage: FC = () => {
   const { data: latestBlock } = useLatestBlock();
   const { data: blocksByStatus } = useBlocksByFinalizationStatus();
 
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const { sortKey, sortDir, toggleSort, sortArrow } =
     useSortableTable<SortKey>("height");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [page, setPage] = useState(0);
+  const backendStatusFilter = statusFilter === "all" ? undefined : statusFilter;
 
-  const { data: blocks } = usePaginatedTableBlocks(page, PAGE_SIZE);
+  const { data: blocks } = usePaginatedTableBlocks(
+    page,
+    PAGE_SIZE,
+    backendStatusFilter,
+  );
+  const { data: chainInfo } = useChainInfo();
   const { data: averageFees } = useAverageFees();
   const { data: averageTxsPerBlock } = useAverageTxsPerBlock();
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
 
-  const filtered = useMemo(() => {
-    let rows = blocks ?? [];
-    if (statusFilter !== "all") {
-      rows = rows.filter(
-        (b) => blockStatusToDisplay(b.blockStatus, b.orphan) === statusFilter,
-      );
-    }
+  const sortedBlocks = useMemo(() => {
+    const rows = blocks ?? [];
     return [...rows].sort((a, b) => {
       const av = Number(a[sortKey]);
       const bv = Number(b[sortKey]);
       const d = av > bv ? 1 : av < bv ? -1 : 0;
       return sortDir === "asc" ? d : -d;
     });
-  }, [blocks, statusFilter, sortKey, sortDir]);
+  }, [blocks, sortKey, sortDir]);
 
   const latestHeight = latestBlock ? Number(latestBlock.height) : 0;
   const provenHead = blocksByStatus?.find((b) => {
@@ -52,13 +70,20 @@ export const BlocksPage: FC = () => {
     return display === "proven" || display === "finalized";
   });
   const finalized = blocksByStatus?.find(
-    (b) => blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
+    (b) =>
+      blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
   );
 
-  // We page server-side at PAGE_SIZE at a time; totalPages is best-effort.
-  const totalPages = latestHeight
-    ? Math.max(1, Math.ceil(latestHeight / PAGE_SIZE))
-    : 1;
+  // totalPages is only meaningful for the unfiltered "all" view.
+  const totalPages =
+    backendStatusFilter === undefined && latestHeight
+      ? Math.max(1, Math.ceil(latestHeight / PAGE_SIZE))
+      : undefined;
+
+  // In filtered views we don't know the total. Disable "next" when the
+  // current page is short (i.e. we've reached the end of the filter set).
+  const hasMore =
+    totalPages !== undefined || (blocks ? blocks.length === PAGE_SIZE : true);
 
   return (
     <Shell active="blocks">
@@ -82,7 +107,9 @@ export const BlocksPage: FC = () => {
             {provenHead ? `#${fmtNum(Number(provenHead.height))}` : "—"}
           </div>
           <div className="sub" style={{ color: "var(--green)" }}>
-            {provenHead ? `${latestHeight - Number(provenHead.height)} behind tip` : "—"}
+            {provenHead
+              ? `${latestHeight - Number(provenHead.height)} behind tip`
+              : "—"}
           </div>
         </div>
         <div className="mc">
@@ -95,8 +122,12 @@ export const BlocksPage: FC = () => {
         <div className="mc">
           <div className="lbl">Avg fees</div>
           <div className="val">
-            {averageFees ? formatFees(averageFees) : "—"}
-            <span className="u">FJ</span>
+            {averageFees ? formatFees(averageFees, feeJuiceDecimals) : "—"}
+            <TokenEtherscanLink
+              symbol={feeJuiceSymbol}
+              address={feeJuiceAddress}
+              className="u"
+            />
           </div>
           <div className="sub">non-orphan blocks</div>
         </div>
@@ -117,20 +148,18 @@ export const BlocksPage: FC = () => {
           </h3>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <div className="filter-group">
-              {(["all", "proposed", "proven", "finalized", "orphaned"] as StatusFilter[]).map(
-                (s) => (
-                  <button
-                    key={s}
-                    className={statusFilter === s ? "on" : ""}
-                    onClick={() => {
-                      setStatusFilter(s);
-                      setPage(0);
-                    }}
-                  >
-                    {s}
-                  </button>
-                ),
-              )}
+              {statusFilters.map((s) => (
+                <button
+                  key={s}
+                  className={statusFilter === s ? "on" : ""}
+                  onClick={() => {
+                    setStatusFilter(s);
+                    setPage(0);
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -155,7 +184,7 @@ export const BlocksPage: FC = () => {
           </div>
         </div>
         <div>
-          {filtered.map((b) => {
+          {sortedBlocks.map((b) => {
             const status = blockStatusToDisplay(b.blockStatus, b.orphan);
             const ts = Number(b.timestamp);
             return (
@@ -183,15 +212,16 @@ export const BlocksPage: FC = () => {
               </Link>
             );
           })}
-          {(!blocks || filtered.length === 0) && (
+          {(!blocks || sortedBlocks.length === 0) && (
             <div className="empty-state">
-              {blocks ? "no blocks match filter" : "loading blocks…"}
+              {blocks ? "no blocks found" : "loading blocks..."}
             </div>
           )}
         </div>
         <Pagination
           page={page}
           totalPages={totalPages}
+          hasMore={hasMore}
           onPageChange={(n) => setPage(n)}
         />
       </div>

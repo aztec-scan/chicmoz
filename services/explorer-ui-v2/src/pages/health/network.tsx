@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
-import { CopyableAddress } from "~/components/common";
+import {
+  AddressEtherscanLink,
+  CopyableAddress,
+  EtherscanAddressLink,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useChainErrors,
@@ -9,7 +14,13 @@ import {
   useReorgs,
 } from "~/hooks/api";
 import { useSystemStatus } from "~/hooks/use-system-status";
-import { ageStr, fmtNum, formatFees, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatFees,
+  getFeeJuiceSymbol,
+  truncateHashString,
+} from "~/lib/utils";
 import { BLOCK_TIME_TARGET_SECONDS } from "~/service/constants";
 import { HealthTabs } from "./tabs";
 
@@ -22,6 +33,11 @@ export const NetworkHealthPage: FC = () => {
   const { data: reorgs } = useReorgs();
   const { data: feeRecipients } = useFeeRecipients();
   const status = useSystemStatus();
+  const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
+  const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
+  const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
+  const stakingAssetAddress =
+    chainInfo?.l1ContractAddresses?.stakingAssetAddress;
 
   const now = Date.now();
   const errs24h = (chainErrors ?? []).filter(
@@ -63,7 +79,11 @@ export const NetworkHealthPage: FC = () => {
   const heroDot =
     status.level === "ok" ? "" : status.level === "unhealthy" ? "warn" : "down";
   const heroBigClass =
-    status.level === "ok" ? "ok" : status.level === "unhealthy" ? "warn" : "down";
+    status.level === "ok"
+      ? "ok"
+      : status.level === "unhealthy"
+        ? "warn"
+        : "down";
   const heroLabel =
     status.level === "ok"
       ? "OK"
@@ -96,9 +116,7 @@ export const NetworkHealthPage: FC = () => {
         <div className="hero-cell">
           <div className="kicker">Latest reorg</div>
           <div className="big">
-            {reorgs?.[0]
-              ? `depth ${reorgs[0].nbrOfOrphanedBlocks}`
-              : "none"}
+            {reorgs?.[0] ? `depth ${reorgs[0].nbrOfOrphanedBlocks}` : "none"}
           </div>
           <div className="sub">
             {reorgs?.[0]
@@ -110,15 +128,13 @@ export const NetworkHealthPage: FC = () => {
           <div className="kicker">Errors · last 24h</div>
           <div className="big">{errs24h.length}</div>
           <div className="sub">
-            {
-              errs24h.reduce(
-                (s, e) => ({
-                  ...s,
-                  [e.name]: (s[e.name] ?? 0) + 1,
-                }),
-                {} as Record<string, number>,
-              ) && `${errs24h.length} distinct error signatures`
-            }
+            {errs24h.reduce(
+              (s, e) => ({
+                ...s,
+                [e.name]: (s[e.name] ?? 0) + 1,
+              }),
+              {} as Record<string, number>,
+            ) && `${errs24h.length} distinct error signatures`}
           </div>
         </div>
       </div>
@@ -189,6 +205,10 @@ export const NetworkHealthPage: FC = () => {
                   value={chainInfo?.l1ContractAddresses?.rollupAddress}
                   title="Copy rollup address"
                 />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.rollupAddress}
+                  content="etherscan"
+                />
               </span>
             </div>
             <div className="kv wide">
@@ -197,6 +217,10 @@ export const NetworkHealthPage: FC = () => {
                 <CopyableAddress
                   value={chainInfo?.l1ContractAddresses?.registryAddress}
                   title="Copy registry address"
+                />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.registryAddress}
+                  content="etherscan"
                 />
               </span>
             </div>
@@ -207,6 +231,10 @@ export const NetworkHealthPage: FC = () => {
                   value={chainInfo?.l1ContractAddresses?.inboxAddress}
                   title="Copy inbox address"
                 />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.inboxAddress}
+                  content="etherscan"
+                />
               </span>
             </div>
             <div className="kv wide">
@@ -216,24 +244,38 @@ export const NetworkHealthPage: FC = () => {
                   value={chainInfo?.l1ContractAddresses?.outboxAddress}
                   title="Copy outbox address"
                 />
+                <AddressEtherscanLink
+                  address={chainInfo?.l1ContractAddresses?.outboxAddress}
+                  content="etherscan"
+                />
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Fee juice</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.feeJuiceAddress}
-                  title="Copy fee juice address"
-                />
+                {feeJuiceAddress ? (
+                  <EtherscanAddressLink
+                    content={feeJuiceAddress}
+                    endpoint={`/token/${feeJuiceAddress}`}
+                    title="View fee juice token on Etherscan"
+                  />
+                ) : (
+                  "—"
+                )}
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Staking asset</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.stakingAssetAddress}
-                  title="Copy staking asset address"
-                />
+                {stakingAssetAddress ? (
+                  <EtherscanAddressLink
+                    content={stakingAssetAddress}
+                    endpoint={`/token/${stakingAssetAddress}`}
+                    title="View staking token on Etherscan"
+                  />
+                ) : (
+                  "—"
+                )}
               </span>
             </div>
           </div>
@@ -347,13 +389,20 @@ export const NetworkHealthPage: FC = () => {
           <div className="fee-head">
             <div>Address</div>
             <div className="right">Blocks</div>
-            <div className="right">Fees (FJ)</div>
+            <div className="right">Fees ({feeJuiceSymbol})</div>
           </div>
           {(feeRecipients ?? []).slice(0, 10).map((r) => (
             <div key={r.l2Address} className="fee-row">
               <span className="addr">{r.l2Address}</span>
               <span className="num">{fmtNum(r.nbrOfBlocks)}</span>
-              <span className="num">{formatFees(r.feesReceived)}</span>
+              <span className="num">
+                {formatFees(r.feesReceived, feeJuiceDecimals)}
+                <TokenEtherscanLink
+                  symbol={feeJuiceSymbol}
+                  address={feeJuiceAddress}
+                  className="u"
+                />
+              </span>
             </div>
           ))}
           {(!feeRecipients || feeRecipients.length === 0) && (

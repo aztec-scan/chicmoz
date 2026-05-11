@@ -9,16 +9,28 @@ export const truncateHashString = (
   startLen = 10,
   endLen = 8,
 ): string => {
-  if (!value) {return "";}
-  if (value.length <= startLen + endLen + 1) {return value;}
+  if (!value) {
+    return "";
+  }
+  if (value.length <= startLen + endLen + 1) {
+    return value;
+  }
   return `${value.slice(0, startLen)}…${value.slice(-endLen)}`;
 };
 
-export const fmtNum = (n: number | bigint | string | undefined | null): string => {
-  if (n === undefined || n === null) {return "—";}
-  if (typeof n === "bigint") {return n.toLocaleString("en-US");}
+export const fmtNum = (
+  n: number | bigint | string | undefined | null,
+): string => {
+  if (n === undefined || n === null) {
+    return "—";
+  }
+  if (typeof n === "bigint") {
+    return n.toLocaleString("en-US");
+  }
   const num = typeof n === "string" ? Number(n) : n;
-  if (!Number.isFinite(num)) {return "—";}
+  if (!Number.isFinite(num)) {
+    return "—";
+  }
   return num.toLocaleString("en-US");
 };
 
@@ -31,16 +43,28 @@ const INTERVALS = [
 
 /** Human age string matching the design ("12m 4s ago", "just now"). */
 export const ageStr = (ts: number | Date | null | undefined): string => {
-  if (ts === null || ts === undefined) {return "—";}
+  if (ts === null || ts === undefined) {
+    return "—";
+  }
   const millis = ts instanceof Date ? ts.getTime() : ts;
-  if (!Number.isFinite(millis)) {return "—";}
+  if (!Number.isFinite(millis)) {
+    return "—";
+  }
   const s = Math.max(0, Math.floor((Date.now() - millis) / 1000));
-  if (s < 1) {return "just now";}
-  if (s < 60) {return `${s}s ago`;}
+  if (s < 1) {
+    return "just now";
+  }
+  if (s < 60) {
+    return `${s}s ago`;
+  }
   const m = Math.floor(s / 60);
-  if (m < 60) {return `${m}m ${s % 60}s ago`;}
+  if (m < 60) {
+    return `${m}m ${s % 60}s ago`;
+  }
   const h = Math.floor(m / 60);
-  if (h < 24) {return `${h}h ${m % 60}m ago`;}
+  if (h < 24) {
+    return `${h}h ${m % 60}m ago`;
+  }
   const d = Math.floor(h / 24);
   return `${d}d ${h % 24}h ago`;
 };
@@ -49,15 +73,21 @@ export const formatDuration = (durationMs: number): string => {
   const s = Math.floor(durationMs / 1000);
   for (const interval of INTERVALS) {
     const count = Math.floor(s / interval.seconds);
-    if (count >= 1) {return `${count}${interval.label}`;}
+    if (count >= 1) {
+      return `${count}${interval.label}`;
+    }
   }
   return "just now";
 };
 
 export const toIsoUtc = (ts: number | Date | null | undefined): string => {
-  if (ts === null || ts === undefined) {return "—";}
+  if (ts === null || ts === undefined) {
+    return "—";
+  }
   const millis = ts instanceof Date ? ts.getTime() : ts;
-  if (!Number.isFinite(millis)) {return "—";}
+  if (!Number.isFinite(millis)) {
+    return "—";
+  }
   return `${new Date(millis).toISOString().replace("T", " ").slice(0, 19)} UTC`;
 };
 
@@ -72,7 +102,9 @@ export const parseBigIntAsDecimal = (
   value: bigint | string | number | null | undefined,
   decimals = 18,
 ): number => {
-  if (value === null || value === undefined) {return 0;}
+  if (value === null || value === undefined) {
+    return 0;
+  }
   try {
     const big = typeof value === "bigint" ? value : BigInt(value);
     const preserveDigits = 6;
@@ -93,23 +125,38 @@ export const parseBigIntAsDecimal = (
  * `withSeparators=false` for raw output (e.g. when piping into another
  * formatter or fitting tight cells).
  */
+export const getFeeJuiceSymbol = (symbol?: string): string => symbol ?? "AZTEC";
+
+export const getStakingAssetSymbol = (symbol?: string): string =>
+  symbol ?? "STK";
+
 export const formatFees = (
   value: bigint | string | number | null | undefined,
   decimals = 18,
   precision = 4,
   withSeparators = true,
 ): string => {
-  if (value === null || value === undefined) {return "—";}
+  if (value === null || value === undefined) {
+    return "—";
+  }
   try {
     const big = typeof value === "bigint" ? value : BigInt(value);
-    if (big === 0n) {return "0";}
+    if (big === 0n) {
+      return "0";
+    }
     const scale = 10n ** BigInt(decimals);
     const whole = big / scale;
     const fraction = big % scale;
-    const fractionStr = fraction.toString().padStart(decimals, "0").slice(0, precision);
+    const fractionStr = fraction
+      .toString()
+      .padStart(decimals, "0")
+      .slice(0, precision);
     const wholeStr = withSeparators
       ? whole.toLocaleString("en-US")
       : whole.toString();
+    if (decimals === 0 || precision === 0) {
+      return wholeStr;
+    }
     return `${wholeStr}.${fractionStr}`;
   } catch {
     return "—";
@@ -117,8 +164,14 @@ export const formatFees = (
 };
 
 export const toHex = (value: unknown): string => {
-  if (value === null || value === undefined) {return "";}
-  if (typeof value === "string") {return value;}
-  if (typeof value === "bigint") {return `0x${value.toString(16)}`;}
+  if (value === null || value === undefined) {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "bigint") {
+    return `0x${value.toString(16)}`;
+  }
   return String(value);
 };

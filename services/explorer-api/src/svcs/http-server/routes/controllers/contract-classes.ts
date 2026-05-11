@@ -1,14 +1,18 @@
 import { verifyArtifactPayload } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import {
+  type ChicmozL2ContractClassRegisteredEvent,
   chicmozL2ContractClassRegisteredEventSchema,
-  ContractStandard,
+  type ContractStandard,
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { getProtocolContractByClassId } from "../../../../utils/protocol-contracts.js";
+import {
+  getAllProtocolContractClasses,
+  getProtocolContractByClassId,
+} from "../../../../utils/protocol-contracts.js";
 import { controllers as db } from "../../../database/index.js";
 import {
   getContractClassesByCurrentClassIdSchema,
@@ -158,7 +162,22 @@ export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
           verifiedSourceOnly,
         }),
     );
-    res.status(200).json(JSON.parse(contractClasses));
+    const parsedClasses = JSON.parse(
+      contractClasses,
+    ) as ChicmozL2ContractClassRegisteredEvent[];
+    // Merge protocol contract classes so they appear in the PROTOCOL filter.
+    // Only merge when no verifiedSourceOnly filter is applied.
+    const protocolClasses =
+      verifiedSourceOnly === undefined || verifiedSourceOnly === false
+        ? getAllProtocolContractClasses()
+        : [];
+    // Deduplicate: don't add protocol classes that already exist in the DB results
+    const dbClassIds = new Set(parsedClasses.map((c) => c.contractClassId));
+    const merged = [
+      ...parsedClasses,
+      ...protocolClasses.filter((pc) => !dbClassIds.has(pc.contractClassId)),
+    ];
+    res.status(200).json(merged);
   },
 );
 

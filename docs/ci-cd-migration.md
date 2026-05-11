@@ -49,15 +49,24 @@ Every push to `production-testnet` rebuilds and redeploys **all services**, even
 ## New Pattern (GitHub Actions + Kustomize)
 
 ```
-.github/workflows/<service>-{network}.yml   ← one workflow per service per network
-  ├── set-up job   → install doctl + kubectl, cache tools
-  ├── build job    → docker buildx + push, GHA layer cache, sha + network-latest tags
+.github/workflows/<service>.yml   ← one workflow per service (handles all networks)
+  ├── set-up job   → determine network from branch, install doctl + kubectl, cache tools
+  ├── build job    → resolve network-specific VITE vars, docker buildx + push,
+  │                  GHA layer cache, sha + network-latest tags
   └── deploy job   → kubectl apply -k services/<service>/k8s/overlays/{network}/
                       kubectl rollout restart deployment/<service>-{network} -n chicmoz-prod
                       kubectl rollout status deployment/<service>-{network} -n chicmoz-prod
 ```
 
-Each workflow is **path-filtered** — only triggers when files under `services/<service>/` change. Services deploy independently.
+Each workflow is **path-filtered** — only triggers when files under `services/<service>/` change. Services deploy independently. **Network is derived from the branch** that triggered the push:
+
+| Branch               | Network   |
+| -------------------- | --------- |
+| `production`         | `mainnet` |
+| `production-testnet` | `testnet` |
+| `production-devnet`  | `devnet`  |
+
+For manual deploys via `workflow_dispatch`, the network is selected from a dropdown input.
 
 ---
 
@@ -156,17 +165,26 @@ spec:
 
 ## GitHub Actions Workflow Structure
 
-Reference: `.github/workflows/explorer-ui-v2-testnet.yml`
+Reference: `.github/workflows/explorer-ui-v2.yml`
 
 ```yaml
-name: CI/CD <Service> — <Network>
+name: CI/CD <Service>
 
 on:
   push:
-    branches: [production-testnet] # production | production-testnet | production-devnet
+    branches:
+      - production-testnet
+      - production
+      - production-devnet
     paths:
       - "services/<service>/**" # path filter — only triggers on changes to this service
   workflow_dispatch: # allows manual re-deploy from GitHub UI
+    inputs:
+      network:
+        description: "Network to deploy to"
+        required: true
+        type: choice
+        options: [testnet, mainnet, devnet]
 
 env:
   REGISTRY: registry.digitalocean.com/aztlan-containers
@@ -174,10 +192,58 @@ env:
   IMAGE_NAME: <service>
 
 jobs:
-  set-up: # installs doctl + kubectl, caches them by date
-  build: # docker buildx, pushes {network}-latest + {network}-{sha}
-  deploy: # kubectl apply -k, rollout restart, rollout status
+  set-up: # determines network from branch or dispatch input, installs doctl + kubectl, caches by date
+  build: # resolves network-specific VITE vars, docker buildx, pushes {network}-latest + {network}-{sha}
+  deploy: # kubectl apply -k overlays/{network}/, rollout restart, rollout status
 ```
+
+### Network Detection (set-up job)
+
+```yaml
+- name: Determine network
+  id: network
+  run: |
+    if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+      echo "network=${{ inputs.network }}" >> $GITHUB_OUTPUT
+    elif [ "${{ github.ref_name }}" = "production" ]; then
+      echo "network=mainnet" >> $GITHUB_OUTPUT
+    elif [ "${{ github.ref_name }}" = "production-testnet" ]; then
+      echo "network=testnet" >> $GITHUB_OUTPUT
+    elif [ "${{ github.ref_name }}" = "production-devnet" ]; then
+      echo "network=devnet" >> $GITHUB_OUTPUT
+    fi
+```
+
+The derived `network` value is passed as a job output (`needs.set-up.outputs.network`) and used throughout the workflow for image tags, build args, Kustomize overlay path, and deployment name.
+
+### Network-Specific Build Args (frontend services)
+
+Frontend services resolve per-network `VITE_*` vars in a `build-args` step using a `case` statement before the Docker build:
+
+```yaml
+- name: Resolve network-specific build args
+  id: build-args
+  run: |
+    case "${{ needs.set-up.outputs.network }}" in
+      mainnet)
+        echo "l2_network_id=MAINNET" >> $GITHUB_OUTPUT
+        echo "api_url=https://api.aztecscan.xyz/v1" >> $GITHUB_OUTPUT
+        echo "ws_url=wss://ws.aztecscan.xyz" >> $GITHUB_OUTPUT
+        ;;
+      testnet)
+        echo "l2_network_id=TESTNET" >> $GITHUB_OUTPUT
+        echo "api_url=https://api.testnet.aztecscan.xyz/v1" >> $GITHUB_OUTPUT
+        echo "ws_url=wss://ws.testnet.aztecscan.xyz" >> $GITHUB_OUTPUT
+        ;;
+      devnet)
+        echo "l2_network_id=DEVNET" >> $GITHUB_OUTPUT
+        echo "api_url=https://api.devnet.aztecscan.xyz/v1" >> $GITHUB_OUTPUT
+        echo "ws_url=wss://ws.devnet.aztecscan.xyz" >> $GITHUB_OUTPUT
+        ;;
+    esac
+```
+
+Backend services have no build-time env vars — all config is injected at runtime via K8s Secrets.
 
 ### Image Tagging Convention
 
@@ -226,16 +292,16 @@ Add `patches:` for any network-specific env vars or config (e.g. different DB na
 
 For services with environment variables injected via K8s Secrets (e.g. `aztec-listener`, `ethereum-listener`, `explorer-api`), keep using `secretKeyRef` in the base deployment — the secret is created by the workflow before `kubectl apply -k`.
 
-### Step 3 — Create `.github/workflows/<service>-{network}.yml`
+### Step 3 — Create `.github/workflows/<service>.yml`
 
-Use `explorer-ui-v2-testnet.yml` as the template. Key things to customise:
+Use `explorer-ui-v2.yml` as the template. **One file per service** — it handles all networks by deriving the target network from the branch. Key things to customise:
 
-- `on.push.branches` — the relevant production branch
 - `on.push.paths` — `services/<service>/**`
 - `IMAGE_NAME` — the image name in the registry
 - `build.build-args` — all `ARG` values from the service's `Dockerfile`
-- For backend services: add a step to `kubectl create secret generic ...` before `kubectl apply -k` (see `aztecscan-prod-testnet.yml` for reference on how secrets are currently injected)
-- `deploy` step: `kubectl apply -k services/<service>/k8s/overlays/{network}/`
+- For frontend services: add the `Resolve network-specific build args` step with the correct per-network `VITE_*` values
+- For backend services: add a step to `kubectl create secret generic ...` before `kubectl apply -k`, keyed by `${{ needs.set-up.outputs.network }}` (see `aztecscan-prod-testnet.yml` for reference on how secrets are currently injected)
+- `deploy` step targets `services/<service>/k8s/overlays/${{ needs.set-up.outputs.network }}/`
 
 ### Step 4 — Add gateway listeners (if new hostname)
 
@@ -283,36 +349,47 @@ The flat per-network manifests under `k8s/production/<service>/` are superseded 
 
 `explorer-ui-v2` is the first service using the new pattern. Use it as the canonical example.
 
-| File                                                              | Purpose                                          |
-| ----------------------------------------------------------------- | ------------------------------------------------ |
-| `services/explorer-ui-v2/k8s/base/kustomization.yaml`             | Base resource list                               |
-| `services/explorer-ui-v2/k8s/base/deployment.yaml`                | Generic deployment — no namespace, no image tag  |
-| `services/explorer-ui-v2/k8s/base/service.yaml`                   | ClusterIP service                                |
-| `services/explorer-ui-v2/k8s/base/httproute.yaml`                 | Gateway HTTPRoute for `v2.testnet.aztecscan.xyz` |
-| `services/explorer-ui-v2/k8s/overlays/testnet/kustomization.yaml` | Testnet: sets namespace + pins image tag         |
-| `.github/workflows/explorer-ui-v2-testnet.yml`                    | Full build + deploy workflow                     |
-| `k8s/local/explorer-ui-v2/skaffold.testnet.yaml`                  | Local dev — Skaffold unchanged                   |
+| File                                                              | Purpose                                         |
+| ----------------------------------------------------------------- | ----------------------------------------------- |
+| `services/explorer-ui-v2/k8s/base/kustomization.yaml`             | Base resource list                              |
+| `services/explorer-ui-v2/k8s/base/deployment.yaml`                | Generic deployment — no namespace, no image tag |
+| `services/explorer-ui-v2/k8s/base/service.yaml`                   | ClusterIP service                               |
+| `services/explorer-ui-v2/k8s/overlays/testnet/kustomization.yaml` | Testnet: sets namespace + pins image tag        |
+| `services/explorer-ui-v2/k8s/overlays/testnet/httproute.yaml`     | Testnet HTTPRoute — `v2.testnet.aztecscan.xyz`  |
+| `services/explorer-ui-v2/k8s/overlays/mainnet/kustomization.yaml` | Mainnet: sets namespace + pins image tag        |
+| `services/explorer-ui-v2/k8s/overlays/mainnet/httproute.yaml`     | Mainnet HTTPRoute — `v2.aztecscan.xyz`          |
+| `services/explorer-ui-v2/k8s/overlays/devnet/kustomization.yaml`  | Devnet: sets namespace + pins image tag         |
+| `services/explorer-ui-v2/k8s/overlays/devnet/httproute.yaml`      | Devnet HTTPRoute — `v2.devnet.aztecscan.xyz`    |
+| `.github/workflows/explorer-ui-v2.yml`                            | Single workflow — all networks, branch-derived  |
+| `k8s/local/explorer-ui-v2/skaffold.testnet.yaml`                  | Local dev — Skaffold unchanged                  |
 
 ---
 
 ## Services Migration Status
 
-| Service                     | Networks                 | Old Skaffold files                                         | New workflow                 | Status     |
-| --------------------------- | ------------------------ | ---------------------------------------------------------- | ---------------------------- | ---------- |
-| `explorer-ui-v2`            | testnet                  | — (new service)                                            | `explorer-ui-v2-testnet.yml` | ✅ Done    |
-| `explorer-ui`               | mainnet, testnet, devnet | `k8s/production/explorer-ui/skaffold.*.yaml`               | —                            | ⏳ Pending |
-| `explorer-api`              | mainnet, testnet, devnet | `k8s/production/explorer-api/skaffold.*.yaml`              | —                            | ⏳ Pending |
-| `aztec-listener`            | mainnet, testnet, devnet | `k8s/production/aztec-listener/skaffold.*.yaml`            | —                            | ⏳ Pending |
-| `ethereum-listener`         | mainnet, testnet, devnet | `k8s/production/ethereum-listener/skaffold.*.yaml`         | —                            | ⏳ Pending |
-| `websocket-event-publisher` | mainnet, testnet, devnet | `k8s/production/websocket-event-publisher/skaffold.*.yaml` | —                            | ⏳ Pending |
-| `auth`                      | mainnet                  | `k8s/production/auth/skaffold.yaml`                        | —                            | ⏳ Pending |
-| `compiler-orchestrator`     | mainnet, testnet, devnet | `k8s/production/compiler-orchestrator/skaffold.*.yaml`     | —                            | ⏳ Pending |
+| Service                     | Networks                 | Old Skaffold files                                         | New workflow                    | Status  |
+| --------------------------- | ------------------------ | ---------------------------------------------------------- | ------------------------------- | ------- |
+| `explorer-ui-v2`            | testnet, mainnet, devnet | — (new service)                                            | `explorer-ui-v2.yml`            | ✅ Done |
+| `explorer-ui`               | mainnet, testnet, devnet | `k8s/production/explorer-ui/skaffold.*.yaml`               | `explorer-ui.yml`               | ✅ Done |
+| `explorer-api`              | mainnet, testnet, devnet | `k8s/production/explorer-api/skaffold.*.yaml`              | `explorer-api.yml`              | ✅ Done |
+| `aztec-listener`            | mainnet, testnet, devnet | `k8s/production/aztec-listener/skaffold.*.yaml`            | `aztec-listener.yml`            | ✅ Done |
+| `ethereum-listener`         | mainnet, testnet, devnet | `k8s/production/ethereum-listener/skaffold.*.yaml`         | `ethereum-listener.yml`         | ✅ Done |
+| `websocket-event-publisher` | mainnet, testnet, devnet | `k8s/production/websocket-event-publisher/skaffold.*.yaml` | `websocket-event-publisher.yml` | ✅ Done |
+| `auth`                      | mainnet                  | `k8s/production/auth/skaffold.yaml`                        | `auth.yml`                      | ✅ Done |
+| `compiler-orchestrator`     | mainnet, testnet, devnet | `k8s/production/compiler-orchestrator/skaffold.*.yaml`     | `compiler-orchestrator.yml`     | ✅ Done |
 
 ---
 
 ## Notes on Backend Services
 
 Backend services (everything except the UI services) have additional concerns vs the frontend:
+
+### Building the chicmoz-base image
+
+Backend services depend on a shared base image (`chicmoz-base`) built from the root `Dockerfile`.
+In the new per-service workflows, a `build-base` job builds and pushes this image before the
+service build job runs. GHA layer caching (`scope=chicmoz-base`) is shared across all service
+workflows, so the base is only rebuilt when the root `Dockerfile` or monorepo package files change.
 
 ### Secrets injection
 

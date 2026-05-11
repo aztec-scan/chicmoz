@@ -73,30 +73,83 @@ export const getLatestL2RegisteredContractClasses = async ({
     filters.push(isNotNull(l2ContractClassRegistered.sourceCodeUrl));
   }
 
+  const selectColumns = {
+    blockHash: l2ContractClassRegistered.blockHash,
+    contractClassId: l2ContractClassRegistered.contractClassId,
+    version: l2ContractClassRegistered.version,
+    artifactHash: l2ContractClassRegistered.artifactHash,
+    privateFunctionsRoot: l2ContractClassRegistered.privateFunctionsRoot,
+    packedBytecode: l2ContractClassRegistered.packedBytecode,
+    artifactContractName: l2ContractClassRegistered.artifactContractName,
+    standardContractType: l2ContractClassRegistered.standardContractType,
+    standardContractVersion: l2ContractClassRegistered.standardContractVersion,
+    sourceCodeUrl: l2ContractClassRegistered.sourceCodeUrl,
+  };
+
+  // selectColumnsWithHeight is only used internally for sorting; the height
+  // column is dropped before Zod parsing so it never reaches the response.
+  const selectColumnsWithHeight = {
+    ...selectColumns,
+    blockHeight: l2Block.height,
+  };
+
   const baseQuery = db()
-    .select({
-      blockHash: l2ContractClassRegistered.blockHash,
-      contractClassId: l2ContractClassRegistered.contractClassId,
-      version: l2ContractClassRegistered.version,
-      artifactHash: l2ContractClassRegistered.artifactHash,
-      privateFunctionsRoot: l2ContractClassRegistered.privateFunctionsRoot,
-      packedBytecode: l2ContractClassRegistered.packedBytecode,
-      artifactContractName: l2ContractClassRegistered.artifactContractName,
-      standardContractType: l2ContractClassRegistered.standardContractType,
-      standardContractVersion:
-        l2ContractClassRegistered.standardContractVersion,
-      sourceCodeUrl: l2ContractClassRegistered.sourceCodeUrl,
-    })
+    .select(selectColumns)
+    .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
+    .where(and(...filters));
+
+  if (verifiedSourceOnly) {
+    const result = await baseQuery.orderBy(
+      desc(l2ContractClassRegistered.version),
+      desc(l2Block.height),
+    );
+    return result.map((r) =>
+      chicmozL2ContractClassRegisteredEventSchema.parse(r),
+    );
+  }
+
+  // Fetch verified classes (those with artifact or source) without a height
+  // limit so they always appear in the VERIFIED filter, even if they're not
+  // among the most recent blocks.
+  const verifiedFilters = [
+    ...filters,
+    isNotNull(l2ContractClassRegistered.artifactContractName),
+  ];
+  const verifiedResult = await db()
+    .select(selectColumnsWithHeight)
+    .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
+    .where(and(...verifiedFilters));
+
+  // Fetch the most recent classes (with height limit) for the main listing.
+  const recentResult = await db()
+    .select(selectColumnsWithHeight)
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractClassRegistered.blockHash))
     .where(and(...filters))
-    .orderBy(desc(l2ContractClassRegistered.version), desc(l2Block.height));
+    .orderBy(desc(l2Block.height))
+    .limit(DB_MAX_CONTRACTS);
 
-  const result = verifiedSourceOnly
-    ? await baseQuery
-    : await baseQuery.limit(DB_MAX_CONTRACTS);
+  // Merge, deduplicating by contractClassId, then sort by block height
+  // descending so the list is always ordered by recency.
+  const seen = new Set(verifiedResult.map((c) => c.contractClassId));
+  const merged = [
+    ...verifiedResult,
+    ...recentResult.filter((c) => !seen.has(c.contractClassId)),
+  ].sort((a, b) => {
+    const aHeight =
+      typeof a.blockHeight === "bigint"
+        ? a.blockHeight
+        : BigInt(a.blockHeight ?? 0);
+    const bHeight =
+      typeof b.blockHeight === "bigint"
+        ? b.blockHeight
+        : BigInt(b.blockHeight ?? 0);
+    return bHeight > aHeight ? 1 : bHeight < aHeight ? -1 : 0;
+  });
 
-  return result.map((r) =>
+  return merged.map(({ blockHeight: _, ...r }) =>
     chicmozL2ContractClassRegisteredEventSchema.parse(r),
   );
 };

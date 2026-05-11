@@ -1,11 +1,25 @@
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
-import { Pagination, StatusPill } from "~/components/common";
+import {
+  AddressEtherscanLink,
+  Pagination,
+  StatusPill,
+  TokenEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
-import { useL1L2Validators, useValidatorTotals } from "~/hooks/api";
+import {
+  useChainInfo,
+  useL1L2Validators,
+  useValidatorTotals,
+} from "~/hooks/api";
 import { usePaginated } from "~/hooks/use-paginated";
 import { useSortableTable } from "~/hooks/use-sortable-table";
-import { ageStr, fmtNum, parseBigIntAsDecimal } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  getStakingAssetSymbol,
+  parseBigIntAsDecimal,
+} from "~/lib/utils";
 import { validatorStatusToDisplay } from "~/lib/validator-status";
 
 type Filter =
@@ -21,8 +35,16 @@ type SortKey = "stake" | "firstSeenAt" | "latestSeenChangeAt";
 const PAGE_SIZE = 20;
 
 export const ValidatorsPage: FC = () => {
+  const navigate = useNavigate();
   const { data: validators } = useL1L2Validators();
   const { data: totals } = useValidatorTotals();
+  const { data: chainInfo } = useChainInfo();
+  const stakingAssetDecimals = chainInfo?.stakingAssetDecimals ?? 18;
+  const stakingAssetSymbol = getStakingAssetSymbol(
+    chainInfo?.stakingAssetSymbol,
+  );
+  const stakingAssetAddress =
+    chainInfo?.l1ContractAddresses?.stakingAssetAddress;
 
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
@@ -32,9 +54,7 @@ export const ValidatorsPage: FC = () => {
   const filtered = useMemo(() => {
     let rows = validators ?? [];
     if (filter !== "all") {
-      rows = rows.filter(
-        (v) => validatorStatusToDisplay(v.status) === filter,
-      );
+      rows = rows.filter((v) => validatorStatusToDisplay(v.status) === filter);
     }
     if (q) {
       const needle = q.toLowerCase();
@@ -57,7 +77,10 @@ export const ValidatorsPage: FC = () => {
     });
   }, [validators, filter, q, sortKey, sortDir]);
 
-  const { page, setPage, paged, totalPages } = usePaginated(filtered, PAGE_SIZE);
+  const { page, setPage, paged, totalPages } = usePaginated(
+    filtered,
+    PAGE_SIZE,
+  );
 
   const total = totals?.total ?? validators?.length ?? 0;
   const validating =
@@ -67,23 +90,23 @@ export const ValidatorsPage: FC = () => {
   const nonValidating = totals?.nonValidating ?? total - validating;
 
   const toStake = (v: { stake: bigint | string | number }) =>
-    parseBigIntAsDecimal(v.stake);
+    parseBigIntAsDecimal(v.stake, stakingAssetDecimals);
   // Stake aggregates are computed server-side on /totals so we don't need to
   // load every validator to render the strip. Fall back to the client-side
   // reduce only if the API hasn't populated them yet (older response cache).
   const totalStake =
     totals?.totalStake !== undefined
-      ? parseBigIntAsDecimal(totals.totalStake)
+      ? parseBigIntAsDecimal(totals.totalStake, stakingAssetDecimals)
       : (validators ?? []).reduce((s, v) => s + toStake(v), 0);
   const validatingStake =
     totals?.validatingStake !== undefined
-      ? parseBigIntAsDecimal(totals.validatingStake)
+      ? parseBigIntAsDecimal(totals.validatingStake, stakingAssetDecimals)
       : (validators ?? [])
           .filter((v) => validatorStatusToDisplay(v.status) === "validating")
           .reduce((s, v) => s + toStake(v), 0);
   const maxStake =
     totals?.maxStake !== undefined
-      ? parseBigIntAsDecimal(totals.maxStake)
+      ? parseBigIntAsDecimal(totals.maxStake, stakingAssetDecimals)
       : (validators ?? []).reduce(
           (m, v) => (toStake(v) > m ? toStake(v) : m),
           0,
@@ -124,7 +147,11 @@ export const ValidatorsPage: FC = () => {
           <div className="lbl">Total stake</div>
           <div className="val">
             {fmtNum(Math.round(totalStake))}
-            <span className="u">STK</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub">max {fmtNum(Math.round(maxStake))}</div>
         </div>
@@ -132,17 +159,27 @@ export const ValidatorsPage: FC = () => {
           <div className="lbl">Validating stake</div>
           <div className="val">
             {fmtNum(Math.round(validatingStake))}
-            <span className="u">STK</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub" style={{ color: "var(--green)" }}>
-            {totalStake ? `${Math.round((validatingStake / totalStake) * 100)}% of total` : "—"}
+            {totalStake
+              ? `${Math.round((validatingStake / totalStake) * 100)}% of total`
+              : "—"}
           </div>
         </div>
         <div className="sc">
           <div className="lbl">Avg stake</div>
           <div className="val">
             {avgStake.toFixed(1)}
-            <span className="u">STK</span>
+            <TokenEtherscanLink
+              symbol={stakingAssetSymbol}
+              address={stakingAssetAddress}
+              className="u"
+            />
           </div>
           <div className="sub">across all</div>
         </div>
@@ -160,7 +197,14 @@ export const ValidatorsPage: FC = () => {
       >
         <div className="tabs-pill">
           {(
-            ["all", "validating", "registered", "living", "exiting", "zombie"] as Filter[]
+            [
+              "all",
+              "validating",
+              "registered",
+              "living",
+              "exiting",
+              "zombie",
+            ] as Filter[]
           ).map((s) => (
             <button
               key={s}
@@ -201,11 +245,8 @@ export const ValidatorsPage: FC = () => {
         <div className="table-head validator-cols">
           <div className="right">#</div>
           <div>Attester</div>
-          <div
-            className="right sortable"
-            onClick={() => toggleSort("stake")}
-          >
-            Stake{sortArrow("stake")}
+          <div className="right sortable" onClick={() => toggleSort("stake")}>
+            Stake ({stakingAssetSymbol}){sortArrow("stake")}
           </div>
           <div className="right">Status</div>
           <div
@@ -225,14 +266,39 @@ export const ValidatorsPage: FC = () => {
           {paged.map((v, i) => {
             const status = validatorStatusToDisplay(v.status);
             return (
-              <Link
+              <div
                 key={v.attester}
                 className="trow validator-cols"
-                to="/validators/$attesterAddress"
-                params={{ attesterAddress: v.attester }}
+                role="link"
+                tabIndex={0}
+                onClick={() => {
+                  void navigate({
+                    to: "/validators/$attesterAddress",
+                    params: { attesterAddress: v.attester },
+                  });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" && e.key !== " ") {
+                    return;
+                  }
+                  e.preventDefault();
+                  void navigate({
+                    to: "/validators/$attesterAddress",
+                    params: { attesterAddress: v.attester },
+                  });
+                }}
               >
                 <span className="rank">{page * PAGE_SIZE + i + 1}</span>
-                <span className="addr">{v.attester}</span>
+                <span
+                  className="addr"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
+                  <AddressEtherscanLink
+                    address={v.attester}
+                    showExternalLinkIcon={false}
+                  />
+                </span>
                 <span className="stakebar">
                   <span className="bar">
                     <span
@@ -245,14 +311,21 @@ export const ValidatorsPage: FC = () => {
                       }}
                     />
                   </span>
-                  <span className="v">{toStake(v).toFixed(1)}</span>
+                  <span className="v">
+                    {toStake(v).toFixed(1)}
+                    <TokenEtherscanLink
+                      symbol={stakingAssetSymbol}
+                      address={stakingAssetAddress}
+                      className="u"
+                    />
+                  </span>
                 </span>
                 <span className="status-cell">
                   <StatusPill status={status} />
                 </span>
                 <span className="age">{ageStr(v.firstSeenAt)}</span>
                 <span className="age">{ageStr(v.latestSeenChangeAt)}</span>
-              </Link>
+              </div>
             );
           })}
           {paged.length === 0 && (

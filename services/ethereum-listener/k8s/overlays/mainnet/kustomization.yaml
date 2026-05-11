@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -mainnet
+
+resources:
+  - ../../base
+  - postgres-config.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/ethereum-listener
+    newName: registry.digitalocean.com/aztlan-containers/ethereum-listener-mainnet
+    newTag: latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ethereum-listener
+      spec:
+        template:
+          spec:
+            containers:
+              - name: ethereum-listener
+                env:
+                  - name: INSTANCE_NAME
+                    value: "ethereum-listener-mainnet"
+                  - name: L2_NETWORK_ID
+                    value: "MAINNET"
+                  - name: ETHEREUM_HTTP_RPC_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: ethereum-listener-mainnet
+                        key: MAINNET_AZTEC_L1_HTTP
+                  - name: ETHEREUM_WS_RPC_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: ethereum-listener-mainnet
+                        key: MAINNET_AZTEC_L1_WS
+                  - name: ETHEREUM_ALCHEMY_HTTP_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: ethereum-listener-mainnet
+                        key: ETHEREUM_HTTP_ALCHEMY_MAINNET_URL
