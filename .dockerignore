@@ -16,12 +16,31 @@
 # workaround for wildcards not working in exclusions (requires docker engine >23 https://docs.docker.com/engine/release-notes/23.0/#bug-fixes-and-enhancements-1)
 # find . -name 'package.json' -not -path './.yarn/*' -not -path './packages/*' -maxdepth 3 | sed -e 's/^.\//!/'
 !services/auth/package.json
+!services/auth/tsconfig.json
+!services/auth/src
 !services/compiler-orchestrator/package.json
+!services/compiler-orchestrator/tsconfig.json
+!services/compiler-orchestrator/src
 !services/event-cannon/package.json
 !services/aztec-listener/package.json
+!services/aztec-listener/tsconfig.json
+!services/aztec-listener/src
 !services/ethereum-listener/package.json
+!services/ethereum-listener/tsconfig.json
+!services/ethereum-listener/src
 !services/explorer-api/package.json
+!services/explorer-api/tsconfig.json
+!services/explorer-api/src
 !services/explorer-ui/package.json
+!services/explorer-ui/tsconfig.json
+!services/explorer-ui/tsconfig.app.json
+!services/explorer-ui/tsconfig.node.json
+!services/explorer-ui/vite.config.ts
+!services/explorer-ui/index.html
+!services/explorer-ui/postcss.config.js
+!services/explorer-ui/tailwind.config.js
+!services/explorer-ui/components.json
+!services/explorer-ui/src
 !services/explorer-ui-v2/package.json
 !services/explorer-ui-v2/tsconfig.json
 !services/explorer-ui-v2/tsconfig.app.json
@@ -32,6 +51,8 @@
 !services/explorer-ui-v2/tailwind.config.js
 !services/explorer-ui-v2/src
 !services/websocket-event-publisher/package.json
+!services/websocket-event-publisher/tsconfig.json
+!services/websocket-event-publisher/src
 # find . -name 'package.json' -not -path './.yarn/*' -not -path './services/*' -maxdepth 3 | sed -e 's/^.\//!/'
 !packages/logger-server
 !packages/message-bus
