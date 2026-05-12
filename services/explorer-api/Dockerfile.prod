@@ -1,0 +1,39 @@
+FROM node:20-slim AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends jq python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/main
+
+COPY .yarn .yarn
+COPY .yarnrc.yml .yarnrc.yml
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY services services
+COPY packages packages
+
+ARG VERSION_STRING
+ENV VERSION_STRING $VERSION_STRING
+
+RUN yarn install
+RUN yarn run build:packages
+
+WORKDIR /usr/main/services/explorer-api
+RUN yarn build
+RUN yarn workspaces focus @chicmoz/explorer-api --production
+
+FROM node:22-trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/main/services/explorer-api
+
+ARG VERSION_STRING
+ENV VERSION_STRING $VERSION_STRING
+
+COPY --from=build /usr/main/.yarn /usr/main/.yarn
+COPY --from=build /usr/main/.yarnrc.yml /usr/main/.yarnrc.yml
+COPY --from=build /usr/main/package.json /usr/main/package.json
+COPY --from=build /usr/main/yarn.lock /usr/main/yarn.lock
+COPY --from=build /usr/main/node_modules /usr/main/node_modules
+COPY --from=build /usr/main/packages /usr/main/packages
+COPY --from=build /usr/main/services/explorer-api /usr/main/services/explorer-api
+
+CMD ["yarn", "run", "start"]

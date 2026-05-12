@@ -12,6 +12,7 @@ import {
   SCENARIO_SIMPLE_LOG,
   SCENARIO_TOKEN_CONTRACT,
   SCENARIO_VERIFY_SOURCE_CODE,
+  SCENARIO_EXPLORER_SHOWCASE,
 } from "../environment.js";
 import { logger } from "../logger.js";
 import { setup } from "./pxe.js";
@@ -101,6 +102,13 @@ export async function init() {
     });
   }
 
+  if (SCENARIO_EXPLORER_SHOWCASE) {
+    scenariosToRun.push({
+      envVar: "SCENARIO_EXPLORER_SHOWCASE",
+      scenario: scenarios.deployAndInteractExplorerShowcase,
+    });
+  }
+
   logger.info(`
 SCENARIO_DELAY:                  ${SCENARIO_DELAY / 1000} seconds
 INIFINITE_LOOP:                  ${INIFINITE_LOOP ? "✅" : "❌"}
@@ -118,6 +126,7 @@ SCENARIO_L1L2_PRIVATE_MESSAGING:        ${SCENARIO_L1L2_PRIVATE_MESSAGING ? "✅
 SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY ? "✅" : "❌"}
 SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT ? "✅" : "❌"}
 SCENARIO_VERIFY_SOURCE_CODE:            ${SCENARIO_VERIFY_SOURCE_CODE ? "✅" : "❌"}
+SCENARIO_EXPLORER_SHOWCASE:             ${SCENARIO_EXPLORER_SHOWCASE ? "✅" : "❌"}
 `);
 
   await setup();

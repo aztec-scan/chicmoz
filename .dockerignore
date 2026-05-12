@@ -1,46 +1,31 @@
-*
+# Git
+.git/
+.gitignore
 
-!.yarn/cache
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-!.pnp.*
-!.yarnrc.yml
-!yarn.lock
-!k8s
+# Local Kubernetes configs (not needed in any Docker build)
+k8s/local/
+k8s/production/
 
-!package.json
+# Build artifacts and dependency dirs (all levels)
+**/build/
+**/dist/
+**/node_modules/
 
-# workaround for wildcards not working in exclusions (requires docker engine >23 https://docs.docker.com/engine/release-notes/23.0/#bug-fixes-and-enhancements-1)
-# find . -name 'package.json' -not -path './.yarn/*' -not -path './packages/*' -maxdepth 3 | sed -e 's/^.\//!/'
-!services/auth/package.json
-!services/compiler-orchestrator/package.json
-!services/event-cannon/package.json
-!services/aztec-listener/package.json
-!services/ethereum-listener/package.json
-!services/explorer-api/package.json
-!services/explorer-ui/package.json
-!services/explorer-ui-v2/package.json
-!services/explorer-ui-v2/tsconfig.json
-!services/explorer-ui-v2/tsconfig.app.json
-!services/explorer-ui-v2/tsconfig.node.json
-!services/explorer-ui-v2/vite.config.ts
-!services/explorer-ui-v2/index.html
-!services/explorer-ui-v2/postcss.config.js
-!services/explorer-ui-v2/tailwind.config.js
-!services/explorer-ui-v2/src
-!services/websocket-event-publisher/package.json
-# find . -name 'package.json' -not -path './.yarn/*' -not -path './services/*' -maxdepth 3 | sed -e 's/^.\//!/'
-!packages/logger-server
-!packages/message-bus
-!packages/message-registry
-!packages/backend-utils
-!packages/types
-!packages/error-middleware
-!packages/auth0-middleware
-!packages/microservice-base
-!packages/postgres-helper
-!packages/redis-helper
-!packages/contract-verification
+# Test output
+**/coverage/
+
+# Local dev and IDE files
+.env*
+.DS_Store
+**/.DS_Store
+*.log
+
+# Local-only root dirs
+data/
+tmp/
+k6/
+docs/
+plan.md
+
+# Local Skaffold Dockerfiles — CI uses Dockerfile.prod
+**/Dockerfile
