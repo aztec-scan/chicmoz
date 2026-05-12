@@ -27,6 +27,19 @@ import {
 } from "./utils/index.js";
 import { NoirCompiledContract } from "@aztec/aztec.js/abi";
 
+
+const contractClassKeys = (
+  contractClassId: string,
+  version: number,
+  includeArtifactJson?: boolean,
+) => [
+  "l2",
+  "contract-classes",
+  contractClassId,
+  version,
+  includeArtifactJson ? "with-artifact" : "without-artifact",
+];
+
 export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS: OpenAPIObject["paths"] =
   {
     "/l2/contract-classes/{classId}/versions/{version}": {
@@ -75,7 +88,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
       return;
     }
     const contractClass = await dbWrapper.get(
-      ["l2", "contract-classes", contractClassId, version],
+      contractClassKeys(contractClassId, version, includeArtifactJson),
       () =>
         db.l2Contract.getL2RegisteredContractClass(
           contractClassId,
@@ -252,8 +265,13 @@ export const verifyArtifact = async ({
   standardData?: ContractStandard;
 }) => {
   const contractClassString = await dbWrapper.get(
-    ["l2", "contract-classes", contractClassId, version],
-    () => db.l2Contract.getL2RegisteredContractClass(contractClassId, version),
+    contractClassKeys(contractClassId, version, true),
+    () =>
+      db.l2Contract.getL2RegisteredContractClass(
+        contractClassId,
+        version,
+        true,
+      ),
   );
 
   let dbContractClass;
@@ -305,7 +323,7 @@ export const verifyArtifact = async ({
   };
 
   setEntry(
-    ["l2", "contract-classes", contractClassId, version.toString()],
+    contractClassKeys(contractClassId, version, true),
     JSON.stringify(completeContractClass),
     CACHE_TTL_SECONDS,
   ).catch((err) => {
