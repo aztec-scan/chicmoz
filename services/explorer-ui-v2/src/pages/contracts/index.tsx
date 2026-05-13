@@ -1,28 +1,57 @@
-import { type FC } from "react";
+import { type FC, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
-  useLatestContractClasses,
-  useLatestContractInstances,
+  useContractClassesSummary,
+  usePaginatedContractClasses,
+  usePaginatedContractInstances,
+  useTotalContractInstances,
+  useTotalContracts,
 } from "~/hooks/api";
+import { type ContractFilter } from "~/hooks/api/contract";
 import { fmtNum } from "~/lib/utils";
 import { ClassesPanel } from "./classes-panel";
 import { InstancesPanel } from "./instances-panel";
 
-export const ContractsPage: FC = () => {
-  const { data: classes } = useLatestContractClasses();
-  const { data: instances } = useLatestContractInstances();
+const PAGE_SIZE = 14;
 
-  const totalClasses = classes?.length ?? 0;
-  const totalInstances = instances?.length ?? 0;
-  const verifiedCount =
-    classes?.filter(
-      (c) => !!c.sourceCodeUrl || !!c.artifactJson || !!c.artifactContractName,
-    ).length ?? 0;
-  const protocolCount =
-    classes?.filter((c) => !!c.standardContractType).length ?? 0;
+export const ContractsPage: FC = () => {
+  const { data: totalClassesStr } = useTotalContracts();
+  const { data: totalInstancesStr } = useTotalContractInstances();
+  const { data: summary } = useContractClassesSummary();
+
+  const totalClasses = Number(totalClassesStr ?? 0);
+  const totalInstances = Number(totalInstancesStr ?? 0);
+  const verifiedCount = summary?.verifiedClasses ?? 0;
+  const protocolCount = summary?.protocolClasses ?? 0;
   const verifiedPct = totalClasses
     ? Math.round((100 * verifiedCount) / totalClasses)
     : 0;
+
+  const [classesPage, setClassesPage] = useState(0);
+  const [instancesPage, setInstancesPage] = useState(0);
+  const [classesFilter, setClassesFilter] = useState<ContractFilter>("all");
+  const [instancesFilter, setInstancesFilter] = useState<ContractFilter>("all");
+
+  const { data: classes } = usePaginatedContractClasses(
+    classesPage,
+    PAGE_SIZE,
+    classesFilter,
+  );
+  const { data: instances } = usePaginatedContractInstances(
+    instancesPage,
+    PAGE_SIZE,
+    instancesFilter,
+  );
+
+  const handleClassesFilterChange = (f: ContractFilter) => {
+    setClassesFilter(f);
+    setClassesPage(0);
+  };
+
+  const handleInstancesFilterChange = (f: ContractFilter) => {
+    setInstancesFilter(f);
+    setInstancesPage(0);
+  };
 
   return (
     <Shell active="contracts">
@@ -61,8 +90,24 @@ export const ContractsPage: FC = () => {
       </div>
 
       <div className="twin">
-        <ClassesPanel classes={classes} />
-        <InstancesPanel instances={instances} />
+        <ClassesPanel
+          classes={classes}
+          totalClasses={totalClasses}
+          page={classesPage}
+          onPageChange={setClassesPage}
+          pageSize={PAGE_SIZE}
+          filter={classesFilter}
+          onFilterChange={handleClassesFilterChange}
+        />
+        <InstancesPanel
+          instances={instances}
+          totalInstances={totalInstances}
+          page={instancesPage}
+          onPageChange={setInstancesPage}
+          pageSize={PAGE_SIZE}
+          filter={instancesFilter}
+          onFilterChange={handleInstancesFilterChange}
+        />
       </div>
     </Shell>
   );

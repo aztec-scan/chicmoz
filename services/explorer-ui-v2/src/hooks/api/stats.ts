@@ -1,5 +1,5 @@
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { statsL2Api } from "~/api";
+import { type ContractClassesSummary, statsL2Api } from "~/api";
 import { LONG_STALE_TIME, queryKeyGenerator } from "./utils";
 
 // Aggregate stats barely move second-to-second — cache them for a minute
@@ -36,6 +36,21 @@ export const useTotalContracts = (): UseQueryResult<string, Error> =>
     queryFn: statsL2Api.getL2TotalContracts,
     ...statsOpts,
   });
+
+export const useTotalContractInstances = (): UseQueryResult<string, Error> =>
+  useQuery<string, Error>({
+    queryKey: queryKeyGenerator.totalContractInstances,
+    queryFn: statsL2Api.getL2TotalContractInstances,
+    ...statsOpts,
+  });
+
+export const useContractClassesSummary =
+  (): UseQueryResult<ContractClassesSummary> =>
+    useQuery<ContractClassesSummary, Error>({
+      queryKey: queryKeyGenerator.contractClassesSummary,
+      queryFn: statsL2Api.getL2ContractClassesSummary,
+      ...statsOpts,
+    });
 
 export const useTotalContractsLast24h = (): UseQueryResult<string, Error> =>
   useQuery<string, Error>({

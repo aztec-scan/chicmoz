@@ -168,26 +168,45 @@ export const openapi_GET_L2_CONTRACT_INSTANCES: OpenAPIObject["paths"] = {
 };
 
 export const GET_L2_CONTRACT_INSTANCES = asyncHandler(async (req, res) => {
-  const { fromHeight, toHeight } = getContractInstancesSchema.parse(req).query;
+  const { fromHeight, toHeight, offset, limit, verified, protocol } =
+    getContractInstancesSchema.parse(req).query;
   const includeArtifactJson = false;
   const instances = await dbWrapper.getLatest(
-    ["l2", "contract-instances", fromHeight, toHeight],
+    [
+      "l2",
+      "contract-instances",
+      fromHeight,
+      toHeight,
+      offset,
+      limit,
+      verified ? "v" : undefined,
+      protocol ? "p" : undefined,
+    ],
     () =>
       db.l2Contract.getL2DeployedContractInstances({
         fromHeight,
         toHeight,
         includeArtifactJson,
+        offset,
+        limit,
+        verified,
+        protocol,
       }),
   );
   const parsedInstances = JSON.parse(
     instances,
   ) as ChicmozL2ContractInstanceDeluxe[];
   // Merge protocol contract instances into the response so they appear in the
-  // PROTOCOL filter. Only merge when no height-range filter is applied (the
-  // "latest" listing the UI uses), since protocol contracts don't have real
-  // block heights.
+  // PROTOCOL filter. Merge when: on the first page (or non-paginated) AND
+  // the active filter is NOT "verified" (which would exclude non-verified
+  // protocol instances). The "protocol" and "all" filters allow them.
+  const excludesProtocol = verified === true;
+  const isFirstPageOrNonPaginated = offset === undefined || offset === 0;
   const protocolInstances =
-    fromHeight === undefined && toHeight === undefined
+    !excludesProtocol &&
+    isFirstPageOrNonPaginated &&
+    fromHeight === undefined &&
+    toHeight === undefined
       ? getAllProtocolContractInstances()
       : [];
   // Deduplicate: don't add protocol instances that already exist in the DB results

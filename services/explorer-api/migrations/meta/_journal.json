@@ -148,6 +148,13 @@
       "when": 1778284800000,
       "tag": "0020_aztec_scan_note_category",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1778544000000,
+      "tag": "0021_unique_verified_deployment_arguments_address",
+      "breakpoints": true
     }
   ]
 }

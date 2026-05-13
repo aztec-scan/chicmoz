@@ -152,6 +152,7 @@ export const l2ContractInstanceVerifiedDeploymentArguments = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     address: generateAztecAddressColumn("address")
       .notNull()
+      .unique("verified_deployment_arguments_address_unique")
       .references(() => l2ContractInstanceDeployed.address, {
         onDelete: "cascade",
       }),

@@ -105,15 +105,39 @@ export const getL2DeployedContractInstances = async ({
   fromHeight,
   toHeight,
   includeArtifactJson,
+  offset,
+  limit,
+  verified,
+  protocol,
 }: {
   fromHeight?: bigint;
   toHeight?: bigint;
   includeArtifactJson?: boolean;
+  offset?: number;
+  limit?: number;
+  verified?: boolean;
+  protocol?: boolean;
 }): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
   const rollupVersion =
     (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
   const whereRange = getBlocksWhereRange({ from: fromHeight, to: toHeight });
-  const result = await db()
+  const queryLimit = limit ?? DB_MAX_CONTRACTS;
+  const baseFilters = [
+    whereRange,
+    isNull(l2Block.orphan_timestamp),
+    eq(l2Block.version, rollupVersion),
+  ];
+
+  if (verified) {
+    baseFilters.push(
+      isNotNull(l2ContractInstanceVerifiedDeploymentArguments.address),
+    );
+  }
+  if (protocol) {
+    baseFilters.push(isNotNull(l2ContractClassRegistered.standardContractType));
+  }
+
+  const query = db()
     .select({
       instance: getTableColumns(l2ContractInstanceDeployed),
       class: getContractClassRegisteredColumns(includeArtifactJson),
@@ -158,15 +182,13 @@ export const getL2DeployedContractInstances = async ({
       ),
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
-    .where(
-      and(
-        whereRange,
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, rollupVersion),
-      ),
-    )
+    .where(and(...baseFilters))
     .orderBy(DEFAULT_SORT)
-    .limit(DB_MAX_CONTRACTS);
+    .limit(queryLimit);
+
+  const finalQuery =
+    offset !== undefined && offset > 0 ? query.offset(offset) : query;
+  const result = await finalQuery;
 
   const parsed = result.map((r) => {
     return parseDeluxe({

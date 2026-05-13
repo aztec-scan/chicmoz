@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, count, eq, gt, isNull, lt } from "drizzle-orm";
+import { and, count, eq, gt, isNotNull, isNull, lt, or } from "drizzle-orm";
 import {
   globalVariables,
   header,
@@ -8,15 +8,48 @@ import {
 } from "../../../database/schema/index.js";
 import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 
+const BASE_FILTERS = [
+  isNull(l2Block.orphan_timestamp),
+  eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+] as const;
+
 export const getTotalContracts = async (): Promise<number> => {
+  const dbRes = await db()
+    .select({ count: count() })
+    .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
+    .where(and(...BASE_FILTERS))
+    .execute();
+  return dbRes[0].count;
+};
+
+export const getVerifiedContractClassCount = async (): Promise<number> => {
   const dbRes = await db()
     .select({ count: count() })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
     .where(
       and(
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+        ...BASE_FILTERS,
+        or(
+          isNotNull(l2ContractClassRegistered.artifactContractName),
+          isNotNull(l2ContractClassRegistered.sourceCodeUrl),
+        ),
+      ),
+    )
+    .execute();
+  return dbRes[0].count;
+};
+
+export const getProtocolContractClassCount = async (): Promise<number> => {
+  const dbRes = await db()
+    .select({ count: count() })
+    .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
+    .where(
+      and(
+        ...BASE_FILTERS,
+        isNotNull(l2ContractClassRegistered.standardContractType),
       ),
     )
     .execute();

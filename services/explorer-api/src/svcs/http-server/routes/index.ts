@@ -124,6 +124,10 @@ const otherPaths = [
     controller:
       controller.GET_STATS_TOTAL_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
   },
+  {
+    path: paths.statsContractClassesSummary,
+    controller: controller.GET_STATS_CONTRACT_CLASSES_SUMMARY,
+  },
 ];
 
 const checkDocsStatus = () => {

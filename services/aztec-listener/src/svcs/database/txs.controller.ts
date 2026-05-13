@@ -4,22 +4,55 @@ import { and, eq, inArray } from "drizzle-orm";
 import { logger } from "../../logger.js";
 import { txsTable, TxState } from "./schema.js";
 
-export const storeOrUpdate = async (
-  pendingTx: ChicmozL2PendingTx,
+type StoredTxMetadata = {
+  additionalMsgSenders?: string;
+};
+
+const buildTxRow = (
+  pendingTx: ChicmozL2PendingTx & StoredTxMetadata,
   txState: TxState,
 ) => {
+  const excludedAddresses = new Set(
+    [pendingTx.feePayer, pendingTx.initiator].filter(Boolean),
+  );
+  const additionalMsgSenders =
+    pendingTx.publicCallRequests === undefined
+      ? pendingTx.additionalMsgSenders
+      : (() => {
+          const additionalSenders = [
+            ...new Set(
+              pendingTx.publicCallRequests
+                .map((r) => r.msgSender)
+                .filter((addr) => !excludedAddresses.has(addr)),
+            ),
+          ];
+
+          return additionalSenders.length > 0
+            ? additionalSenders.join(",")
+            : undefined;
+        })();
+
+  return {
+    txHash: pendingTx.txHash,
+    feePayer: pendingTx.feePayer,
+    initiator: pendingTx.initiator ?? undefined,
+    additionalMsgSenders,
+    birthTimestamp: pendingTx.birthTimestamp,
+    txState,
+  };
+};
+
+export const storeOrUpdate = async (
+  pendingTx: ChicmozL2PendingTx & StoredTxMetadata,
+  txState: TxState,
+) => {
+  const row = buildTxRow(pendingTx, txState);
   await db()
     .insert(txsTable)
-    .values({
-      ...pendingTx,
-      txState,
-    })
+    .values(row)
     .onConflictDoUpdate({
       target: txsTable.txHash,
-      set: {
-        ...pendingTx,
-        txState,
-      },
+      set: row,
     });
 };
 
@@ -32,10 +65,26 @@ export const getTxs = async (
     "proven",
   ],
 ) => {
-  return await db()
+  const rows = await db()
     .select()
     .from(txsTable)
     .where(inArray(txsTable.txState, statesWhitelist));
+
+  return rows.map((row) => ({
+    ...row,
+    initiator: row.initiator ?? undefined,
+    additionalMsgSenders: row.additionalMsgSenders ?? undefined,
+  }));
+};
+
+export const storeOrUpdateState = async (
+  txHash: HexString,
+  txState: TxState,
+) => {
+  await db()
+    .update(txsTable)
+    .set({ txState })
+    .where(eq(txsTable.txHash, txHash));
 };
 
 export const deleteTx = async (txHash: HexString, txState?: TxState) => {

@@ -47,7 +47,15 @@ export const storeContractInstanceVerifiedDeploymentArguments = async (
   await db()
     .insert(l2ContractInstanceVerifiedDeploymentArguments)
     .values({ ...verifiedDeploymentArguments })
-    .onConflictDoNothing();
+    .onConflictDoUpdate({
+      target: l2ContractInstanceVerifiedDeploymentArguments.address,
+      set: {
+        salt: verifiedDeploymentArguments.salt,
+        deployer: verifiedDeploymentArguments.deployer,
+        publicKeysString: verifiedDeploymentArguments.publicKeysString,
+        constructorArgs: verifiedDeploymentArguments.constructorArgs,
+      },
+    });
 };
 
 export const storeContractClass = async (
