@@ -28,6 +28,12 @@ export type TxState = (typeof txStateValues)[number];
 export const txsTable = pgTable("txs_table", {
   txHash: varchar("tx_hash").notNull().$type<HexString>().primaryKey(),
   feePayer: generateAztecAddressColumn("fee_payer").notNull(),
+  // The outermost initiator of the tx (msgSender of first non-revertible public call).
+  // NULL for private-only txs.
+  initiator: generateAztecAddressColumn("initiator").$type<string | undefined>(),
+  // Comma-separated list of unique msgSender addresses from all public call requests,
+  // excluding feePayer and initiator. NULL when there are no additional senders.
+  additionalMsgSenders: varchar("additional_msg_senders").$type<string | undefined>(),
   birthTimestamp: generateTimestampColumn("birth_timestamp")
     .notNull()
     .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
