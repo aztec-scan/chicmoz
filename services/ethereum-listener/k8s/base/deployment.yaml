@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ethereum-listener
+  labels:
+    app: ethereum-listener
+    app.kubernetes.io/name: ethereum-listener
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ethereum-listener
+  template:
+    metadata:
+      labels:
+        app: ethereum-listener
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - name: run-migrations
+          image: registry.digitalocean.com/aztlan-containers/ethereum-listener
+          command: ["yarn", "run", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener # nameSuffix appends network suffix
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - name: ethereum-listener
+          image: registry.digitalocean.com/aztlan-containers/ethereum-listener
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener # nameSuffix appends network suffix
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: LISTENER_DISABLED
+              value: "false"
+            - name: LISTEN_FOR_BLOCKS
+              value: "true"

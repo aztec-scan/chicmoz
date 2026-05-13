@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: explorer-ui
+  labels:
+    app: explorer-ui
+    app.kubernetes.io/name: explorer-ui
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-ui
+  template:
+    metadata:
+      labels:
+        app: explorer-ui
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      containers:
+        - name: explorer-ui
+          image: registry.digitalocean.com/aztlan-containers/explorer-ui
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 200m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP

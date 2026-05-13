@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compiler-orchestrator
+  labels:
+    app: compiler-orchestrator
+    app.kubernetes.io/name: compiler-orchestrator
+    app.kubernetes.io/part-of: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compiler-orchestrator
+  template:
+    metadata:
+      labels:
+        app: compiler-orchestrator
+    spec:
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      serviceAccountName: compiler-orchestrator
+      containers:
+        - name: compiler-orchestrator
+          image: registry.digitalocean.com/aztlan-containers/compiler-orchestrator
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 250m
+          livenessProbe:
+            exec:
+              command: ["node", "-e", "process.exit(0)"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["node", "-e", "process.exit(0)"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: K8S_NAMESPACE
+              value: "chicmoz-prod"
+            - name: MAX_CONCURRENT_JOBS
+              value: "3"
+            - name: JOB_TIMEOUT_SECONDS
+              value: "300"
+            - name: IMAGE_PULL_SECRET
+              value: "registry-aztlan-containers"
