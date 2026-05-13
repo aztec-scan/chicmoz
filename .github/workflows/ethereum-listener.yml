@@ -1,0 +1,207 @@
+name: CI/CD Ethereum Listener
+
+on:
+  push:
+    branches:
+      - production-testnet
+      - production
+      - production-devnet
+    paths:
+      - "services/ethereum-listener/**"
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "Network to deploy to"
+        required: true
+        type: choice
+        options:
+          - testnet
+          - mainnet
+          - devnet
+
+env:
+  REGISTRY: registry.digitalocean.com/aztlan-containers
+  CLUSTER_NAME: aztecscan-prod
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    outputs:
+      tools-cache-key: ${{ steps.cache-key.outputs.key }}
+      network: ${{ steps.network.outputs.network }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine network
+        id: network
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "network=${{ inputs.network }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "production" ]; then
+            echo "network=mainnet" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "production-testnet" ]; then
+            echo "network=testnet" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "production-devnet" ]; then
+            echo "network=devnet" >> $GITHUB_OUTPUT
+          else
+            echo "ERROR: Cannot determine network from branch ${{ github.ref_name }}" >&2
+            exit 1
+          fi
+
+      - name: Set up tools directory
+        run: mkdir -p tools
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Copy doctl to tools directory
+        run: |
+          cp $(which doctl) tools/
+          chmod +x tools/doctl
+
+      - name: Install kubectl
+        run: |
+          curl -Lo tools/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x tools/kubectl
+
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=${{ runner.os }}-tools-$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: tools/doctl registry login --expiry-seconds 1200
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [set-up]
+    env:
+      NETWORK: ${{ needs.set-up.outputs.network }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Log in to DigitalOcean Container Registry
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - run: doctl registry login --expiry-seconds 1200
+
+      - name: Build and push service image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/ethereum-listener/Dockerfile.prod
+          push: true
+          tags: |
+            registry.digitalocean.com/aztlan-containers/ethereum-listener-${{ env.NETWORK }}:latest
+            registry.digitalocean.com/aztlan-containers/ethereum-listener-${{ env.NETWORK }}:${{ github.sha }}
+          cache-from: type=gha,scope=ethereum-listener-${{ env.NETWORK }}
+          cache-to: type=gha,scope=ethereum-listener-${{ env.NETWORK }},mode=min
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [set-up, build]
+    env:
+      NETWORK: ${{ needs.set-up.outputs.network }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
+
+      - name: Ensure DigitalOcean registry credentials exist in cluster
+        run: |
+          doctl registries kubernetes-manifest aztlan-containers --namespace chicmoz-prod | kubectl apply -f -
+
+      - name: Inject L1 RPC secrets
+        env:
+          MAINNET_AZTEC_L1_HTTP: ${{ vars.MAINNET_AZTEC_L1_HTTP }}
+          MAINNET_AZTEC_L1_WS: ${{ vars.MAINNET_AZTEC_L1_WS }}
+          ETHEREUM_HTTP_ALCHEMY_MAINNET_URL: ${{ vars.ETHEREUM_HTTP_ALCHEMY_MAINNET_URL }}
+          TESTNET_AZTEC_L1_HTTP: ${{ vars.TESTNET_AZTEC_L1_HTTP }}
+          TESTNET_AZTEC_L1_WS: ${{ vars.TESTNET_AZTEC_L1_WS }}
+          DEVNET_AZTEC_L1_HTTP: ${{ vars.DEVNET_AZTEC_L1_HTTP }}
+          DEVNET_AZTEC_L1_WS: ${{ vars.DEVNET_AZTEC_L1_WS }}
+          ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL: ${{ vars.ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL }}
+        run: |
+          NETWORK="${{ needs.set-up.outputs.network }}"
+          case "$NETWORK" in
+            mainnet)
+              kubectl create secret generic ethereum-listener-mainnet \
+                --from-literal=MAINNET_AZTEC_L1_HTTP=$MAINNET_AZTEC_L1_HTTP \
+                --from-literal=MAINNET_AZTEC_L1_WS=$MAINNET_AZTEC_L1_WS \
+                --from-literal=ETHEREUM_HTTP_ALCHEMY_MAINNET_URL=$ETHEREUM_HTTP_ALCHEMY_MAINNET_URL \
+                --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
+              ;;
+            testnet)
+              kubectl create secret generic ethereum-listener-testnet \
+                --from-literal=TESTNET_AZTEC_L1_HTTP=$TESTNET_AZTEC_L1_HTTP \
+                --from-literal=TESTNET_AZTEC_L1_WS=$TESTNET_AZTEC_L1_WS \
+                --from-literal=ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL=$ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL \
+                --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
+              ;;
+            devnet)
+              kubectl create secret generic ethereum-listener-devnet \
+                --from-literal=DEVNET_AZTEC_L1_HTTP=$DEVNET_AZTEC_L1_HTTP \
+                --from-literal=DEVNET_AZTEC_L1_WS=$DEVNET_AZTEC_L1_WS \
+                --from-literal=ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL=$ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL \
+                --namespace chicmoz-prod --dry-run=client -o yaml | kubectl apply -f -
+              ;;
+          esac
+
+      - name: Apply manifests
+        run: kubectl apply -k services/ethereum-listener/k8s/overlays/${{ env.NETWORK }}/
+
+      - name: Restart deployment
+        run: kubectl rollout restart deployment/ethereum-listener-${{ env.NETWORK }} -n chicmoz-prod
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/ethereum-listener-${{ env.NETWORK }} -n chicmoz-prod --timeout=300s
