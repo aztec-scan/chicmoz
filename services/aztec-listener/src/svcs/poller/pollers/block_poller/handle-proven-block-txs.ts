@@ -6,6 +6,20 @@ import { publishMessage } from "../../../message-bus/index.js";
 import { getBalanceOf } from "../../network-client/index.js";
 
 type StoredTx = Awaited<ReturnType<typeof txsController.getTxs>>[number];
+type BalanceFetchSuccess = {
+  status: "fulfilled";
+  addr: string;
+  sourceTxHash: string;
+  balance: Awaited<ReturnType<typeof getBalanceOf>>;
+};
+type BalanceFetchFailure = {
+  status: "rejected";
+  addr: string;
+  sourceTxHash: string;
+  reason: unknown;
+};
+
+const BALANCE_FETCH_CONCURRENCY = 8;
 
 // Collect all unique addresses across all proven txs in the block.
 // Maps address → first txHash that introduced it (used as sourceTxHash).
@@ -27,6 +41,49 @@ const collectUniqueAddresses = (provenTxs: StoredTx[]): Map<string, string> => {
   }
 
   return addressToTxHash;
+};
+
+const fetchBalances = async (
+  blockNumber: bigint,
+  addressToTxHash: Map<string, string>,
+) => {
+  const entries = [...addressToTxHash.entries()];
+  const results: Array<BalanceFetchSuccess | BalanceFetchFailure> = [];
+  let nextIndex = 0;
+
+  await Promise.all(
+    Array.from(
+      { length: Math.min(BALANCE_FETCH_CONCURRENCY, entries.length) },
+      async () => {
+        while (nextIndex < entries.length) {
+          const currentIndex = nextIndex++;
+          const [addr, sourceTxHash] = entries[currentIndex];
+
+          try {
+            const balance = await getBalanceOf(
+              blockNumber,
+              AztecAddress.fromString(addr),
+            );
+            results[currentIndex] = {
+              status: "fulfilled",
+              addr,
+              sourceTxHash,
+              balance,
+            };
+          } catch (reason) {
+            results[currentIndex] = {
+              status: "rejected",
+              addr,
+              sourceTxHash,
+              reason,
+            };
+          }
+        }
+      },
+    ),
+  );
+
+  return results;
 };
 
 export const handleProvenTransactions = async (block: L2Block) => {
@@ -73,25 +130,19 @@ export const handleProvenTransactions = async (block: L2Block) => {
       `📋 Fetching fee-juice balances for ${addressToTxHash.size} unique addresses in block ${blockNumber}`,
     );
 
-    // Step 2 — fetch all balances in parallel
-    const balanceResults = await Promise.allSettled(
-      [...addressToTxHash.entries()].map(async ([addr, sourceTxHash]) => {
-        const balance = await getBalanceOf(
-          blockNumber,
-          AztecAddress.fromString(addr),
-        );
-        return { addr, sourceTxHash, balance };
-      }),
-    );
+    // Step 2 — fetch balances with bounded concurrency
+    const balanceResults = await fetchBalances(blockNumber, addressToTxHash);
 
     // Step 3 — publish Kafka events for successful balance fetches
     await Promise.all(
       balanceResults.map(async (result) => {
         if (result.status === "rejected") {
-          logger.error(`Failed to fetch balance: ${String(result.reason)}`);
+          logger.error(
+            `Failed to fetch balance for ${result.addr} (sourceTxHash: ${result.sourceTxHash}, block: ${blockNumber.toString()}): ${String(result.reason)}`,
+          );
           return;
         }
-        const { addr, sourceTxHash, balance } = result.value;
+        const { addr, sourceTxHash, balance } = result;
         await publishMessage("CONTRACT_INSTANCE_BALANCE_EVENT", {
           contractAddress: addr,
           balance: balance.toBigInt().toString(),

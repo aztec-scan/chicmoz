@@ -18,6 +18,7 @@ import {
 } from "~/lib/utils";
 
 type Tab = "calls" | "balance";
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const AddressDetailsPage: FC = () => {
   const { address = "" } = useParams({ strict: false });
@@ -38,15 +39,49 @@ export const AddressDetailsPage: FC = () => {
       ? formatFees(balance.balance, feeJuiceDecimals)
       : "—";
 
-  const maxBal = history?.length
-    ? Number(history.reduce((m, h) => (h.balance > m ? h.balance : m), history[0].balance))
-    : 0;
-
   const latest = history?.[history.length - 1];
-  const prev24 = history?.[Math.max(0, history.length - 25)];
-  const delta = latest && prev24 ? latest.balance - prev24.balance : 0n;
+  const comparisonPoint = useMemo(() => {
+    if (!history || history.length < 2 || !latest) {
+      return undefined;
+    }
+
+    const cutoff = latest.timestamp - DAY_MS;
+
+    for (let i = history.length - 2; i >= 0; i--) {
+      if (history[i].timestamp <= cutoff) {
+        return history[i];
+      }
+    }
+
+    return history[0];
+  }, [history, latest]);
+  const delta = latest && comparisonPoint ? latest.balance - comparisonPoint.balance : 0n;
   const deltaAbs = delta < 0n ? -delta : delta;
   const deltaValue = formatFees(deltaAbs, feeJuiceDecimals);
+  const deltaLabel =
+    comparisonPoint && latest
+      ? latest.timestamp - comparisonPoint.timestamp >= DAY_MS
+        ? "24h"
+        : "available history"
+      : "latest snapshot";
+  const deltaSummary =
+    latest && comparisonPoint
+      ? delta === 0n
+        ? `no change · ${deltaLabel}`
+        : delta > 0n
+          ? `+${deltaValue} · ${deltaLabel}`
+          : `-${deltaValue} · ${deltaLabel}`
+      : "no history yet";
+  const maxBal = history?.length
+    ? history.reduce((m, h) => (h.balance > m ? h.balance : m), history[0].balance)
+    : 0n;
+  const getBarHeight = (balanceAmount: bigint) => {
+    if (maxBal <= 0n) {
+      return 0;
+    }
+
+    return Number((balanceAmount * 10000n) / maxBal) / 100;
+  };
 
   const stats = useMemo(() => {
     const calls = publicCallRequests ?? [];
@@ -86,13 +121,7 @@ export const AddressDetailsPage: FC = () => {
               />
             )}
           </div>
-          <div className="sub">
-            {delta === 0n
-              ? "no change · 24h"
-              : delta > 0n
-                ? `+${deltaValue} · 24h`
-                : `-${deltaValue} · 24h`}
-          </div>
+          <div className="sub">{deltaSummary}</div>
         </div>
         <div className="sc">
           <div className="lbl">Total calls</div>
@@ -159,22 +188,15 @@ export const AddressDetailsPage: FC = () => {
                   />
                 )}
               </div>
-              <div className="balance-sub">
-                {delta === 0n
-                  ? "no change · 24h"
-                  : delta > 0n
-                    ? `+${deltaValue} · 24h`
-                    : `-${deltaValue} · 24h`}{" "}
-                · {history?.length ?? 0} snapshots
-              </div>
-              {history && history.length > 1 && maxBal > 0 && (
+              <div className="balance-sub">{deltaSummary} · {history?.length ?? 0} snapshots</div>
+              {history && history.length > 1 && maxBal > 0n && (
                 <>
                   <div className="spark">
                     {history.map((b, i) => (
                       <div
                         key={i}
                         className="bar"
-                        style={{ height: `${(Number(b.balance) / maxBal) * 100}%` }}
+                        style={{ height: `${getBarHeight(b.balance)}%` }}
                         title={`${formatFees(b.balance, feeJuiceDecimals)} ${feeJuiceSymbol} · ${ageStr(b.timestamp)}`}
                       />
                     ))}

@@ -4,31 +4,46 @@ import { and, eq, inArray } from "drizzle-orm";
 import { logger } from "../../logger.js";
 import { txsTable, TxState } from "./schema.js";
 
-const buildTxRow = (pendingTx: ChicmozL2PendingTx, txState: TxState) => {
+type StoredTxMetadata = {
+  additionalMsgSenders?: string;
+};
+
+const buildTxRow = (
+  pendingTx: ChicmozL2PendingTx & StoredTxMetadata,
+  txState: TxState,
+) => {
   const excludedAddresses = new Set(
     [pendingTx.feePayer, pendingTx.initiator].filter(Boolean),
   );
-  const additionalSenders = [
-    ...new Set(
-      (pendingTx.publicCallRequests ?? [])
-        .map((r) => r.msgSender)
-        .filter((addr) => !excludedAddresses.has(addr)),
-    ),
-  ];
+  const additionalMsgSenders =
+    pendingTx.publicCallRequests === undefined
+      ? pendingTx.additionalMsgSenders
+      : (() => {
+          const additionalSenders = [
+            ...new Set(
+              pendingTx.publicCallRequests
+                .map((r) => r.msgSender)
+                .filter((addr) => !excludedAddresses.has(addr)),
+            ),
+          ];
+
+          return additionalSenders.length > 0
+            ? additionalSenders.join(",")
+            : undefined;
+        })();
 
   return {
     txHash: pendingTx.txHash,
     feePayer: pendingTx.feePayer,
     initiator: pendingTx.initiator ?? undefined,
-    additionalMsgSenders:
-      additionalSenders.length > 0 ? additionalSenders.join(",") : undefined,
+    additionalMsgSenders,
     birthTimestamp: pendingTx.birthTimestamp,
     txState,
   };
 };
 
 export const storeOrUpdate = async (
-  pendingTx: ChicmozL2PendingTx,
+  pendingTx: ChicmozL2PendingTx & StoredTxMetadata,
   txState: TxState,
 ) => {
   const row = buildTxRow(pendingTx, txState);
