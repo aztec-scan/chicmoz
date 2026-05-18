@@ -90,6 +90,15 @@ export const L2_NETWORK_ID = l2NetworkIdSchema.parse(
   import.meta.env.VITE_L2_NETWORK_ID,
 );
 
+export const CHICMOZ_ALL_UI_URLS =
+  typeof import.meta.env.VITE_CHICMOZ_ALL_UI_URLS === "string" &&
+  import.meta.env.VITE_CHICMOZ_ALL_UI_URLS.length > 0
+    ? import.meta.env.VITE_CHICMOZ_ALL_UI_URLS.split(",").map((tuple) => {
+        const [name, url] = tuple.split("|");
+        return { name, url };
+      })
+    : [];
+
 const API_KEY = apiKeySchema.parse(import.meta.env.VITE_API_KEY);
 
 export const API_URL =

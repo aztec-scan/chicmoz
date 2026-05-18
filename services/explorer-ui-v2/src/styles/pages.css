@@ -1597,6 +1597,10 @@
   .hero-cell:last-child {
     border-bottom: none;
   }
+  .health-component-grid,
+  .health-rpc-grid {
+    grid-template-columns: 1fr;
+  }
   .row-block,
   .row-head.block-cols {
     grid-template-columns: 80px 1fr 70px;
@@ -2865,9 +2869,92 @@
   background: var(--purple);
 }
 
+.health-component-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.health-component-card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  min-height: 172px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.health-component-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--green);
+}
+.health-component-card.warn::before {
+  background: var(--yellow);
+}
+.health-component-card.down::before {
+  background: var(--red);
+}
+.health-component-topline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.health-component-card h3 {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink-1);
+  letter-spacing: -0.01em;
+}
+.health-component-card p {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.health-component-detail {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.health-rpc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.health-alert-panel {
+  margin-bottom: 18px;
+}
+
 /* ===== rpc-node card (aztecscan health) ===== */
 .rpc-node-card {
-  margin-bottom: 18px;
+  min-width: 0;
 }
 .rpc-node-card .panel-head .rpc-node-meta {
   font-family: var(--mono);
@@ -2896,6 +2983,32 @@
 }
 .stats-strip.inner .sc:last-child {
   border-right: none;
+}
+.health-node-status {
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  border: 1px solid;
+  margin-left: 10px;
+  vertical-align: 2px;
+}
+.health-node-status.ok {
+  color: var(--green);
+  border-color: rgba(49, 166, 123, 0.4);
+}
+.health-node-status.warn {
+  color: #c99800;
+  border-color: rgba(255, 228, 113, 0.5);
+}
+.light .health-node-status.warn {
+  color: #8b6a00;
+}
+.health-node-status.down {
+  color: var(--red);
+  border-color: rgba(255, 119, 100, 0.4);
 }
 
 /* ===== fee recipients page ===== */

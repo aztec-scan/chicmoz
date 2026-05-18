@@ -135,8 +135,10 @@ const evaluate = ({
  */
 export const useSystemHealth = (): EvaluatedSystemHealth => {
   const wsReadyState = useWebSocketConnection();
-  const [lastSuccess, setLastSuccess] = useState<LastSuccess>(null);
-  const [lastErr, setLastErr] = useState<LastError>(null);
+  const [lastSuccess, setLastSuccess] = useState<LastSuccess>(() =>
+    getLastSuccessfulRequest(),
+  );
+  const [lastErr, setLastErr] = useState<LastError>(() => getLastError());
   const { data: chainErrors, error: chainErrorsError } = useChainErrors();
 
   useEffect(() => {

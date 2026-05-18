@@ -13,10 +13,10 @@ import {
   useResponsiveNavItems,
 } from "~/hooks/use-responsive-nav-items";
 import { useSystemStatus } from "~/hooks/use-system-status";
-import { L2_NETWORK_ID } from "~/service/constants";
 import { searchL2Api } from "~/api";
 import { getSingleSearchDestination } from "~/lib/search-results";
 import { BrandLogo } from "./brand-logo";
+import { NetworkSelector } from "./network-selector";
 
 export type TopBarActive =
   | "home"
@@ -56,7 +56,6 @@ const PRIMARY_NAV_ITEMS: NavItem[] = [
 
 const MORE_NAV_ITEMS: NavItem[] = [
   { key: "ecosystem", label: "Ecosystem", to: "/ecosystem", group: "aztec" },
-  { key: "health", label: "Health", to: "/health", group: "aztec" },
   { key: "validators", label: "Validators", to: "/validators", group: "aztec" },
   {
     key: "l1events",
@@ -79,8 +78,6 @@ const MORE_NAV_ITEMS: NavItem[] = [
     external: true,
   },
 ];
-
-const ENV_LABEL = (L2_NETWORK_ID ?? "MAINNET").toString().toUpperCase();
 
 /** Primary nav collapses right-to-left into the More menu as the viewport shrinks. */
 const BREAKPOINTS: ResponsiveBreakpoint[] = [
@@ -266,10 +263,11 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
         <div className="brand-wm">
           aztec<em>·</em>scan
         </div>
-        <div className="brand-env">{ENV_LABEL}</div>
       </Link>
+      <NetworkSelector />
 
-      <div
+      <Link
+        to="/health/aztecscan"
         className={`chainpill ${
           dotClass === "dot"
             ? ""
@@ -277,10 +275,11 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
               ? "unhealthy"
               : "down"
         }`}
+        title="Open AztecScan health"
       >
         <span className={`dot pulse`} />
         <span>{statusLabel}</span>
-      </div>
+      </Link>
 
       <form className="search" onSubmit={onSubmit}>
         <span className="prompt">{"›"}</span>

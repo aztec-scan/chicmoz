@@ -70,7 +70,84 @@
   border-radius: 4px;
   color: var(--ink-2);
   letter-spacing: 0.12em;
-  margin-left: 6px;
+  background: var(--bg-0);
+}
+.network-selector {
+  position: relative;
+  display: inline-flex;
+  margin-left: -12px;
+}
+.network-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.network-trigger:hover,
+.network-trigger.on {
+  color: var(--purple);
+  border-color: var(--purple);
+  background: var(--bg-2);
+}
+.network-caret {
+  color: var(--purple);
+  font-size: 10px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+.network-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 150px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 4px;
+  z-index: 55;
+}
+.light .network-dropdown {
+  box-shadow: 0 8px 24px rgba(48, 34, 73, 0.12);
+}
+.network-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+}
+.network-option:hover {
+  color: var(--ink-1);
+  background: var(--bg-2);
+}
+.network-option.active {
+  color: var(--purple);
+  background: rgba(113, 94, 194, 0.08);
+}
+.network-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+.network-option.active .network-dot {
+  opacity: 1;
 }
 
 .search {
@@ -281,6 +358,16 @@
   font-size: 11px;
   color: var(--ink-2);
   background: var(--bg-1);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.chainpill:hover {
+  color: var(--ink-1);
+  border-color: var(--purple);
+  background: var(--bg-2);
 }
 .chainpill.down .dot {
   background: var(--red);

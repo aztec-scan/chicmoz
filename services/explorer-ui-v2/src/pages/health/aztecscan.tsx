@@ -6,6 +6,7 @@ import { type FC, useMemo } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainErrors, useRpcNodes } from "~/hooks/api";
 import {
+  type ComponentHealth,
   type ComponentHealthStatus,
   useSystemHealth,
 } from "~/hooks/use-system-health";
@@ -18,7 +19,7 @@ const STATUS_LABEL: Record<ComponentHealthStatus, string> = {
   DOWN: "DOWN",
 };
 
-const STATUS_TONE: Record<ComponentHealthStatus, string> = {
+const STATUS_TONE: Record<ComponentHealthStatus, "ok" | "warn" | "down"> = {
   UP: "ok",
   UNHEALTHY: "warn",
   DOWN: "down",
@@ -26,6 +27,12 @@ const STATUS_TONE: Record<ComponentHealthStatus, string> = {
 
 const ONE_HOUR = 60 * 60 * 1_000;
 const FIVE_MIN = 5 * 60 * 1_000;
+
+interface StatusCopy {
+  label: string;
+  tone: "ok" | "warn" | "down";
+  copy: string;
+}
 
 /** Deduplicate by rpcNodeName, keeping the most recently seen. */
 const dedupeRpcNodes = (
@@ -42,12 +49,28 @@ const dedupeRpcNodes = (
   });
 };
 
+const statusCopy = (health: ComponentHealthStatus): StatusCopy => ({
+  label: STATUS_LABEL[health],
+  tone: STATUS_TONE[health],
+  copy:
+    health === "UP"
+      ? "operational"
+      : health === "UNHEALTHY"
+        ? "degraded"
+        : "attention required",
+});
+
+const rpcErrorIdentifiers = (error: ChicmozL2RpcNodeError): string[] =>
+  [error.rpcNodeName, error.rpcUrl].filter((v): v is string => Boolean(v));
+
 const errorsForRpcNode = (
   all: ChicmozL2RpcNodeError[] | undefined,
   rpcNode: PublicChicmozL2RpcNode,
 ): ChicmozL2RpcNodeError[] => {
   if (!all) {return [];}
-  return all.filter((e) => e.rpcNodeName === rpcNode.rpcNodeName);
+  return all.filter((e) =>
+    rpcErrorIdentifiers(e).includes(rpcNode.rpcNodeName),
+  );
 };
 
 const unmatchedErrors = (
@@ -56,13 +79,64 @@ const unmatchedErrors = (
 ): ChicmozL2RpcNodeError[] => {
   if (!all) {return [];}
   const names = new Set(rpcNodes.map((n) => n.rpcNodeName));
-  return all.filter((e) => !names.has(e.rpcNodeName));
+  return all.filter(
+    (e) => !rpcErrorIdentifiers(e).some((identifier) => names.has(identifier)),
+  );
 };
 
-const RpcNodeCard: FC<{
+interface ComponentCardProps {
+  component: ComponentHealth;
+}
+
+const ComponentCard: FC<ComponentCardProps> = ({ component }) => {
+  const status = statusCopy(component.health);
+
+  return (
+    <div className={`health-component-card ${status.tone}`}>
+      <div className="health-component-topline">
+        <span className={`hc-dot ${status.tone === "ok" ? "" : status.tone}`} />
+        <span className="status-pill-label">{status.label}</span>
+      </div>
+      <h3>{component.componentId}</h3>
+      <p>{component.description}</p>
+      <div className="health-component-detail" title={component.evaluationDetails}>
+        {component.evaluationDetails || "no detail available"}
+      </div>
+    </div>
+  );
+};
+
+interface ErrorEventProps {
+  error: ChicmozL2RpcNodeError;
+  index: number;
+  showSource?: boolean;
+}
+
+const ErrorEvent: FC<ErrorEventProps> = ({ error, index, showSource = false }) => (
+  <div key={`${error.name}-${index}`} className="event">
+    <span className="type err">err</span>
+    <span className="body">
+      {showSource ? (
+        <>
+          <span style={{ color: "var(--ink-3)" }}>
+            [{error.rpcNodeName ?? error.rpcUrl ?? "unknown"}]
+          </span>{" "}
+        </>
+      ) : null}
+      {error.name}
+      <br />
+      <span className="mute">{error.message}</span>
+    </span>
+    <span className="age">{ageStr(error.lastSeenAt.getTime())}</span>
+  </div>
+);
+
+interface RpcNodeCardProps {
   rpcNode: PublicChicmozL2RpcNode;
   errors: ChicmozL2RpcNodeError[];
-}> = ({ rpcNode, errors }) => {
+}
+
+const RpcNodeCard: FC<RpcNodeCardProps> = ({ rpcNode, errors }) => {
   const now = Date.now();
   const recent1h = errors.filter(
     (e) => now - e.lastSeenAt.getTime() < ONE_HOUR,
@@ -71,11 +145,18 @@ const RpcNodeCard: FC<{
     (e) => now - e.lastSeenAt.getTime() < FIVE_MIN,
   );
   const totalOccurrences = errors.reduce((s, e) => s + e.count, 0);
+  const nodeTone =
+    critical5m.length > 0 ? "down" : recent1h.length > 0 ? "warn" : "ok";
 
   return (
     <div className="panel rpc-node-card">
       <div className="panel-head">
-        <h3>{rpcNode.rpcNodeName}</h3>
+        <h3>
+          {rpcNode.rpcNodeName}
+          <span className={`health-node-status ${nodeTone}`}>
+            {nodeTone === "ok" ? "clean" : nodeTone === "warn" ? "noisy" : "hot"}
+          </span>
+        </h3>
         <div className="rpc-node-meta">
           <span>
             last seen <em>{ageStr(rpcNode.lastSeenAt.getTime())}</em>
@@ -128,15 +209,7 @@ const RpcNodeCard: FC<{
       ) : (
         <div className="events-list">
           {errors.slice(0, 8).map((e, i) => (
-            <div key={`${e.name}-${i}`} className="event">
-              <span className="type err">err</span>
-              <span className="body">
-                {e.name}
-                <br />
-                <span className="mute">{e.message}</span>
-              </span>
-              <span className="age">{ageStr(e.lastSeenAt.getTime())}</span>
-            </div>
+            <ErrorEvent key={`${e.name}-${i}`} error={e} index={i} />
           ))}
         </div>
       )}
@@ -146,8 +219,16 @@ const RpcNodeCard: FC<{
 
 export const AztecscanHealthPage: FC = () => {
   const system = useSystemHealth();
-  const { data: chainErrors } = useChainErrors();
-  const { data: rpcNodesRaw } = useRpcNodes();
+  const {
+    data: chainErrors,
+    error: chainErrorsError,
+    isLoading: chainErrorsLoading,
+  } = useChainErrors();
+  const {
+    data: rpcNodesRaw,
+    error: rpcNodesError,
+    isLoading: rpcNodesLoading,
+  } = useRpcNodes();
 
   const rpcNodes = useMemo(() => dedupeRpcNodes(rpcNodesRaw), [rpcNodesRaw]);
   const orphanErrors = useMemo(
@@ -156,8 +237,16 @@ export const AztecscanHealthPage: FC = () => {
   );
 
   const overall = system.systemHealth.health;
-  const heroTone = STATUS_TONE[overall];
-  const heroLabel = STATUS_LABEL[overall];
+  const hero = statusCopy(overall);
+  const isLoading = chainErrorsLoading || rpcNodesLoading;
+  const hasDataError = !!chainErrorsError || !!rpcNodesError;
+  const now = Date.now();
+  const recentErrors = (chainErrors ?? []).filter(
+    (e) => now - e.lastSeenAt.getTime() < ONE_HOUR,
+  );
+  const criticalErrors = (chainErrors ?? []).filter(
+    (e) => now - e.lastSeenAt.getTime() < FIVE_MIN,
+  );
 
   return (
     <Shell active="health">
@@ -173,65 +262,79 @@ export const AztecscanHealthPage: FC = () => {
       <HealthTabs active="aztecscan" />
 
       <div className="hero-strip">
-        <div className={`hero-cell status-${heroTone}`}>
+        <div className={`hero-cell status-${hero.tone}`}>
           <div className="kicker">Aztec-Scan is</div>
-          <div className={`big ${heroTone}`}>
-            <span className={`hc-dot ${heroTone === "ok" ? "" : heroTone}`} />
-            {heroLabel}
+          <div className={`big ${hero.tone}`}>
+            <span className={`hc-dot ${hero.tone === "ok" ? "" : hero.tone}`} />
+            {hero.label}
           </div>
-          <div className="sub">{system.systemHealth.reason}</div>
+          <div className="sub">
+            {hero.copy} · {system.systemHealth.reason}
+          </div>
         </div>
         <div className="hero-cell">
           <div className="kicker">RPC nodes tracked</div>
           <div className="big">{fmtNum(rpcNodes.length)}</div>
-          <div className="sub">deduplicated by name</div>
+          <div className="sub">
+            {isLoading ? "loading indexer inventory" : "deduplicated by name"}
+          </div>
         </div>
         <div className="hero-cell">
-          <div className="kicker">Chain errors</div>
-          <div className="big">{fmtNum(chainErrors?.length ?? 0)}</div>
-          <div className="sub">across all sources</div>
+          <div className="kicker">Errors · last hour</div>
+          <div className="big">{fmtNum(recentErrors.length)}</div>
+          <div className="sub">
+            {fmtNum(criticalErrors.length)} critical in the last 5m
+          </div>
         </div>
       </div>
 
-      <div className="stats-strip">
-        {system.components.map((c) => (
-          <div className="sc" key={c.componentId}>
-            <div className="lbl">{c.componentId}</div>
-            <div
-              className="val"
-              style={{
-                color:
-                  c.health === "UP"
-                    ? "var(--green)"
-                    : c.health === "UNHEALTHY"
-                      ? "#c99800"
-                      : "var(--red)",
-              }}
-            >
-              {STATUS_LABEL[c.health]}
-            </div>
-            <div className="sub" title={c.evaluationDetails}>
-              {c.description}
-            </div>
-          </div>
+      <div className="health-component-grid">
+        {system.components.map((component) => (
+          <ComponentCard key={component.componentId} component={component} />
         ))}
       </div>
+
+      {hasDataError ? (
+        <div className="panel health-alert-panel">
+          <div className="panel-head">
+            <h3>health data unavailable</h3>
+          </div>
+          <div className="kv-grid">
+            {rpcNodesError ? (
+              <div className="kv wide">
+                <span className="k">RPC nodes</span>
+                <span className="v">{rpcNodesError.message}</span>
+              </div>
+            ) : null}
+            {chainErrorsError ? (
+              <div className="kv wide">
+                <span className="k">Chain errors</span>
+                <span className="v">{chainErrorsError.message}</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       {rpcNodes.length === 0 ? (
         <div className="panel">
           <div className="panel-head">
             <h3>RPC node health</h3>
           </div>
-          <div className="empty-state">no rpc node data currently available</div>
+          <div className="empty-state">
+            {isLoading ? "loading rpc node data…" : "no rpc node data currently available"}
+          </div>
         </div>
       ) : (
-        rpcNodes.map((n) => (
-          <RpcNodeCard
-            key={n.rpcNodeName}
-            rpcNode={n}
-            errors={errorsForRpcNode(chainErrors, n)}
-          />
-        ))
+        <div className="health-rpc-grid">
+          {rpcNodes.map((n) => (
+            <RpcNodeCard
+              key={n.rpcNodeName}
+              rpcNode={n}
+              errors={errorsForRpcNode(chainErrors, n)}
+            />
+          ))}
+        </div>
       )}
 
       {orphanErrors.length > 0 && (
@@ -244,18 +347,7 @@ export const AztecscanHealthPage: FC = () => {
           </div>
           <div className="events-list">
             {orphanErrors.slice(0, 10).map((e, i) => (
-              <div key={i} className="event">
-                <span className="type err">err</span>
-                <span className="body">
-                  <span style={{ color: "var(--ink-3)" }}>
-                    [{e.rpcNodeName ?? e.rpcUrl ?? "unknown"}]
-                  </span>{" "}
-                  {e.name}
-                  <br />
-                  <span className="mute">{e.message}</span>
-                </span>
-                <span className="age">{ageStr(e.lastSeenAt.getTime())}</span>
-              </div>
+              <ErrorEvent key={i} error={e} index={i} showSource />
             ))}
           </div>
         </div>
