@@ -1,6 +1,11 @@
 import { type ChicmozL1GenericContractEvent } from "@chicmoz-pkg/types";
 import { type FC, useMemo, useState } from "react";
-import { CopyableAddress, Pagination } from "~/components/common";
+import {
+  AddressEtherscanLink,
+  CopyableAddress,
+  Pagination,
+  TxEtherscanLink,
+} from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useChainInfo,
@@ -342,14 +347,12 @@ export const L1EventsPage: FC = () => {
                 title={`Copy ${activeContract.name.toLowerCase()} address`}
               />
               {activeAddr && (
-                <a
-                  href={`https://etherscan.io/address/${activeAddr}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="etherscan-link"
-                >
-                  etherscan ↗
-                </a>
+                <AddressEtherscanLink
+                  address={activeAddr}
+                  content="etherscan ↗"
+                  showExternalLinkIcon={false}
+                  title={`View ${activeContract.name.toLowerCase()} address on Etherscan`}
+                />
               )}
             </div>
           </div>
@@ -445,9 +448,6 @@ export const L1EventsPage: FC = () => {
             const l2Block = findL2BlockNumber(e.eventArgs);
             const kind = eventKind(e.eventName);
             const ts = eventTimestampMs(e);
-            const txHref = e.l1TransactionHash
-              ? `https://etherscan.io/tx/${e.l1TransactionHash}#eventlog`
-              : undefined;
             const row = (
               <>
                 <span className="l1b">#{fmtNum(e.l1BlockNumber)}</span>
@@ -467,24 +467,22 @@ export const L1EventsPage: FC = () => {
                 <span className="args">{argsPreview(e.eventArgs)}</span>
                 <span className="age">{ageStr(ts)}</span>
                 <span className="ex">
-                  {e.l1TransactionHash
-                    ? `${truncateHashString(e.l1TransactionHash, 4, 4)} ↗`
-                    : "—"}
+                  {e.l1TransactionHash ? (
+                    <TxEtherscanLink
+                      txHash={e.l1TransactionHash}
+                      content={`${truncateHashString(e.l1TransactionHash, 4, 4)} ↗`}
+                      eventLog
+                      showExternalLinkIcon={false}
+                      title="View transaction event log on Etherscan"
+                    />
+                  ) : (
+                    "—"
+                  )}
                 </span>
               </>
             );
             const key = `${e.l1BlockNumber.toString()}-${e.eventName}-${e.id ?? ""}`;
-            return txHref ? (
-              <a
-                key={key}
-                className="trow l1-events-cols"
-                href={txHref}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {row}
-              </a>
-            ) : (
+            return (
               <div key={key} className="trow l1-events-cols">
                 {row}
               </div>
@@ -504,7 +502,7 @@ export const L1EventsPage: FC = () => {
       </div>
 
       <div className="eco-pr-cta">
-        indexed from Ethereum mainnet by the aztec-scan indexer · updates every
+        indexed from Ethereum L1 by the aztec-scan indexer · updates every
         ~12s
       </div>
     </Shell>
