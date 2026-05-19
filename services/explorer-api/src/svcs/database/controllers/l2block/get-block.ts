@@ -17,8 +17,8 @@ import {
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
-import { getExistingRollupVersion } from "./get-latest.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
+import { getLatestBlockRollupVersion } from "./get-latest.js";
 import {
   archive,
   body,
@@ -79,21 +79,16 @@ export interface BlockQueryOptions {
  *
  * Precedence:
  *   1. Caller-supplied `options.rollupVersion`.
- *   2. The most recently seen version actually present in the DB
- *      (`getExistingRollupVersion`).
- *   3. The compile-time `CURRENT_ROLLUP_VERSION_NUMBER`.
- *
- * Step 2 prevents silent breakage when the running rollup is on a different
- * version than the constant — historically `/l2/blocks/latest` and
- * `/l2/blocks/:heightOrHash` would return 404 in that case while the table
- * view (which already uses this fallback) kept working.
+ *   2. The runtime-discovered current rollup version.
  */
 const resolveRollupVersion = async (
   options: BlockQueryOptions,
-): Promise<number> => {
+): Promise<number | null> => {
   if (options.rollupVersion !== undefined) {return options.rollupVersion;}
-  const existing = await getExistingRollupVersion(options);
-  return existing ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  return (
+    (await getCurrentRollupVersionNumber()) ??
+    getLatestBlockRollupVersion(options)
+  );
 };
 
 export const getBlocks = async (
@@ -284,6 +279,8 @@ const _getBlocks = async (
   // on — falls back to whatever's actually in the DB if the compile-time
   // constant doesn't match (e.g. testnet running an unexpected version).
   const effectiveVersion = await resolveRollupVersion(options);
+  const versionFilter =
+    effectiveVersion === null ? undefined : eq(l2Block.version, effectiveVersion);
 
   let whereQuery;
 
@@ -296,13 +293,11 @@ const _getBlocks = async (
           whereQuery = whereQuery.where(
             and(
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, effectiveVersion),
+              versionFilter,
             ),
           );
         } else {
-          whereQuery = whereQuery.where(
-            eq(l2Block.version, effectiveVersion),
-          );
+          whereQuery = whereQuery.where(versionFilter);
         }
         whereQuery = whereQuery.orderBy(desc(l2Block.height)).limit(1);
       } else {
@@ -312,7 +307,7 @@ const _getBlocks = async (
             and(
               eq(l2Block.height, args.height),
               includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, effectiveVersion),
+              versionFilter,
             ),
           )
           .limit(1);
@@ -330,7 +325,7 @@ const _getBlocks = async (
             includeOrphaned
               ? whereRange
               : and(whereRange, isNull(l2Block.orphan_timestamp)),
-            eq(l2Block.version, effectiveVersion),
+            versionFilter,
           ),
         )
         .orderBy(desc(l2Block.height))

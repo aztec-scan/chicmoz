@@ -23,7 +23,6 @@ src/
 ├── components/
 │   ├── common/       Reusable display components (status pill, pagination…)
 │   └── layout/       TopBar, Shell, ConsoleHead, brand logo
-├── constants/        Rollup-version constants
 ├── hooks/
 │   ├── api/          React Query hooks wrapping `api/*`
 │   └── websocket/    WS listener that invalidates query caches

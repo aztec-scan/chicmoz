@@ -74,6 +74,10 @@ export const BlockDetailPage: FC = () => {
   const totalFees = formatFees(block.header.totalFees, feeJuiceDecimals);
   const totalManaUsed = block.header.totalManaUsed?.toString?.() ?? "0";
   const txCount = block.body.txEffects.length;
+  const blockRollupVersion = BigInt(block.header.globalVariables.version);
+  const isOldRollup =
+    chainInfo?.rollupVersion !== undefined &&
+    blockRollupVersion !== chainInfo.rollupVersion;
 
   return (
     <Shell active="blocks">
@@ -103,6 +107,22 @@ export const BlockDetailPage: FC = () => {
             }}
           >
             <StatusPill status={status} />
+            {isOldRollup && (
+              <span
+                style={{
+                  border: "1px solid rgba(255, 176, 0, 0.55)",
+                  color: "var(--yellow)",
+                  borderRadius: 999,
+                  padding: "3px 8px",
+                  fontFamily: "var(--mono)",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                }}
+                title={`Current rollup version is ${chainInfo.rollupVersion.toString()}`}
+              >
+                old rollup
+              </span>
+            )}
             <span
               style={{
                 fontFamily: "var(--mono)",
@@ -208,7 +228,12 @@ export const BlockDetailPage: FC = () => {
               {fmtNum(block.header.globalVariables.slotNumber)}
             </DetailField>
             <DetailField label="Rollup version" width="wide">
-              {block.header.globalVariables.version}
+              {blockRollupVersion.toString()}
+              {isOldRollup && chainInfo?.rollupVersion !== undefined ? (
+                <span className="mute">
+                  {" "}· current {chainInfo.rollupVersion.toString()}
+                </span>
+              ) : null}
             </DetailField>
           </div>
         </div>

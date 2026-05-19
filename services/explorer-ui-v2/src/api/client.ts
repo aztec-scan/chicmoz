@@ -21,7 +21,7 @@ export class ApiError extends Error {
 }
 
 let lastSuccessfulRequest: { date: Date; path: string } | null = null;
-let lastError: { date: Date; error: ApiError } | null = null;
+let lastError: { date: Date; error: ApiError; path: string } | null = null;
 
 client.interceptors.response.use(
   (response) => {
@@ -44,16 +44,19 @@ client.interceptors.response.use(
       }
       lastError = {
         date: new Date(),
+        path: error.config?.url ?? "Unknown",
         error: new ApiError(error.response.status, errorString, "API"),
       };
     } else if (error.request) {
       lastError = {
         date: new Date(),
+        path: error.config?.url ?? "Unknown",
         error: new ApiError(0, "No response received from server", "API"),
       };
     } else {
       lastError = {
         date: new Date(),
+        path: error.config?.url ?? "Unknown",
         error: new ApiError(
           0,
           error.message || "An unexpected error occurred",
@@ -78,11 +81,13 @@ export const validateResponse = <T extends z.ZodType>(
     if (error instanceof ZodError) {
       lastError = {
         date: new Date(),
+        path: "response validation",
         error: new ApiError(400, error.errors[0].message, "Schema"),
       };
     } else {
       lastError = {
         date: new Date(),
+        path: "response validation",
         error: new ApiError(
           400,
           `Failed to validate response: ${(error as Error).message}`,

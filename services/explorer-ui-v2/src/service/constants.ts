@@ -67,6 +67,7 @@ export const aztecExplorer = {
 
   getL2SearchResult: "/l2/search",
   getL2ChainInfo: "/l2/info",
+  getL2RollupVersions: "/l2/rollup-versions",
   getL2ChainErrors: "/l2/errors",
   getL2FeeRecipients: "/l2/fee-recipients",
   getL1L2Validators: "/l1/l2-validators",

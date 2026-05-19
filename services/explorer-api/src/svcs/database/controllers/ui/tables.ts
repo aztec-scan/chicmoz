@@ -31,8 +31,7 @@ import {
 } from "@chicmoz-pkg/types";
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
-import { getExistingRollupVersion } from "../l2block/get-latest.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 
 type GetBlocksByRange = {
   from: bigint | undefined;
@@ -84,8 +83,10 @@ export const getBlocksForUiTable = async ({
 }: GetBlocksByRange): Promise<UiBlockTable[]> => {
   const whereRange = getBlocksWhereRange({ from, to });
 
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  const rollupVersion = await getCurrentRollupVersionNumber();
+  const versionFilter = rollupVersion !== null
+    ? eq(l2Block.version, rollupVersion)
+    : undefined;
 
   const statusWhere =
     status === "orphaned"
@@ -134,7 +135,7 @@ export const getBlocksForUiTable = async ({
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
-    .where(and(whereRange, eq(l2Block.version, rollupVersion), statusWhere))
+    .where(and(whereRange, versionFilter, statusWhere))
     .orderBy(desc(l2Block.height))
     .limit(DB_MAX_BLOCKS)
     .execute();
@@ -236,8 +237,10 @@ type GetTableTxEffectsByBlockHeightRange = {
 export const getTxEffectForUiTable = async (
   args: GetTableTxEffectByBlockHeight | GetTableTxEffectsByBlockHeightRange,
 ): Promise<UiTxEffectTable[]> => {
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  const rollupVersion = await getCurrentRollupVersionNumber();
+  const versionFilter = rollupVersion !== null
+    ? eq(l2Block.version, rollupVersion)
+    : undefined;
 
   const joinQuery = db()
     .select({
@@ -263,7 +266,7 @@ export const getTxEffectForUiTable = async (
             and(
               getBlocksWhereRange({ from: args.from, to: args.to }),
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, rollupVersion),
+              versionFilter,
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
@@ -273,7 +276,7 @@ export const getTxEffectForUiTable = async (
           .where(
             and(
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, rollupVersion),
+              versionFilter,
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
@@ -284,7 +287,7 @@ export const getTxEffectForUiTable = async (
       whereQuery = joinQuery.where(
         and(
           eq(l2Block.height, args.blockHeight),
-          eq(l2Block.version, rollupVersion),
+          versionFilter,
         ),
       );
       break;

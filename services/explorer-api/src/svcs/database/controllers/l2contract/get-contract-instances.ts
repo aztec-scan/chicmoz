@@ -9,7 +9,6 @@ import {
   isNotNull,
   isNull,
 } from "drizzle-orm";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { globalVariables, header, l2Block } from "../../schema/index.js";
 import {
@@ -20,7 +19,7 @@ import {
   l2ContractInstanceVerifiedDeploymentArguments,
 } from "../../schema/l2contract/index.js";
 import { getBlocksWhereRange } from "../utils.js";
-import { getExistingRollupVersion } from "../l2block/get-latest.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
 
 const DEFAULT_SORT =
@@ -118,14 +117,13 @@ export const getL2DeployedContractInstances = async ({
   verified?: boolean;
   protocol?: boolean;
 }): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  const rollupVersion = await getCurrentRollupVersionNumber();
   const whereRange = getBlocksWhereRange({ from: fromHeight, to: toHeight });
   const queryLimit = limit ?? DB_MAX_CONTRACTS;
   const baseFilters = [
     whereRange,
     isNull(l2Block.orphan_timestamp),
-    eq(l2Block.version, rollupVersion),
+    rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined,
   ];
 
   if (verified) {

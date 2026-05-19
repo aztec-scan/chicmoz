@@ -267,15 +267,17 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
       <NetworkSelector />
 
       <Link
-        to="/health/aztecscan"
+        to="/health"
         className={`chainpill ${
           dotClass === "dot"
             ? ""
+            : dotClass === "dot unknown"
+              ? "unknown"
             : dotClass === "dot warn"
               ? "unhealthy"
               : "down"
         }`}
-        title="Open AztecScan health"
+        title="Open chain health"
       >
         <span className={`dot pulse`} />
         <span>{statusLabel}</span>

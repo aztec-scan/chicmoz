@@ -2,13 +2,11 @@ import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   type ChicmozChainInfo,
   type L2NetworkId,
-  NODE_ENV,
-  NodeEnv,
   chicmozChainInfoSchema,
 } from "@chicmoz-pkg/types";
-import { and, desc, eq } from "drizzle-orm";
-import { CURRENT_ROLLUP_VERSION_BIGINT } from "../../../../../constants/versions.js";
+import { desc, eq } from "drizzle-orm";
 import { l2ChainInfoTable } from "../../../schema/l2/chain-info.js";
+import { getCurrentRollupVersion } from "./rollup-version-cache.js";
 
 type ChicmozChainInfoWithTokenMetadata = ChicmozChainInfo & {
   stakingAssetSymbol?: string;
@@ -23,16 +21,12 @@ export async function getL2ChainInfo(
   const result = await db()
     .select()
     .from(l2ChainInfoTable)
-    .where(
-      and(
-        eq(l2ChainInfoTable.l2NetworkId, l2NetworkId),
-        eq(l2ChainInfoTable.rollupVersion, CURRENT_ROLLUP_VERSION_BIGINT),
-      ),
-    )
+    .where(eq(l2ChainInfoTable.l2NetworkId, l2NetworkId))
     .orderBy(desc(l2ChainInfoTable.updatedAt))
     .limit(1);
 
   if (result.length > 0) {
+    const currentRollupVersion = await getCurrentRollupVersion(l2NetworkId);
     const chainInfo = result[0] as (typeof result)[number] & {
       stakingAssetSymbol?: string | null;
       stakingAssetDecimals?: number | null;
@@ -43,7 +37,7 @@ export async function getL2ChainInfo(
     return chicmozChainInfoSchema.parse({
       l2NetworkId: chainInfo.l2NetworkId,
       l1ChainId: chainInfo.l1ChainId,
-      rollupVersion: chainInfo.rollupVersion,
+      rollupVersion: currentRollupVersion ?? chainInfo.rollupVersion,
       l1ContractAddresses: chainInfo.l1ContractAddresses,
       protocolContractAddresses: chainInfo.protocolContractAddresses,
       stakingAssetSymbol: chainInfo.stakingAssetSymbol ?? undefined,
@@ -53,43 +47,11 @@ export async function getL2ChainInfo(
     }) as ChicmozChainInfoWithTokenMetadata;
   }
 
-  if (result.length === 0 && NODE_ENV === NodeEnv.DEV) {
-    const anyResult = await db()
-      .select()
-      .from(l2ChainInfoTable)
-      .where(eq(l2ChainInfoTable.l2NetworkId, l2NetworkId))
-      .orderBy(desc(l2ChainInfoTable.updatedAt))
-      .limit(1);
-
-    if (anyResult.length > 0) {
-      const chainInfo = anyResult[0] as (typeof anyResult)[number] & {
-        stakingAssetSymbol?: string | null;
-        stakingAssetDecimals?: number | null;
-        feeJuiceSymbol?: string | null;
-        feeJuiceDecimals?: number | null;
-      };
-
-      return chicmozChainInfoSchema.parse({
-        l2NetworkId: chainInfo.l2NetworkId,
-        l1ChainId: chainInfo.l1ChainId,
-        rollupVersion: chainInfo.rollupVersion,
-        l1ContractAddresses: chainInfo.l1ContractAddresses,
-        protocolContractAddresses: chainInfo.protocolContractAddresses,
-        stakingAssetSymbol: chainInfo.stakingAssetSymbol ?? undefined,
-        stakingAssetDecimals: chainInfo.stakingAssetDecimals ?? undefined,
-        feeJuiceSymbol: chainInfo.feeJuiceSymbol ?? undefined,
-        feeJuiceDecimals: chainInfo.feeJuiceDecimals ?? undefined,
-      }) as ChicmozChainInfoWithTokenMetadata;
-    }
-  }
   return null;
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function getLatestRollupVersion(): Promise<
   ChicmozChainInfo["rollupVersion"] | null
 > {
-  // Return the current rollup version instead of querying for the highest one
-  // since version numbers don't necessarily increase with upgrades
-  return CURRENT_ROLLUP_VERSION_BIGINT;
+  return getCurrentRollupVersion();
 }

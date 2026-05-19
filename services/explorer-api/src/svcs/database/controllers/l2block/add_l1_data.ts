@@ -15,7 +15,7 @@ import {
   l2Block,
 } from "../../schema/index.js";
 import { ensureFinalizationStatusStored } from "./store.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 
 export const addL1L2BlockProposed = async (
   proposedData: ChicmozL1L2BlockProposed,
@@ -39,6 +39,7 @@ export const addL1L2BlockProposed = async (
       },
     });
 
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const l2BlockHashRes = await db()
     .select({
       l2BlockHash: l2Block.hash,
@@ -48,7 +49,9 @@ export const addL1L2BlockProposed = async (
     .where(
       and(
         eq(l2Block.height, proposedData.l2BlockNumber),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+        currentRollupVersion !== null
+          ? eq(l2Block.version, currentRollupVersion)
+          : undefined,
       ),
     )
     .limit(1);
@@ -162,6 +165,7 @@ export const addL1L2ProofVerified = async (
       },
     });
 
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const l2BlockHashResSimple = await db()
     .select({
       l2BlockHash: l2Block.hash,
@@ -171,7 +175,9 @@ export const addL1L2ProofVerified = async (
       and(
         isNull(l2Block.orphan_timestamp),
         eq(l2Block.height, proofVerifiedData.l2BlockNumber),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+        currentRollupVersion !== null
+          ? eq(l2Block.version, currentRollupVersion)
+          : undefined,
       ),
     );
   let l2BlockHash;

@@ -138,6 +138,7 @@ export const queryKeyGenerator = {
   ],
 
   chainInfo: ["chainInfo"],
+  rollupVersions: ["rollupVersions"],
   chainErrors: ["chainErrors"],
   feeRecipients: ["feeRecipients"],
   l1ContractEvents: ["l1ContractEvents"],

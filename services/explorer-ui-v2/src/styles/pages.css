@@ -1384,6 +1384,13 @@
     transparent 60%
   );
 }
+.hero-cell.status-unknown {
+  background: linear-gradient(
+    135deg,
+    rgba(137, 128, 181, 0.08),
+    transparent 60%
+  );
+}
 .hero-cell.status-down {
   background: linear-gradient(
     135deg,
@@ -1413,6 +1420,9 @@
 .hero-cell .big.warn {
   color: #c99800;
 }
+.hero-cell .big.unknown {
+  color: var(--ink-3);
+}
 .light .hero-cell .big.warn {
   color: #8b6a00;
 }
@@ -1437,6 +1447,9 @@
 }
 .hero-cell .hc-dot.warn {
   background: var(--yellow);
+}
+.hero-cell .hc-dot.unknown {
+  background: var(--ink-3);
 }
 .hero-cell .hc-dot.down {
   background: var(--red);
