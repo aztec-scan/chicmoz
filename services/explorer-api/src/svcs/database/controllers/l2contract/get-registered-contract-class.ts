@@ -6,8 +6,8 @@ import {
 import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { l2Block } from "../../schema/index.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l2ContractClassRegistered } from "../../schema/l2contract/index.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 import { getContractClassRegisteredColumns } from "./utils.js";
 import { z } from "zod";
 
@@ -86,9 +86,12 @@ export const getLatestL2RegisteredContractClasses = async ({
   verified?: boolean;
   protocol?: boolean;
 } = {}): Promise<Array<ChicmozL2ContractClassRegisteredEvent>> => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const filters = [
     isNull(l2Block.orphan_timestamp),
-    eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+    currentRollupVersion !== null
+      ? eq(l2Block.version, currentRollupVersion)
+      : undefined,
   ];
 
   if (verifiedSourceOnly) {

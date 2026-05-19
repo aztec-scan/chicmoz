@@ -8,7 +8,7 @@ import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { contractInstanceBalance } from "../../schema/contract-instance-balance/index.js";
 import { l2Block } from "../../schema/index.js";
 import { l2ContractInstanceDeployed } from "../../schema/l2contract/index.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 
 export const getLatestContractInstanceBalance = async (
   contractAddress: HexString,
@@ -30,6 +30,7 @@ export const getLatestContractInstanceBalance = async (
 export const getCotractInstacesWithBalance = async (): Promise<
   ChicmozContractInstanceBalance[]
 > => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const result = await db()
     .selectDistinctOn([contractInstanceBalance.contractAddress], {
       contractAddress: contractInstanceBalance.contractAddress,
@@ -49,7 +50,9 @@ export const getCotractInstacesWithBalance = async (): Promise<
       and(
         gt(contractInstanceBalance.balance, "0"),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+        currentRollupVersion !== null
+          ? eq(l2Block.version, currentRollupVersion)
+          : undefined,
       ),
     )
     .orderBy(

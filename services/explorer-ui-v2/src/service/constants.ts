@@ -67,6 +67,7 @@ export const aztecExplorer = {
 
   getL2SearchResult: "/l2/search",
   getL2ChainInfo: "/l2/info",
+  getL2RollupVersions: "/l2/rollup-versions",
   getL2ChainErrors: "/l2/errors",
   getL2FeeRecipients: "/l2/fee-recipients",
   getL1L2Validators: "/l1/l2-validators",
@@ -89,6 +90,15 @@ export const APP_NAME = "Aztec-Scan";
 export const L2_NETWORK_ID = l2NetworkIdSchema.parse(
   import.meta.env.VITE_L2_NETWORK_ID,
 );
+
+export const CHICMOZ_ALL_UI_URLS =
+  typeof import.meta.env.VITE_CHICMOZ_ALL_UI_URLS === "string" &&
+  import.meta.env.VITE_CHICMOZ_ALL_UI_URLS.length > 0
+    ? import.meta.env.VITE_CHICMOZ_ALL_UI_URLS.split(",").map((tuple) => {
+        const [name, url] = tuple.split("|");
+        return { name, url };
+      })
+    : [];
 
 const API_KEY = apiKeySchema.parse(import.meta.env.VITE_API_KEY);
 

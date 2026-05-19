@@ -8,7 +8,7 @@ import {
 } from "~/hooks/websocket";
 import { formatDuration } from "~/lib/utils";
 
-export type ComponentHealthStatus = "UP" | "UNHEALTHY" | "DOWN";
+export type ComponentHealthStatus = "UP" | "UNKNOWN" | "UNHEALTHY" | "DOWN";
 
 export interface ComponentHealth {
   componentId: string;
@@ -63,6 +63,9 @@ const evaluate = ({
     lastSuccessfulRequest.date.getTime() > reasonableTimestamp;
   const errorFreeWithinWindow =
     (lastError?.date.getTime() ?? 0) < reasonableTimestamp;
+  const lastErrorIsMissingChainMetadata =
+    lastError?.error.status === 404 &&
+    ["/l2/info", "/l2/rollup-versions"].includes(lastError.path);
 
   components.push({
     componentId: "API-liveness",
@@ -73,9 +76,14 @@ const evaluate = ({
 
   components.push({
     componentId: "API-quality",
-    health: hadRecentSuccess && errorFreeWithinWindow ? "UP" : "UNHEALTHY",
+    health:
+      hadRecentSuccess && errorFreeWithinWindow
+        ? "UP"
+        : lastErrorIsMissingChainMetadata
+          ? "UNKNOWN"
+          : "UNHEALTHY",
     description: `Checks if there have been both successful requests and no errors within ${reasonableString}`,
-    evaluationDetails: `last successful request: ${lastSuccessfulRequest?.path ?? "—"}\nlast error: ${lastError?.error.message ?? "—"}`,
+    evaluationDetails: `last successful request: ${lastSuccessfulRequest?.path ?? "—"}\nlast error: ${lastError?.path ?? "—"} ${lastError?.error.message ?? "—"}`,
   });
 
   const chainErrorFree =
@@ -122,6 +130,16 @@ const evaluate = ({
       components,
     };
   }
+  const unknown = components.filter((c) => c.health === "UNKNOWN");
+  if (unknown.length > 0) {
+    return {
+      systemHealth: {
+        health: "UNKNOWN",
+        reason: unknown.map((c) => c.componentId).join(", "),
+      },
+      components,
+    };
+  }
   return {
     systemHealth: { health: "UP", reason: "All systems operational" },
     components,
@@ -135,8 +153,10 @@ const evaluate = ({
  */
 export const useSystemHealth = (): EvaluatedSystemHealth => {
   const wsReadyState = useWebSocketConnection();
-  const [lastSuccess, setLastSuccess] = useState<LastSuccess>(null);
-  const [lastErr, setLastErr] = useState<LastError>(null);
+  const [lastSuccess, setLastSuccess] = useState<LastSuccess>(() =>
+    getLastSuccessfulRequest(),
+  );
+  const [lastErr, setLastErr] = useState<LastError>(() => getLastError());
   const { data: chainErrors, error: chainErrorsError } = useChainErrors();
 
   useEffect(() => {

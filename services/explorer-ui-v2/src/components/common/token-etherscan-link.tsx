@@ -79,3 +79,35 @@ export const AddressEtherscanLink: FC<AddressEtherscanLinkProps> = ({
     title={title ?? "View address on Etherscan"}
   />
 );
+
+interface TxEtherscanLinkProps {
+  txHash?: string;
+  content?: string;
+  className?: string;
+  showExternalLinkIcon?: boolean;
+  title?: string;
+  eventLog?: boolean;
+}
+
+export const TxEtherscanLink: FC<TxEtherscanLinkProps> = ({
+  txHash,
+  content,
+  className,
+  showExternalLinkIcon,
+  title,
+  eventLog = false,
+}) => {
+  if (!txHash) {
+    return <span className={className}>{content ?? "—"}</span>;
+  }
+
+  return (
+    <EtherscanAddressLink
+      content={content ?? txHash}
+      endpoint={`/tx/${txHash}${eventLog ? "#eventlog" : ""}`}
+      className={className}
+      showExternalLinkIcon={showExternalLinkIcon}
+      title={title ?? "View transaction on Etherscan"}
+    />
+  );
+};

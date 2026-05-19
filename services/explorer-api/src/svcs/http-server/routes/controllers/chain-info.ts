@@ -39,6 +39,27 @@ export const openapi_GET_CHAIN_ERRORS: OpenAPIObject["paths"] = {
   },
 };
 
+export const openapi_GET_ROLLUP_VERSIONS: OpenAPIObject["paths"] = {
+  "/l2/rollup-versions": {
+    get: {
+      tags: ["l2-chain"],
+      summary: "Get observed L2 rollup versions ordered by first seen time",
+      responses: {
+        200: {
+          description: "Observed rollup versions",
+        },
+      },
+    },
+  },
+};
+
+export const GET_ROLLUP_VERSIONS = asyncHandler(async (_req, res) => {
+  const rollupVersions = await dbWrapper.get(["l2", "rollup-versions"], () =>
+    db.l2.getRollupVersionSplit(L2_NETWORK_ID),
+  );
+  res.status(200).send(rollupVersions);
+});
+
 export const GET_CHAIN_ERRORS = asyncHandler(async (_req, res) => {
   const chainErrors = await dbWrapper.getLatest(
     ["l2", "chain-errors"],

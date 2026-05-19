@@ -8,6 +8,19 @@ import { z } from "zod";
 import { aztecExplorer } from "~/service/constants";
 import client, { validateResponse } from "./client";
 
+export const rollupVersionObservationSchema = z.object({
+  rollupVersion: z.string(),
+  firstSeenAt: z.coerce.date(),
+  lastSeenAt: z.coerce.date(),
+  firstSeenSource: z.string(),
+  lastSeenSource: z.string(),
+  isCurrent: z.boolean(),
+});
+
+export type RollupVersionObservation = z.infer<
+  typeof rollupVersionObservationSchema
+>;
+
 export const ChainInfoAPI = {
   getChainInfo: async (): Promise<ChicmozChainInfo> => {
     const response = await client.get(aztecExplorer.getL2ChainInfo);
@@ -17,6 +30,13 @@ export const ChainInfoAPI = {
     const response = await client.get(aztecExplorer.getL2ChainErrors);
     return validateResponse(
       z.array(chicmozL2RpcNodeErrorSchema),
+      response.data,
+    );
+  },
+  getRollupVersions: async (): Promise<RollupVersionObservation[]> => {
+    const response = await client.get(aztecExplorer.getL2RollupVersions);
+    return validateResponse(
+      z.array(rollupVersionObservationSchema),
       response.data,
     );
   },

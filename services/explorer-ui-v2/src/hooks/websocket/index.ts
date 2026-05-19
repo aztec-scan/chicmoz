@@ -71,7 +71,8 @@ export const useWebSocketConnection = (): WsReadyStateText => {
   const queryClient = useQueryClient();
   const isTabActive = useTabVisibility();
   const [readyState, setReadyState] = useState<keyof WsReadyState>(
-    WebSocket.CONNECTING,
+    () =>
+      (websocketInstance?.readyState ?? WebSocket.CONNECTING) as keyof WsReadyState,
   );
 
   useEffect(() => {
