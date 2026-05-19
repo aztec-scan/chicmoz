@@ -528,6 +528,13 @@
   margin-top: 4px;
   letter-spacing: 0.04em;
 }
+.stats-strip .sc .sub a {
+  color: var(--purple);
+  text-decoration: none;
+}
+.stats-strip .sc .sub a:hover {
+  color: var(--purple-soft);
+}
 .stats-strip .sc .sub em {
   color: var(--green);
   font-style: normal;

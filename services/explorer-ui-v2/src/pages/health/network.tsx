@@ -174,17 +174,6 @@ export const NetworkHealthPage: FC = () => {
         </div>
       </div>
 
-      <div className="health-component-summary">
-        <span>
-          {affectedComponents.length} affected / {status.components.length} chain
-          checks
-        </span>
-        <span>
-          Aztec-Scan-only signals like browser WebSocket state live under{" "}
-          <Link to="/health/aztecscan">Aztec-Scan health</Link>.
-        </span>
-      </div>
-
       <div className="health-component-grid">
         {status.components.map((component) => (
           <ComponentCard key={component.componentId} component={component} />
