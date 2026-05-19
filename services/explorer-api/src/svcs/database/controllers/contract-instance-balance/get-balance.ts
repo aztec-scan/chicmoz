@@ -24,7 +24,10 @@ export const getLatestContractInstanceBalance = async (
     return null;
   }
 
-  return chicmozContractInstanceBalanceSchema.parse(result[0]);
+  return chicmozContractInstanceBalanceSchema.parse({
+    ...result[0],
+    sourceTxHash: result[0].sourceTxHash ?? undefined,
+  });
 };
 
 export const getCotractInstacesWithBalance = async (): Promise<
@@ -73,5 +76,10 @@ export const getContractInstanceBalanceHistory = async (
     .orderBy(contractInstanceBalance.timestamp)
     .limit(1000);
 
-  return result.map((row) => chicmozContractInstanceBalanceSchema.parse(row));
+  return result.map((row) =>
+    chicmozContractInstanceBalanceSchema.parse({
+      ...row,
+      sourceTxHash: row.sourceTxHash ?? undefined,
+    }),
+  );
 };
