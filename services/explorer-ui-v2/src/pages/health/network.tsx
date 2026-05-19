@@ -11,6 +11,7 @@ import {
   useChainErrors,
   useChainInfo,
   useFeeRecipients,
+  useRpcNodes,
   useReorgs,
   useRollupVersions,
 } from "~/hooks/api";
@@ -34,6 +35,7 @@ export const NetworkHealthPage: FC = () => {
   const { data: reorgs } = useReorgs();
   const { data: rollupVersions } = useRollupVersions();
   const { data: feeRecipients } = useFeeRecipients();
+  const { data: rpcNodes } = useRpcNodes();
   const systemStatus = useSystemStatus();
   const status = chainInfo
     ? systemStatus
@@ -52,12 +54,26 @@ export const NetworkHealthPage: FC = () => {
   const errs24h = (chainErrors ?? []).filter(
     (e) => now - e.lastSeenAt.getTime() < ONE_DAY_MS,
   );
-  const reorgs7d = (reorgs ?? []).filter(
+  const rpcNodeCount = rpcNodes?.length ?? 0;
+  const nodeVersions = Array.from(
+    new Set((rpcNodes ?? []).map((node) => node.nodeVersion)),
+  ).sort();
+  const nodeVersionValue =
+    nodeVersions.length === 0
+      ? "—"
+      : nodeVersions.length === 1
+        ? nodeVersions[0]
+        : `${nodeVersions.length} versions`;
+  const nodeVersionSubtext =
+    nodeVersions.length === 0
+      ? "no RPC metadata"
+      : nodeVersions.length === 1
+        ? `reported by ${rpcNodeCount} RPC node${rpcNodeCount === 1 ? "" : "s"}`
+        : `split across ${rpcNodeCount} RPC nodes`;
+  const nodeVersionTitle = nodeVersions.join("\n");
+
+  const latestReorg = (reorgs ?? []).find(
     (r) => now - r.timestamp.getTime() < SEVEN_DAYS_MS,
-  );
-  const maxDepth7d = reorgs7d.reduce(
-    (m, r) => (r.nbrOfOrphanedBlocks > m ? r.nbrOfOrphanedBlocks : m),
-    0,
   );
   const renderL1ContractAddress = (
     address: string | undefined,
@@ -137,11 +153,11 @@ export const NetworkHealthPage: FC = () => {
         <div className="hero-cell">
           <div className="kicker">Latest reorg</div>
           <div className="big">
-            {reorgs?.[0] ? `depth ${reorgs[0].nbrOfOrphanedBlocks}` : "none"}
+            {latestReorg ? `depth ${latestReorg.nbrOfOrphanedBlocks}` : "none"}
           </div>
           <div className="sub">
-            {reorgs?.[0]
-              ? `${ageStr(reorgs[0].timestamp.getTime())} · #${fmtNum(Number(reorgs[0].height))}`
+            {latestReorg
+              ? `${ageStr(latestReorg.timestamp.getTime())} · #${fmtNum(Number(latestReorg.height))}`
               : "no reorgs in window"}
           </div>
         </div>
@@ -179,9 +195,11 @@ export const NetworkHealthPage: FC = () => {
           <div className="sub">chain info</div>
         </div>
         <div className="sc">
-          <div className="lbl">Reorgs · 7d</div>
-          <div className="val">{reorgs7d.length}</div>
-          <div className="sub">max depth {maxDepth7d}</div>
+          <div className="lbl">Node version</div>
+          <div className="val" title={nodeVersionTitle}>
+            {nodeVersionValue}
+          </div>
+          <div className="sub">{nodeVersionSubtext}</div>
         </div>
         <div className="sc">
           <div className="lbl">Errors · 7d</div>
