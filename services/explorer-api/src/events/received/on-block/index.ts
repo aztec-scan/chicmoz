@@ -13,7 +13,7 @@ import {
 import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
-import { onRollupVersion } from "../../../svcs/database/controllers/l2/chain-info/rollup-version-cache.js";
+import { observeRollupVersion } from "../../../svcs/database/controllers/l2/chain-info/rollup-version-cache.js";
 import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
 import { unOrphanBlock } from "../../../svcs/database/controllers/l2block/orphan.js";
 import { ensureFinalizationStatusStored } from "../../../svcs/database/controllers/l2block/store.js";
@@ -76,11 +76,13 @@ const onBlock = async ({
   }
 
   await storeBlock(parsedBlock);
-  onRollupVersion(
-    chicmozChainInfoSchema.shape.rollupVersion.parse(
+  await observeRollupVersion({
+    l2NetworkId: L2_NETWORK_ID,
+    rollupVersion: chicmozChainInfoSchema.shape.rollupVersion.parse(
       parsedBlock.header.globalVariables.version,
     ),
-  );
+    source: "block",
+  });
   await storeContracts(b, parsedBlock.hash);
   await pendingTxsHook(parsedBlock.body.txEffects);
 };

@@ -15,12 +15,17 @@ import { HealthTabs } from "./tabs";
 
 const STATUS_LABEL: Record<ComponentHealthStatus, string> = {
   UP: "UP",
+  UNKNOWN: "UNKNOWN",
   UNHEALTHY: "UNHEALTHY",
   DOWN: "DOWN",
 };
 
-const STATUS_TONE: Record<ComponentHealthStatus, "ok" | "warn" | "down"> = {
+const STATUS_TONE: Record<
+  ComponentHealthStatus,
+  "ok" | "unknown" | "warn" | "down"
+> = {
   UP: "ok",
+  UNKNOWN: "unknown",
   UNHEALTHY: "warn",
   DOWN: "down",
 };
@@ -30,7 +35,7 @@ const FIVE_MIN = 5 * 60 * 1_000;
 
 interface StatusCopy {
   label: string;
-  tone: "ok" | "warn" | "down";
+  tone: "ok" | "unknown" | "warn" | "down";
   copy: string;
 }
 
@@ -55,6 +60,8 @@ const statusCopy = (health: ComponentHealthStatus): StatusCopy => ({
   copy:
     health === "UP"
       ? "operational"
+      : health === "UNKNOWN"
+        ? "unknown"
       : health === "UNHEALTHY"
         ? "degraded"
         : "attention required",

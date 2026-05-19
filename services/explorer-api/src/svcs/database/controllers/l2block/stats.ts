@@ -7,12 +7,10 @@ import {
   l2Block,
   txEffect,
 } from "../../../database/schema/index.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
-import { getExistingRollupVersion } from "./get-latest.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 
 export const getAverageFees = async (): Promise<string> => {
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  const rollupVersion = await getCurrentRollupVersionNumber();
 
   const dbRes = await db()
     .select({
@@ -21,7 +19,10 @@ export const getAverageFees = async (): Promise<string> => {
     .from(header)
     .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
     .where(
-      and(isNull(l2Block.orphan_timestamp), eq(l2Block.version, rollupVersion)),
+      and(
+        isNull(l2Block.orphan_timestamp),
+        rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined,
+      ),
     )
     .execute();
 
@@ -34,8 +35,7 @@ export const getAverageFees = async (): Promise<string> => {
 };
 
 export const getAverageTxsPerBlock = async (): Promise<string> => {
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  const rollupVersion = await getCurrentRollupVersionNumber();
 
   const [blockCountRes, txCountRes] = await Promise.all([
     db()
@@ -44,7 +44,7 @@ export const getAverageTxsPerBlock = async (): Promise<string> => {
       .where(
         and(
           isNull(l2Block.orphan_timestamp),
-          eq(l2Block.version, rollupVersion),
+          rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined,
         ),
       )
       .execute(),
@@ -56,7 +56,7 @@ export const getAverageTxsPerBlock = async (): Promise<string> => {
       .where(
         and(
           isNull(l2Block.orphan_timestamp),
-          eq(l2Block.version, rollupVersion),
+          rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined,
         ),
       )
       .execute(),
@@ -72,8 +72,7 @@ export const getAverageTxsPerBlock = async (): Promise<string> => {
 };
 
 export const getAverageBlockTime = async (): Promise<string> => {
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? CURRENT_ROLLUP_VERSION_NUMBER;
+  const rollupVersion = await getCurrentRollupVersionNumber();
 
   const dbRes = await db()
     .select({
@@ -85,7 +84,10 @@ export const getAverageBlockTime = async (): Promise<string> => {
     .innerJoin(header, eq(globalVariables.headerId, header.id))
     .innerJoin(l2Block, eq(header.blockHash, l2Block.hash))
     .where(
-      and(isNull(l2Block.orphan_timestamp), eq(l2Block.version, rollupVersion)),
+      and(
+        isNull(l2Block.orphan_timestamp),
+        rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined,
+      ),
     )
     .execute();
 

@@ -1,6 +1,7 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2RpcNode } from "@chicmoz-pkg/types";
 import { l2RpcNodeTable } from "../../../schema/l2/rpc-node.js";
+import { observeRollupVersion } from "../chain-info/rollup-version-cache.js";
 
 export async function storeL2RpcNode(
   rpcNode: Partial<ChicmozL2RpcNode> &
@@ -48,4 +49,12 @@ export async function storeL2RpcNode(
     target: l2RpcNodeTable.rpcNodeName,
     set,
   });
+
+  if (rpcNode.l2NetworkId !== undefined && rpcNode.rollupVersion !== undefined) {
+    await observeRollupVersion({
+      l2NetworkId: rpcNode.l2NetworkId,
+      rollupVersion: rpcNode.rollupVersion,
+      source: "node-info",
+    });
+  }
 }

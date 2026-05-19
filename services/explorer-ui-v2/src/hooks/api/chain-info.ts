@@ -3,7 +3,7 @@ import {
   type ChicmozL2RpcNodeError,
 } from "@chicmoz-pkg/types";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { ChainInfoAPI } from "~/api";
+import { ChainInfoAPI, type RollupVersionObservation } from "~/api";
 import {
   LONG_STALE_TIME,
   SLOW_REFETCH_INTERVAL,
@@ -32,6 +32,18 @@ export const useChainErrors = (): UseQueryResult<
         ),
       ),
     retry: false,
+    refetchInterval: SLOW_REFETCH_INTERVAL,
+    staleTime: LONG_STALE_TIME,
+  });
+};
+
+export const useRollupVersions = (): UseQueryResult<
+  RollupVersionObservation[],
+  Error
+> => {
+  return useQuery<RollupVersionObservation[], Error>({
+    queryKey: queryKeyGenerator.rollupVersions,
+    queryFn: () => ChainInfoAPI.getRollupVersions(),
     refetchInterval: SLOW_REFETCH_INTERVAL,
     staleTime: LONG_STALE_TIME,
   });

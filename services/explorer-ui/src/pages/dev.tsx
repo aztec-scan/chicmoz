@@ -1,4 +1,3 @@
-import { CHICMOZ_TYPES_AZTEC_VERSION } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
@@ -72,7 +71,6 @@ export const DevPage: FC = () => {
         {generateCard(
           "Misc",
           <pre>
-            <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>
             <p>{`Explorer version           ${VERSION_STRING}`}</p>
             <p>{`API URL                    ${API_URL}`}</p>
             <p>{`WS URL                     ${WS_URL}`}</p>

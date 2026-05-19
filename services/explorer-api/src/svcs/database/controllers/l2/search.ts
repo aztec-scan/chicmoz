@@ -20,12 +20,16 @@ import {
   l2TxPublicCallRequest,
   txEffect,
 } from "../../schema/index.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
 import { l1L2ValidatorTable } from "../../schema/l1/l2-validator.js";
+import { getCurrentRollupVersionNumber } from "./chain-info/rollup-version-cache.js";
 
 const getBlockHashesByHeightOrSlot = async (
   blockNumber: bigint,
 ): Promise<ChicmozSearchResults["results"]["blocks"]> => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
+  const versionFilter = currentRollupVersion !== null
+    ? eq(l2Block.version, currentRollupVersion)
+    : undefined;
   const blocksByHeight = await db()
     .select({
       hash: l2Block.hash,
@@ -39,7 +43,7 @@ const getBlockHashesByHeightOrSlot = async (
       and(
         eq(l2Block.height, blockNumber),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+        versionFilter,
       ),
     )
     .execute();
@@ -59,7 +63,7 @@ const getBlockHashesByHeightOrSlot = async (
           and(
             eq(globalVariables.slotNumber, slotNumber),
             isNull(l2Block.orphan_timestamp),
-            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+            versionFilter,
           ),
         )
         .execute()

@@ -12,6 +12,7 @@ import {
   useChainInfo,
   useFeeRecipients,
   useReorgs,
+  useRollupVersions,
 } from "~/hooks/api";
 import { useSystemStatus } from "~/hooks/use-system-status";
 import {
@@ -31,8 +32,16 @@ export const NetworkHealthPage: FC = () => {
   const { data: chainInfo } = useChainInfo();
   const { data: chainErrors } = useChainErrors();
   const { data: reorgs } = useReorgs();
+  const { data: rollupVersions } = useRollupVersions();
   const { data: feeRecipients } = useFeeRecipients();
-  const status = useSystemStatus();
+  const systemStatus = useSystemStatus();
+  const status = chainInfo
+    ? systemStatus
+    : {
+        level: "unknown" as const,
+        label: "CHAIN UNKNOWN",
+        dotClass: "dot unknown",
+      };
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
@@ -50,44 +59,52 @@ export const NetworkHealthPage: FC = () => {
     (m, r) => (r.nbrOfOrphanedBlocks > m ? r.nbrOfOrphanedBlocks : m),
     0,
   );
+  const renderL1ContractAddress = (
+    address: string | undefined,
+    title: string,
+  ) => {
+    if (!address) {
+      return "—";
+    }
 
-  // Bucket the last 7 days into per-day max-depth bins for the chart.
-  // Buckets are oldest→newest so the chart reads left-to-right.
-  const todayStart = new Date(now);
-  todayStart.setUTCHours(0, 0, 0, 0);
-  const reorgDailyMaxDepth = Array.from({ length: 7 }, (_, i) => {
-    const dayStart = todayStart.getTime() - (6 - i) * ONE_DAY_MS;
-    const dayEnd = dayStart + ONE_DAY_MS;
-    const inDay = reorgs7d.filter((r) => {
-      const t = r.timestamp.getTime();
-      return t >= dayStart && t < dayEnd;
-    });
-    const maxDepth = inDay.reduce(
-      (m, r) => (r.nbrOfOrphanedBlocks > m ? r.nbrOfOrphanedBlocks : m),
-      0,
+    return (
+      <>
+        <CopyableAddress value={address} title={title} />
+        <AddressEtherscanLink address={address} content="etherscan" />
+      </>
     );
-    return { dayStart, depth: maxDepth, count: inDay.length };
-  });
-  const chartMax = Math.max(...reorgDailyMaxDepth.map((b) => b.depth), 1);
+  };
 
   const heroClass =
     status.level === "ok"
       ? "status-ok"
-      : status.level === "unhealthy"
+      : status.level === "unknown"
+        ? "status-unknown"
+        : status.level === "unhealthy"
         ? "status-warn"
         : "status-down";
   const heroDot =
-    status.level === "ok" ? "" : status.level === "unhealthy" ? "warn" : "down";
+    status.level === "ok"
+      ? ""
+      : status.level === "unknown"
+        ? "unknown"
+        : status.level === "unhealthy"
+          ? "warn"
+          : "down";
   const heroBigClass =
     status.level === "ok"
       ? "ok"
-      : status.level === "unhealthy"
+      : status.level === "unknown"
+        ? "unknown"
+        : status.level === "unhealthy"
         ? "warn"
         : "down";
   const heroLabel =
     status.level === "ok"
       ? "OK"
-      : status.level === "unhealthy"
+      : status.level === "unknown"
+        ? "UNKNOWN"
+        : status.level === "unhealthy"
         ? "UNHEALTHY"
         : "DOWN";
 
@@ -99,7 +116,7 @@ export const NetworkHealthPage: FC = () => {
           { label: "health", to: "/health" },
           { label: "network", active: true },
         ]}
-        comment="chain-info · reorgs · errors · fee recipients"
+        comment="chain-info · rollup versions · reorgs · errors"
       />
 
       <HealthTabs active="network" />
@@ -111,7 +128,11 @@ export const NetworkHealthPage: FC = () => {
             <span className={`hc-dot ${heroDot}`} />
             {heroLabel}
           </div>
-          <div className="sub">{status.label} · last check just now</div>
+          <div className="sub">
+            {status.level === "unknown"
+              ? "CHAIN UNKNOWN · chain info unavailable"
+              : `${status.label} · last check just now`}
+          </div>
         </div>
         <div className="hero-cell">
           <div className="kicker">Latest reorg</div>
@@ -175,7 +196,9 @@ export const NetworkHealthPage: FC = () => {
             className="sub"
             style={{ color: errs24h.length === 0 ? "var(--green)" : undefined }}
           >
-            {errs24h.length === 0 ? "within budget" : "above 24h budget"}
+            {errs24h.length === 0
+              ? "no errors in last 24h"
+              : `${errs24h.length} in last 24h`}
           </div>
         </div>
       </div>
@@ -195,59 +218,45 @@ export const NetworkHealthPage: FC = () => {
             <div className="kv wide">
               <span className="k">L1 chain</span>
               <span className="v">
-                ethereum · id {chainInfo?.l1ChainId ?? "—"}
+                {chainInfo?.l1ChainId !== undefined
+                  ? `ethereum · id ${chainInfo.l1ChainId}`
+                  : "—"}
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Rollup contract</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.rollupAddress}
-                  title="Copy rollup address"
-                />
-                <AddressEtherscanLink
-                  address={chainInfo?.l1ContractAddresses?.rollupAddress}
-                  content="etherscan"
-                />
+                {renderL1ContractAddress(
+                  chainInfo?.l1ContractAddresses?.rollupAddress,
+                  "Copy rollup address",
+                )}
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Registry contract</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.registryAddress}
-                  title="Copy registry address"
-                />
-                <AddressEtherscanLink
-                  address={chainInfo?.l1ContractAddresses?.registryAddress}
-                  content="etherscan"
-                />
+                {renderL1ContractAddress(
+                  chainInfo?.l1ContractAddresses?.registryAddress,
+                  "Copy registry address",
+                )}
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Inbox</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.inboxAddress}
-                  title="Copy inbox address"
-                />
-                <AddressEtherscanLink
-                  address={chainInfo?.l1ContractAddresses?.inboxAddress}
-                  content="etherscan"
-                />
+                {renderL1ContractAddress(
+                  chainInfo?.l1ContractAddresses?.inboxAddress,
+                  "Copy inbox address",
+                )}
               </span>
             </div>
             <div className="kv wide">
               <span className="k">Outbox</span>
               <span className="v">
-                <CopyableAddress
-                  value={chainInfo?.l1ContractAddresses?.outboxAddress}
-                  title="Copy outbox address"
-                />
-                <AddressEtherscanLink
-                  address={chainInfo?.l1ContractAddresses?.outboxAddress}
-                  content="etherscan"
-                />
+                {renderL1ContractAddress(
+                  chainInfo?.l1ContractAddresses?.outboxAddress,
+                  "Copy outbox address",
+                )}
               </span>
             </div>
             <div className="kv wide">
@@ -284,38 +293,31 @@ export const NetworkHealthPage: FC = () => {
         <div className="panel">
           <div className="panel-head">
             <h3>
-              Reorg depth · 7d<span className="tag">max depth per day</span>
+              Rollup versions<span className="tag">/api/l2/rollup-versions</span>
             </h3>
-            <span className="mute">
-              {reorgs7d.length} reorgs · max depth {maxDepth7d}
-            </span>
           </div>
-          <div className="reorg-chart">
-            {reorgDailyMaxDepth.map((b, i) => {
-              const dayLabel = new Date(b.dayStart).toLocaleDateString(
-                "en-US",
-                { weekday: "short" },
-              );
-              const heightPct = (b.depth / chartMax) * 100;
-              const isToday = i === reorgDailyMaxDepth.length - 1;
-              return (
-                <div key={b.dayStart} className="reorg-chart-col">
-                  <div className="reorg-chart-bar-wrap">
-                    {b.depth > 0 && (
-                      <span
-                        className="reorg-chart-bar"
-                        style={{ height: `${heightPct}%` }}
-                        title={`depth ${b.depth} · ${b.count} reorg${b.count === 1 ? "" : "s"}`}
-                      />
-                    )}
-                  </div>
-                  <div className="reorg-chart-axis">
-                    <span className={isToday ? "today" : ""}>{dayLabel}</span>
-                    <span className="depth">{b.depth || "—"}</span>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="events-list">
+            {(rollupVersions ?? []).map((version) => (
+              <div key={version.rollupVersion} className="event">
+                <span className={version.isCurrent ? "type info" : "type"}>
+                  {version.isCurrent ? "current" : "seen"}
+                </span>
+                <span className="body">
+                  v<strong>{version.rollupVersion}</strong>
+                  <br />
+                  <span className="mute">
+                    first seen {version.firstSeenAt.toLocaleString()} · source{" "}
+                    {version.firstSeenSource}
+                  </span>
+                </span>
+                <span className="age">
+                  last {ageStr(version.lastSeenAt.getTime())}
+                </span>
+              </div>
+            ))}
+            {(!rollupVersions || rollupVersions.length === 0) && (
+              <div className="empty-state">no rollup versions observed</div>
+            )}
           </div>
         </div>
 

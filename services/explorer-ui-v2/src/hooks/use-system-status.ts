@@ -1,6 +1,6 @@
 import { useSystemHealth } from "~/hooks/use-system-health";
 
-export type SystemStatusLevel = "ok" | "unhealthy" | "down";
+export type SystemStatusLevel = "ok" | "unknown" | "unhealthy" | "down";
 
 interface SystemStatus {
   level: SystemStatusLevel;
@@ -8,8 +8,9 @@ interface SystemStatus {
   dotClass: string;
 }
 
-const STATUS_MAP: Record<"UP" | "UNHEALTHY" | "DOWN", SystemStatus> = {
+const STATUS_MAP: Record<"UP" | "UNKNOWN" | "UNHEALTHY" | "DOWN", SystemStatus> = {
   UP: { level: "ok", label: "CHAIN OK", dotClass: "dot" },
+  UNKNOWN: { level: "unknown", label: "CHAIN UNKNOWN", dotClass: "dot unknown" },
   UNHEALTHY: { level: "unhealthy", label: "CHAIN UNHEALTHY", dotClass: "dot warn" },
   DOWN: { level: "down", label: "CHAIN DOWN", dotClass: "dot down" },
 };
