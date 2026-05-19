@@ -2,6 +2,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
+import { Pagination } from "~/components/common";
 import { TokenEtherscanLink } from "~/components/common";
 import {
   usePublicCallRequestsBySender,
@@ -19,6 +20,7 @@ import {
 
 type Tab = "calls" | "balance";
 const DAY_MS = 24 * 60 * 60 * 1000;
+const PAGE_SIZE = 25;
 
 export const AddressDetailsPage: FC = () => {
   const { address = "" } = useParams({ strict: false });
@@ -29,6 +31,7 @@ export const AddressDetailsPage: FC = () => {
   const { data: chainInfo } = useChainInfo();
 
   const [tab, setTab] = useState<Tab>("calls");
+  const [page, setPage] = useState(0);
 
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
@@ -39,20 +42,14 @@ export const AddressDetailsPage: FC = () => {
       ? formatFees(balance.balance, feeJuiceDecimals)
       : "—";
 
+  // Delta summary for the stats strip tile (24h change)
   const latest = history?.[history.length - 1];
   const comparisonPoint = useMemo(() => {
-    if (!history || history.length < 2 || !latest) {
-      return undefined;
-    }
-
+    if (!history || history.length < 2 || !latest) return undefined;
     const cutoff = latest.timestamp - DAY_MS;
-
     for (let i = history.length - 2; i >= 0; i--) {
-      if (history[i].timestamp <= cutoff) {
-        return history[i];
-      }
+      if (history[i].timestamp <= cutoff) return history[i];
     }
-
     return history[0];
   }, [history, latest]);
   const delta = latest && comparisonPoint ? latest.balance - comparisonPoint.balance : 0n;
@@ -72,16 +69,30 @@ export const AddressDetailsPage: FC = () => {
           ? `+${deltaValue} · ${deltaLabel}`
           : `-${deltaValue} · ${deltaLabel}`
       : "no history yet";
-  const maxBal = history?.length
-    ? history.reduce((m, h) => (h.balance > m ? h.balance : m), history[0].balance)
-    : 0n;
-  const getBarHeight = (balanceAmount: bigint) => {
-    if (maxBal <= 0n) {
-      return 0;
-    }
 
-    return Number((balanceAmount * 10000n) / maxBal) / 100;
-  };
+  // Per-row spent delta (newest first). Index 0 in reversed = latest snapshot.
+  // spent[i] = history[n-1-i].balance - history[n-2-i].balance
+  // oldest row (last in reversed) has no prior → 0n
+  const reversedHistory = useMemo(() => {
+    if (!history) return [];
+    return history.slice().reverse();
+  }, [history]);
+
+  const spentPerRow = useMemo(() => {
+    // reversedHistory[0] = newest, reversedHistory[last] = oldest
+    // spent for row i = reversedHistory[i+1].balance - reversedHistory[i].balance
+    // (how much balance dropped going from i+1 to i, i.e. previous snapshot to this one)
+    return reversedHistory.map((_, i) => {
+      if (i === reversedHistory.length - 1) return 0n; // oldest row, no prior baseline
+      const prev = reversedHistory[i + 1].balance;
+      const curr = reversedHistory[i].balance;
+      return prev - curr; // positive = fees paid, negative = top-up
+    });
+  }, [reversedHistory]);
+
+  const totalPages = Math.max(1, Math.ceil(reversedHistory.length / PAGE_SIZE));
+  const pagedHistory = reversedHistory.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pagedSpent = spentPerRow.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const stats = useMemo(() => {
     const calls = publicCallRequests ?? [];
@@ -91,6 +102,11 @@ export const AddressDetailsPage: FC = () => {
       staticCalls: calls.filter((c) => c.isStaticCall).length,
     };
   }, [publicCallRequests]);
+
+  const handleTabChange = (next: Tab) => {
+    setTab(next);
+    setPage(0);
+  };
 
   return (
     <Shell>
@@ -144,14 +160,14 @@ export const AddressDetailsPage: FC = () => {
         <div className="tabs">
           <button
             className={tab === "calls" ? "on" : ""}
-            onClick={() => setTab("calls")}
+            onClick={() => handleTabChange("calls")}
           >
             Public calls
             <span className="c">{stats.totalCalls}</span>
           </button>
           <button
             className={tab === "balance" ? "on" : ""}
-            onClick={() => setTab("balance")}
+            onClick={() => handleTabChange("balance")}
           >
             Fee Juice
             <span className="c">{history?.length ?? 0}</span>
@@ -173,79 +189,76 @@ export const AddressDetailsPage: FC = () => {
           </>
         )}
 
-        {/* Tab: Fee Juice balance + history */}
+        {/* Tab: Fee Juice balance history */}
         {tab === "balance" && (
           <>
-            {/* Sparkbar */}
-            <div className="balance-block">
-              <div className="balance-big">
-                {balanceValue}
-                {balance?.balance !== undefined && (
-                  <TokenEtherscanLink
-                    symbol={feeJuiceSymbol}
-                    address={feeJuiceAddress}
-                    className="u"
-                  />
-                )}
-              </div>
-              <div className="balance-sub">{deltaSummary} · {history?.length ?? 0} snapshots</div>
-              {history && history.length > 1 && maxBal > 0n && (
-                <>
-                  <div className="spark">
-                    {history.map((b, i) => (
-                      <div
-                        key={i}
-                        className="bar"
-                        style={{ height: `${getBarHeight(b.balance)}%` }}
-                        title={`${formatFees(b.balance, feeJuiceDecimals)} ${feeJuiceSymbol} · ${ageStr(b.timestamp)}`}
-                      />
-                    ))}
-                  </div>
-                  <div className="spark-axis">
-                    <span>oldest</span>
-                    <span>·</span>
-                    <span>now</span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Balance history table */}
             <div className="hist-head">
               <div>Balance ({feeJuiceSymbol})</div>
+              <div>Spent</div>
               <div>Tx</div>
               <div className="right">Timestamp</div>
               <div className="right">Age</div>
             </div>
-            {(history ?? [])
-              .slice()
-              .reverse()
-              .map((h, i) => (
-                <div key={i} className="hist-row">
-                  <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
-                    {formatFees(h.balance, feeJuiceDecimals)}
-                    <TokenEtherscanLink
-                      symbol={feeJuiceSymbol}
-                      address={feeJuiceAddress}
-                      className="u"
-                    />
-                  </span>
-                  <span className="hash">
-                    {h.sourceTxHash ? (
-                      <Link to="/tx-effects/$hash" params={{ hash: h.sourceTxHash }}>
-                        {truncateHashString(h.sourceTxHash, 8, 6)}
-                      </Link>
-                    ) : (
-                      <span style={{ color: "var(--ink-3)" }}>—</span>
-                    )}
-                  </span>
-                  <span className="num">
-                    {new Date(h.timestamp).toISOString().slice(0, 19).replace("T", " ")}
-                  </span>
-                  <span className="age">{ageStr(h.timestamp)}</span>
-                </div>
-              ))}
-            {(!history || history.length === 0) && (
+            {pagedHistory.length > 0 ? (
+              <>
+                {pagedHistory.map((h, i) => {
+                  const spent = pagedSpent[i];
+                  const isOldest = page * PAGE_SIZE + i === reversedHistory.length - 1;
+                  let spentEl: React.ReactNode;
+                  if (isOldest || spent === 0n) {
+                    spentEl = <span style={{ color: "var(--ink-3)" }}>—</span>;
+                  } else if (spent > 0n) {
+                    // fees paid — balance went down
+                    spentEl = (
+                      <span style={{ color: "var(--red)" }}>
+                        -{formatFees(spent, feeJuiceDecimals)}
+                      </span>
+                    );
+                  } else {
+                    // top-up — balance went up
+                    spentEl = (
+                      <span style={{ color: "var(--green)" }}>
+                        +{formatFees(-spent, feeJuiceDecimals)}
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <div key={i} className="hist-row">
+                      <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
+                        {formatFees(h.balance, feeJuiceDecimals)}
+                        <TokenEtherscanLink
+                          symbol={feeJuiceSymbol}
+                          address={feeJuiceAddress}
+                          className="u"
+                        />
+                      </span>
+                      <span className="num" style={{ textAlign: "left" }}>
+                        {spentEl}
+                      </span>
+                      <span className="hash">
+                        {h.sourceTxHash ? (
+                          <Link to="/tx-effects/$hash" params={{ hash: h.sourceTxHash }}>
+                            {truncateHashString(h.sourceTxHash, 8, 6)}
+                          </Link>
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                      <span className="num">
+                        {new Date(h.timestamp).toISOString().slice(0, 19).replace("T", " ")}
+                      </span>
+                      <span className="age">{ageStr(h.timestamp)}</span>
+                    </div>
+                  );
+                })}
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </>
+            ) : (
               <div className="empty-state">no fee juice balance history</div>
             )}
           </>
