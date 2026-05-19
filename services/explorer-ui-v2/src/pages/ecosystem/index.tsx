@@ -142,14 +142,6 @@ export const EcosystemPage: FC = () => {
         </details>
       </div>
 
-      <div className="disclaimer">
-        <span className="warn">⚠ Disclaimer</span>
-        The contracts listed here are contracts that aztecscan.xyz has manually
-        added with AztecScanNotes. It means they have a known origin —{" "}
-        <strong>it does NOT mean they are audited or safe to use</strong>. Do
-        your own research before interacting with any of these contracts.
-      </div>
-
       <div className="stats-strip">
         <div className="sc">
           <div className="lbl">Listed projects</div>
@@ -179,7 +171,15 @@ export const EcosystemPage: FC = () => {
             AztecScanNotes contracts
             <span className="c">· {noted.length} shown</span>
           </h2>
+
           <p>curated entries maintained by the aztec-scan team</p>
+          <div className="disclaimer">
+            <span className="warn">⚠ Disclaimer</span>
+            The contracts listed here are contracts that aztecscan.xyz has manually
+            added with AztecScanNotes. It means they have a known origin —{" "}
+            <strong>it does NOT mean they are audited or safe to use</strong>. Do
+            your own research before interacting with any of these contracts.
+          </div>
         </div>
       </div>
 

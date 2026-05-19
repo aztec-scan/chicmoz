@@ -72,9 +72,6 @@ export const NetworkHealthPage: FC = () => {
   const latestReorg = (reorgs ?? []).find(
     (r) => now - r.timestamp.getTime() < SEVEN_DAYS_MS,
   );
-  const affectedComponents = status.components.filter(
-    (component) => component.health !== "UP",
-  );
   const renderL1ContractAddress = (
     address: string | undefined,
     title: string,
