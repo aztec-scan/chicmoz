@@ -16,13 +16,11 @@ import {
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
   useChainInfo,
-  useGetBlockByIdentifier,
   useL2ToL1MsgsByContract,
   usePublicCallRequestsByContract,
 } from "~/hooks/api";
 import {
   ageStr,
-  fmtNum,
   formatFees,
   getFeeJuiceSymbol,
   truncateHashString,
@@ -35,8 +33,6 @@ export const ContractInstancePage: FC = () => {
   const { data: instance, isLoading } = useContractInstance(address);
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
-  const { data: firstSeenBlock, isLoading: isFirstSeenBlockLoading } =
-    useGetBlockByIdentifier(instance?.blockHash ?? "");
   const { data: chainInfo } = useChainInfo();
   const { data: publicCalls } = usePublicCallRequestsByContract(address);
   const { data: l2ToL1Msgs } = useL2ToL1MsgsByContract(address);
@@ -81,7 +77,6 @@ export const ContractInstancePage: FC = () => {
     balance === undefined
       ? "—"
       : formatFees(balance?.balance ?? 0n, feeJuiceDecimals);
-  const firstSeenHeight = instance.blockHeight ?? firstSeenBlock?.height;
 
   const maxBal = history?.length
     ? Number(
@@ -126,7 +121,12 @@ export const ContractInstancePage: FC = () => {
         </h1>
         <div className="subhash">{instance.address}</div>
         <div className="meta-row">
-          <StatusPill status={verified ? "verified" : "unverified"} />
+          <Link to="/ecosystem" hash="verified-deployment">
+            <StatusPill
+              status={verified ? "verified" : "unverified"}
+              label={verified ? "deployment verified" : "deployment unverified"}
+            />
+          </Link>
           <span className="meta-line">
             class{" "}
             <Link
@@ -140,57 +140,20 @@ export const ContractInstancePage: FC = () => {
             </Link>{" "}
             v{instance.version}
           </span>
-        </div>
-      </div>
-
-      <div className="stats-strip">
-        <div className="sc">
-          <div className="lbl">Fee balance</div>
-          <div className="val">
-            {balanceValue}
+          <span className="meta-line">
+            fee balance {balanceValue}
             <TokenEtherscanLink
               symbol={feeJuiceSymbol}
               address={feeJuiceAddress}
               className="u"
-            />
-          </div>
-          <div className="sub">
+            />{" "}
+            ·{" "}
             {delta === 0n
               ? "no change · 24h"
               : delta > 0n
                 ? `▲ ${deltaValue} · 24h`
                 : `▼ ${deltaValue} · 24h`}
-          </div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Class</div>
-          <div className="val">{className}</div>
-          <div className="sub">v{instance.version}</div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Status</div>
-          <div className="val">
-            {instance.isOrphaned ? "orphaned" : "active"}
-          </div>
-          <div className="sub">block state</div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Block</div>
-          <div className="val">
-            {firstSeenHeight !== undefined ? (
-              <Link
-                to="/blocks/$blockNumber"
-                params={{ blockNumber: String(firstSeenHeight) }}
-              >
-                #{fmtNum(Number(firstSeenHeight))}
-              </Link>
-            ) : isFirstSeenBlockLoading ? (
-              "loading…"
-            ) : (
-              "—"
-            )}
-          </div>
-          <div className="sub">first seen</div>
+          </span>
         </div>
       </div>
 
@@ -299,10 +262,10 @@ export const ContractInstancePage: FC = () => {
             )}
           </div>
           <div className="kv-grid">
-            <DetailField label="Creator">
+            <DetailField label="Creator" width="extra-wide">
               {instance.deployerMetadata.creatorName}
             </DetailField>
-            <DetailField label="Contact">
+            <DetailField label="Contact" width="extra-wide">
               {instance.deployerMetadata.creatorContact}
             </DetailField>
             <DetailField label="Identifier" width="extra-wide">
@@ -333,7 +296,7 @@ export const ContractInstancePage: FC = () => {
                 </a>
               </DetailField>
             )}
-            <DetailField label="Uploaded">
+            <DetailField label="Uploaded" width="extra-wide">
               {new Date(instance.deployerMetadata.uploadedAt)
                 .toISOString()
                 .slice(0, 10)}

@@ -1136,6 +1136,161 @@
   font-style: italic;
 }
 
+.source-lint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-1);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.source-lint-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-1);
+}
+.source-browser {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 520px;
+  background: var(--bg-1);
+}
+.source-sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--bg-0);
+  overflow: auto;
+  max-height: 680px;
+  padding: 8px;
+}
+.source-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.source-tree-row {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+.source-tree-row:hover {
+  background: var(--bg-2);
+  color: var(--ink-1);
+}
+.source-tree-row-active {
+  background: color-mix(in srgb, var(--purple) 13%, transparent);
+  color: var(--purple);
+}
+.source-tree-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.source-tree-icon {
+  flex: 0 0 auto;
+  color: var(--ink-3);
+}
+.source-tree-noir {
+  color: var(--purple);
+}
+.source-tree-count {
+  min-width: 18px;
+  border-radius: 999px;
+  padding: 1px 5px;
+  background: color-mix(in srgb, var(--purple) 16%, transparent);
+  color: var(--purple);
+  text-align: center;
+  font-size: 10px;
+}
+.source-viewer {
+  min-width: 0;
+  overflow: auto;
+  background: #282c34;
+}
+.source-viewer-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1f232b;
+  color: #cbd5e1;
+  padding: 9px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.source-viewer-head span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.source-viewer-head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  font-family: var(--mono);
+  font-size: 10px;
+  cursor: pointer;
+}
+.source-viewer-head button:hover {
+  color: #f8fafc;
+}
+.source-lint-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.source-lint-list .k {
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 9px;
+}
+
+@media (max-width: 800px) {
+  .source-browser {
+    grid-template-columns: 1fr;
+  }
+  .source-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    max-height: 220px;
+  }
+}
+
 /* contract instance balance chart */
 .balance-block {
   padding: 20px;
@@ -1807,6 +1962,10 @@
   font-size: 13px;
   color: var(--ink-1);
   margin: 18px 0 6px;
+}
+.metadata-body h4 .mute {
+  color: var(--ink-3);
+  font-weight: 400;
 }
 .metadata-body p {
   font-family: var(--sans);

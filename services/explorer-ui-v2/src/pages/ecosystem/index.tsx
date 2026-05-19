@@ -30,6 +30,8 @@ export const EcosystemPage: FC = () => {
   );
 
   const verifiedClasses: ChicmozL2ContractClassRegisteredEvent[] = classes ?? [];
+  const shouldOpenMetadataDocs =
+    globalThis.location.hash === "#verified-deployment";
 
   return (
     <Shell active="ecosystem">
@@ -80,7 +82,7 @@ export const EcosystemPage: FC = () => {
           </a>
         </div>
 
-        <details className="metadata-accord">
+        <details className="metadata-accord" open={shouldOpenMetadataDocs}>
           <summary>
             <span>Want to know more about Aztec Scan&apos;s contract metadata?</span>
             <span className="chev">▾</span>
@@ -92,7 +94,14 @@ export const EcosystemPage: FC = () => {
               verified source code, verified deployment arguments, and deployer
               details.
             </p>
-            <h4>Aztec Scan Notes</h4>
+            <p>
+              In Aztec terminology, a contract class is the reusable code/artifact
+              definition. A contract instance is a deployed address using one of
+              those classes, with its own deployment arguments and state.
+            </p>
+            <h4>
+              Aztec Scan Notes <span className="mute">- Contract Instance</span>
+            </h4>
             <p>
               Aztec Scan Notes are a way to add metadata to contracts on the
               Aztec network. They are manually added by the AztecScan team. If
@@ -102,7 +111,9 @@ export const EcosystemPage: FC = () => {
               </a>
               .
             </p>
-            <h4>Verified Artifact</h4>
+            <h4>
+              Verified Artifact <span className="mute">- Contract Class</span>
+            </h4>
             <p>
               Anyone can submit an Aztec contract artifact for a contract class.
               Aztec Scan checks that the compiled artifact bytecode matches the
@@ -113,7 +124,9 @@ export const EcosystemPage: FC = () => {
               </a>{" "}
               for more information.
             </p>
-            <h4>Verified Source Code</h4>
+            <h4>
+              Verified Source Code <span className="mute">- Contract Class</span>
+            </h4>
             <p>
               Verified source code links a contract class to a public GitHub
               repository. Aztec Scan compiles the submitted source, verifies that
@@ -122,7 +135,9 @@ export const EcosystemPage: FC = () => {
               This verifies a bytecode/source match; it does not mean that the
               code is audited or safe to use.
             </p>
-            <h4>Verified Deployment</h4>
+            <h4 id="verified-deployment">
+              Verified Deployment <span className="mute">- Contract Instance</span>
+            </h4>
             <p>
               Verified deployment checks the deployment arguments for a contract
               instance. Aztec Scan validates the provided public keys, salt,
@@ -130,7 +145,9 @@ export const EcosystemPage: FC = () => {
               instance and stores those verified deployment arguments for anyone
               to inspect.
             </p>
-            <h4>Deployer Details</h4>
+            <h4>
+              Deployer Details <span className="mute">- Contract Instance</span>
+            </h4>
             <p>
               Deployer details add human-readable metadata to a verified
               contract instance deployment, such as the contract identifier,
