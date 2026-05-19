@@ -35,8 +35,8 @@ export const TxDetailPage: FC = () => {
   const { hash = "" } = useParams({ strict: false });
   const [tab, setTab] = useState<Tab>("notes");
 
-  const { data: effect } = useGetTxEffectByHash(hash);
   const { data: pending } = usePendingTxsByHash(hash);
+  const { data: effect } = useGetTxEffectByHash(hash, !!pending);
   const { data: dropped } = useDroppedTxByHash(hash);
   const { data: chainInfo } = useChainInfo();
   const { data: minedPublicCalls } = usePublicCallRequestsByTxHash(

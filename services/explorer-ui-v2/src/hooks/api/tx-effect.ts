@@ -4,15 +4,22 @@ import {
 } from "@chicmoz-pkg/types";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { TxEffectsAPI } from "~/api";
-import { REFETCH_INTERVAL, queryKeyGenerator } from "./utils";
+import {
+  LIVE_REFETCH_INTERVAL,
+  REFETCH_INTERVAL,
+  queryKeyGenerator,
+} from "./utils";
 
 export const useGetTxEffectByHash = (
   hash: string,
+  refetchUntilFound = false,
 ): UseQueryResult<ChicmozL2TxEffectDeluxe, Error> => {
   return useQuery<ChicmozL2TxEffectDeluxe, Error>({
     queryKey: queryKeyGenerator.txEffectByHash(hash),
     queryFn: () => TxEffectsAPI.getTxEffectByHash(hash),
     enabled: !!hash,
+    refetchInterval: ({ state }) =>
+      refetchUntilFound && !state.data ? LIVE_REFETCH_INTERVAL : false,
     // Mined tx effects are immutable — cache for 5min.
     staleTime: 5 * 60_000,
   });

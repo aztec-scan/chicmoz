@@ -2964,6 +2964,23 @@
 .health-alert-panel {
   margin-bottom: 18px;
 }
+.health-component-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -6px 0 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.health-component-summary a {
+  color: var(--purple);
+  text-decoration: none;
+}
+.health-component-summary a:hover {
+  color: var(--purple-soft);
+}
 
 /* ===== rpc-node card (aztecscan health) ===== */
 .rpc-node-card {
