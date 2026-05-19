@@ -10,7 +10,6 @@ import {
   useChainInfo,
 } from "~/hooks/api";
 import {
-  ageStr,
   fmtNum,
   formatFees,
   getFeeJuiceSymbol,
