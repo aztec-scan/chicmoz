@@ -40,10 +40,10 @@ export const NetworkHealthPage: FC = () => {
   const status = chainInfo
     ? systemStatus
     : {
-        level: "unknown" as const,
-        label: "CHAIN UNKNOWN",
-        dotClass: "dot unknown",
-      };
+      level: "unknown" as const,
+      label: "CHAIN UNKNOWN",
+      dotClass: "dot unknown",
+    };
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
@@ -54,9 +54,12 @@ export const NetworkHealthPage: FC = () => {
   const errs24h = (chainErrors ?? []).filter(
     (e) => now - e.lastSeenAt.getTime() < ONE_DAY_MS,
   );
-  const rpcNodeCount = rpcNodes?.length ?? 0;
+  const recentRpcNodes = (rpcNodes ?? []).filter(
+    (node) => now - node.lastSeenAt.getTime() < SEVEN_DAYS_MS,
+  );
+  const rpcNodeCount = recentRpcNodes.length;
   const nodeVersions = Array.from(
-    new Set((rpcNodes ?? []).map((node) => node.nodeVersion)),
+    new Set(recentRpcNodes.map((node) => node.nodeVersion)),
   ).sort();
   const nodeVersionValue =
     nodeVersions.length === 0
@@ -66,10 +69,10 @@ export const NetworkHealthPage: FC = () => {
         : `${nodeVersions.length} versions`;
   const nodeVersionSubtext =
     nodeVersions.length === 0
-      ? "no RPC metadata"
+      ? "no RPC metadata in last 7d"
       : nodeVersions.length === 1
-        ? `reported by ${rpcNodeCount} RPC node${rpcNodeCount === 1 ? "" : "s"}`
-        : `split across ${rpcNodeCount} RPC nodes`;
+        ? `reported by ${rpcNodeCount} RPC node${rpcNodeCount === 1 ? "" : "s"} · last 7d`
+        : `split across ${rpcNodeCount} RPC nodes · last 7d`;
   const nodeVersionTitle = nodeVersions.join("\n");
 
   const latestReorg = (reorgs ?? []).find(
@@ -97,8 +100,8 @@ export const NetworkHealthPage: FC = () => {
       : status.level === "unknown"
         ? "status-unknown"
         : status.level === "unhealthy"
-        ? "status-warn"
-        : "status-down";
+          ? "status-warn"
+          : "status-down";
   const heroDot =
     status.level === "ok"
       ? ""
@@ -113,16 +116,16 @@ export const NetworkHealthPage: FC = () => {
       : status.level === "unknown"
         ? "unknown"
         : status.level === "unhealthy"
-        ? "warn"
-        : "down";
+          ? "warn"
+          : "down";
   const heroLabel =
     status.level === "ok"
       ? "OK"
       : status.level === "unknown"
         ? "UNKNOWN"
         : status.level === "unhealthy"
-        ? "UNHEALTHY"
-        : "DOWN";
+          ? "UNHEALTHY"
+          : "DOWN";
 
   return (
     <Shell active="health">
@@ -199,7 +202,9 @@ export const NetworkHealthPage: FC = () => {
           <div className="val" title={nodeVersionTitle}>
             {nodeVersionValue}
           </div>
-          <div className="sub">{nodeVersionSubtext}</div>
+          <div className="sub">
+            {nodeVersionSubtext} · <Link to="/health/aztecscan">details</Link>
+          </div>
         </div>
         <div className="sc">
           <div className="lbl">Errors · 7d</div>
@@ -369,36 +374,6 @@ export const NetworkHealthPage: FC = () => {
             )}
           </div>
         </div>
-      </div>
-
-      <div className="split">
-        <div className="panel">
-          <div className="panel-head">
-            <h3>
-              Chain errors<span className="tag">/api/l2/errors</span>
-            </h3>
-          </div>
-          <div className="events-list">
-            {(chainErrors ?? []).slice(0, 10).map((e, i) => (
-              <div key={i} className="event">
-                <span className="type err">err</span>
-                <span className="body">
-                  <span style={{ color: "var(--ink-3)" }}>
-                    [{e.rpcNodeName ?? "rpc"}]
-                  </span>{" "}
-                  {e.name}
-                  <br />
-                  <span className="mute">{e.message}</span>
-                </span>
-                <span className="age">{ageStr(e.lastSeenAt.getTime())}</span>
-              </div>
-            ))}
-            {(!chainErrors || chainErrors.length === 0) && (
-              <div className="empty-state">no chain errors tracked</div>
-            )}
-          </div>
-        </div>
-
         <div className="panel">
           <div className="panel-head">
             <h3>
@@ -429,6 +404,36 @@ export const NetworkHealthPage: FC = () => {
             <div className="empty-state">no fee recipient data</div>
           )}
         </div>
+      </div>
+
+      <div className="split">
+        <div className="panel">
+          <div className="panel-head">
+            <h3>
+              Chain errors<span className="tag">/api/l2/errors</span>
+            </h3>
+          </div>
+          <div className="events-list">
+            {(chainErrors ?? []).slice(0, 10).map((e, i) => (
+              <div key={i} className="event">
+                <span className="type err">err</span>
+                <span className="body">
+                  <span style={{ color: "var(--ink-3)" }}>
+                    [{e.rpcNodeName ?? "rpc"}]
+                  </span>{" "}
+                  {e.name}
+                  <br />
+                  <span className="mute">{e.message}</span>
+                </span>
+                <span className="age">{ageStr(e.lastSeenAt.getTime())}</span>
+              </div>
+            ))}
+            {(!chainErrors || chainErrors.length === 0) && (
+              <div className="empty-state">no chain errors tracked</div>
+            )}
+          </div>
+        </div>
+
       </div>
     </Shell>
   );

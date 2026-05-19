@@ -32,6 +32,7 @@ const STATUS_TONE: Record<
 
 const ONE_HOUR = 60 * 60 * 1_000;
 const FIVE_MIN = 5 * 60 * 1_000;
+const THIRTY_DAYS = 30 * 24 * ONE_HOUR;
 
 interface StatusCopy {
   label: string;
@@ -237,7 +238,16 @@ export const AztecscanHealthPage: FC = () => {
     isLoading: rpcNodesLoading,
   } = useRpcNodes();
 
-  const rpcNodes = useMemo(() => dedupeRpcNodes(rpcNodesRaw), [rpcNodesRaw]);
+  const now = Date.now();
+  const rpcNodes = useMemo(
+    () => {
+      const cutoff = Date.now() - THIRTY_DAYS;
+      return dedupeRpcNodes(
+        (rpcNodesRaw ?? []).filter((node) => node.lastSeenAt.getTime() > cutoff),
+      );
+    },
+    [rpcNodesRaw],
+  );
   const orphanErrors = useMemo(
     () => unmatchedErrors(chainErrors, rpcNodes),
     [chainErrors, rpcNodes],
@@ -247,7 +257,6 @@ export const AztecscanHealthPage: FC = () => {
   const hero = statusCopy(overall);
   const isLoading = chainErrorsLoading || rpcNodesLoading;
   const hasDataError = !!chainErrorsError || !!rpcNodesError;
-  const now = Date.now();
   const recentErrors = (chainErrors ?? []).filter(
     (e) => now - e.lastSeenAt.getTime() < ONE_HOUR,
   );
@@ -283,7 +292,9 @@ export const AztecscanHealthPage: FC = () => {
           <div className="kicker">RPC nodes tracked</div>
           <div className="big">{fmtNum(rpcNodes.length)}</div>
           <div className="sub">
-            {isLoading ? "loading indexer inventory" : "deduplicated by name"}
+            {isLoading
+              ? "loading indexer inventory"
+              : "seen in last 30d · deduplicated by name"}
           </div>
         </div>
         <div className="hero-cell">
@@ -326,10 +337,12 @@ export const AztecscanHealthPage: FC = () => {
       {rpcNodes.length === 0 ? (
         <div className="panel">
           <div className="panel-head">
-            <h3>RPC node health</h3>
+            <h3>RPC node health · last 30d</h3>
           </div>
           <div className="empty-state">
-            {isLoading ? "loading rpc node data…" : "no rpc node data currently available"}
+            {isLoading
+              ? "loading rpc node data…"
+              : "no rpc node data seen in the last 30 days"}
           </div>
         </div>
       ) : (

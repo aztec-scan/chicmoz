@@ -2,33 +2,43 @@ import type { QueryClient } from "@tanstack/react-query";
 import { queryKeyGenerator } from "~/hooks/api";
 
 /**
- * Minimal WS handler: the backend pushes block/tx events in a string envelope,
- * and we just invalidate the tables/stats so react-query refetches. This keeps
- * the surface small — the exact message shape lives in aztec-listener.
+ * The websocket publisher sends compact payloads such as `{ block }` and
+ * `{ txs }`. Older/alternate publishers may send a `{ topic }` envelope, so we
+ * keep a case-insensitive topic fallback as well.
  */
 export const handleWebSocketMessage = async (
   queryClient: QueryClient,
   raw: string,
 ): Promise<void> => {
-  let topic: string | undefined;
+  let parsed: { block?: unknown; topic?: string; txs?: unknown };
   try {
-    const parsed = JSON.parse(raw) as { topic?: string };
-    topic = parsed.topic;
+    parsed = JSON.parse(raw) as {
+      block?: unknown;
+      topic?: string;
+      txs?: unknown;
+    };
   } catch {
     return;
   }
 
-  if (!topic) {return;}
+  const topic = parsed.topic?.toLowerCase();
+  const hasBlockUpdate = parsed.block !== undefined || topic?.includes("block");
+  const hasTxUpdate = parsed.txs !== undefined || topic?.includes("tx");
+  const hasStatsUpdate = topic?.includes("stats");
 
-  if (topic.includes("block") || topic.includes("Block")) {
+  if (hasBlockUpdate) {
     await queryClient.invalidateQueries({
       queryKey: queryKeyGenerator.latestBlock,
     });
     await queryClient.invalidateQueries({
       queryKey: queryKeyGenerator.latestTableBlocks,
     });
+    await queryClient.invalidateQueries({
+      queryKey: queryKeyGenerator.blocksByStatus,
+    });
   }
-  if (topic.includes("tx") || topic.includes("Tx")) {
+
+  if (hasTxUpdate) {
     await queryClient.invalidateQueries({
       queryKey: queryKeyGenerator.latestTableTxEffects,
     });
@@ -36,7 +46,8 @@ export const handleWebSocketMessage = async (
       queryKey: queryKeyGenerator.pendingTxs,
     });
   }
-  if (topic.includes("stats") || topic.includes("Stats")) {
+
+  if (hasStatsUpdate) {
     await queryClient.invalidateQueries({ queryKey: ["stats"] });
   }
 };

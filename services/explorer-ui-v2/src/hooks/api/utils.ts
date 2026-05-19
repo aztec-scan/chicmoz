@@ -18,6 +18,11 @@ export const queryKeyGenerator = {
   latestBlock: ["latestBlock"],
   latestBlocks: ["latestBlocks"],
   latestTableBlocks: ["latestTableBlocks"],
+  latestTableBlocksByStatus: (status: string) => [
+    "latestTableBlocks",
+    "status",
+    status,
+  ],
   latestTableBlocksRange: (from: number, to: number) => [
     "latestTableBlocks",
     from,

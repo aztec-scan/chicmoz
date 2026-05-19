@@ -53,6 +53,17 @@ export const useLatestTableBlocks = (): UseQueryResult<
   });
 };
 
+export const useLatestTableBlocksByStatus = (
+  status: UiBlockStatusFilter,
+): UseQueryResult<UiBlockTable[], Error> => {
+  return useQuery<UiBlockTable[], Error>({
+    queryKey: queryKeyGenerator.latestTableBlocksByStatus(status),
+    queryFn: () =>
+      BlockAPI.getLatestTableBlocksByHeightRange(undefined, undefined, status),
+    refetchInterval: REFETCH_INTERVAL,
+  });
+};
+
 export const useBlocksByFinalizationStatus = (): UseQueryResult<
   ChicmozL2BlockLight[],
   Error
