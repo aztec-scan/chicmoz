@@ -4,12 +4,11 @@ import { Shell } from "~/components/layout";
 import {
   useAverageBlockTime,
   useAverageFees,
-  useBlocksByFinalizationStatus,
   useChainErrors,
   useChainInfo,
   useDroppedTxsLast24h,
-  useLatestBlock,
   useLatestTableBlocks,
+  useLatestTableBlocksByStatus,
   useLatestTableTxEffects,
   usePendingTxs,
   useReorgs,
@@ -24,9 +23,9 @@ import { HeroTip } from "./hero-tip";
 import { LatestLists } from "./latest-lists";
 
 export const Landing: FC = () => {
-  const { data: latestBlock } = useLatestBlock();
-  const { data: blocksByStatus } = useBlocksByFinalizationStatus();
   const { data: tableBlocks } = useLatestTableBlocks();
+  const { data: provenBlocks } = useLatestTableBlocksByStatus("proven");
+  const { data: finalizedBlocks } = useLatestTableBlocksByStatus("finalized");
   const { data: tableTxs } = useLatestTableTxEffects();
   const { data: pendingTxs } = usePendingTxs();
   const { data: droppedTxs24h } = useDroppedTxsLast24h();
@@ -43,6 +42,9 @@ export const Landing: FC = () => {
 
   const blockRows = (tableBlocks ?? []).slice(0, 10);
   const txRows = (tableTxs ?? []).slice(0, 10);
+  const latestBlock = blockRows.find((block) => !block.orphan);
+  const provenBlock = provenBlocks?.[0];
+  const finalizedBlock = finalizedBlocks?.[0];
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
@@ -50,8 +52,9 @@ export const Landing: FC = () => {
   return (
     <Shell active="home">
       <HeroTip
+        finalizedBlock={finalizedBlock}
         latestBlock={latestBlock}
-        blocksByStatus={blocksByStatus}
+        provenBlock={provenBlock}
         chainInfo={chainInfo}
         averageBlockTime={averageBlockTime}
       />

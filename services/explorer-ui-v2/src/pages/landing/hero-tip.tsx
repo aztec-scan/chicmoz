@@ -1,4 +1,4 @@
-import { type ChicmozChainInfo, type ChicmozL2BlockLight } from "@chicmoz-pkg/types";
+import { type ChicmozChainInfo, type UiBlockTable } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { Countdown } from "~/components/common";
@@ -7,10 +7,11 @@ import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
 import { BLOCK_TIME_TARGET_SECONDS } from "~/service/constants";
 
 interface Props {
-  latestBlock: ChicmozL2BlockLight | undefined;
-  blocksByStatus: ChicmozL2BlockLight[] | undefined;
   chainInfo: ChicmozChainInfo | undefined;
   averageBlockTime: number | string | undefined;
+  finalizedBlock: UiBlockTable | undefined;
+  latestBlock: UiBlockTable | undefined;
+  provenBlock: UiBlockTable | undefined;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -22,31 +23,28 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export const HeroTip: FC<Props> = ({
+  finalizedBlock,
   latestBlock,
-  blocksByStatus,
+  provenBlock,
   chainInfo,
   averageBlockTime,
 }) => {
   const latestTs =
-    latestBlock?.header?.globalVariables?.timestamp !== undefined
-      ? Number(latestBlock.header.globalVariables.timestamp)
+    latestBlock?.timestamp !== undefined
+      ? Number(latestBlock.timestamp)
       : Date.now();
   const latestHeight = latestBlock?.height
     ? Number(latestBlock.height)
     : undefined;
-  const latestHash = latestBlock?.hash;
+  const latestHash = latestBlock?.blockHash;
   const latestStatus = blockStatusToDisplay(
-    latestBlock?.finalizationStatus,
+    latestBlock?.blockStatus,
     !!latestBlock?.orphan,
   );
 
-  const provenHead = blocksByStatus?.find((b) => {
-    const s = blockStatusToDisplay(b.finalizationStatus, !!b.orphan);
-    return s === "proven" || s === "finalized";
-  });
-  const finalized = blocksByStatus?.find(
-    (b) => blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
-  );
+  const provenHead = [provenBlock, finalizedBlock]
+    .filter((block): block is UiBlockTable => block !== undefined)
+    .sort((a, b) => Number(b.height) - Number(a.height))[0];
 
   const avgSec = averageBlockTime
     ? Math.max(1, Math.round(Number(averageBlockTime) / 1000))
@@ -117,8 +115,8 @@ export const HeroTip: FC<Props> = ({
           <div className="kv-line">
             <span className="k">finalized</span>
             <span className="v">
-              {finalized?.height !== undefined
-                ? `#${fmtNum(Number(finalized.height))}`
+              {finalizedBlock?.height !== undefined
+                ? `#${fmtNum(Number(finalizedBlock.height))}`
                 : "—"}
             </span>
           </div>
