@@ -72,9 +72,6 @@ export const NetworkHealthPage: FC = () => {
   const latestReorg = (reorgs ?? []).find(
     (r) => now - r.timestamp.getTime() < SEVEN_DAYS_MS,
   );
-  const affectedComponents = status.components.filter(
-    (component) => component.health !== "UP",
-  );
   const renderL1ContractAddress = (
     address: string | undefined,
     title: string,
@@ -172,17 +169,6 @@ export const NetworkHealthPage: FC = () => {
             ) && `${errs24h.length} distinct error signatures`}
           </div>
         </div>
-      </div>
-
-      <div className="health-component-summary">
-        <span>
-          {affectedComponents.length} affected / {status.components.length} chain
-          checks
-        </span>
-        <span>
-          Aztec-Scan-only signals like browser WebSocket state live under{" "}
-          <Link to="/health/aztecscan">Aztec-Scan health</Link>.
-        </span>
       </div>
 
       <div className="health-component-grid">

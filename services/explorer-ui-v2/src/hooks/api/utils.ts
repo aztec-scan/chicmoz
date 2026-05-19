@@ -127,6 +127,7 @@ export const queryKeyGenerator = {
     address,
   ],
   latestContractInstances: ["latestContractInstances"],
+  contractInstancesWithAztecScanNotes: ["contractInstancesWithAztecScanNotes"],
   paginatedContractInstances: (
     offset: number,
     limit: number,

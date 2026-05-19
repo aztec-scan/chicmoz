@@ -6,7 +6,11 @@ import {
   type ChicmozL2UtilityFunctionBroadcastedEvent,
 } from "@chicmoz-pkg/types";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { type ContractClassSourceResponse, ContractL2API } from "~/api";
+import {
+  type ChicmozL2ContractInstanceWithAztecScanNotes,
+  type ContractClassSourceResponse,
+  ContractL2API,
+} from "~/api";
 import {
   LONG_STALE_TIME,
   SLOW_REFETCH_INTERVAL,
@@ -141,8 +145,8 @@ export const useContractInstance = (
 
 export const useContractInstanceBalance = (
   address: string,
-): UseQueryResult<ChicmozContractInstanceBalance, Error> => {
-  return useQuery<ChicmozContractInstanceBalance, Error>({
+): UseQueryResult<ChicmozContractInstanceBalance | null, Error> => {
+  return useQuery<ChicmozContractInstanceBalance | null, Error>({
     queryKey: queryKeyGenerator.contractInstanceBalance(address),
     queryFn: () => ContractL2API.getContractInstanceBalance(address),
     enabled: !!address,
@@ -171,6 +175,18 @@ export const useLatestContractInstances = (): UseQueryResult<
   return useQuery<ChicmozL2ContractInstanceDeluxe[], Error>({
     queryKey: queryKeyGenerator.latestContractInstances,
     queryFn: () => ContractL2API.getContractInstances(),
+    refetchInterval: SLOW_REFETCH_INTERVAL,
+    staleTime: LONG_STALE_TIME,
+  });
+};
+
+export const useContractInstancesWithAztecScanNotes = (): UseQueryResult<
+  ChicmozL2ContractInstanceWithAztecScanNotes[],
+  Error
+> => {
+  return useQuery<ChicmozL2ContractInstanceWithAztecScanNotes[], Error>({
+    queryKey: queryKeyGenerator.contractInstancesWithAztecScanNotes,
+    queryFn: () => ContractL2API.getContractInstancesWithAztecScanNotes(),
     refetchInterval: SLOW_REFETCH_INTERVAL,
     staleTime: LONG_STALE_TIME,
   });
