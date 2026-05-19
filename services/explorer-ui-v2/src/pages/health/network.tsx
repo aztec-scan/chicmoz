@@ -7,6 +7,7 @@ import {
   TokenEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
+import { useChainHealth } from "~/hooks/use-chain-health";
 import {
   useChainErrors,
   useChainInfo,
@@ -15,7 +16,6 @@ import {
   useReorgs,
   useRollupVersions,
 } from "~/hooks/api";
-import { useSystemStatus } from "~/hooks/use-system-status";
 import {
   ageStr,
   fmtNum,
@@ -24,6 +24,7 @@ import {
   truncateHashString,
 } from "~/lib/utils";
 import { BLOCK_TIME_TARGET_SECONDS } from "~/service/constants";
+import { ComponentCard } from "./component-card";
 import { HealthTabs } from "./tabs";
 
 const ONE_DAY_MS = 86_400_000;
@@ -36,14 +37,7 @@ export const NetworkHealthPage: FC = () => {
   const { data: rollupVersions } = useRollupVersions();
   const { data: feeRecipients } = useFeeRecipients();
   const { data: rpcNodes } = useRpcNodes();
-  const systemStatus = useSystemStatus();
-  const status = chainInfo
-    ? systemStatus
-    : {
-      level: "unknown" as const,
-      label: "CHAIN UNKNOWN",
-      dotClass: "dot unknown",
-    };
+  const status = useChainHealth();
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
@@ -77,6 +71,9 @@ export const NetworkHealthPage: FC = () => {
 
   const latestReorg = (reorgs ?? []).find(
     (r) => now - r.timestamp.getTime() < SEVEN_DAYS_MS,
+  );
+  const affectedComponents = status.components.filter(
+    (component) => component.health !== "UP",
   );
   const renderL1ContractAddress = (
     address: string | undefined,
@@ -148,9 +145,7 @@ export const NetworkHealthPage: FC = () => {
             {heroLabel}
           </div>
           <div className="sub">
-            {status.level === "unknown"
-              ? "CHAIN UNKNOWN · chain info unavailable"
-              : `${status.label} · last check just now`}
+            {status.label} · {status.reason}
           </div>
         </div>
         <div className="hero-cell">
@@ -177,6 +172,23 @@ export const NetworkHealthPage: FC = () => {
             ) && `${errs24h.length} distinct error signatures`}
           </div>
         </div>
+      </div>
+
+      <div className="health-component-summary">
+        <span>
+          {affectedComponents.length} affected / {status.components.length} chain
+          checks
+        </span>
+        <span>
+          Aztec-Scan-only signals like browser WebSocket state live under{" "}
+          <Link to="/health/aztecscan">Aztec-Scan health</Link>.
+        </span>
+      </div>
+
+      <div className="health-component-grid">
+        {status.components.map((component) => (
+          <ComponentCard key={component.componentId} component={component} />
+        ))}
       </div>
 
       <div className="stats-strip">

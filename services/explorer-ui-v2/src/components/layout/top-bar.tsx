@@ -8,12 +8,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { searchL2Api } from "~/api";
+import { useChainHealth } from "~/hooks/use-chain-health";
 import {
   type ResponsiveBreakpoint,
   useResponsiveNavItems,
 } from "~/hooks/use-responsive-nav-items";
-import { useSystemStatus } from "~/hooks/use-system-status";
-import { searchL2Api } from "~/api";
 import { getSingleSearchDestination } from "~/lib/search-results";
 import { BrandLogo } from "./brand-logo";
 import { NetworkSelector } from "./network-selector";
@@ -150,7 +150,7 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { label: statusLabel, dotClass } = useSystemStatus();
+  const { label: statusLabel, dotClass, reason: statusReason } = useChainHealth();
   const { theme, setTheme } = useTheme();
 
   const { primaryVisible, primaryOverflow } = useResponsiveNavItems(
@@ -277,7 +277,7 @@ export const TopBar: FC<Props> = ({ active = "home" }) => {
               ? "unhealthy"
               : "down"
         }`}
-        title="Open chain health"
+        title={`Open chain health · ${statusReason}`}
       >
         <span className={`dot pulse`} />
         <span>{statusLabel}</span>

@@ -5,40 +5,15 @@ import {
 import { type FC, useMemo } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { useChainErrors, useRpcNodes } from "~/hooks/api";
-import {
-  type ComponentHealth,
-  type ComponentHealthStatus,
-  useSystemHealth,
-} from "~/hooks/use-system-health";
+import { useSystemHealth } from "~/hooks/use-system-health";
 import { ageStr, fmtNum } from "~/lib/utils";
+import { ComponentCard } from "./component-card";
+import { statusCopy } from "./status-copy";
 import { HealthTabs } from "./tabs";
-
-const STATUS_LABEL: Record<ComponentHealthStatus, string> = {
-  UP: "UP",
-  UNKNOWN: "UNKNOWN",
-  UNHEALTHY: "UNHEALTHY",
-  DOWN: "DOWN",
-};
-
-const STATUS_TONE: Record<
-  ComponentHealthStatus,
-  "ok" | "unknown" | "warn" | "down"
-> = {
-  UP: "ok",
-  UNKNOWN: "unknown",
-  UNHEALTHY: "warn",
-  DOWN: "down",
-};
 
 const ONE_HOUR = 60 * 60 * 1_000;
 const FIVE_MIN = 5 * 60 * 1_000;
 const THIRTY_DAYS = 30 * 24 * ONE_HOUR;
-
-interface StatusCopy {
-  label: string;
-  tone: "ok" | "unknown" | "warn" | "down";
-  copy: string;
-}
 
 /** Deduplicate by rpcNodeName, keeping the most recently seen. */
 const dedupeRpcNodes = (
@@ -54,19 +29,6 @@ const dedupeRpcNodes = (
     return true;
   });
 };
-
-const statusCopy = (health: ComponentHealthStatus): StatusCopy => ({
-  label: STATUS_LABEL[health],
-  tone: STATUS_TONE[health],
-  copy:
-    health === "UP"
-      ? "operational"
-      : health === "UNKNOWN"
-        ? "unknown"
-      : health === "UNHEALTHY"
-        ? "degraded"
-        : "attention required",
-});
 
 const rpcErrorIdentifiers = (error: ChicmozL2RpcNodeError): string[] =>
   [error.rpcNodeName, error.rpcUrl].filter((v): v is string => Boolean(v));
@@ -89,28 +51,6 @@ const unmatchedErrors = (
   const names = new Set(rpcNodes.map((n) => n.rpcNodeName));
   return all.filter(
     (e) => !rpcErrorIdentifiers(e).some((identifier) => names.has(identifier)),
-  );
-};
-
-interface ComponentCardProps {
-  component: ComponentHealth;
-}
-
-const ComponentCard: FC<ComponentCardProps> = ({ component }) => {
-  const status = statusCopy(component.health);
-
-  return (
-    <div className={`health-component-card ${status.tone}`}>
-      <div className="health-component-topline">
-        <span className={`hc-dot ${status.tone === "ok" ? "" : status.tone}`} />
-        <span className="status-pill-label">{status.label}</span>
-      </div>
-      <h3>{component.componentId}</h3>
-      <p>{component.description}</p>
-      <div className="health-component-detail" title={component.evaluationDetails}>
-        {component.evaluationDetails || "no detail available"}
-      </div>
-    </div>
   );
 };
 
