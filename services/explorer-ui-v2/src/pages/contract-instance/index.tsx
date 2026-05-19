@@ -3,6 +3,8 @@ import { type FC, useState } from "react";
 import {
   DetailEmptyState,
   DetailField,
+  HashCell,
+  L2AddressLink,
   StatusPill,
   TokenEtherscanLink,
 } from "~/components/common";
@@ -14,6 +16,7 @@ import {
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
   useChainInfo,
+  useGetBlockByIdentifier,
   useL2ToL1MsgsByContract,
   usePublicCallRequestsByContract,
 } from "~/hooks/api";
@@ -32,6 +35,8 @@ export const ContractInstancePage: FC = () => {
   const { data: instance, isLoading } = useContractInstance(address);
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
+  const { data: firstSeenBlock, isLoading: isFirstSeenBlockLoading } =
+    useGetBlockByIdentifier(instance?.blockHash ?? "");
   const { data: chainInfo } = useChainInfo();
   const { data: publicCalls } = usePublicCallRequestsByContract(address);
   const { data: l2ToL1Msgs } = useL2ToL1MsgsByContract(address);
@@ -73,9 +78,10 @@ export const ContractInstancePage: FC = () => {
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const balanceValue =
-    balance?.balance !== undefined && balance.balance !== null
-      ? formatFees(balance.balance, feeJuiceDecimals)
-      : "—";
+    balance === undefined
+      ? "—"
+      : formatFees(balance?.balance ?? 0n, feeJuiceDecimals);
+  const firstSeenHeight = instance.blockHeight ?? firstSeenBlock?.height;
 
   const maxBal = history?.length
     ? Number(
@@ -139,7 +145,7 @@ export const ContractInstancePage: FC = () => {
 
       <div className="stats-strip">
         <div className="sc">
-          <div className="lbl">Balance</div>
+          <div className="lbl">Fee balance</div>
           <div className="val">
             {balanceValue}
             <TokenEtherscanLink
@@ -171,13 +177,64 @@ export const ContractInstancePage: FC = () => {
         <div className="sc">
           <div className="lbl">Block</div>
           <div className="val">
-            {instance.blockHeight
-              ? `#${fmtNum(Number(instance.blockHeight))}`
-              : "—"}
+            {firstSeenHeight !== undefined ? (
+              <Link
+                to="/blocks/$blockNumber"
+                params={{ blockNumber: String(firstSeenHeight) }}
+              >
+                #{fmtNum(Number(firstSeenHeight))}
+              </Link>
+            ) : isFirstSeenBlockLoading ? (
+              "loading…"
+            ) : (
+              "—"
+            )}
           </div>
           <div className="sub">first seen</div>
         </div>
       </div>
+
+      {instance.aztecScanNotes && (
+        <div className="panel">
+          <div className="panel-head">
+            <h3>
+              AztecScanNotes
+              <span className="tag">curated metadata</span>
+            </h3>
+            {instance.aztecScanNotes.category && (
+              <span className="tag-chip tag-chip-ok">
+                {instance.aztecScanNotes.category}
+              </span>
+            )}
+          </div>
+          <div className="kv-grid">
+            <DetailField label="Name" width="extra-wide">
+              {instance.aztecScanNotes.name}
+            </DetailField>
+            <DetailField label="Origin" width="extra-wide">
+              {instance.aztecScanNotes.origin}
+            </DetailField>
+            <DetailField label="Comment" width="extra-wide">
+              {instance.aztecScanNotes.comment}
+            </DetailField>
+            {instance.aztecScanNotes.relatedL1ContractAddresses?.length ? (
+              <DetailField label="Related L1 contracts" width="extra-wide">
+                <div className="stack">
+                  {instance.aztecScanNotes.relatedL1ContractAddresses.map(
+                    (related) =>
+                      related ? (
+                        <div key={`${related.address}-${related.note}`}>
+                          <span className="mono">{related.address}</span>
+                          <span className="mute"> · {related.note}</span>
+                        </div>
+                      ) : null,
+                  )}
+                </div>
+              </DetailField>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       <div className="panel">
         <div className="panel-head">
@@ -206,13 +263,18 @@ export const ContractInstancePage: FC = () => {
             {instance.initializationHash}
           </DetailField>
           <DetailField label="Deployer" width="extra-wide">
-            {instance.deployer}
+            <L2AddressLink address={instance.deployer} truncate={false} />
           </DetailField>
           <DetailField label="Salt" width="extra-wide">
             {instance.salt}
           </DetailField>
           <DetailField label="Block hash" width="extra-wide">
-            {instance.blockHash}
+            <Link
+              to="/blocks/$blockNumber"
+              params={{ blockNumber: instance.blockHash }}
+            >
+              <HashCell value={instance.blockHash} />
+            </Link>
           </DetailField>
           <DetailField label="Artifact hash" width="extra-wide">
             {instance.artifactHash}

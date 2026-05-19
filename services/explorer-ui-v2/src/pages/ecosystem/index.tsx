@@ -1,45 +1,26 @@
 import {
-  type AztecScanNoteCategory,
   type ChicmozL2ContractClassRegisteredEvent,
-  type ChicmozL2ContractInstanceDeluxe,
-  aztecScanNoteCategories,
 } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
-import { type FC, useMemo, useState } from "react";
+import { type FC, useMemo } from "react";
+import { type ChicmozL2ContractInstanceWithAztecScanNotes } from "~/api";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
-  useLatestContractInstances,
+  useContractInstancesWithAztecScanNotes,
   useVerifiedSourceContractClasses,
 } from "~/hooks/api";
 import { truncateHashString } from "~/lib/utils";
-
-type Filter = "all" | AztecScanNoteCategory;
-
-interface NotedInstance extends ChicmozL2ContractInstanceDeluxe {
-  aztecScanNotes: NonNullable<ChicmozL2ContractInstanceDeluxe["aztecScanNotes"]>;
-}
-
-const hasNote = (i: ChicmozL2ContractInstanceDeluxe): i is NotedInstance =>
-  !!i.aztecScanNotes && !!i.aztecScanNotes.name;
-
-const filterNoted = (rows: NotedInstance[], filter: Filter): NotedInstance[] => {
-  if (filter === "all") {return rows;}
-  return rows.filter((r) => r.aztecScanNotes.category === filter);
-};
 
 const PROJECT_PR_URL =
   "https://github.com/aztec-scan/chicmoz/blob/main/services/explorer-api/src/constants.ts";
 const SDK_URL = "https://github.com/aztec-scan/aztec-scan-sdk";
 
 export const EcosystemPage: FC = () => {
-  const { data: instances } = useLatestContractInstances();
+  const { data: instances } = useContractInstancesWithAztecScanNotes();
   const { data: classes } = useVerifiedSourceContractClasses();
 
-  const [filter, setFilter] = useState<Filter>("all");
-  const [query, setQuery] = useState("");
-
-  const noted: NotedInstance[] = useMemo(
-    () => (instances ?? []).filter(hasNote),
+  const noted: ChicmozL2ContractInstanceWithAztecScanNotes[] = useMemo(
+    () => instances ?? [],
     [instances],
   );
 
@@ -49,32 +30,6 @@ export const EcosystemPage: FC = () => {
   );
 
   const verifiedClasses: ChicmozL2ContractClassRegisteredEvent[] = classes ?? [];
-
-  const filtered = useMemo(() => {
-    const base = filterNoted(noted, filter);
-    if (!query.trim()) {return base;}
-    const q = query.trim().toLowerCase();
-    return base.filter((i) => {
-      const n = i.aztecScanNotes;
-      return (
-        n.name.toLowerCase().includes(q) ||
-        n.origin.toLowerCase().includes(q) ||
-        n.comment.toLowerCase().includes(q) ||
-        i.address.toLowerCase().includes(q)
-      );
-    });
-  }, [noted, filter, query]);
-
-  const filterCounts = useMemo(() => {
-    const counts: Record<Filter, number> = { all: noted.length } as Record<
-      Filter,
-      number
-    >;
-    for (const c of aztecScanNoteCategories) {
-      counts[c] = noted.filter((i) => i.aztecScanNotes.category === c).length;
-    }
-    return counts;
-  }, [noted]);
 
   return (
     <Shell active="ecosystem">
@@ -132,9 +87,10 @@ export const EcosystemPage: FC = () => {
           </summary>
           <div className="metadata-body">
             <p>
-              There are four things that add metadata to contracts:
-              AztecScanNotes, uploading an artifact, verifying a deployment, and
-              deployer details.
+              There are five things that add metadata to contracts and contract
+              classes: AztecScanNotes, verified contract class artifacts,
+              verified source code, verified deployment arguments, and deployer
+              details.
             </p>
             <h4>Aztec Scan Notes</h4>
             <p>
@@ -146,29 +102,41 @@ export const EcosystemPage: FC = () => {
               </a>
               .
             </p>
-            <h4>Uploading an Artifact</h4>
+            <h4>Verified Artifact</h4>
             <p>
-              Anyone can upload an artifact to a contract. This adds the
-              artifact to the contract and makes it available for anyone to
-              see. Please refer to{" "}
+              Anyone can submit an Aztec contract artifact for a contract class.
+              Aztec Scan checks that the compiled artifact bytecode matches the
+              registered on-chain contract class, then stores the artifact and
+              contract name for display in the explorer. Please refer to{" "}
               <a href={SDK_URL} target="_blank" rel="noreferrer">
                 our SDK
               </a>{" "}
               for more information.
             </p>
+            <h4>Verified Source Code</h4>
+            <p>
+              Verified source code links a contract class to a public GitHub
+              repository. Aztec Scan compiles the submitted source, verifies that
+              the produced artifact matches the registered on-chain contract
+              class, and stores the source URL, commit hash, and source files.
+              This verifies a bytecode/source match; it does not mean that the
+              code is audited or safe to use.
+            </p>
             <h4>Verified Deployment</h4>
             <p>
-              Verified deployment is a way to verify the deployment of a
-              contract. This is done by the deployer of the contract. It
-              verifies the deployment arguments and makes them available for
-              anyone to see.
+              Verified deployment checks the deployment arguments for a contract
+              instance. Aztec Scan validates the provided public keys, salt,
+              deployer, constructor arguments, and artifact against the indexed
+              instance and stores those verified deployment arguments for anyone
+              to inspect.
             </p>
             <h4>Deployer Details</h4>
             <p>
-              Deployer details are a way to add metadata to the deployer of a
-              contract. This is done by the verified deployer of the contract.
-              It adds the contact information and makes it available for anyone
-              to see.
+              Deployer details add human-readable metadata to a verified
+              contract instance deployment, such as the contract identifier,
+              project details, creator name and contact, app URL, and repo URL.
+              These details are accepted together with a successful deployment
+              verification and then made visible in the explorer.
             </p>
           </div>
         </details>
@@ -200,45 +168,23 @@ export const EcosystemPage: FC = () => {
         </div>
         <div className="sc">
           <div className="lbl">Shown</div>
-          <div className="val">{filtered.length}</div>
-          <div className="sub">after filter</div>
+          <div className="val">{noted.length}</div>
+          <div className="sub">listed contracts</div>
         </div>
-      </div>
-
-      <div className="filters-bar">
-        <div className="tabs-pill">
-          {(["all", ...aztecScanNoteCategories] as Filter[]).map((f) => (
-            <button
-              key={f}
-              className={filter === f ? "on" : ""}
-              onClick={() => setFilter(f)}
-            >
-              {f}
-              <span className="c">{filterCounts[f]}</span>
-            </button>
-          ))}
-        </div>
-        <input
-          className="search-inline"
-          placeholder="search by name, origin, address…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          spellCheck={false}
-        />
       </div>
 
       <div className="section-head">
         <div>
           <h2>
             AztecScanNotes contracts
-            <span className="c">· {filtered.length} shown</span>
+            <span className="c">· {noted.length} shown</span>
           </h2>
           <p>curated entries maintained by the aztec-scan team</p>
         </div>
       </div>
 
       <div className="eco-grid">
-        {filtered.map((inst) => {
+        {noted.map((inst) => {
           const note = inst.aztecScanNotes;
           const isStandard = !!inst.standardContractType;
           return (
@@ -261,9 +207,6 @@ export const EcosystemPage: FC = () => {
               </div>
               <div className="comment">{note.comment}</div>
               <div className="foot">
-                {note.category && (
-                  <span className="tag-chip tag-chip-ok">{note.category}</span>
-                )}
                 <span className="tag-chip">{note.origin}</span>
                 {isStandard && (
                   <span className="tag-chip">standard</span>
@@ -272,10 +215,10 @@ export const EcosystemPage: FC = () => {
             </Link>
           );
         })}
-        {filtered.length === 0 && (
+        {noted.length === 0 && (
           <div className="eco-empty">
             {instances
-              ? "no contracts match · try a different filter or search"
+              ? "no contracts with AztecScanNotes yet"
               : "loading…"}
           </div>
         )}
@@ -288,8 +231,8 @@ export const EcosystemPage: FC = () => {
             <span className="c">· {verifiedClasses.length} contract classes</span>
           </h2>
           <p>
-            bytecode matched against on-chain contract class · fully
-            reproducible
+            bytecode matched against on-chain contract class · not an audit or
+            safety guarantee
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import {
+  aztecScanNoteSchema,
   type ChicmozContractInstanceBalance,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeluxe,
@@ -25,8 +26,22 @@ const contractClassSourceResponseSchema = z.object({
   sourceCode: sourceCodeEntrySchema.array(),
 });
 
+const contractInstanceBalanceResponseSchema =
+  chicmozContractInstanceBalanceSchema.nullable();
+
+const contractInstancesWithAztecScanNotesSchema = z.lazy(() =>
+  z.object({
+    ...chicmozL2ContractInstanceDeluxeSchema.schema.shape,
+    aztecScanNotes: aztecScanNoteSchema,
+  }),
+);
+
 export type ContractClassSourceResponse = z.infer<
   typeof contractClassSourceResponseSchema
+>;
+
+export type ChicmozL2ContractInstanceWithAztecScanNotes = z.infer<
+  typeof contractInstancesWithAztecScanNotesSchema
 >;
 
 export const ContractL2API = {
@@ -116,12 +131,12 @@ export const ContractL2API = {
   },
   getContractInstanceBalance: async (
     address: string,
-  ): Promise<ChicmozContractInstanceBalance> => {
+  ): Promise<ChicmozContractInstanceBalance | null> => {
     const response = await client.get(
       aztecExplorer.getL2ContractInstanceBalance(address),
     );
     return validateResponse(
-      chicmozContractInstanceBalanceSchema,
+      contractInstanceBalanceResponseSchema,
       response.data,
     );
   },
@@ -160,6 +175,17 @@ export const ContractL2API = {
     });
     return validateResponse(
       chicmozL2ContractInstanceDeluxeSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstancesWithAztecScanNotes: async (): Promise<
+    ChicmozL2ContractInstanceWithAztecScanNotes[]
+  > => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstancesWithAztecScanNotes,
+    );
+    return validateResponse(
+      contractInstancesWithAztecScanNotesSchema.array(),
       response.data,
     );
   },

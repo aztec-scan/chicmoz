@@ -45,6 +45,8 @@ export const aztecExplorer = {
   getL2ContractInstanceBalanceHistory: (address: string) =>
     `/l2/contract-instances/${address}/balance/history`,
   getL2ContractInstances: "/l2/contract-instances",
+  getL2ContractInstancesWithAztecScanNotes:
+    "/l2/contract-instances/with-aztec-scan-notes",
   getL2ContractInstancesByClassId: (classId: string) =>
     `/l2/contract-classes/${classId}/contract-instances`,
   getL2ContractClassSource: (classId: string, version: string) =>
