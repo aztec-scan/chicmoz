@@ -39,6 +39,7 @@ src/
 ## Scripts
 
 - `yarn dev` — start Vite dev server
+- `yarn dev:green-favicon` — start Vite dev server with an opt-in green local favicon
 - `yarn build` — type-check (`tsc -b`) + production build
 - `yarn lint` — ESLint
 - `yarn preview` — serve the production build locally

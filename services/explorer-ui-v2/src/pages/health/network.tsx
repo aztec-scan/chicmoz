@@ -4,6 +4,7 @@ import {
   AddressEtherscanLink,
   CopyableAddress,
   EtherscanAddressLink,
+  L2AddressLink,
   TokenEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
@@ -386,7 +387,11 @@ export const NetworkHealthPage: FC = () => {
           </div>
           {(feeRecipients ?? []).slice(0, 10).map((r) => (
             <div key={r.l2Address} className="fee-row">
-              <span className="addr">{r.l2Address}</span>
+              <L2AddressLink
+                address={r.l2Address}
+                truncate={false}
+                className="addr"
+              />
               <span className="num">{fmtNum(r.nbrOfBlocks)}</span>
               <span className="num">
                 {formatFees(r.feesReceived, feeJuiceDecimals)}

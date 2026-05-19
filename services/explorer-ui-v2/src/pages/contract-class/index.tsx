@@ -13,7 +13,7 @@ import {
   useContractClassUtilityFunctions,
   useDeployedContractInstances,
 } from "~/hooks/api";
-import { fmtNum, truncateHashString } from "~/lib/utils";
+import { truncateHashString } from "~/lib/utils";
 import { FunctionsTab } from "./functions-tab";
 import { InstancesTab } from "./instances-tab";
 import { SourceTab } from "./source-tab";
@@ -85,34 +85,6 @@ export const ContractClassPage: FC = () => {
         <div className="subhash">{classId}</div>
         <div className="meta-row">
           <StatusPill status={verified ? "verified" : "unverified"} />
-          <span className="meta-line">
-            {instances?.length ?? 0} instances ·{" "}
-            {privateFns?.length ?? 0} private fns ·{" "}
-            {utilityFns?.length ?? 0} utility fns
-          </span>
-        </div>
-      </div>
-
-      <div className="stats-strip">
-        <div className="sc">
-          <div className="lbl">Instances</div>
-          <div className="val">{fmtNum(instances?.length ?? 0)}</div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Private fns</div>
-          <div className="val">{privateFns?.length ?? 0}</div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Utility fns</div>
-          <div className="val">{utilityFns?.length ?? 0}</div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Bytecode</div>
-          <div className="val">
-            {classData.packedBytecode
-              ? `${fmtNum(classData.packedBytecode.length)}B`
-              : "—"}
-          </div>
         </div>
       </div>
 
