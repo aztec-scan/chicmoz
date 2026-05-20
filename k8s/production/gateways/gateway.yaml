@@ -94,9 +94,9 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    # HTTP Listeners - v2 Testnet UI
-    - name: ui-v2-testnet-http
-      hostname: v2.testnet.aztecscan.xyz
+    # HTTP Listeners - v1 Testnet UI
+    - name: ui-v1-testnet-http
+      hostname: v1.testnet.aztecscan.xyz
       port: 80
       protocol: HTTP
       allowedRoutes:
@@ -246,15 +246,15 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    # HTTPS Listeners - v2 Testnet UI
-    - name: ui-v2-testnet-https
-      hostname: v2.testnet.aztecscan.xyz
+    # HTTPS Listeners - v1 Testnet UI
+    - name: ui-v1-testnet-https
+      hostname: v1.testnet.aztecscan.xyz
       port: 443
       protocol: HTTPS
       tls:
         mode: Terminate
         certificateRefs:
-          - name: aztecscan-ui-v2-tls-testnet
+          - name: aztecscan-ui-v1-tls-testnet
       allowedRoutes:
         namespaces:
           from: Same

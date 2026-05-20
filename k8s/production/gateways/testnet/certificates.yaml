@@ -40,12 +40,12 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: aztecscan-ui-v2-tls-testnet
+  name: aztecscan-ui-v1-tls-testnet
   namespace: chicmoz-prod
 spec:
-  secretName: aztecscan-ui-v2-tls-testnet
+  secretName: aztecscan-ui-v1-tls-testnet
   issuerRef:
     name: aztecscan-issuer-production
     kind: ClusterIssuer
   dnsNames:
-    - v2.testnet.aztecscan.xyz
+    - v1.testnet.aztecscan.xyz
