@@ -45,3 +45,7 @@ export const BLOCK_TIMESTAMP_CACHE_MAX_ENTRIES = parseInt(
   process.env.BLOCK_TIMESTAMP_CACHE_MAX_ENTRIES ?? "5000",
   10,
 );
+export const GENERIC_EVENT_DEDUP_MAX_ENTRIES = parseInt(
+  process.env.GENERIC_EVENT_DEDUP_MAX_ENTRIES ?? "20000",
+  10,
+);

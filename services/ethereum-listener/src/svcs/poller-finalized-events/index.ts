@@ -52,7 +52,7 @@ let prevSmallestDiff: bigint | undefined = undefined;
 let currSmallestDiff: bigint | undefined = undefined;
 let lastLoopStartTimestamp = Date.now();
 
-const runCatchup = async () => {
+const runCatchup = async (): Promise<boolean> => {
   if (isCatchupStarted) {
     return isCatchupComplete;
   }
@@ -112,6 +112,7 @@ const runCatchup = async () => {
   }
   logger.info("🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻 catchup complete");
   isCatchupComplete = true;
+  return isCatchupComplete;
 };
 
 // eslint-disable-next-line @typescript-eslint/require-await
