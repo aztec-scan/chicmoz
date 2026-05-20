@@ -1,9 +1,9 @@
-import { ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
+import { type ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  ChicmozL1L2BlockProposed,
-  ChicmozL1L2ProofVerified,
-  ChicmozL2Block,
+  type ChicmozL1L2BlockProposed,
+  type ChicmozL1L2ProofVerified,
+  type ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
 } from "@chicmoz-pkg/types";
 import { and, eq, isNull } from "drizzle-orm";
@@ -23,6 +23,11 @@ export const addL1L2BlockProposed = async (
   if (!proposedData.l1BlockTimestamp) {
     throw new Error("Missing l1BlockTimestamp");
   }
+  const l1TransactionHash: string | null =
+    proposedData.l1TransactionHash === undefined ||
+    proposedData.l1TransactionHash === null
+      ? null
+      : String(proposedData.l1TransactionHash);
   await db()
     .insert(l1L2BlockProposedTable)
     .values({
@@ -36,6 +41,11 @@ export const addL1L2BlockProposed = async (
       ],
       set: {
         isFinalized: proposedData.isFinalized,
+        l1BlockNumber: proposedData.l1BlockNumber,
+        l1BlockHash: proposedData.l1BlockHash,
+        l1BlockTimestamp: proposedData.l1BlockTimestamp,
+        l1TransactionHash,
+        l1ContractAddress: proposedData.l1ContractAddress,
       },
     });
 
@@ -148,6 +158,11 @@ export const addL1L2ProofVerified = async (
   if (!proofVerifiedData.l1BlockTimestamp) {
     throw new Error("Missing l1BlockTimestamp");
   }
+  const l1TransactionHash: string | null =
+    proofVerifiedData.l1TransactionHash === undefined ||
+    proofVerifiedData.l1TransactionHash === null
+      ? null
+      : String(proofVerifiedData.l1TransactionHash);
   // TODO: db-transaction
   await db()
     .insert(l1L2ProofVerifiedTable)
@@ -162,6 +177,11 @@ export const addL1L2ProofVerified = async (
       ],
       set: {
         isFinalized: proofVerifiedData.isFinalized,
+        l1BlockNumber: proofVerifiedData.l1BlockNumber,
+        l1BlockHash: proofVerifiedData.l1BlockHash,
+        l1BlockTimestamp: proofVerifiedData.l1BlockTimestamp,
+        l1TransactionHash,
+        l1ContractAddress: proofVerifiedData.l1ContractAddress,
       },
     });
 

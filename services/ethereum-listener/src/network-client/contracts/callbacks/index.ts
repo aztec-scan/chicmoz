@@ -77,6 +77,7 @@ export const genericOnLogs = async ({
         l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
         l1ContractAddress: log.address,
         l1TransactionHash: log.transactionHash,
+        l1LogIndex: log.logIndex,
         isFinalized,
         eventName: log.eventName,
         eventArgs: log.args,
