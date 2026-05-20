@@ -4,6 +4,7 @@ import {
   AddressEtherscanLink,
   DetailEmptyState,
   DetailField,
+  EtherscanResourceLink,
   HashCell,
   StatusPill,
   TokenEtherscanLink,
@@ -246,18 +247,41 @@ export const BlockDetailPage: FC = () => {
           </div>
           <div className="kv-grid">
             <DetailField label="Coinbase" width="wide">
-              {block.header.globalVariables.coinbase}
+              <AddressEtherscanLink
+                address={block.header.globalVariables.coinbase}
+                title="View coinbase on Etherscan"
+              />
             </DetailField>
             <DetailField label="Fee recipient" width="wide">
               {block.header.globalVariables.feeRecipient}
             </DetailField>
             <DetailField label="L1 block" width="wide">
-              {block.proposedOnL1?.l1BlockNumber !== undefined
-                ? `#${fmtNum(Number(block.proposedOnL1.l1BlockNumber))} · ethereum`
-                : "—"}
+              <EtherscanResourceLink
+                content={
+                  block.proposedOnL1?.l1BlockNumber !== undefined
+                    ? `#${fmtNum(Number(block.proposedOnL1.l1BlockNumber))} · ethereum`
+                    : "—"
+                }
+                address={
+                  block.proposedOnL1?.l1BlockNumber !== undefined
+                    ? String(block.proposedOnL1.l1BlockNumber)
+                    : undefined
+                }
+                resource="block"
+                title="View L1 block on Etherscan"
+              />
             </DetailField>
             <DetailField label="L1 block hash" width="wide">
-              {block.proposedOnL1?.l1BlockHash ?? "—"}
+              <EtherscanResourceLink
+                content={
+                  block.proposedOnL1?.l1BlockHash
+                    ? truncateHashString(block.proposedOnL1.l1BlockHash, 14, 12)
+                    : "—"
+                }
+                address={block.proposedOnL1?.l1BlockHash ?? undefined}
+                resource="block"
+                title="View L1 block on Etherscan"
+              />
             </DetailField>
             <DetailField label="Proposal tx" width="wide">
               <TxEtherscanLink
@@ -281,9 +305,15 @@ export const BlockDetailPage: FC = () => {
               />
             </DetailField>
             <DetailField label="Prover" width="wide">
-              {block.proofVerifiedOnL1?.proverId
-                ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
-                : "—"}
+              <AddressEtherscanLink
+                address={block.proofVerifiedOnL1?.proverId ?? undefined}
+                content={
+                  block.proofVerifiedOnL1?.proverId
+                    ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
+                    : "—"
+                }
+                title="View prover on Etherscan"
+              />
             </DetailField>
             <DetailField label="Proof tx" width="wide">
               <TxEtherscanLink
