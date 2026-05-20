@@ -1,6 +1,6 @@
 import { type UiBlockTable, type UiTxEffectTable } from "@chicmoz-pkg/types";
-import { Link } from "@tanstack/react-router";
-import { type FC } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { type FC, type KeyboardEvent, type MouseEvent } from "react";
 import { HashCell, StatusPill, TokenEtherscanLink } from "~/components/common";
 import { blockStatusToDisplay } from "~/lib/block-status";
 import { ageStr, fmtNum, formatFees } from "~/lib/utils";
@@ -12,6 +12,72 @@ interface Props {
   feeJuiceSymbol: string;
   feeJuiceAddress?: string;
 }
+
+interface LatestTxRowProps {
+  tx: UiTxEffectTable;
+  feeJuiceDecimals: number;
+  feeJuiceSymbol: string;
+  feeJuiceAddress?: string;
+}
+
+const isFromInteractiveElement = (target: EventTarget): boolean =>
+  target instanceof Element && Boolean(target.closest("a, button"));
+
+const LatestTxRow: FC<LatestTxRowProps> = ({
+  tx,
+  feeJuiceDecimals,
+  feeJuiceSymbol,
+  feeJuiceAddress,
+}) => {
+  const navigate = useNavigate();
+  const ts = Number(tx.timestamp);
+
+  const navigateToTx = (): void => {
+    void navigate({
+      to: "/tx-effects/$hash",
+      params: { hash: tx.txHash },
+    });
+  };
+
+  const handleClick = (event: MouseEvent<HTMLDivElement>): void => {
+    if (isFromInteractiveElement(event.target)) {
+      return;
+    }
+    navigateToTx();
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (isFromInteractiveElement(event.target)) {
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      navigateToTx();
+    }
+  };
+
+  return (
+    <div
+      className="row row-tx"
+      role="link"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
+      <HashCell value={tx.txHash} />
+      <span className="num">#{fmtNum(Number(tx.blockNumber))}</span>
+      <span className="num">
+        {formatFees(tx.transactionFee, feeJuiceDecimals)}
+        <TokenEtherscanLink
+          symbol={feeJuiceSymbol}
+          address={feeJuiceAddress}
+          className="u"
+        />
+      </span>
+      <span className="age">{ageStr(ts)}</span>
+    </div>
+  );
+};
 
 export const LatestLists: FC<Props> = ({
   blocks,
@@ -83,29 +149,15 @@ export const LatestLists: FC<Props> = ({
         <div style={{ textAlign: "right" }}>Age</div>
       </div>
       <div className="rows">
-        {txs.map((t) => {
-          const ts = Number(t.timestamp);
-          return (
-            <Link
-              key={t.txHash}
-              className="row row-tx"
-              to="/tx-effects/$hash"
-              params={{ hash: t.txHash }}
-            >
-              <HashCell value={t.txHash} />
-              <span className="num">#{fmtNum(Number(t.blockNumber))}</span>
-              <span className="num">
-                {formatFees(t.transactionFee, feeJuiceDecimals)}
-                <TokenEtherscanLink
-                  symbol={feeJuiceSymbol}
-                  address={feeJuiceAddress}
-                  className="u"
-                />
-              </span>
-              <span className="age">{ageStr(ts)}</span>
-            </Link>
-          );
-        })}
+        {txs.map((t) => (
+          <LatestTxRow
+            key={t.txHash}
+            tx={t}
+            feeJuiceDecimals={feeJuiceDecimals}
+            feeJuiceSymbol={feeJuiceSymbol}
+            feeJuiceAddress={feeJuiceAddress}
+          />
+        ))}
         {txs.length === 0 && (
           <div className="empty-state">waiting for transactions…</div>
         )}

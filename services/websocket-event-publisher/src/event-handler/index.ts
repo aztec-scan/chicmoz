@@ -1,6 +1,6 @@
 import {
-  ChicmozL2BlockFinalizationUpdateEvent,
-  L2_MESSAGES,
+  type ChicmozL2BlockFinalizationUpdateEvent,
+  type L2_MESSAGES,
   type ChicmozMessageBusPayload,
   type PendingTxsEvent,
 } from "@chicmoz-pkg/message-registry";

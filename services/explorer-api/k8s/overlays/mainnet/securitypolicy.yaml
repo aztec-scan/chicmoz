@@ -12,6 +12,8 @@ spec:
     allowOrigins:
       - https://aztecscan.xyz
       - https://mainnet.aztecscan.xyz
+      - https://v1.aztecscan.xyz
+      - https://v1.mainnet.aztecscan.xyz
       - https://api.aztecscan.xyz
       - https://docs.aztecscan.xyz
     allowMethods:

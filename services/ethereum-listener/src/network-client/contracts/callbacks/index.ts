@@ -1,5 +1,6 @@
 import { chicmozL1GenericContractEventSchema } from "@chicmoz-pkg/types";
-import { Log } from "viem";
+import { type Log } from "viem";
+import { GENERIC_EVENT_DEDUP_MAX_ENTRIES } from "../../../environment.js";
 import { emit } from "../../../events/index.js";
 import { logger } from "../../../logger.js";
 import { getBlockTimestamp } from "../../client/index.js";
@@ -20,20 +21,55 @@ export type onLogsLogs = (Log & {
   args: Record<string, unknown> | null;
 })[];
 
-export const genericOnLogs = ({
+const seenGenericLogKeys = new Map<string, true>();
+
+const rememberGenericLogKey = (key: string) => {
+  seenGenericLogKeys.set(key, true);
+  while (seenGenericLogKeys.size > GENERIC_EVENT_DEDUP_MAX_ENTRIES) {
+    const oldestKey = seenGenericLogKeys.keys().next().value;
+    if (oldestKey === undefined) {
+      return;
+    }
+    seenGenericLogKeys.delete(oldestKey);
+  }
+};
+
+const getGenericLogKey = ({
+  log,
+  isFinalized,
+}: {
+  log: onLogsLogs[number];
+  isFinalized: boolean;
+}) =>
+  [
+    isFinalized ? "finalized" : "pending",
+    log.address,
+    log.eventName ?? "unknown",
+    log.blockHash,
+    log.transactionHash,
+    log.logIndex?.toString() ?? "unknown",
+  ].join(":");
+
+export const genericOnLogs = async ({
   logs,
-  name,
-  eventName,
   updateHeight,
   storeHeight,
+  isFinalized,
 }: {
   logs: onLogsLogs;
-  name: string;
-  eventName: string;
   updateHeight: (newHeight: bigint) => void;
   storeHeight: () => Promise<void>;
+  isFinalized: boolean;
 }) => {
-  asyncForEach(logs, async (log) => {
+  await asyncForEach(logs, async (log) => {
+    if ("removed" in log && log.removed === true) {
+      return;
+    }
+    const logKey = getGenericLogKey({ log, isFinalized });
+    if (seenGenericLogKeys.has(logKey)) {
+      return;
+    }
+
     await emit.genericContractEvent(
       chicmozL1GenericContractEventSchema.parse({
         l1BlockNumber: log.blockNumber,
@@ -41,27 +77,18 @@ export const genericOnLogs = ({
         l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
         l1ContractAddress: log.address,
         l1TransactionHash: log.transactionHash,
-        isFinalized: false,
+        l1LogIndex: log.logIndex,
+        isFinalized,
         eventName: log.eventName,
         eventArgs: log.args,
       }),
     );
+    rememberGenericLogKey(logKey);
     if (log.blockNumber) {
       updateHeight(log.blockNumber);
     }
-  })
-    .catch((e) => {
-      logger.error(`🍔🥓 ${name}.${eventName} ERROR: ${(e as Error).stack}`);
-    })
-    .finally(() => {
-      storeHeight().catch((e) => {
-        logger.error(
-          `🍔🥓 ${name}.${eventName} ERROR (storeHeight): ${
-            (e as Error).stack
-          }`,
-        );
-      });
-    });
+  });
+  await storeHeight();
 };
 
 export const genericOnError = ({

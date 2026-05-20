@@ -1,9 +1,9 @@
-import { ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
+import { type ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
-  ChicmozL1L2BlockProposed,
-  ChicmozL1L2ProofVerified,
-  ChicmozL2Block,
+  type ChicmozL1L2BlockProposed,
+  type ChicmozL1L2ProofVerified,
+  type ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
 } from "@chicmoz-pkg/types";
 import { and, eq, isNull } from "drizzle-orm";
@@ -23,6 +23,11 @@ export const addL1L2BlockProposed = async (
   if (!proposedData.l1BlockTimestamp) {
     throw new Error("Missing l1BlockTimestamp");
   }
+  const l1TransactionHash: string | null =
+    proposedData.l1TransactionHash === undefined ||
+    proposedData.l1TransactionHash === null
+      ? null
+      : String(proposedData.l1TransactionHash);
   await db()
     .insert(l1L2BlockProposedTable)
     .values({
@@ -36,6 +41,11 @@ export const addL1L2BlockProposed = async (
       ],
       set: {
         isFinalized: proposedData.isFinalized,
+        l1BlockNumber: proposedData.l1BlockNumber,
+        l1BlockHash: proposedData.l1BlockHash,
+        l1BlockTimestamp: proposedData.l1BlockTimestamp,
+        l1TransactionHash,
+        l1ContractAddress: proposedData.l1ContractAddress,
       },
     });
 
@@ -49,6 +59,7 @@ export const addL1L2BlockProposed = async (
     .where(
       and(
         eq(l2Block.height, proposedData.l2BlockNumber),
+        eq(archive.root, proposedData.archive),
         currentRollupVersion !== null
           ? eq(l2Block.version, currentRollupVersion)
           : undefined,
@@ -114,20 +125,34 @@ export const ensureL1FinalizationIsStored = async (
     .from(l1L2ProofVerifiedTable)
     .innerJoin(
       l1L2BlockProposedTable,
-      eq(
-        l1L2ProofVerifiedTable.l1BlockHash,
-        l1L2BlockProposedTable.l1BlockHash,
+      and(
+        eq(
+          l1L2ProofVerifiedTable.l2BlockNumber,
+          l1L2BlockProposedTable.l2BlockNumber,
+        ),
+        eq(
+          l1L2ProofVerifiedTable.l1ContractAddress,
+          l1L2BlockProposedTable.l1ContractAddress,
+        ),
       ),
     )
     .innerJoin(archive, eq(l1L2BlockProposedTable.archive, archive.root))
-    .where(and(eq(l1L2ProofVerifiedTable.l2BlockNumber, l2BlockNumber)))
+    .where(
+      and(
+        eq(l1L2ProofVerifiedTable.l2BlockNumber, l2BlockNumber),
+        eq(l1L2BlockProposedTable.archive, archiveRoot),
+      ),
+    )
     .limit(1);
 
   if (verifiedData.length === 0) {
     logger.info(
       `ensureFinalizationStatusStored: L2 block ${l2BlockNumber} not found in verified table, skipping...`,
     );
-    return null;
+    return {
+      l2BlockHash,
+      status,
+    };
   }
 
   status = verifiedData[0].isFinalized
@@ -148,6 +173,11 @@ export const addL1L2ProofVerified = async (
   if (!proofVerifiedData.l1BlockTimestamp) {
     throw new Error("Missing l1BlockTimestamp");
   }
+  const l1TransactionHash: string | null =
+    proofVerifiedData.l1TransactionHash === undefined ||
+    proofVerifiedData.l1TransactionHash === null
+      ? null
+      : String(proofVerifiedData.l1TransactionHash);
   // TODO: db-transaction
   await db()
     .insert(l1L2ProofVerifiedTable)
@@ -162,6 +192,11 @@ export const addL1L2ProofVerified = async (
       ],
       set: {
         isFinalized: proofVerifiedData.isFinalized,
+        l1BlockNumber: proofVerifiedData.l1BlockNumber,
+        l1BlockHash: proofVerifiedData.l1BlockHash,
+        l1BlockTimestamp: proofVerifiedData.l1BlockTimestamp,
+        l1TransactionHash,
+        l1ContractAddress: proofVerifiedData.l1ContractAddress,
       },
     });
 
@@ -171,10 +206,22 @@ export const addL1L2ProofVerified = async (
       l2BlockHash: l2Block.hash,
     })
     .from(l2Block)
+    .innerJoin(archive, eq(l2Block.hash, archive.fk))
+    .innerJoin(
+      l1L2BlockProposedTable,
+      and(
+        eq(l2Block.height, l1L2BlockProposedTable.l2BlockNumber),
+        eq(archive.root, l1L2BlockProposedTable.archive),
+        eq(
+          l1L2BlockProposedTable.l1ContractAddress,
+          proofVerifiedData.l1ContractAddress,
+        ),
+      ),
+    )
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.height, proofVerifiedData.l2BlockNumber),
+        eq(l1L2BlockProposedTable.l2BlockNumber, proofVerifiedData.l2BlockNumber),
         currentRollupVersion !== null
           ? eq(l2Block.version, currentRollupVersion)
           : undefined,

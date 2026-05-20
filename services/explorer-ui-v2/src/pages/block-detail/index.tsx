@@ -4,9 +4,11 @@ import {
   AddressEtherscanLink,
   DetailEmptyState,
   DetailField,
+  EtherscanResourceLink,
   HashCell,
   StatusPill,
   TokenEtherscanLink,
+  TxEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
@@ -74,6 +76,7 @@ export const BlockDetailPage: FC = () => {
   const totalFees = formatFees(block.header.totalFees, feeJuiceDecimals);
   const totalManaUsed = block.header.totalManaUsed?.toString?.() ?? "0";
   const txCount = block.body.txEffects.length;
+  const l1Anchor = block.proposedOnL1 ?? block.proofVerifiedOnL1;
   const blockRollupVersion = BigInt(block.header.globalVariables.version);
   const isOldRollup =
     chainInfo?.rollupVersion !== undefined &&
@@ -245,28 +248,89 @@ export const BlockDetailPage: FC = () => {
           </div>
           <div className="kv-grid">
             <DetailField label="Coinbase" width="wide">
-              {block.header.globalVariables.coinbase}
+              <AddressEtherscanLink
+                address={block.header.globalVariables.coinbase}
+                title="View coinbase on Etherscan"
+              />
             </DetailField>
             <DetailField label="Fee recipient" width="wide">
               {block.header.globalVariables.feeRecipient}
             </DetailField>
             <DetailField label="L1 block" width="wide">
-              {block.proposedOnL1?.l1BlockNumber !== undefined
-                ? `#${fmtNum(Number(block.proposedOnL1.l1BlockNumber))} · ethereum`
-                : "—"}
+              <EtherscanResourceLink
+                content={
+                  l1Anchor?.l1BlockNumber !== undefined
+                    ? `#${fmtNum(Number(l1Anchor.l1BlockNumber))} · ethereum`
+                    : "—"
+                }
+                address={
+                  l1Anchor?.l1BlockNumber !== undefined
+                    ? String(l1Anchor.l1BlockNumber)
+                    : undefined
+                }
+                resource="block"
+                title="View L1 block on Etherscan"
+              />
             </DetailField>
             <DetailField label="L1 block hash" width="wide">
-              {block.proposedOnL1?.l1BlockHash ?? "—"}
+              <EtherscanResourceLink
+                content={
+                  l1Anchor?.l1BlockHash
+                    ? truncateHashString(l1Anchor.l1BlockHash, 14, 12)
+                    : "—"
+                }
+                address={l1Anchor?.l1BlockHash ?? undefined}
+                resource="block"
+                title="View L1 block on Etherscan"
+              />
+            </DetailField>
+            <DetailField label="Proposal tx" width="wide">
+              <TxEtherscanLink
+                txHash={block.proposedOnL1?.l1TransactionHash ?? undefined}
+                content={
+                  block.proposedOnL1?.l1TransactionHash
+                    ? truncateHashString(
+                        block.proposedOnL1.l1TransactionHash,
+                        14,
+                        12,
+                      )
+                    : "—"
+                }
+                eventLog
+                title="View block proposal transaction on Etherscan"
+              />
             </DetailField>
             <DetailField label="Rollup contract" width="wide">
               <AddressEtherscanLink
-                address={block.proposedOnL1?.l1ContractAddress}
+                address={l1Anchor?.l1ContractAddress}
               />
             </DetailField>
             <DetailField label="Prover" width="wide">
-              {block.proofVerifiedOnL1?.proverId
-                ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
-                : "—"}
+              <AddressEtherscanLink
+                address={block.proofVerifiedOnL1?.proverId ?? undefined}
+                content={
+                  block.proofVerifiedOnL1?.proverId
+                    ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
+                    : "—"
+                }
+                title="View prover on Etherscan"
+              />
+            </DetailField>
+            <DetailField label="Proof tx" width="wide">
+              <TxEtherscanLink
+                txHash={block.proofVerifiedOnL1?.l1TransactionHash ?? undefined}
+                content={
+                  block.proofVerifiedOnL1?.l1TransactionHash
+                    ? truncateHashString(
+                        block.proofVerifiedOnL1.l1TransactionHash,
+                        14,
+                        12,
+                      )
+                    : "—"
+                }
+                eventLog
+                title="View proof verification transaction on Etherscan"
+              />
             </DetailField>
             <DetailField label="Fee per L2 gas" width="wide">
               {fmtNum(block.header.globalVariables.gasFees.feePerL2Gas)}

@@ -162,6 +162,13 @@
       "when": 1779062400000,
       "tag": "0022_rollup_version_observation",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1779235200000,
+      "tag": "0023_l1_transaction_hashes",
+      "breakpoints": true
     }
   ]
 }

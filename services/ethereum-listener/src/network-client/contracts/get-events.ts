@@ -1,7 +1,8 @@
-import { PublicClient } from "viem";
+import { type PublicClient } from "viem";
 import { logger } from "../../logger.js";
 import { controllers as dbControllers } from "../../svcs/database/index.js";
 import { getPublicHttpClient } from "../client/index.js";
+import { genericOnLogs, type onLogsLogs } from "./callbacks/index.js";
 import {
   depositEventCallbacks,
   l2BlockProposedEventCallbacks,
@@ -10,10 +11,19 @@ import {
   withdrawFinalisedEventCallbacks,
   withdrawInitiatedEventCallbacks,
 } from "./callbacks/rollup.js";
-import { AztecContracts } from "./utils.js";
+import {
+  GENERIC_EVENT_ALLOWLIST,
+  STRUCTURED_ROLLUP_EVENT_NAMES,
+} from "./event-allowlist.js";
+import { type AztecContract, type AztecContracts } from "./utils.js";
 
-const GET_EVENETS_DEFAULT_IS_FINALIZED = true;
+const GET_EVENTS_DEFAULT_IS_FINALIZED = true;
 export const DEFAULT_BLOCK_CHUNK_SIZE = 500n;
+
+const getStoreHeightForRange = (
+  actualToBlock: bigint | "finalized",
+  latestHeight: bigint,
+) => (actualToBlock === "finalized" ? latestHeight : actualToBlock);
 
 const getActualToBlock = (
   fromBlock: bigint,
@@ -25,6 +35,104 @@ const getActualToBlock = (
       ? fromBlock + DEFAULT_BLOCK_CHUNK_SIZE
       : toBlock;
   return actualToBlock;
+};
+
+type GetEventsFunction = (
+  args: Record<string, unknown>,
+  options: {
+    fromBlock: bigint;
+    toBlock: bigint | "finalized";
+  },
+) => Promise<onLogsLogs>;
+
+type ContractEventMap = Record<string, GetEventsFunction>;
+
+const getGenericContractEventLogs = async ({
+  name,
+  contract,
+  eventName,
+  latestHeight,
+}: {
+  name: keyof AztecContracts;
+  contract: AztecContract;
+  eventName: string;
+  latestHeight: bigint;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName: name,
+    contractAddress: contract.address,
+    eventName: eventName + "(generic)",
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock > latestHeight) {
+    logger.info(`${name}.${eventName} generic logs up to date`);
+    return 0n;
+  }
+
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, "finalized");
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
+  const getEvents = contract.getEvents as unknown as ContractEventMap;
+  const logs = await getEvents[eventName](
+    {},
+    {
+      fromBlock,
+      toBlock: actualToBlock,
+    },
+  );
+  await genericOnLogs({
+    logs,
+    updateHeight,
+    storeHeight,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+  });
+  return latestHeight - getMemoryHeight();
+};
+
+const getAllGenericContractEventLogs = async ({
+  contracts,
+  latestHeight,
+}: {
+  contracts: AztecContracts;
+  latestHeight: bigint;
+}) => {
+  const pollers: Promise<bigint>[] = [];
+  for (const [name, contract] of Object.entries(contracts) as [
+    keyof AztecContracts,
+    AztecContract,
+  ][]) {
+    const abiEventNames = new Set(
+      contract.abi
+        .filter(
+          (item) => item.type === "event" && typeof item.name === "string",
+        )
+        .map((item) => (item as { name: string }).name),
+    );
+    const eventNames = GENERIC_EVENT_ALLOWLIST[name].filter(
+      (eventName) =>
+        abiEventNames.has(eventName) &&
+        !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName),
+    );
+
+    pollers.push(
+      ...eventNames.map((eventName) =>
+        getGenericContractEventLogs({
+          name,
+          contract,
+          eventName,
+          latestHeight,
+        }),
+      ),
+    );
+  }
+
+  return Promise.all(pollers);
 };
 
 const getRollupL2BlockProposedLogs = async ({
@@ -48,17 +156,15 @@ const getRollupL2BlockProposedLogs = async ({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
     eventName: "CheckpointProposed",
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
-  if (fromBlock >= latestHeight) {
+  if (fromBlock > latestHeight) {
     logger.info("Rollup CheckpointProposed logs up to date");
     return 0n;
   }
   const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
-  if (actualToBlock !== toBlock) {
-    setOverrideStoreHeight(actualToBlock);
-  }
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
   const rollupL2BlockProposedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
@@ -66,8 +172,8 @@ const getRollupL2BlockProposedLogs = async ({
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });
-  l2BlockProposedEventCallbacks({
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+  await l2BlockProposedEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     updateHeight,
     storeHeight,
   }).onLogs(rollupL2BlockProposedLogs);
@@ -95,13 +201,15 @@ const getRollupL2ProofVerifiedLogs = async ({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
     eventName: "L2ProofVerified",
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
-  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
-  if (actualToBlock !== toBlock) {
-    setOverrideStoreHeight(actualToBlock);
+  if (fromBlock > latestHeight) {
+    logger.info("Rollup L2ProofVerified logs up to date");
+    return 0n;
   }
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
   const rollupL2ProofVerifiedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
@@ -109,8 +217,8 @@ const getRollupL2ProofVerifiedLogs = async ({
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });
-  l2ProofVerifiedEventCallbacks({
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+  await l2ProofVerifiedEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     updateHeight,
     storeHeight,
   }).onLogs(rollupL2ProofVerifiedLogs);
@@ -139,17 +247,15 @@ const getDepositLogs = async ({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
     eventName: "Deposit",
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
-  if (fromBlock >= latestHeight) {
+  if (fromBlock > latestHeight) {
     logger.info("Rollup Deposit logs up to date");
     return 0n;
   }
   const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
-  if (actualToBlock !== toBlock) {
-    setOverrideStoreHeight(actualToBlock);
-  }
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
   const depositLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
@@ -157,8 +263,8 @@ const getDepositLogs = async ({
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });
-  depositEventCallbacks({
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+  await depositEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     updateHeight,
     storeHeight,
   }).onLogs(depositLogs);
@@ -187,17 +293,15 @@ const getWithdrawInitiatedLogs = async ({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
     eventName: "WithdrawInitiated",
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
-  if (fromBlock >= latestHeight) {
+  if (fromBlock > latestHeight) {
     logger.info("Rollup WithdrawInitiated logs up to date");
     return 0n;
   }
   const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
-  if (actualToBlock !== toBlock) {
-    setOverrideStoreHeight(actualToBlock);
-  }
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
   const withdrawInitiatedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
@@ -205,8 +309,8 @@ const getWithdrawInitiatedLogs = async ({
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });
-  withdrawInitiatedEventCallbacks({
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+  await withdrawInitiatedEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     updateHeight,
     storeHeight,
   }).onLogs(withdrawInitiatedLogs);
@@ -235,17 +339,15 @@ const getWithdrawFinalizedLogs = async ({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
     eventName: "WithdrawFinalised",
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
-  if (fromBlock >= latestHeight) {
+  if (fromBlock > latestHeight) {
     logger.info("Rollup WithdrawFinalised logs up to date");
     return 0n;
   }
   const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
-  if (actualToBlock !== toBlock) {
-    setOverrideStoreHeight(actualToBlock);
-  }
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
   const withdrawFinalisedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
@@ -253,8 +355,8 @@ const getWithdrawFinalizedLogs = async ({
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });
-  withdrawFinalisedEventCallbacks({
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+  await withdrawFinalisedEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     updateHeight,
     storeHeight,
   }).onLogs(withdrawFinalisedLogs);
@@ -283,17 +385,15 @@ const getSlashedLogs = async ({
     contractName: "rollup",
     contractAddress: contracts.rollup.address,
     eventName: "Slashed",
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     latestHeight,
   });
-  if (fromBlock >= latestHeight) {
+  if (fromBlock > latestHeight) {
     logger.info("Rollup Slashed logs up to date");
     return 0n;
   }
   const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
-  if (actualToBlock !== toBlock) {
-    setOverrideStoreHeight(actualToBlock);
-  }
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
   const slashedLogs = await client.getContractEvents({
     fromBlock,
     toBlock: actualToBlock,
@@ -301,8 +401,8 @@ const getSlashedLogs = async ({
     address: contracts.rollup.address,
     abi: contracts.rollup.abi,
   });
-  slashedEventCallbacks({
-    isFinalized: GET_EVENETS_DEFAULT_IS_FINALIZED,
+  await slashedEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
     updateHeight,
     storeHeight,
   }).onLogs(slashedLogs);
@@ -319,7 +419,7 @@ export const getAllContractsEvents = async ({
   latestHeight: bigint;
 }) => {
   const client = getPublicHttpClient();
-  const pollResults: bigint[] = await Promise.all([
+  const rollupPollResults: bigint[] = await Promise.all([
     getRollupL2BlockProposedLogs({
       client,
       contracts,
@@ -358,5 +458,9 @@ export const getAllContractsEvents = async ({
     //  latestHeight,
     //}),
   ]);
-  return pollResults;
+  const genericPollResults = await getAllGenericContractEventLogs({
+    contracts,
+    latestHeight,
+  });
+  return [...rollupPollResults, ...genericPollResults];
 };

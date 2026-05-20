@@ -4,7 +4,24 @@ import { DEFAULT_BLOCK_CHUNK_SIZE } from "../../network-client/contracts/get-eve
 import { getFinalizedContractEvents } from "../../network-client/contracts/index.js";
 
 let started = false;
-let timoutId: NodeJS.Timeout | undefined;
+let timeoutId: NodeJS.Timeout | undefined;
+let isFinalizedPollStarted = false;
+
+const pollFinalizedEvents = async () => {
+  if (isFinalizedPollStarted) {
+    logger.info(
+      "Skipping finalized event poll because previous poll is still running",
+    );
+    return;
+  }
+
+  isFinalizedPollStarted = true;
+  try {
+    await getFinalizedContractEvents();
+  } finally {
+    isFinalizedPollStarted = false;
+  }
+};
 
 // eslint-disable-next-line @typescript-eslint/require-await
 const init = async () => {
@@ -12,11 +29,11 @@ const init = async () => {
     return;
   }
   started = true;
-  timoutId = setInterval(() => {
+  timeoutId = setInterval(() => {
     runCatchup()
       .then((isComplete) => {
         if (isComplete) {
-          getFinalizedContractEvents().catch((e) => {
+          pollFinalizedEvents().catch((e) => {
             logger.error(
               `🐻 error getting finalized events: ${(e as Error).stack}`,
             );
@@ -35,7 +52,7 @@ let prevSmallestDiff: bigint | undefined = undefined;
 let currSmallestDiff: bigint | undefined = undefined;
 let lastLoopStartTimestamp = Date.now();
 
-const runCatchup = async () => {
+const runCatchup = async (): Promise<boolean> => {
   if (isCatchupStarted) {
     return isCatchupComplete;
   }
@@ -78,24 +95,31 @@ const runCatchup = async () => {
         );
         const aproxBlocksProcessedInLoop =
           Number(prevSmallestDiff) - Number(currSmallestDiff);
-        const timePerBlock = loopDuration / aproxBlocksProcessedInLoop;
-        logger.info(
-          `🐻🐻 estimated time to catch up: ${
-            (timePerBlock * Number(currSmallestDiff)) / 1000 / 60 / 60
-          } hrs`,
-        );
+        if (aproxBlocksProcessedInLoop > 0) {
+          const timePerBlock = loopDuration / aproxBlocksProcessedInLoop;
+          logger.info(
+            `🐻🐻 estimated time to catch up: ${
+              (timePerBlock * Number(currSmallestDiff)) / 1000 / 60 / 60
+            } hrs`,
+          );
+        } else {
+          logger.info(
+            `🐻🐻 no catchup progress in last loop; progressBlocks=${aproxBlocksProcessedInLoop}, skipping ETA`,
+          );
+        }
       }
     }
   }
   logger.info("🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻 catchup complete");
   isCatchupComplete = true;
+  return isCatchupComplete;
 };
 
 // eslint-disable-next-line @typescript-eslint/require-await
 const shutdown = async () => {
-  if (timoutId) {
-    clearInterval(timoutId);
-    timoutId = undefined;
+  if (timeoutId) {
+    clearInterval(timeoutId);
+    timeoutId = undefined;
   }
 };
 
