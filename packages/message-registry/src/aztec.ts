@@ -2,6 +2,7 @@ import type {
   ChicmozChainInfo,
   ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
+  ChicmozL2Tips,
   ChicmozL2ContractInstanceDeployedEvent,
   ChicmozL2DroppedTx,
   ChicmozL2PendingTx,
@@ -34,7 +35,38 @@ export type ContractInstanceBalanceEvent = {
   sourceTxHash?: string;
 };
 
-export type CatchupBlockEvent = NewBlockEvent;
+export type CatchupBlockEvent = NewBlockEvent & {
+  requestId?: string;
+  catchupReason?: "startup" | "cadence" | "manual" | "eternal" | "reorg_repair";
+};
+
+export type L2TipsEvent = {
+  tips: ChicmozL2Tips;
+  observedAt: number;
+  source: {
+    rpcNodeName?: string;
+    aztecNodeVersion?: string;
+  };
+};
+
+export type L2BlockRangeRequestReason =
+  | "startup"
+  | "cadence"
+  | "manual"
+  | "reorg_repair"
+  | "tip_boundary_mismatch";
+
+export type L2BlockRangeRequestEvent = {
+  requestId: string;
+  requestedAt: number;
+  reason: L2BlockRangeRequestReason;
+  ranges: Array<{
+    from: number;
+    to: number;
+    statusHint?: "proposed" | "proven";
+  }>;
+  maxBlocks?: number;
+};
 
 export type ChicmozL2RpcNodeAliveEvent = {
   rpcUrl: ChicmozL2RpcNode["rpcUrl"];
@@ -92,6 +124,8 @@ export function generateL2TopicName(
 export type L2_MESSAGES = {
   NEW_BLOCK_EVENT: NewBlockEvent;
   CATCHUP_BLOCK_EVENT: CatchupBlockEvent;
+  L2_TIPS_EVENT: L2TipsEvent;
+  L2_BLOCK_RANGE_REQUEST_EVENT: L2BlockRangeRequestEvent;
   PENDING_TXS_EVENT: PendingTxsEvent;
   DROPPED_TXS_EVENT: DroppedTxsEvent;
   CONTRACT_INSTANCE_BALANCE_EVENT: ContractInstanceBalanceEvent;
