@@ -21,6 +21,14 @@ export const CHAIN_INFO_POLL_INTERVAL_MS = z.coerce
   .number()
   .default(30000)
   .parse(process.env.CHAIN_INFO_POLL_INTERVAL_MS);
+export const L2_TIPS_POLL_INTERVAL_MS = z.coerce
+  .number()
+  .default(5000)
+  .parse(process.env.L2_TIPS_POLL_INTERVAL_MS);
+export const L2_TIPS_HEARTBEAT_INTERVAL_MS = z.coerce
+  .number()
+  .default(60000)
+  .parse(process.env.L2_TIPS_HEARTBEAT_INTERVAL_MS);
 export const MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS = z.coerce
   .number()
   .default(50)
@@ -50,6 +58,10 @@ export const AZTEC_LISTEN_FOR_CHAIN_INFO = z.coerce
   .boolean()
   .default(true)
   .parse(process.env.AZTEC_LISTEN_FOR_CHAIN_INFO);
+export const AZTEC_LISTEN_FOR_L2_TIPS = z.coerce
+  .boolean()
+  .default(true)
+  .parse(process.env.AZTEC_LISTEN_FOR_L2_TIPS);
 export const AZTEC_DISABLED = z.coerce
   .boolean().default(false).parse(process.env.AZTEC_DISABLED);
 export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
@@ -124,6 +136,12 @@ MEMPOOL_SYNC_GRACE_PERIOD_MS:                              ${MEMPOOL_SYNC_GRACE_
 AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${AZTEC_LISTEN_FOR_CHAIN_INFO ? "✅" : "❌"
   }
 CHAIN_INFO_POLL_INTERVAL_MS:                               ${CHAIN_INFO_POLL_INTERVAL_MS / 1000
+  }s
+AZTEC_LISTEN_FOR_L2_TIPS:                                  ${AZTEC_LISTEN_FOR_L2_TIPS ? "✅" : "❌"
+  }
+L2_TIPS_POLL_INTERVAL_MS:                                  ${L2_TIPS_POLL_INTERVAL_MS / 1000
+  }s
+L2_TIPS_HEARTBEAT_INTERVAL_MS:                             ${L2_TIPS_HEARTBEAT_INTERVAL_MS / 1000
   }s
 IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
   }

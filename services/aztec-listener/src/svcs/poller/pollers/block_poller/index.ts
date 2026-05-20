@@ -136,6 +136,7 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
     await onCatchupBlock(
       block,
       ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+      { catchupReason: "eternal" },
     );
     logger.info(`🐱 catchup proposed block ${height}`);
     await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
