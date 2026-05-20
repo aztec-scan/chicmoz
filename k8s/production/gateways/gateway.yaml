@@ -50,6 +50,21 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    # HTTP Listeners - v1 Mainnet UI
+    - name: ui-v1-http
+      hostname: v1.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-v1-mainnet-http
+      hostname: v1.mainnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     # HTTP Listeners - Primary Testnet
     - name: api-testnet-primary-http
       hostname: api.testnet.aztecscan.xyz
@@ -175,6 +190,29 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: aztecscan-ws-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - v1 Mainnet UI
+    - name: ui-v1-https
+      hostname: v1.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-v1-tls-primary
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: ui-v1-mainnet-https
+      hostname: v1.mainnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-v1-tls-primary
       allowedRoutes:
         namespaces:
           from: Same

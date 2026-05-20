@@ -59,8 +59,10 @@ FROM nginx:alpine AS production
 # Copy built assets from builder
 COPY --from=builder /app/services/explorer-ui-v2/dist /usr/share/nginx/html
 
-# SPA routing — serve index.html for all unmatched paths
-RUN sed -i '/location \//a try_files $uri $uri/ /index.html;' /etc/nginx/conf.d/default.conf
+# SPA routing with safe cache headers.
+# Missing hashed assets must 404 instead of falling back to index.html, otherwise
+# browsers try to execute HTML as JavaScript after a deploy and fail MIME checks.
+COPY services/explorer-ui-v2/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
