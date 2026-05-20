@@ -1,4 +1,4 @@
-import { Log } from "viem";
+import { type Log } from "viem";
 import { logger } from "../../logger.js";
 import { controllers as dbControllers } from "../../svcs/database/index.js";
 import {
@@ -7,7 +7,15 @@ import {
   l2BlockProposedEventCallbacks,
   l2ProofVerifiedEventCallbacks,
 } from "./callbacks/index.js";
-import { AztecContract, AztecContracts, UnwatchCallback } from "./utils.js";
+import {
+  GENERIC_EVENT_ALLOWLIST,
+  STRUCTURED_ROLLUP_EVENT_NAMES,
+} from "./event-allowlist.js";
+import {
+  type AztecContract,
+  type AztecContracts,
+  type UnwatchCallback,
+} from "./utils.js";
 
 const emptyFilterArgs = {};
 const WATCH_DEFAULT_IS_FINALIZED = false;
@@ -51,7 +59,9 @@ const watchRollupL2BlockProposed = async ({
   return contracts.rollup.watchEvent.CheckpointProposed(emptyFilterArgs, {
     fromBlock,
     onError: callbacks.onError,
-    onLogs: callbacks.onLogs,
+    onLogs: (logs) => {
+      void callbacks.onLogs(logs).catch(callbacks.onError);
+    },
   });
 };
 
@@ -78,7 +88,9 @@ export const watchRollupL2ProofVerified = async ({
   return contracts.rollup.watchEvent.L2ProofVerified(emptyFilterArgs, {
     fromBlock,
     onError: callbacks.onError,
-    onLogs: callbacks.onLogs,
+    onLogs: (logs) => {
+      void callbacks.onLogs(logs).catch(callbacks.onError);
+    },
   });
 };
 
@@ -120,9 +132,9 @@ export const watchAllContractsEvents = async ({
   return () => {
     logger.info(`Unwatching generic events`);
     genericUnwatches.forEach((unwatch) => unwatch());
-    logger.info(`Unwatching rollup events`);
+    logger.info(`Unwatching rollup CheckpointProposed events`);
     unwatchRollupL2BlockProposed();
-    logger.info(`Unwatching rollup events`);
+    logger.info(`Unwatching rollup L2ProofVerified events`);
     unwatchRollupL2ProofVerified();
   };
 };
@@ -132,26 +144,36 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
   contract,
   latestHeight,
 }: {
-  name: string;
+  name: keyof AztecContracts;
   contract: T;
   latestHeight: bigint;
 }): Promise<UnwatchCallback> => {
-  const eventNames = contract.abi.filter(
-    (item) => item.type === "event" && typeof item.name === "string",
+  const abiEventNames = new Set(
+    contract.abi
+      .filter((item) => item.type === "event" && typeof item.name === "string")
+      .map((item) => (item as { name: string }).name),
   );
+  const eventNames = GENERIC_EVENT_ALLOWLIST[name].filter(
+    (eventName) =>
+      abiEventNames.has(eventName) &&
+      !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName),
+  );
+
+  if (!eventNames.length) {
+    return () => undefined;
+  }
   const watchEvents = contract.watchEvent as unknown as ContractEventMap;
 
   const unwatches = await Promise.all(
-    eventNames.map(async (event) => {
+    eventNames.map(async (eventName) => {
       const { fromBlock, updateHeight, storeHeight } =
         await dbControllers.inMemoryHeightTracker({
           contractName: name,
           contractAddress: contract.address,
-          eventName: (event as { name: string }).name + "(generic)",
+          eventName: eventName + "(generic)",
           isFinalized: WATCH_DEFAULT_IS_FINALIZED,
           latestHeight,
         });
-      const eventName = (event as { name: string }).name;
       return watchEvents[eventName](
         {},
         {
@@ -160,12 +182,13 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
             return genericOnError({ e, name, eventName });
           },
           onLogs: (logs) => {
-            return genericOnLogs({
+            void genericOnLogs({
               logs,
-              name,
-              eventName,
               updateHeight,
               storeHeight,
+              isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+            }).catch((e) => {
+              genericOnError({ e: e as Error, name, eventName });
             });
           },
         },

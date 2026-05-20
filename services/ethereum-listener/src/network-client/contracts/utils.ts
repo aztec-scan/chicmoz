@@ -5,7 +5,7 @@ import {
   RegistryAbi,
   RollupAbi,
 } from "@aztec/l1-artifacts";
-import { PublicClient, getContract } from "viem";
+import { type PublicClient, getContract } from "viem";
 
 type AztecAbi =
   | typeof RollupAbi

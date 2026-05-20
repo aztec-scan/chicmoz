@@ -264,7 +264,16 @@ const _getBlocks = async (
     )
     .leftJoin(
       l1L2ProofVerifiedTable,
-      eq(l2Block.height, l1L2ProofVerifiedTable.l2BlockNumber),
+      and(
+        eq(
+          l1L2ProofVerifiedTable.l2BlockNumber,
+          l1L2BlockProposedTable.l2BlockNumber,
+        ),
+        eq(
+          l1L2ProofVerifiedTable.l1ContractAddress,
+          l1L2BlockProposedTable.l1ContractAddress,
+        ),
+      ),
     )
     .leftJoin(
       finalizationStatusSubquery,

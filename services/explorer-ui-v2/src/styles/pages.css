@@ -255,6 +255,9 @@
 .row:hover {
   background: var(--bg-2);
 }
+.row[role="link"] {
+  cursor: pointer;
+}
 .row.new {
   animation: rowflash 1.4s ease-out 1;
 }
