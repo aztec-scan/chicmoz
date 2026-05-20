@@ -9,6 +9,7 @@ import {
   contractStandardSchema,
   ethAddressSchema,
   hexStringSchema,
+  uiBlockStatusFilterSchema,
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
 import { z } from "zod";
@@ -42,6 +43,13 @@ export const paths = {
 
   txs: "/l2/txs",
   txByHash: `/l2/txs/:${txEffectHash}`,
+
+  publicCallRequestsByTxHash: `/l2/public-call-requests/:${txEffectHash}`,
+  publicCallRequests: "/l2/public-call-requests",
+
+  l2ToL1MsgsByTx: `/l2/l2-to-l1-msgs/tx/:${txEffectHash}`,
+  l2ToL1MsgsByContract: `/l2/l2-to-l1-msgs/contract/:${address}`,
+  l2ToL1MsgsByRecipient: `/l2/l2-to-l1-msgs/recipient/:${address}`,
 
   droppedTxByHash: `/l2/dropped-txs/:${txEffectHash}`,
 
@@ -78,20 +86,25 @@ export const paths = {
 
   statsTotalTxEffects: "/l2/stats/total-tx-effects",
   statsTotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
+  statsDroppedTxsLast24h: "/l2/stats/dropped-txs-last-24h",
   statsTotalContracts: "/l2/stats/total-contracts",
   statsTotalContractInstances: "/l2/stats/total-contract-instances",
   statsTotalContractInstancesByContractClassId: `/l2/stats/total-contract-instances/:${contractClassId}`,
   statsTotalContractsLast24h: "/l2/stats/total-contracts-last-24h",
+  statsContractClassesSummary: "/l2/stats/contract-classes-summary",
   statsAverageFees: "/l2/stats/average-fees",
   statsAverageBlockTime: "/l2/stats/average-block-time",
+  statsAverageTxsPerBlock: "/l2/stats/average-txs-per-block",
 
   l1l2Validators: "/l1/l2-validators",
   l1l2ValidatorTotals: "/l1/l2-validators/totals",
   l1l2Validator: "/l1/l2-validators/:attesterAddress",
   l1l2ValidatorHistory: "/l1/l2-validators/:attesterAddress/history",
   l1ContractEvents: "/l1/contract-events",
+  l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
 
   chainInfo: "/l2/info",
+  rollupVersions: "/l2/rollup-versions",
   chainErrors: "/l2/errors",
   rpcNodes: "/l2/rpc-nodes",
   rpcNode: "/l2/rpc-nodes/:rpcNodeName",
@@ -114,6 +127,14 @@ export const getBlocksSchema = z.object({
   }),
 });
 
+export const getUiBlocksSchema = z.object({
+  query: z.object({
+    from: chicmozL2BlockSchema.shape.height.optional(),
+    to: chicmozL2BlockSchema.shape.height.optional(),
+    status: uiBlockStatusFilterSchema.optional(),
+  }),
+});
+
 export const getTxEffectsByBlockHeightSchema = z.object({
   params: z.object({
     [blockHeight]: chicmozL2BlockSchema.shape.height,
@@ -133,6 +154,19 @@ export const getTxEffectsByTxHashSchema = z.object({
   }),
 });
 
+export const getPublicCallRequestsSchema = z.object({
+  query: z.object({
+    contractAddress: hexStringSchema.optional(),
+    senderAddress: hexStringSchema.optional(),
+  }),
+});
+
+export const getL2ToL1MsgsByAddressSchema = z.object({
+  params: z.object({
+    [address]: hexStringSchema,
+  }),
+});
+
 const contractIncludeArtifactJson = z.object({
   includeArtifactJson: z.coerce.boolean().optional(),
 });
@@ -148,6 +182,10 @@ export const getContractInstancesSchema = z.object({
   query: z.object({
     fromHeight: chicmozL2BlockSchema.shape.height.optional(),
     toHeight: chicmozL2BlockSchema.shape.height.optional(),
+    offset: z.coerce.number().nonnegative().optional(),
+    limit: z.coerce.number().positive().optional(),
+    verified: z.coerce.boolean().optional(),
+    protocol: z.coerce.boolean().optional(),
   }),
 });
 
@@ -180,6 +218,10 @@ export const getContractClassesByCurrentClassIdSchema = z.object({
 export const getContractClassesSchema = z.object({
   query: z.object({
     verifiedSourceOnly: z.coerce.boolean().optional(),
+    offset: z.coerce.number().nonnegative().optional(),
+    limit: z.coerce.number().positive().optional(),
+    verified: z.coerce.boolean().optional(),
+    protocol: z.coerce.boolean().optional(),
   }),
 });
 
@@ -264,9 +306,21 @@ export const getL1L2ValidatorSchema = z.object({
   }),
 });
 
+export const getL1ContractEventsHourlyCountsSchema = z.object({
+  query: z.object({
+    // Window in hours. 24h default matches the L1 events sparkline; capped
+    // at 168h (7d) to bound the result set and DB scan.
+    hours: z.coerce.number().int().min(1).max(168).optional().default(24),
+  }),
+});
+
 export const getL1L2ValidatorsPaginatedSchema = z.object({
   query: z.object({
-    limit: z.coerce.number().min(1).max(100).optional().default(20),
+    // Cap raised from 100 → 1000 so the UI can fetch the full validator set
+    // in a single roundtrip for client-side filter/search/sort. Server-side
+    // q/status filtering is the longer-term fix; until then a higher cap
+    // avoids the page-through-100s-at-a-time loop in useL1L2Validators.
+    limit: z.coerce.number().min(1).max(1000).optional().default(20),
     offset: z.coerce.number().min(0).optional().default(0),
   }),
 });

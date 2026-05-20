@@ -1,3 +1,4 @@
+import { ContractInitializationStatus, Wallet } from "@aztec/aztec.js/wallet";
 import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
 import { publishContractClass } from "@aztec/aztec.js/deployment";
 import {
@@ -27,7 +28,6 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-import { ContractInitializationStatus, Wallet } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
@@ -284,9 +284,7 @@ export const publicDeployAccounts = async (
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
-      logger.warn(
-        `🚨 Contract instance not found for contract initializationStatus: ${contractMetadata.initializationStatus}`,
-      );
+      logger.warn(`🚨 Contract instance not found (contract not initialized)`);
       continue;
     }
     await wallet.registerContract(contractMetadata.instance);

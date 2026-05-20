@@ -11,4 +11,3 @@ WORKDIR /usr/main/services/ethereum-listener
 COPY --from=BUILD /usr/main /usr/main
 
 CMD ["yarn", "run", "start"]
-

@@ -36,3 +36,16 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - ws.testnet.aztecscan.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aztecscan-ui-v1-tls-testnet
+  namespace: chicmoz-prod
+spec:
+  secretName: aztecscan-ui-v1-tls-testnet
+  issuerRef:
+    name: aztecscan-issuer-production
+    kind: ClusterIssuer
+  dnsNames:
+    - v1.testnet.aztecscan.xyz

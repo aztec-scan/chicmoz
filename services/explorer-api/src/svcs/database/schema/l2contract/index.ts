@@ -93,6 +93,7 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
+    selectorMap: jsonb("selector_map").$type<Record<string, string>>(),
     standardContractType: varchar("contract_type"),
     standardContractVersion: varchar("contract_version"),
     sourceCodeUrl: varchar("source_code_url"),
@@ -135,6 +136,7 @@ export const l2ContractInstanceAztecScanNotes = pgTable(
     name: varchar("name").notNull(),
     origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
+    category: varchar("category"),
     relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -150,6 +152,7 @@ export const l2ContractInstanceVerifiedDeploymentArguments = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     address: generateAztecAddressColumn("address")
       .notNull()
+      .unique("verified_deployment_arguments_address_unique")
       .references(() => l2ContractInstanceDeployed.address, {
         onDelete: "cascade",
       }),

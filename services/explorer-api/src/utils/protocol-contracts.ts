@@ -49,6 +49,7 @@ const getCIandCC = async ({
     contractClassId: contractClass.id.toString(),
     version: contractClass.version,
     artifactJson: jsonStringify(contractArtifact),
+    artifactContractName: contractArtifact.name,
     packedBytecode: contractClass.packedBytecode,
     privateFunctionsRoot: contractClass.privateFunctionsRoot.toString(),
     artifactHash: contractClass.artifactHash.toString(),
@@ -56,7 +57,7 @@ const getCIandCC = async ({
     currentContractClassId: contractClass.id.toString(),
     originalContractClassId: contractClass.id.toString(),
     ...CONTRACT_INSTANCE_DELUXE_DEFAULTS,
-  };
+  } as ChicmozL2ContractInstanceDeluxe;
   const contractClassRegistered: ChicmozL2ContractClassRegisteredEvent = {
     contractClassId: contractInstance.contractClassId,
     blockHash: UNKNOWN_FR,
@@ -80,10 +81,16 @@ export const initializeProtocolContracts = async () => {
       address: ProtocolContractAddress[name].toString(),
       salt: ProtocolContractSalt[name].toString(),
     });
-    protocolContractInstances[contractInstance.address] = contractInstance;
+    protocolContractInstances[contractInstance.address] = {
+      ...contractInstance,
+      standardContractType: `protocol:${name}`,
+      standardContractVersion: "genesis",
+    };
     protocolContractClasses[contractClassRegistered.contractClassId] = {
       ...contractClassRegistered,
       blockHash: UNKNOWN_FR,
+      standardContractType: `protocol:${name}`,
+      standardContractVersion: "genesis",
     };
     if (contractInstance.artifactJson) {
       protocolArtifactsByHash[contractInstance.artifactHash] = artifact;
@@ -110,6 +117,14 @@ export const getProtocolContractByClassId = (
   classId: string,
 ): ChicmozL2ContractClassRegisteredEvent | undefined =>
   protocolContractClasses[classId];
+
+export const getAllProtocolContractInstances =
+  (): ChicmozL2ContractInstanceDeluxe[] =>
+    Object.values(protocolContractInstances);
+
+export const getAllProtocolContractClasses =
+  (): ChicmozL2ContractClassRegisteredEvent[] =>
+    Object.values(protocolContractClasses);
 
 export const getProtocolContractArtifactByHash = (
   artifactHash: string,

@@ -65,6 +65,12 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   packedBytecode: bufferSchema,
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
+  // Built at artifact-upload time. Maps a 4-byte function-selector hex
+  // (e.g. `0x86500181`) to the canonical function signature
+  // (e.g. `transfer_from(AztecAddress,AztecAddress,Field,Field)`). Older
+  // entries persisted before signatures were added carry just the bare
+  // function name — both forms render correctly on the frontend.
+  selectorMap: z.record(z.string(), z.string()).nullable().optional(),
   standardContractType: z.string().nullable().optional(),
   standardContractVersion: z.string().nullable().optional(),
   sourceCodeUrl: z.string().nullable().optional(),

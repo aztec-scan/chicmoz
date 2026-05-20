@@ -2,7 +2,7 @@ import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { ChicmozL2BlockLight } from "@chicmoz-pkg/types";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { l2Block } from "../../../database/schema/l2block/index.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 import { BlockQueryOptions, getBlock } from "./get-block.js";
 
 export const getLatestBlock = async (
@@ -11,7 +11,7 @@ export const getLatestBlock = async (
   return getBlock(-1n, options);
 };
 
-const getBlockFilters = (options: BlockQueryOptions) => {
+const getBlockFilters = async (options: BlockQueryOptions) => {
   const { includeOrphaned = false } = options;
 
   const orphanFilter = includeOrphaned
@@ -19,14 +19,26 @@ const getBlockFilters = (options: BlockQueryOptions) => {
     : isNull(l2Block.orphan_timestamp);
   return {
     orphanFilter,
-    currentVersion: CURRENT_ROLLUP_VERSION_NUMBER,
+    currentVersion: await getCurrentRollupVersionNumber(),
   };
 };
 
 export const getLatestHeight = async (
   options: BlockQueryOptions = {},
 ): Promise<bigint | null> => {
-  const { orphanFilter, currentVersion } = getBlockFilters(options);
+  const { orphanFilter, currentVersion } = await getBlockFilters(options);
+
+  if (currentVersion === null) {
+    const latestHeightAnyVersion = await db()
+      .select({ height: l2Block.height })
+      .from(l2Block)
+      .where(orphanFilter)
+      .orderBy(desc(l2Block.height))
+      .limit(1)
+      .execute();
+
+    return latestHeightAnyVersion[0]?.height ?? null;
+  }
 
   const latestHeightForCurrentVersion = await db()
     .select({ height: l2Block.height })
@@ -59,10 +71,22 @@ export const getLatestHeight = async (
   return latestHeightAnyVersion[0].height;
 };
 
-export const getExistingRollupVersion = async (
+export const getLatestBlockRollupVersion = async (
   options: BlockQueryOptions = {},
 ): Promise<number | null> => {
-  const { orphanFilter, currentVersion } = getBlockFilters(options);
+  const { orphanFilter, currentVersion } = await getBlockFilters(options);
+
+  if (currentVersion === null) {
+    const anyVersion = await db()
+      .select({ version: l2Block.version })
+      .from(l2Block)
+      .where(orphanFilter)
+      .orderBy(desc(l2Block.height))
+      .limit(1)
+      .execute();
+
+    return anyVersion[0]?.version ?? null;
+  }
 
   const hasCurrentVersion = await db()
     .select({ height: l2Block.height })

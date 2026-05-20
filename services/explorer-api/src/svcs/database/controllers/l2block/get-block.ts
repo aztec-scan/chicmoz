@@ -17,7 +17,8 @@ import {
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION_NUMBER } from "../../../../constants/versions.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
+import { getLatestBlockRollupVersion } from "./get-latest.js";
 import {
   archive,
   body,
@@ -73,8 +74,21 @@ export interface BlockQueryOptions {
   rollupVersion?: number;
 }
 
-const getSelectedRollupVersion = (rollupVersion?: number): number => {
-  return rollupVersion ?? CURRENT_ROLLUP_VERSION_NUMBER;
+/**
+ * Resolve the rollup version to filter on for a block lookup.
+ *
+ * Precedence:
+ *   1. Caller-supplied `options.rollupVersion`.
+ *   2. The runtime-discovered current rollup version.
+ */
+const resolveRollupVersion = async (
+  options: BlockQueryOptions,
+): Promise<number | null> => {
+  if (options.rollupVersion !== undefined) {return options.rollupVersion;}
+  return (
+    (await getCurrentRollupVersionNumber()) ??
+    getLatestBlockRollupVersion(options)
+  );
 };
 
 export const getBlocks = async (
@@ -261,6 +275,13 @@ const _getBlocks = async (
     )
     .leftJoin(txEffectsSubquery, eq(txEffectsSubquery.bodyId, body.id));
 
+  // Single source of truth for which rollup version this lookup should filter
+  // on — falls back to whatever's actually in the DB if the compile-time
+  // constant doesn't match (e.g. testnet running an unexpected version).
+  const effectiveVersion = await resolveRollupVersion(options);
+  const versionFilter =
+    effectiveVersion === null ? undefined : eq(l2Block.version, effectiveVersion);
+
   let whereQuery;
 
   switch (args.getType) {
@@ -272,13 +293,11 @@ const _getBlocks = async (
           whereQuery = whereQuery.where(
             and(
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+              versionFilter,
             ),
           );
         } else {
-          whereQuery = whereQuery.where(
-            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
-          );
+          whereQuery = whereQuery.where(versionFilter);
         }
         whereQuery = whereQuery.orderBy(desc(l2Block.height)).limit(1);
       } else {
@@ -288,10 +307,7 @@ const _getBlocks = async (
             and(
               eq(l2Block.height, args.height),
               includeOrphaned ? undefined : isNull(l2Block.orphan_timestamp),
-              eq(
-                l2Block.version,
-                getSelectedRollupVersion(options.rollupVersion),
-              ),
+              versionFilter,
             ),
           )
           .limit(1);
@@ -309,7 +325,7 @@ const _getBlocks = async (
             includeOrphaned
               ? whereRange
               : and(whereRange, isNull(l2Block.orphan_timestamp)),
-            eq(l2Block.version, CURRENT_ROLLUP_VERSION_NUMBER),
+            versionFilter,
           ),
         )
         .orderBy(desc(l2Block.height))

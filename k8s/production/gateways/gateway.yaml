@@ -94,6 +94,14 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    # HTTP Listeners - v1 Testnet UI
+    - name: ui-v1-testnet-http
+      hostname: v1.testnet.aztecscan.xyz
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
     # HTTP Listeners - Swagger
     - name: swagger-http
       hostname: docs.aztecscan.xyz
@@ -235,6 +243,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: aztecscan-ws-tls-devnet
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS Listeners - v1 Testnet UI
+    - name: ui-v1-testnet-https
+      hostname: v1.testnet.aztecscan.xyz
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: aztecscan-ui-v1-tls-testnet
       allowedRoutes:
         namespaces:
           from: Same

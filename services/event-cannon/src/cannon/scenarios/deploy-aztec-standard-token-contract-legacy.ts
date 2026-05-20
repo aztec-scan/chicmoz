@@ -1,6 +1,19 @@
-import { TokenContract } from "@defi-wonderland/aztec-standards-v410/artifacts/src/artifacts/Token.js";
-import { DeployMethod } from "@aztec/aztec.js/contracts";
+import { TokenContract as TokenContractUntyped } from "@defi-wonderland/aztec-standards-v410/artifacts/src/artifacts/Token.js";
+import { Contract, DeployMethod } from "@aztec/aztec.js/contracts";
+import { Wallet } from "@aztec/aztec.js/wallet";
 import { logger } from "../../logger.js";
+
+type TokenContractStatic = {
+  deploy: (
+    wallet: Wallet,
+    name: string,
+    symbol: string,
+    decimals: number,
+    maxSupply: number,
+    admin: unknown,
+  ) => DeployMethod<Contract>;
+};
+const TokenContract = TokenContractUntyped as unknown as TokenContractStatic;
 import { getAccounts, getAztecNodeClient, getPxe, getWallet } from "../pxe.js";
 import {
   deployContract,
@@ -19,7 +32,7 @@ export async function run() {
 
   const { instance: contractInstance } = await deployContract({
     contractLoggingName,
-    deployFn: (): DeployMethod<TokenContract> =>
+    deployFn: (): DeployMethod<Contract> =>
       TokenContract.deploy(
         wallet,
         "Legacy Test Token",

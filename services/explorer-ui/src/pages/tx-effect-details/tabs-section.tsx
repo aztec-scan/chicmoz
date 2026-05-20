@@ -1,23 +1,36 @@
 import { type ChicmozL2TxEffectDeluxe } from "@chicmoz-pkg/types";
 import { type FC, useState } from "react";
+import { Loader } from "~/components/loader";
 import { ValueListDisplay } from "~/components/info-display/value-list-display";
 import { OptionButtons } from "~/components/option-buttons";
+import { usePublicCallRequestsByTxHash } from "~/hooks/api";
+import { PublicCallRequestsTab } from "~/pages/contract-instance-details/tabs/public-call-requests-tab";
 import { PrivateLogs } from "./tabs/private-logs";
 import { PublicDataWrites } from "./tabs/public-data-write";
 import { PublicLogs } from "./tabs/public-logs";
 import { type TabId, txEffectTabs } from "./types";
 import { mapTxEffectsData } from "./utils";
 
-interface PillSectionProps {
+type PillSectionProps = {
   txEffects: ChicmozL2TxEffectDeluxe;
-}
-export const TabsSection: FC<PillSectionProps> = ({ txEffects }) => {
+  txHash: string;
+};
+
+export const TabsSection: FC<PillSectionProps> = ({ txEffects, txHash }) => {
   const [selectedTab, setSelectedTab] = useState<TabId>("nullifiers");
   const onSelectChange = (value: string) => {
     setSelectedTab(value as TabId);
   };
 
-  const txEffectData = mapTxEffectsData(txEffects);
+  const {
+    data: publicCallRequests,
+    isLoading: isPublicCallRequestsLoading,
+  } = usePublicCallRequestsByTxHash(txHash);
+
+  const txEffectData = mapTxEffectsData(
+    txEffects,
+    (publicCallRequests?.length ?? 0) > 0,
+  );
 
   const renderTabContent = () => {
     switch (selectedTab) {
@@ -44,6 +57,14 @@ export const TabsSection: FC<PillSectionProps> = ({ txEffects }) => {
         );
       case "publicDataWrites":
         return <PublicDataWrites writes={txEffects.publicDataWrites} />;
+      case "publicCallRequests":
+        return isPublicCallRequestsLoading ? (
+          <Loader amount={1} />
+        ) : (
+          <PublicCallRequestsTab
+            publicCallRequests={publicCallRequests ?? []}
+          />
+        );
       default:
         return null;
     }

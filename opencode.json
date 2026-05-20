@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "aztec": {
+      "type": "local",
+      "command": ["npx", "-y", "@aztec/mcp-server@latest"],
+      "enabled": true
+    },
+    "noir": {
+      "type": "local",
+      "command": ["npx", "-y", "noir-mcp-server@latest"],
+      "enabled": true
+    }
+  }
+}

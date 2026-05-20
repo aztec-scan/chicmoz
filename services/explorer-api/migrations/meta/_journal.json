@@ -127,6 +127,41 @@
       "when": 1776772800000,
       "tag": "0017_merge_l2_sequencer_into_rpc_node",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1776859200000,
+      "tag": "0018_flippant_thunderbolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1778198400000,
+      "tag": "0019_drop_reason_and_balance_source_tx",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1778284800000,
+      "tag": "0020_aztec_scan_note_category",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1778544000000,
+      "tag": "0021_unique_verified_deployment_arguments_address",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1779062400000,
+      "tag": "0022_rollup_version_observation",
+      "breakpoints": true
     }
   ]
 }
