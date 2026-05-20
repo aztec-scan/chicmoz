@@ -76,6 +76,7 @@ export const BlockDetailPage: FC = () => {
   const totalFees = formatFees(block.header.totalFees, feeJuiceDecimals);
   const totalManaUsed = block.header.totalManaUsed?.toString?.() ?? "0";
   const txCount = block.body.txEffects.length;
+  const l1Anchor = block.proposedOnL1 ?? block.proofVerifiedOnL1;
   const blockRollupVersion = BigInt(block.header.globalVariables.version);
   const isOldRollup =
     chainInfo?.rollupVersion !== undefined &&
@@ -258,13 +259,13 @@ export const BlockDetailPage: FC = () => {
             <DetailField label="L1 block" width="wide">
               <EtherscanResourceLink
                 content={
-                  block.proposedOnL1?.l1BlockNumber !== undefined
-                    ? `#${fmtNum(Number(block.proposedOnL1.l1BlockNumber))} · ethereum`
+                  l1Anchor?.l1BlockNumber !== undefined
+                    ? `#${fmtNum(Number(l1Anchor.l1BlockNumber))} · ethereum`
                     : "—"
                 }
                 address={
-                  block.proposedOnL1?.l1BlockNumber !== undefined
-                    ? String(block.proposedOnL1.l1BlockNumber)
+                  l1Anchor?.l1BlockNumber !== undefined
+                    ? String(l1Anchor.l1BlockNumber)
                     : undefined
                 }
                 resource="block"
@@ -274,11 +275,11 @@ export const BlockDetailPage: FC = () => {
             <DetailField label="L1 block hash" width="wide">
               <EtherscanResourceLink
                 content={
-                  block.proposedOnL1?.l1BlockHash
-                    ? truncateHashString(block.proposedOnL1.l1BlockHash, 14, 12)
+                  l1Anchor?.l1BlockHash
+                    ? truncateHashString(l1Anchor.l1BlockHash, 14, 12)
                     : "—"
                 }
-                address={block.proposedOnL1?.l1BlockHash ?? undefined}
+                address={l1Anchor?.l1BlockHash ?? undefined}
                 resource="block"
                 title="View L1 block on Etherscan"
               />
@@ -301,7 +302,7 @@ export const BlockDetailPage: FC = () => {
             </DetailField>
             <DetailField label="Rollup contract" width="wide">
               <AddressEtherscanLink
-                address={block.proposedOnL1?.l1ContractAddress}
+                address={l1Anchor?.l1ContractAddress}
               />
             </DetailField>
             <DetailField label="Prover" width="wide">

@@ -125,13 +125,24 @@ export const ensureL1FinalizationIsStored = async (
     .from(l1L2ProofVerifiedTable)
     .innerJoin(
       l1L2BlockProposedTable,
-      eq(
-        l1L2ProofVerifiedTable.l1BlockHash,
-        l1L2BlockProposedTable.l1BlockHash,
+      and(
+        eq(
+          l1L2ProofVerifiedTable.l2BlockNumber,
+          l1L2BlockProposedTable.l2BlockNumber,
+        ),
+        eq(
+          l1L2ProofVerifiedTable.l1ContractAddress,
+          l1L2BlockProposedTable.l1ContractAddress,
+        ),
       ),
     )
     .innerJoin(archive, eq(l1L2BlockProposedTable.archive, archive.root))
-    .where(and(eq(l1L2ProofVerifiedTable.l2BlockNumber, l2BlockNumber)))
+    .where(
+      and(
+        eq(l1L2ProofVerifiedTable.l2BlockNumber, l2BlockNumber),
+        eq(l1L2BlockProposedTable.archive, archiveRoot),
+      ),
+    )
     .limit(1);
 
   if (verifiedData.length === 0) {
@@ -195,10 +206,22 @@ export const addL1L2ProofVerified = async (
       l2BlockHash: l2Block.hash,
     })
     .from(l2Block)
+    .innerJoin(archive, eq(l2Block.hash, archive.fk))
+    .innerJoin(
+      l1L2BlockProposedTable,
+      and(
+        eq(l2Block.height, l1L2BlockProposedTable.l2BlockNumber),
+        eq(archive.root, l1L2BlockProposedTable.archive),
+        eq(
+          l1L2BlockProposedTable.l1ContractAddress,
+          proofVerifiedData.l1ContractAddress,
+        ),
+      ),
+    )
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.height, proofVerifiedData.l2BlockNumber),
+        eq(l1L2BlockProposedTable.l2BlockNumber, proofVerifiedData.l2BlockNumber),
         currentRollupVersion !== null
           ? eq(l2Block.version, currentRollupVersion)
           : undefined,
