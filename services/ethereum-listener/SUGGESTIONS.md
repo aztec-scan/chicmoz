@@ -4,6 +4,18 @@ Date: 2026-05-20
 
 This is a prioritized improvement plan for `services/ethereum-listener`, based on code inspection, sub-agent research, and read-only runtime checks on testnet and mainnet.
 
+> Status note: much of this plan has now been implemented. See `WORK-DONE.md`. Keep this file as the backlog/reference for what remains.
+
+## Current remaining priorities
+
+1. Add real health state: finalized lag, last successful poll, watcher last error/event, attester circuit breaker, and DB height freshness.
+2. Clean up unused config: `LISTENER_DISABLED`, `LISTEN_FOR_BLOCKS`, `BLOCK_POLL_INTERVAL_MS`; make finalized poll interval configurable.
+3. Continue logging cleanup toward structured fields.
+4. Optimize attester reads further with multicall or bounded parallelism if RPC load still matters.
+5. Add typed schemas/API/UI for selected L1 lifecycle/governance events currently only visible generically.
+6. Re-observe CPU/RAM after deployment before changing resource limits.
+7. Defer `getL2Tips()` status migration until the current listener hardening has settled.
+
 ## Executive recommendation
 
 Keep the service, but make it a smaller and more factual L1 indexer:
@@ -18,9 +30,9 @@ Keep the service, but make it a smaller and more factual L1 indexer:
 
 ## Priority 0: Correctness and operational safety
 
-### 1. Make height updates atomic and monotonic
+### 1. Make height updates atomic and monotonic — done
 
-Current risk: overlapping callbacks or pollers can write stale heights. This can cause duplicate work, misleading catch-up state, or in the worst case skipped/replayed event windows.
+Initial risk: overlapping callbacks or pollers could write stale heights. Implemented with awaited callbacks and monotonic upserts.
 
 Suggested change:
 
@@ -31,9 +43,9 @@ Suggested change:
 
 Expected benefit: safer backfill and restart behavior.
 
-### 2. Prevent finalized poll overlap
+### 2. Prevent finalized poll overlap — done
 
-Current risk: after catch-up, every 10s interval can start another finalized poll even if the previous one is still running.
+Initial risk: after catch-up, every 10s interval could start another finalized poll even if the previous one was still running. Implemented with an in-flight guard.
 
 Suggested change:
 
@@ -43,9 +55,9 @@ Suggested change:
 
 Expected benefit: lower duplicate RPC pressure and more predictable logs.
 
-### 3. Redact RPC URLs from logs
+### 3. Redact RPC URLs from logs — done
 
-Current risk: runtime logs can expose provider URLs/tokens.
+Initial risk: runtime logs could expose provider URLs/tokens. Implemented with redacted config output.
 
 Suggested change:
 
@@ -56,9 +68,9 @@ Expected benefit: lower secret leakage risk in logs and support transcripts.
 
 ## Priority 1: Reduce RPC/load and memory pressure
 
-### 4. Split HTTP contracts from WebSocket watcher contracts
+### 4. Split HTTP contracts from WebSocket watcher contracts — done
 
-Current issue: WebSocket client exists, but contract watchers appear to be built on the HTTP client.
+Initial issue: WebSocket client existed, but contract watchers appeared to be built on the HTTP client. Live watchers now use WS-backed contracts.
 
 Suggested design:
 
@@ -68,9 +80,9 @@ Suggested design:
 
 This directly addresses the earlier experience that WebSockets missed events: do not trust WS as the only source of truth.
 
-### 5. Replace “watch every ABI event” with an allowlist
+### 5. Replace “watch every ABI event” with an allowlist — done
 
-Current issue: the service starts generic watchers for every event on Rollup/Registry/Inbox/Outbox/FeeJuicePortal and also explicit structured watchers for key Rollup events.
+Initial issue: the service started generic watchers for every event on Rollup/Registry/Inbox/Outbox/FeeJuicePortal and also explicit structured watchers for key Rollup events. It now uses an allowlist and excludes structured events from generic watching.
 
 Suggested change:
 
@@ -80,9 +92,9 @@ Suggested change:
 
 Expected benefit: fewer subscriptions/polls, less memory, less Kafka noise.
 
-### 6. Bound the block timestamp cache
+### 6. Bound the block timestamp cache — done
 
-Current issue: `cached-block-timestamps.ts` stores promises forever and also caches rejected promises.
+Initial issue: `cached-block-timestamps.ts` stored promises forever and also cached rejected promises. It is now bounded and evicts rejected lookups.
 
 Suggested change:
 
@@ -92,9 +104,9 @@ Suggested change:
 
 Expected benefit: lower long-run memory growth and better recovery after transient RPC failures.
 
-### 7. Cache earliest rollup block discovery
+### 7. Cache earliest rollup block discovery — done
 
-Current issue: earliest-rollup discovery can perform repeated binary searches over finalized L1 blocks.
+Initial issue: earliest-rollup discovery could perform repeated binary searches over finalized L1 blocks. It is now cached per network/rollup address.
 
 Suggested change:
 
@@ -106,9 +118,9 @@ Expected benefit: less startup/backfill RPC load.
 
 ## Priority 2: Improve validator indexing
 
-### 8. Make attester snapshots block-consistent
+### 8. Make attester snapshots block-consistent — done
 
-Current issue: count is read at finalized height, but address/view reads are not all pinned to the same block.
+Initial issue: count was read at finalized height, but address/view reads were not all pinned to the same block. Count, address, and view reads are now block-pinned.
 
 Suggested change:
 
@@ -118,9 +130,9 @@ Suggested change:
 
 Expected benefit: fewer inconsistent snapshots and faster polling.
 
-### 9. Make expected `GSE__OutOfBounds` quiet
+### 9. Make expected `GSE__OutOfBounds` quiet — done by avoiding probing
 
-Current issue: expected end-of-list probing logs warnings every ~15 minutes on both mainnet and testnet.
+Initial issue: expected end-of-list probing logged warnings every ~15 minutes. The poller now avoids intentional probing past `getActiveAttesterCount()`.
 
 Suggested change:
 
@@ -131,9 +143,9 @@ Expected benefit: less noisy logs and better signal for real warnings.
 
 ## Priority 3: Expand valuable L1 indexing
 
-### 10. Add structured L1 tx hashes to proposal/proof events
+### 10. Add structured L1 tx hashes to proposal/proof events — done
 
-Current gap: structured `CheckpointProposed` and `L2ProofVerified` payloads include L1 block hash/number/timestamp but not `transactionHash`.
+Initial gap: structured `CheckpointProposed` and `L2ProofVerified` payloads included L1 block hash/number/timestamp but not `transactionHash`. Transaction hashes are now emitted and stored.
 
 Suggested change:
 
@@ -238,9 +250,9 @@ Suggested change:
 - make finalized polling interval configurable
 - review `ATTESTER_*` defaults against observed runtime
 
-### 15. Improve catch-up logging
+### 15. Improve catch-up logging — partially done
 
-Current issue: catch-up can log `Infinity hrs`.
+Initial issue: catch-up could log `Infinity hrs`. Zero-progress loops now skip ETA; fuller structured logging is still open.
 
 Suggested change:
 

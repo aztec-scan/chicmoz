@@ -2,6 +2,8 @@
 
 Date: 2026-05-20
 
+> Status note: this was the initial audit summary. The implementation pass that followed fixed several issues called out below. See `WORK-DONE.md` for the concise completion log.
+
 This document summarizes the current `services/ethereum-listener` architecture and the observed runtime behavior on testnet (`ssh quinque`) and mainnet (`chicmoz-prod`).
 
 ## Purpose
@@ -10,8 +12,8 @@ This document summarizes the current `services/ethereum-listener` architecture a
 
 It currently covers three broad jobs:
 
-1. **Live L1 event watching** for Rollup/Registry/Inbox/Outbox/FeeJuicePortal events.
-2. **Finalized L1 event polling/backfill** for Rollup `CheckpointProposed` and `L2ProofVerified`.
+1. **Live L1 event watching** for allowlisted Rollup/Registry events, plus structured Rollup proposal/proof events.
+2. **Finalized L1 event polling/backfill** for Rollup `CheckpointProposed`, `L2ProofVerified`, and allowlisted generic events.
 3. **Periodic validator snapshot polling** via Rollup staking view calls.
 
 ## Startup and services
@@ -35,7 +37,7 @@ It currently covers three broad jobs:
 - an HTTP `PublicClient`
 - an optional Alchemy HTTP backup client
 
-However, `getL1Contracts()` builds all typed contracts with the HTTP client, so current `contract.watchEvent.*` usage appears to be HTTP polling rather than true WebSocket subscriptions.
+Live watchers now use WebSocket-backed contracts. Finalized historical polling/backfill still uses HTTP clients as the correctness path.
 
 ## Event flow
 
@@ -43,24 +45,24 @@ However, `getL1Contracts()` builds all typed contracts with the HTTP client, so 
 
 `src/network-client/contracts/watch-events.ts`:
 
-- starts one generic watcher for every event in each configured contract ABI
+- starts generic watchers only for an allowlist of useful events
 - additionally starts explicit Rollup watchers for:
   - `CheckpointProposed`
   - `L2ProofVerified`
 - marks those explicit Rollup events with `isFinalized: false`
 
-This means `CheckpointProposed` and `L2ProofVerified` are watched both generically and via the structured explicit handlers.
+`CheckpointProposed` and `L2ProofVerified` are excluded from generic watching and handled by structured explicit handlers.
 
 ### Finalized polling path
 
 `src/svcs/poller-finalized-events/index.ts` periodically calls `getFinalizedContractEvents()`.
 
-`src/network-client/contracts/get-events.ts` currently finalized-polls only:
+`src/network-client/contracts/get-events.ts` currently structured-finalized-polls:
 
 - `CheckpointProposed`
 - `L2ProofVerified`
 
-It has dormant code for `Deposit`, `WithdrawInitiated`, `WithdrawFinalized`, and `Slashed`, but those calls are commented out.
+It also finalized-polls allowlisted generic events. Dormant structured code for `Deposit`, `WithdrawInitiated`, `WithdrawFinalized`, and `Slashed` remains commented out.
 
 Finalized poll results are emitted with `isFinalized: true`.
 
@@ -82,10 +84,9 @@ Then emits `L1_L2_VALIDATOR_EVENT` with the current snapshot.
 
 Important details:
 
-- Height storage is update-then-insert, not an atomic upsert.
-- Stored heights are overwritten with the provided height; no DB-side monotonic guard prevents regressions.
-- `inMemoryHeightTracker()` calls `getEarliestRollupBlockNumber()` for every tracker creation.
-- If no DB row exists, `getHeights()` uses a cached earliest-block promise, but the tracker itself bypasses that cache and does the earliest-rollup lookup again.
+- Height storage now uses an atomic upsert.
+- Stored heights are monotonic via DB-side `greatest(existing, incoming)` semantics.
+- Earliest Rollup L1 block discovery is cached per network/rollup address.
 
 ## Runtime observations
 
@@ -125,12 +126,11 @@ Logs showed active publishing for:
 
 Notable log pattern:
 
-- Every ~15 minutes, the attester poller logs `GSE__OutOfBounds` around the end of the validator list.
-- This appears to be expected boundary probing, but it is noisy and warning-level.
+- The attester poller no longer intentionally probes past the active attester count and now fails closed rather than publishing partial snapshots.
 
 Operational concern:
 
-- Logs include raw RPC URLs. This risks exposing provider URLs/tokens in log aggregation and support output.
+- RPC URLs are now redacted in service config logs.
 
 ### Testnet/local: `ssh quinque`
 
@@ -166,8 +166,7 @@ Backfill loop duration was mostly ~2.1s to ~2.7s while behind.
 
 Notable log patterns:
 
-- `estimated time to catch up: Infinity hrs` appears when the catch-up estimate divides by zero/no progress.
-- Same expected-but-noisy `GSE__OutOfBounds` warning pattern as mainnet.
+- Catch-up ETA now skips ETA output when no progress was made, avoiding `Infinity hrs`.
 
 ## Current resource judgment
 
@@ -175,7 +174,7 @@ CPU usage appears appropriate for the job as observed. Memory is the main concer
 
 - both mainnet and testnet were near the 300Mi limit
 - neither showed restarts in the inspected windows
-- the unbounded block timestamp cache and broad event watcher set are plausible contributors to memory pressure over long runtimes
+- the block timestamp cache is now bounded and generic watchers are allowlisted; memory should be re-observed after deployment
 
 The service should probably either reduce memory growth/noise or get a modest memory limit bump after observing longer-term trends.
 
@@ -189,4 +188,4 @@ The current model mixes:
 
 `ethereum-listener` emits Rollup proposal/proof events with `isFinalized` based on whether the log came from live watching or finalized polling. `explorer-api` maps that into the six-value `ChicmozL2BlockFinalizationStatus` enum.
 
-Now that Aztec nodes expose `getL2Tips()` with `proposed`, `checkpointed`, `proven`, and `finalized`, the ethereum listener should eventually stop owning block-status semantics. It should publish factual L1 proposal/proof metadata, including L1 tx hashes, and let `aztec-listener`/`explorer-api` derive user-facing status from Aztec-native tips.
+The service now publishes/stores factual L1 transaction identity for proposal/proof events. The larger `getL2Tips()` status migration is intentionally deferred.

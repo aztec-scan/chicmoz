@@ -4,7 +4,29 @@ Date: 2026-05-20
 
 These are evidence-backed hypotheses for improving `services/ethereum-listener`. They are intentionally written as theses to be validated or implemented incrementally.
 
-## T1: The service is using HTTP polling where it intended to use WebSockets
+> Status note: several theses below have since been implemented. See `WORK-DONE.md`. The `getL2Tips()` migration thesis remains intentionally deferred.
+
+## Implementation status
+
+Resolved or mostly resolved:
+
+- T1/T2: live watchers use WebSocket contracts while finalized HTTP polling remains the correctness path.
+- T3: generic watchers are allowlisted and structured Rollup events are excluded from generic watching.
+- T4/T5: callbacks are awaited, height writes are monotonic upserts, and finalized polling has an in-flight guard.
+- T6/T8: earliest Rollup block lookup and block timestamp caches are bounded/cached.
+- T7: attester snapshots are block-pinned and fail closed instead of emitting partial snapshots.
+- T10: first factual L1 expansion is done via transaction hash/log index storage and selected generic event indexing.
+- T12: RPC URL redaction and `Infinity hrs` catch-up logging are fixed.
+
+Still open:
+
+- Real health/lag/watcher/circuit-breaker observability.
+- Config cleanup and configurable finalized polling interval.
+- More structured logging fields.
+- Typed schemas/API/UI for richer L1 lifecycle/governance events.
+- T11 / `getL2Tips()` status migration, intentionally postponed.
+
+## T1: The service was using HTTP polling where it intended to use WebSockets — resolved
 
 **Evidence**
 
@@ -14,7 +36,7 @@ These are evidence-backed hypotheses for improving `services/ethereum-listener`.
 
 **Why it matters**
 
-This likely means live watchers are polling over HTTP rather than maintaining real WebSocket subscriptions. That increases HTTP RPC load and undermines the goal of avoiding continuous polling.
+This was true during the initial audit. Live watchers now use WebSocket-backed contracts; finalized polling/backfill remains on HTTP.
 
 **Thesis**
 
@@ -46,17 +68,16 @@ The architecture should be explicitly hybrid:
 
 This solves the “missed WebSocket events” issue without depending on continuous latest-block polling for everything.
 
-## T3: There are avoidable duplicate event watchers
+## T3: There were avoidable duplicate event watchers — mostly resolved
 
 **Evidence**
 
-- `watchAllContractsEvents()` starts generic watchers for every ABI event on every configured contract.
-- It then separately starts structured Rollup watchers for `CheckpointProposed` and `L2ProofVerified`.
-- This means the same Rollup events are watched both generically and structurally.
+- Initial audit: `watchAllContractsEvents()` started generic watchers for every ABI event on every configured contract, then separately started structured Rollup watchers for `CheckpointProposed` and `L2ProofVerified`.
+- Current state: generic events are allowlisted and structured Rollup events are excluded from generic watching.
 
 **Thesis**
 
-Replace “watch all ABI events” with an explicit allowlist and exclude events that have structured handlers.
+Implemented: “watch all ABI events” was replaced with an allowlist and structured Rollup events are excluded.
 
 **Expected benefit**
 
@@ -65,18 +86,16 @@ Replace “watch all ABI events” with an explicit allowlist and exclude events
 - easier reasoning about which events are guaranteed structured vs generic
 - cleaner resource usage
 
-## T4: Height storage can race or regress
+## T4: Height storage could race or regress — resolved
 
 **Evidence**
 
-- `setHeight()` does update-then-insert.
-- It overwrites height directly.
-- Polling and watching callbacks are async and can overlap.
-- Callback `onLogs()` methods fire async work but return `void`, while `get-events.ts` immediately computes lag from the in-memory height.
+- Initial audit: `setHeight()` did update-then-insert, overwrote height directly, and callbacks were not awaited.
+- Current state: `setHeight()` uses monotonic upserts and event callbacks are awaited before advancing checkpoints.
 
 **Thesis**
 
-Height persistence should be atomic and monotonic:
+Implemented: height persistence is atomic and monotonic:
 
 - use DB upsert
 - update with `greatest(existing_height, new_height)` semantics
@@ -88,29 +107,27 @@ Height persistence should be atomic and monotonic:
 - lower chance of skipped logs or false catch-up
 - safer restart behavior
 
-## T5: The finalized poller can overlap once catchup is complete
+## T5: The finalized poller could overlap once catchup is complete — resolved
 
 **Evidence**
 
-- `src/svcs/poller-finalized-events/index.ts` uses `setInterval` every 10s.
-- `runCatchup()` has an `isCatchupStarted` guard.
-- After catch-up, every interval can call `getFinalizedContractEvents()` without an in-flight guard.
+- Initial audit: after catch-up, every interval could call `getFinalizedContractEvents()` without an in-flight guard.
+- Current state: finalized polling has an in-flight guard. The interval is still hardcoded.
 
 **Thesis**
 
-Use an awaited loop or add `isPollingFinalized` so finalized polling cannot overlap.
+Implemented with an in-flight guard.
 
-## T6: Genesis/earliest-rollup discovery is doing repeated expensive work
+## T6: Genesis/earliest-rollup discovery was doing repeated expensive work — mostly resolved
 
 **Evidence**
 
-- `inMemoryHeightTracker()` calls `getEarliestRollupBlockNumber()` for each tracker creation.
-- `getEarliestRollupBlockNumber()` performs a binary search over finalized L1 blocks using Rollup `getTips`.
-- `getHeights()` has a cached earliest-block promise, but the tracker bypasses it.
+- Initial audit: `inMemoryHeightTracker()` called `getEarliestRollupBlockNumber()` for each tracker creation and bypassed the partial cache.
+- Current state: earliest Rollup L1 block discovery is cached by `(network, rollupAddress)` and prefers known hardcoded genesis blocks.
 
 **Thesis**
 
-Compute earliest rollup L1 block once per rollup address/network and reuse it. Prefer deployment metadata or persisted DB metadata over repeated binary search.
+Implemented in-memory caching per rollup address/network. Persisting it in DB remains optional future work.
 
 ## T7: The attester poller is doing more RPC than necessary and logs expected boundaries as warnings
 
@@ -130,14 +147,15 @@ The attester snapshot should be made quieter and more snapshot-consistent:
 - treat expected end-of-list as info/debug, not warning
 - stop probing past `getActiveAttesterCount()` unless needed for a known indexing mismatch
 
-## T8: Memory pressure is real enough to address
+## T8: Memory pressure is real enough to address — initial mitigations done
 
 **Evidence**
 
 - Mainnet usage: ~273Mi of 300Mi.
 - Testnet usage: ~283MB of 300Mi.
 - No restarts observed, but both were close to limit.
-- `cached-block-timestamps.ts` has a module-level unbounded cache of promises and does not evict rejected promises.
+- Initial audit: `cached-block-timestamps.ts` had a module-level unbounded cache of promises and did not evict rejected promises.
+- Current state: the timestamp cache is bounded and evicts rejected lookups.
 
 **Thesis**
 
@@ -211,12 +229,12 @@ The UI already collapses these into fewer display buckets. Aztec nodes now expos
 
 Move toward Aztec-native statuses from `getL2Tips()`. `ethereum-listener` should stop assigning block statuses and should instead publish factual L1 data, especially L1 transaction hashes.
 
-## T12: Logging needs to be more structured and less secret-prone
+## T12: Logging needs to be more structured and less secret-prone — partially resolved
 
 **Evidence**
 
-- Runtime logs exposed raw RPC URLs during initialization.
-- Catch-up logs can print `Infinity hrs`.
+- Initial audit: runtime logs exposed raw RPC URLs during initialization, and catch-up logs could print `Infinity hrs`.
+- Current state: RPC URLs are redacted in config logs and zero-progress catch-up loops skip ETA.
 - Expected attester list boundary checks are warning-level and include large error strings.
 - Many messages use emoji prefixes that are readable for humans but poor for automated alerting.
 
