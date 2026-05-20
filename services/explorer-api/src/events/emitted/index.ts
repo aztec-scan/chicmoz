@@ -1,4 +1,7 @@
-import { ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
+import {
+  ChicmozL2BlockFinalizationUpdateEvent,
+  L2BlockRangeRequestEvent,
+} from "@chicmoz-pkg/message-registry";
 import { publishMessage } from "../../svcs/message-bus/index.js";
 
 export const l2BlockFinalizationUpdate = async (
@@ -6,4 +9,12 @@ export const l2BlockFinalizationUpdate = async (
 ) => {
   if (update)
     {await publishMessage("L2_BLOCK_FINALIZATION_UPDATE_EVENT", update);}
+};
+
+export const l2BlockRangeRequest = async (
+  request: L2BlockRangeRequestEvent | null,
+) => {
+  if (request) {
+    await publishMessage("L2_BLOCK_RANGE_REQUEST_EVENT", request);
+  }
 };

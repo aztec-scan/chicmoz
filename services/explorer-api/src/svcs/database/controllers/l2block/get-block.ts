@@ -18,6 +18,7 @@ import {
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
 import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
+import { deriveNativeStatus, getTips } from "../l2/tips.js";
 import { getLatestBlockRollupVersion } from "./get-latest.js";
 import {
   archive,
@@ -342,6 +343,7 @@ const _getBlocks = async (
       break;
   }
   const results = await whereQuery.execute();
+  const l2Tips = await getTips();
   const blocks: ChicmozL2BlockLight[] = [];
   for (const result of results) {
     // Use the data from the joined subqueries
@@ -374,6 +376,19 @@ const _getBlocks = async (
             hasOrphanedParent: result.orphan_hasOrphanedParent ?? false,
           }
         : undefined,
+      nativeStatus: deriveNativeStatus(
+        {
+          height: result.height,
+          hash: result.hash,
+          orphan: result.orphan_timestamp
+            ? {
+                timestamp: result.orphan_timestamp,
+                hasOrphanedParent: result.orphan_hasOrphanedParent ?? false,
+              }
+            : undefined,
+        },
+        l2Tips,
+      ),
       header: {
         lastArchive: result.header_LastArchive,
         totalFees: result.header_TotalFees,
