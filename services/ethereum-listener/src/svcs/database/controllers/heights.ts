@@ -1,5 +1,5 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, eq, getTableColumns } from "drizzle-orm";
+import { and, eq, getTableColumns, sql } from "drizzle-orm";
 import { logger } from "../../../logger.js";
 import { getEarliestRollupBlockNumber } from "../../../network-client/client/index.js";
 import { heightsTable } from "../schema.js";
@@ -90,36 +90,42 @@ export const setHeight = async ({
   height: bigint;
   isFinalized: boolean;
 }) => {
-  const update = isFinalized
+  const now = new Date();
+  const insertValues = isFinalized
     ? {
         latestFinalizedHeight: height,
-        finalizedHeightLastUpdated: new Date(),
+        finalizedHeightLastUpdated: now,
       }
     : {
         latestPendingHeight: height,
-        pendingHeightLastUpdated: new Date(),
+        pendingHeightLastUpdated: now,
       };
-  const updateRes = await db()
-    .update(heightsTable)
-    .set(update)
-    .where(
-      and(
-        eq(heightsTable.contractName, contractName),
-        eq(heightsTable.contractAddress, contractAddress),
-        eq(heightsTable.eventName, eventName),
-      ),
-    )
-    .returning();
-  if (!updateRes.length) {
-    await db()
-      .insert(heightsTable)
-      .values({
-        contractName,
-        contractAddress,
-        eventName,
-        ...update,
-      });
-  }
+  const updateValues = isFinalized
+    ? {
+        latestFinalizedHeight: sql<bigint>`greatest(${heightsTable.latestFinalizedHeight}, ${height})`,
+        finalizedHeightLastUpdated: now,
+      }
+    : {
+        latestPendingHeight: sql<bigint>`greatest(${heightsTable.latestPendingHeight}, ${height})`,
+        pendingHeightLastUpdated: now,
+      };
+
+  await db()
+    .insert(heightsTable)
+    .values({
+      contractName,
+      contractAddress,
+      eventName,
+      ...insertValues,
+    })
+    .onConflictDoUpdate({
+      target: [
+        heightsTable.contractName,
+        heightsTable.contractAddress,
+        heightsTable.eventName,
+      ],
+      set: updateValues,
+    });
 };
 
 let earliestBlockNumberRes: Promise<bigint> | undefined;

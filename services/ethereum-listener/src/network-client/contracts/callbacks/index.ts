@@ -20,20 +20,16 @@ export type onLogsLogs = (Log & {
   args: Record<string, unknown> | null;
 })[];
 
-export const genericOnLogs = ({
+export const genericOnLogs = async ({
   logs,
-  name,
-  eventName,
   updateHeight,
   storeHeight,
 }: {
   logs: onLogsLogs;
-  name: string;
-  eventName: string;
   updateHeight: (newHeight: bigint) => void;
   storeHeight: () => Promise<void>;
 }) => {
-  asyncForEach(logs, async (log) => {
+  await asyncForEach(logs, async (log) => {
     await emit.genericContractEvent(
       chicmozL1GenericContractEventSchema.parse({
         l1BlockNumber: log.blockNumber,
@@ -49,19 +45,8 @@ export const genericOnLogs = ({
     if (log.blockNumber) {
       updateHeight(log.blockNumber);
     }
-  })
-    .catch((e) => {
-      logger.error(`🍔🥓 ${name}.${eventName} ERROR: ${(e as Error).stack}`);
-    })
-    .finally(() => {
-      storeHeight().catch((e) => {
-        logger.error(
-          `🍔🥓 ${name}.${eventName} ERROR (storeHeight): ${
-            (e as Error).stack
-          }`,
-        );
-      });
-    });
+  });
+  await storeHeight();
 };
 
 export const genericOnError = ({

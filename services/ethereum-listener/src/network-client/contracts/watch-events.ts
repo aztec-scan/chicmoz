@@ -51,7 +51,9 @@ const watchRollupL2BlockProposed = async ({
   return contracts.rollup.watchEvent.CheckpointProposed(emptyFilterArgs, {
     fromBlock,
     onError: callbacks.onError,
-    onLogs: callbacks.onLogs,
+    onLogs: (logs) => {
+      void callbacks.onLogs(logs).catch(callbacks.onError);
+    },
   });
 };
 
@@ -78,7 +80,9 @@ export const watchRollupL2ProofVerified = async ({
   return contracts.rollup.watchEvent.L2ProofVerified(emptyFilterArgs, {
     fromBlock,
     onError: callbacks.onError,
-    onLogs: callbacks.onLogs,
+    onLogs: (logs) => {
+      void callbacks.onLogs(logs).catch(callbacks.onError);
+    },
   });
 };
 
@@ -160,12 +164,12 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
             return genericOnError({ e, name, eventName });
           },
           onLogs: (logs) => {
-            return genericOnLogs({
+            void genericOnLogs({
               logs,
-              name,
-              eventName,
               updateHeight,
               storeHeight,
+            }).catch((e) => {
+              genericOnError({ e: e as Error, name, eventName });
             });
           },
         },
