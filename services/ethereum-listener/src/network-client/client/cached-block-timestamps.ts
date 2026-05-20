@@ -1,20 +1,41 @@
-import { getBlock } from "./index.js";
 import { parseTimeStamp } from "@chicmoz-pkg/backend-utils";
+import { BLOCK_TIMESTAMP_CACHE_MAX_ENTRIES } from "../../environment.js";
 
+type GetBlockFn = (
+  blockNumber: number | bigint,
+) => Promise<{ timestamp: bigint }>;
 
-const cache: Record<string, Promise<number>> = {};
+const cache = new Map<string, Promise<number>>();
+
+const evictOldestEntries = () => {
+  while (cache.size > BLOCK_TIMESTAMP_CACHE_MAX_ENTRIES) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey === undefined) {
+      return;
+    }
+    cache.delete(oldestKey);
+  }
+};
 
 export const getCachedBlockTimestamp = async (
   blockNumber: number | bigint,
-  getBlockFn: typeof getBlock,
+  getBlockFn: GetBlockFn,
 ): Promise<number> => {
   const blockNumberStr = blockNumber.toString();
-  if (cache[blockNumberStr] !== undefined) {
-    return cache[blockNumberStr];
+  const cached = cache.get(blockNumberStr);
+  if (cached !== undefined) {
+    cache.delete(blockNumberStr);
+    cache.set(blockNumberStr, cached);
+    return cached;
   }
-  cache[blockNumberStr] = getBlockFn(blockNumber).then((block) => {
-    const timestamp = parseTimeStamp(Number(block.timestamp));
-    return timestamp;
-  });
-  return cache[blockNumberStr];
+
+  const timestampPromise = getBlockFn(blockNumber)
+    .then((block) => parseTimeStamp(Number(block.timestamp)))
+    .catch((error) => {
+      cache.delete(blockNumberStr);
+      throw error;
+    });
+  cache.set(blockNumberStr, timestampPromise);
+  evictOldestEntries();
+  return timestampPromise;
 };

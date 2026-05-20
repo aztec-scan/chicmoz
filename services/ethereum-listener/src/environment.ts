@@ -41,3 +41,7 @@ export const ATTESTER_CIRCUIT_BREAKER_TIMEOUT_MS = parseInt(
   process.env.ATTESTER_CIRCUIT_BREAKER_TIMEOUT_MS ?? "30000",
   10,
 );
+export const BLOCK_TIMESTAMP_CACHE_MAX_ENTRIES = parseInt(
+  process.env.BLOCK_TIMESTAMP_CACHE_MAX_ENTRIES ?? "5000",
+  10,
+);

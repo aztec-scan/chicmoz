@@ -128,8 +128,6 @@ export const setHeight = async ({
     });
 };
 
-let earliestBlockNumberRes: Promise<bigint> | undefined;
-
 export const getHeights = async ({
   contractName,
   contractAddress,
@@ -153,11 +151,7 @@ export const getHeights = async ({
     )
     .limit(1);
   if (!res.length) {
-    if (!earliestBlockNumberRes) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      earliestBlockNumberRes = getEarliestRollupBlockNumber();
-    }
-    const earliestBlockNumber = await earliestBlockNumberRes;
+    const earliestBlockNumber = await getEarliestRollupBlockNumber();
     return {
       latestPendingHeight: latestHeight ?? earliestBlockNumber,
       latestFinalizedHeight: earliestBlockNumber,
