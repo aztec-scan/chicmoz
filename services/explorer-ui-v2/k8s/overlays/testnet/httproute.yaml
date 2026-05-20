@@ -9,11 +9,11 @@ metadata:
 spec:
   parentRefs:
     - name: aztecscan-gateway
-      sectionName: ui-v2-testnet-http
+      sectionName: ui-testnet-primary-http
     - name: aztecscan-gateway
-      sectionName: ui-v2-testnet-https
+      sectionName: ui-testnet-primary-https
   hostnames:
-    - v2.testnet.aztecscan.xyz
+    - testnet.aztecscan.xyz
   rules:
     - matches:
         - path:

@@ -1,0 +1,128 @@
+name: Slack deploy notification
+description: Send Chicmoz deployment status notifications to Slack via webhook
+
+inputs:
+  webhook-url:
+    description: Slack incoming webhook URL
+    required: true
+  service:
+    description: Service being deployed
+    required: true
+  network:
+    description: Aztec network being deployed
+    required: true
+  status:
+    description: Deployment status, e.g. started, success, failure, cancelled
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Send Slack deployment notification
+      shell: bash
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.webhook-url }}
+        DEPLOY_SERVICE: ${{ inputs.service }}
+        DEPLOY_NETWORK: ${{ inputs.network }}
+        DEPLOY_STATUS: ${{ inputs.status }}
+        WORKFLOW_NAME: ${{ github.workflow }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        REPOSITORY: ${{ github.repository }}
+        REF_NAME: ${{ github.ref_name }}
+        SHA: ${{ github.sha }}
+        ACTOR: ${{ github.actor }}
+      run: |
+        if [ -z "$SLACK_WEBHOOK_URL" ]; then
+          echo "Slack webhook URL is not set; skipping deployment notification."
+          exit 0
+        fi
+
+        COMMIT_MESSAGE="$(git log -1 --pretty=%s 2>/dev/null || true)"
+        COMMIT_AUTHOR="$(git log -1 --pretty='%an <%ae>' 2>/dev/null || true)"
+        export COMMIT_MESSAGE COMMIT_AUTHOR
+
+        python3 <<'PY'
+        import json
+        import os
+        import sys
+        import urllib.error
+        import urllib.request
+
+        status = os.environ["DEPLOY_STATUS"].lower()
+        emoji_by_status = {
+            "started": ":rocket:",
+            "success": ":white_check_mark:",
+            "failure": ":x:",
+            "cancelled": ":warning:",
+        }
+        label_by_status = {
+            "started": "Deployment started",
+            "success": "Deployment completed",
+            "failure": "Deployment failed",
+            "cancelled": "Deployment cancelled",
+        }
+        emoji = emoji_by_status.get(status, ":information_source:")
+        label = label_by_status.get(status, f"Deployment {status}")
+        service = os.environ["DEPLOY_SERVICE"]
+        network = os.environ["DEPLOY_NETWORK"]
+        sha = os.environ["SHA"][:7]
+        commit_message = os.environ.get("COMMIT_MESSAGE") or "unknown commit message"
+        commit_author = os.environ.get("COMMIT_AUTHOR") or "unknown author"
+
+        payload = {
+            "text": f"{emoji} Chicmoz {label}: {service} → {network}",
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"{emoji} *Chicmoz {label}*\n*Service:* `{service}`\n*Network:* `{network}`",
+                    },
+                },
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "mrkdwn",
+                            "text": (
+                                f"*Workflow:* {os.environ['WORKFLOW_NAME']} | "
+                                f"*Branch:* `{os.environ['REF_NAME']}` | "
+                                f"*Commit:* `{sha}` | "
+                                f"*Actor:* `{os.environ['ACTOR']}`"
+                            ),
+                        }
+                    ],
+                },
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Commit:* `{sha}` — {commit_message} | *By:* {commit_author}",
+                        }
+                    ],
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"<{os.environ['RUN_URL']}|View GitHub Actions run>",
+                    },
+                },
+            ],
+        }
+
+        request = urllib.request.Request(
+            os.environ["SLACK_WEBHOOK_URL"],
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=10) as response:
+                response.read()
+        except urllib.error.HTTPError as error:
+            print(f"Slack notification failed with HTTP {error.code}", file=sys.stderr)
+        except urllib.error.URLError as error:
+            print(f"Slack notification failed: {error.reason}", file=sys.stderr)
+        PY

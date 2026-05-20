@@ -180,6 +180,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Notify Slack deployment started
+        uses: ./.github/actions/slack-deploy-notify
+        with:
+          webhook-url: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+          service: explorer-ui-v2
+          network: ${{ needs.set-up.outputs.network }}
+          status: started
+
       - name: Restore cached tools
         uses: actions/cache@v4
         with:
@@ -212,3 +220,12 @@ jobs:
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/explorer-ui-v2-${{ needs.set-up.outputs.network }} -n chicmoz-prod --timeout=300s
+
+      - name: Notify Slack deployment finished
+        if: always()
+        uses: ./.github/actions/slack-deploy-notify
+        with:
+          webhook-url: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+          service: explorer-ui-v2
+          network: ${{ needs.set-up.outputs.network }}
+          status: ${{ job.status }}
