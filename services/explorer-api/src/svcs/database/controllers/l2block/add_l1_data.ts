@@ -59,6 +59,7 @@ export const addL1L2BlockProposed = async (
     .where(
       and(
         eq(l2Block.height, proposedData.l2BlockNumber),
+        eq(archive.root, proposedData.archive),
         currentRollupVersion !== null
           ? eq(l2Block.version, currentRollupVersion)
           : undefined,
@@ -137,7 +138,10 @@ export const ensureL1FinalizationIsStored = async (
     logger.info(
       `ensureFinalizationStatusStored: L2 block ${l2BlockNumber} not found in verified table, skipping...`,
     );
-    return null;
+    return {
+      l2BlockHash,
+      status,
+    };
   }
 
   status = verifiedData[0].isFinalized
