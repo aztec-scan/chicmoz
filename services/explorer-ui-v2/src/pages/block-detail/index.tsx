@@ -7,6 +7,7 @@ import {
   HashCell,
   StatusPill,
   TokenEtherscanLink,
+  TxEtherscanLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
@@ -258,6 +259,22 @@ export const BlockDetailPage: FC = () => {
             <DetailField label="L1 block hash" width="wide">
               {block.proposedOnL1?.l1BlockHash ?? "—"}
             </DetailField>
+            <DetailField label="Proposal tx" width="wide">
+              <TxEtherscanLink
+                txHash={block.proposedOnL1?.l1TransactionHash ?? undefined}
+                content={
+                  block.proposedOnL1?.l1TransactionHash
+                    ? truncateHashString(
+                        block.proposedOnL1.l1TransactionHash,
+                        14,
+                        12,
+                      )
+                    : "—"
+                }
+                eventLog
+                title="View block proposal transaction on Etherscan"
+              />
+            </DetailField>
             <DetailField label="Rollup contract" width="wide">
               <AddressEtherscanLink
                 address={block.proposedOnL1?.l1ContractAddress}
@@ -267,6 +284,22 @@ export const BlockDetailPage: FC = () => {
               {block.proofVerifiedOnL1?.proverId
                 ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
                 : "—"}
+            </DetailField>
+            <DetailField label="Proof tx" width="wide">
+              <TxEtherscanLink
+                txHash={block.proofVerifiedOnL1?.l1TransactionHash ?? undefined}
+                content={
+                  block.proofVerifiedOnL1?.l1TransactionHash
+                    ? truncateHashString(
+                        block.proofVerifiedOnL1.l1TransactionHash,
+                        14,
+                        12,
+                      )
+                    : "—"
+                }
+                eventLog
+                title="View proof verification transaction on Etherscan"
+              />
             </DetailField>
             <DetailField label="Fee per L2 gas" width="wide">
               {fmtNum(block.header.globalVariables.gasFees.feePerL2Gas)}
