@@ -631,6 +631,8 @@
 .kv .v {
   color: var(--ink-1);
   word-break: break-all;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .kv .v a {
   color: var(--purple);
@@ -748,6 +750,11 @@
   border-bottom: 1px solid var(--line);
   padding: 0 18px;
   background: var(--bg-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* hide scrollbar on non-hover so it's unobtrusive */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 .tabs button {
   background: transparent;
@@ -761,6 +768,8 @@
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .tabs button:hover {
   color: var(--ink-1);
@@ -900,6 +909,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 12px 18px;
   font-family: var(--mono);
   font-size: 11px;
@@ -907,6 +918,7 @@
 }
 .pagination .pages {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 .pagination button {
