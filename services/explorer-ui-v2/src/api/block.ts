@@ -39,8 +39,8 @@ export const BlockAPI = {
     const response = await client.get(aztecExplorer.getTableBlocks, { params });
     return validateResponse(z.array(uiBlockTableSchema), response.data);
   },
-  getBlocksByStatus: async (): Promise<ChicmozL2BlockLight[]> => {
-    const response = await client.get(aztecExplorer.getL2BlocksByStatus);
+  getBlocksByNativeStatus: async (): Promise<ChicmozL2BlockLight[]> => {
+    const response = await client.get(aztecExplorer.getL2BlocksByNativeStatus);
     return validateResponse(z.array(chicmozL2BlockLightSchema), response.data);
   },
   getOrphanedBlocksLimited: async (): Promise<ChicmozL2BlockLight[]> => {

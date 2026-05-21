@@ -11,7 +11,7 @@ import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useAverageFees,
   useAverageTxsPerBlock,
-  useBlocksByFinalizationStatus,
+  useBlocksByNativeStatus,
   useChainInfo,
   useLatestBlock,
   useL2TipsHealth,
@@ -37,7 +37,7 @@ const statusFilters: StatusFilter[] = [
 
 export const BlocksPage: FC = () => {
   const { data: latestBlock } = useLatestBlock();
-  const { data: blocksByStatus } = useBlocksByFinalizationStatus();
+  const { data: blocksByNativeStatus } = useBlocksByNativeStatus();
   const { data: tipsHealth } = useL2TipsHealth();
 
   const { sortKey, sortDir, toggleSort, sortArrow } =
@@ -72,11 +72,11 @@ export const BlocksPage: FC = () => {
   const proposedTipHeight = tipsHealth?.tips.proposed.number ?? latestHeight;
   const provenTipHeight = tipsHealth?.tips.proven.block.number;
   const finalizedTipHeight = tipsHealth?.tips.finalized.block.number;
-  const provenHead = blocksByStatus?.find((b) => {
+  const provenHead = blocksByNativeStatus?.find((b) => {
     const display = blockStatusToDisplay(b.nativeStatus, !!b.orphan);
     return display === "proven" || display === "finalized";
   });
-  const finalized = blocksByStatus?.find(
+  const finalized = blocksByNativeStatus?.find(
     (b) => blockStatusToDisplay(b.nativeStatus, !!b.orphan) === "finalized",
   );
 

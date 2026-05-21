@@ -1,16 +1,16 @@
-import { ChicmozL2BlockLight, ChicmozReorg } from "@chicmoz-pkg/types";
+import type { ChicmozL2BlockLight, ChicmozReorg } from "@chicmoz-pkg/types";
 import { useQuery } from "@tanstack/react-query";
 import { BlockAPI } from "~/api/block";
 import { REFETCH_INTERVAL } from "./utils";
 
 /**
- * Hook to fetch one block for each finalization status
+ * Hook to fetch representative blocks for the native L2 status buckets.
  */
-export const useBlocksByFinalizationStatus = () => {
+export const useBlocksByNativeStatus = () => {
   return useQuery<ChicmozL2BlockLight[], Error>({
-    queryKey: ["blocks", "by-status"],
+    queryKey: ["blocks", "by-native-status"],
     queryFn: async () => {
-      const data = await BlockAPI.getBlocksByStatus();
+      const data = await BlockAPI.getBlocksByNativeStatus();
       return data;
     },
     refetchInterval: REFETCH_INTERVAL,

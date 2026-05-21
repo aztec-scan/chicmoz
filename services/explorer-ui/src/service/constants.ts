@@ -6,7 +6,7 @@ export const aztecExplorer = {
   getL2BlockByHash: "/l2/blocks/",
   getL2BlockByHeight: "/l2/blocks/",
   getL2BlocksByHeightRange: "/l2/blocks",
-  getL2BlocksByStatus: "/l2/blocks/by-status",
+  getL2BlocksByNativeStatus: "/l2/blocks/by-status",
   getL2OrphanedBlocks: "/l2/blocks/orphaned",
   getL2OrphanedBlocksLimited: "/l2/blocks/orphans",
   getL2Reorgs: "/l2/reorgs",
