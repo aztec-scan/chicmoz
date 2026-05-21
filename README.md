@@ -339,16 +339,16 @@ The architecture follows an event-driven pattern:
 
 ### aztec-listener Configuration
 
-| Environment Variable                                      | Description                                 | Default Value                    |
-| --------------------------------------------------------- | ------------------------------------------- | -------------------------------- |
-| `AZTEC_RPC_URL`                                           | URL of the Aztec node                       | `http://aztec-sandbox-node:8081` |
-| `BLOCK_POLL_INTERVAL_MS`                                  | Polling interval for blocks in milliseconds | `500`                            |
-| `AZTEC_LISTEN_FOR_PENDING_TXS`                            | Whether to listen for pending transactions  | `true`                           |
-| `AZTEC_LISTEN_FOR_CHAIN_INFO`                             | Whether to listen for chain info updates    | `true`                           |
-| `AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS`                | Disable listening for proposed blocks       | `false`                          |
-| `AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS`                  | Disable listening for proven blocks         | `false`                          |
-| `AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT` | Force start from a specific block height    | `undefined`                      |
-| `L2_NETWORK_ID`                                           | Identifier for the L2 network               | Required                         |
+| Environment Variable                       | Description                                 | Default Value                    |
+| ------------------------------------------ | ------------------------------------------- | -------------------------------- |
+| `AZTEC_RPC_URL`                            | URL of the Aztec node                       | `http://aztec-sandbox-node:8081` |
+| `BLOCK_POLL_INTERVAL_MS`                   | Polling interval for blocks in milliseconds | `500`                            |
+| `AZTEC_LISTEN_FOR_PENDING_TXS`             | Whether to listen for pending transactions  | `true`                           |
+| `AZTEC_LISTEN_FOR_CHAIN_INFO`              | Whether to listen for chain info updates    | `true`                           |
+| `AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS` | Disable listening for proposed blocks       | `false`                          |
+| `AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS`   | Disable listening for proven blocks         | `false`                          |
+| `AZTEC_ENABLE_FULL_SWEEP_CATCHUP`          | Enable manual full-chain sweep catchup      | `false`                          |
+| `L2_NETWORK_ID`                            | Identifier for the L2 network               | Required                         |
 
 ### ethereum-listener Configuration
 
