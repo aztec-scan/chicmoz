@@ -1,6 +1,7 @@
 import {
   ChicmozL2Block,
   ChicmozL2PendingTx,
+  ChicmozL2Tips,
   WebsocketUpdateMessageSender,
   jsonStringify,
 } from "@chicmoz-pkg/types";
@@ -78,6 +79,13 @@ export const sendFinalizationUpdateToClients = (
   });
   logger.info(
     `📡 Sent finalization update for block ${finalizationUpdate.l2BlockHash} to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
+  );
+};
+
+export const sendL2TipsToClients = (l2Tips: ChicmozL2Tips) => {
+  const { clientStatuses, totalClients } = sendUpdateToClients({ l2Tips });
+  logger.info(
+    `📡 Sent L2 tips to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
   );
 };
 

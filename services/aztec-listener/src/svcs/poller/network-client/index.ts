@@ -217,6 +217,10 @@ export const getLatestProvenHeight = async () => {
   return await callNodeFunction("getProvenBlockNumber");
 };
 
+export const getL2Tips = async () => {
+  return await callNodeFunction("getL2Tips");
+};
+
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");
 
 export const getBalanceOf = async (

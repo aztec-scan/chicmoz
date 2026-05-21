@@ -36,10 +36,54 @@ export const chicmozL2BlockFinalizationStatusSchema = z
   .nativeEnum(ChicmozL2BlockFinalizationStatus)
   .default(0);
 
+export const chicmozL2NativeBlockStatusSchema = z.enum([
+  "proposed",
+  "checkpointed",
+  "proven",
+  "finalized",
+  "unknown",
+]);
+
+export type ChicmozL2NativeBlockStatus = z.infer<
+  typeof chicmozL2NativeBlockStatusSchema
+>;
+
+export const chicmozL2TipBlockSchema = z.object({
+  number: z.coerce.number().int().nonnegative(),
+  hash: hexStringSchema,
+});
+
+export type ChicmozL2TipBlock = z.infer<typeof chicmozL2TipBlockSchema>;
+
+export const chicmozL2CheckpointRefSchema = z.object({
+  number: z.coerce.number().int().nonnegative(),
+  hash: hexStringSchema,
+});
+
+export const chicmozL2CheckpointTipSchema = z.object({
+  block: chicmozL2TipBlockSchema,
+  checkpoint: chicmozL2CheckpointRefSchema,
+});
+
+export type ChicmozL2CheckpointTip = z.infer<
+  typeof chicmozL2CheckpointTipSchema
+>;
+
+export const chicmozL2TipsSchema = z.object({
+  proposed: chicmozL2TipBlockSchema,
+  proposedCheckpoint: chicmozL2CheckpointTipSchema.optional(),
+  checkpointed: chicmozL2CheckpointTipSchema,
+  proven: chicmozL2CheckpointTipSchema,
+  finalized: chicmozL2CheckpointTipSchema,
+});
+
+export type ChicmozL2Tips = z.infer<typeof chicmozL2TipsSchema>;
+
 export const chicmozL2BlockSchema = z.object({
   hash: hexStringSchema,
   height: z.coerce.bigint().nonnegative(),
   finalizationStatus: chicmozL2BlockFinalizationStatusSchema,
+  nativeStatus: chicmozL2NativeBlockStatusSchema.optional(),
   proposedOnL1: z.lazy(() =>
     chicmozL1L2BlockProposedSchema.omit({ l2BlockNumber: true }).optional(),
   ),
