@@ -539,6 +539,53 @@ Get details of a specific block.
 }
 ```
 
+#### Native L2 status fields
+
+Block responses may include both:
+
+- `nativeStatus`: additive Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Prefer this for product display when present.
+- `finalizationStatus`: legacy compatibility status. This remains available until a later migration removes the old finalization-status path.
+
+Native status values:
+
+- `proposed`: block is at or below the latest proposed tip.
+- `checkpointed`: block is at or below the latest checkpointed tip.
+- `proven`: block is at or below the latest proven tip.
+- `finalized`: block is at or below the latest finalized tip. On Aztec v4 this may currently be equal to `proven` upstream.
+- `unknown`: tips are missing, stale/degraded, the block is orphaned, or the block is above the proposed tip.
+
+#### `GET /api/v1/{apiKey}/l2/tips`
+
+Get the latest Aztec-native L2 tips observed by `aztec-listener` and stored by `explorer-api`.
+
+**Response**:
+
+```json
+{
+  "tips": {
+    "proposed": { "number": 123, "hash": "0x..." },
+    "checkpointed": {
+      "block": { "number": 120, "hash": "0x..." },
+      "checkpoint": { "number": 12, "hash": "0x..." }
+    },
+    "proven": {
+      "block": { "number": 118, "hash": "0x..." },
+      "checkpoint": { "number": 11, "hash": "0x..." }
+    },
+    "finalized": {
+      "block": { "number": 118, "hash": "0x..." },
+      "checkpoint": { "number": 11, "hash": "0x..." }
+    }
+  },
+  "observedAt": 1710000000000,
+  "stale": false,
+  "stalenessMs": 1500,
+  "staleAfterMs": 60000,
+  "degraded": false,
+  "source": { "rpcNodeName": "aztec-rpc-1" }
+}
+```
+
 ### Transactions
 
 #### `GET /api/v1/{apiKey}/l2/txs`

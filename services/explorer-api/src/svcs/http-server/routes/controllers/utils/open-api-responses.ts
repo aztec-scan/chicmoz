@@ -14,6 +14,7 @@ import {
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2RpcNodeErrorSchema,
+  chicmozL2TipsHealthSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozReorgSchema,
@@ -282,6 +283,11 @@ const cleanedChainInfoSchema = chicmozChainInfoSchema.extend({
 export const chainInfoResponse = getResponse(
   cleanedChainInfoSchema,
   "chainInfo",
+);
+
+export const l2TipsHealthResponse = getResponse(
+  chicmozL2TipsHealthSchema,
+  "l2TipsHealth",
 );
 
 export const chainErrorsResponse = rpcNodeErrorResponseArray;

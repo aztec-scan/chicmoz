@@ -104,6 +104,7 @@ export const paths = {
   l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
 
   chainInfo: "/l2/info",
+  l2Tips: "/l2/tips",
   rollupVersions: "/l2/rollup-versions",
   chainErrors: "/l2/errors",
   rpcNodes: "/l2/rpc-nodes",
