@@ -64,10 +64,29 @@ export const AZTEC_LISTEN_FOR_L2_TIPS = z.coerce
   .parse(process.env.AZTEC_LISTEN_FOR_L2_TIPS);
 export const AZTEC_DISABLED = z.coerce
   .boolean().default(false).parse(process.env.AZTEC_DISABLED);
-export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
-  .boolean()
-  .default(false)
-  .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
+
+export const parseFullSweepCatchupEnabled = (env: {
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP: string | undefined;
+  AZTEC_DISABLE_ETERNAL_CATCHUP: string | undefined;
+}) => {
+  const parseBooleanEnv = (value: string) =>
+    z.enum(["true", "false"]).parse(value) === "true";
+
+  if (env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP !== undefined) {
+    return parseBooleanEnv(env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP);
+  }
+  if (env.AZTEC_DISABLE_ETERNAL_CATCHUP !== undefined) {
+    return !parseBooleanEnv(env.AZTEC_DISABLE_ETERNAL_CATCHUP);
+  }
+  return false;
+};
+export const AZTEC_ENABLE_FULL_SWEEP_CATCHUP = parseFullSweepCatchupEnabled({
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP:
+    process.env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP,
+  AZTEC_DISABLE_ETERNAL_CATCHUP: process.env.AZTEC_DISABLE_ETERNAL_CATCHUP,
+});
+export const AZTEC_DISABLE_ETERNAL_CATCHUP =
+  !AZTEC_ENABLE_FULL_SWEEP_CATCHUP;
 export const L2_BLOCK_RANGE_REQUEST_MAX_RANGES = z.coerce
   .number()
   .int()
@@ -177,6 +196,10 @@ L2_TIPS_POLL_INTERVAL_MS:                                  ${L2_TIPS_POLL_INTERV
   }s
 L2_TIPS_HEARTBEAT_INTERVAL_MS:                             ${L2_TIPS_HEARTBEAT_INTERVAL_MS / 1000
   }s
+AZTEC_ENABLE_FULL_SWEEP_CATCHUP:                           ${AZTEC_ENABLE_FULL_SWEEP_CATCHUP ? "✅" : "❌"
+  }
+AZTEC_DISABLE_ETERNAL_CATCHUP:                             ${AZTEC_DISABLE_ETERNAL_CATCHUP ? "✅" : "❌"
+  }
 IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
    }
 MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}
