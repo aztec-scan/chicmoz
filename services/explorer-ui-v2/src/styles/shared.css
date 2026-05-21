@@ -506,6 +506,10 @@
   font-size: 22px;
   color: var(--ink-1);
   letter-spacing: -0.01em;
+  /* prevent long fee/address values from overflowing the cell on mobile */
+  overflow-wrap: break-word;
+  word-break: break-all;
+  min-width: 0;
 }
 .stats-strip .sc .val .u {
   display: inline-flex;
@@ -808,6 +812,7 @@
 /* ===== filter chips ===== */
 .filter-group {
   display: flex;
+  flex-wrap: wrap;
   border: 1px solid var(--line);
   border-radius: 5px;
   overflow: hidden;
