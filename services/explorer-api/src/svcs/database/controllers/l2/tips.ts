@@ -61,7 +61,7 @@ const toStoredTips = (row: typeof l2TipsTable.$inferSelect): StoredL2Tips => ({
 
 const flattenTips = (
   { tips, observedAt, source }: L2TipsEvent,
-  degradedReason?: string,
+  degradedReason: string | null,
 ) => ({
   l2NetworkId: L2_NETWORK_ID,
   proposedBlockNumber: tips.proposed.number,
@@ -101,7 +101,7 @@ const getBoundaryBlock = async (height: number) => {
 const validateBoundary = async (
   bucket: TipBucket,
   tips: ChicmozL2Tips,
-): Promise<string | undefined> => {
+): Promise<string | null> => {
   const tip = bucket === "proposed" ? tips.proposed : tips[bucket].block;
   const boundaryHash = await getBoundaryBlock(tip.number);
   if (!boundaryHash) {
@@ -110,12 +110,12 @@ const validateBoundary = async (
   if (boundaryHash !== tip.hash) {
     return `${bucket} boundary block ${tip.number} hash mismatch: db=${boundaryHash} tip=${tip.hash}`;
   }
-  return undefined;
+  return null;
 };
 
 export const upsertTips = async (event: L2TipsEvent) => {
   const tips = chicmozL2TipsSchema.parse(event.tips);
-  let degradedReason: string | undefined;
+  let degradedReason: string | null = null;
   for (const bucket of ["finalized", "proven", "checkpointed", "proposed"] as const) {
     degradedReason = await validateBoundary(bucket, tips);
     if (degradedReason) {
