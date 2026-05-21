@@ -68,6 +68,40 @@ export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
   .boolean()
   .default(false)
   .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
+export const L2_BLOCK_RANGE_REQUEST_MAX_RANGES = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(25)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_RANGES);
+export const L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(500)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS);
+export const L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS = z.coerce
+  .number()
+  .positive()
+  .default(60 * 60 * 1000)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS);
+export const L2_BLOCK_RANGE_REQUEST_MAX_WIDTH = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(1_000)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_WIDTH);
+export const L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS = z.coerce
+  .number()
+  .nonnegative()
+  .default(100)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS);
+export const L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(10)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER);
 
 export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
   .number()
@@ -144,5 +178,9 @@ L2_TIPS_POLL_INTERVAL_MS:                                  ${L2_TIPS_POLL_INTERV
 L2_TIPS_HEARTBEAT_INTERVAL_MS:                             ${L2_TIPS_HEARTBEAT_INTERVAL_MS / 1000
   }s
 IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
-  }
-MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}`;
+   }
+MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}
+L2_BLOCK_RANGE_REQUEST_MAX_RANGES:                         ${L2_BLOCK_RANGE_REQUEST_MAX_RANGES}
+L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS:                         ${L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS}
+L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS:                         ${L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS}
+L2_BLOCK_RANGE_REQUEST_MAX_WIDTH:                          ${L2_BLOCK_RANGE_REQUEST_MAX_WIDTH}`;
