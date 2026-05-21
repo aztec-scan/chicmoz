@@ -33,7 +33,7 @@ export const L2_BLOCK_RECONCILIATION_ENABLED = z.coerce
 export const L2_BLOCK_RECONCILIATION_INTERVAL_MS = z.coerce
   .number()
   .positive()
-  .default(60_000)
+  .default(120_000)
   .parse(process.env.L2_BLOCK_RECONCILIATION_INTERVAL_MS);
 export const L2_BLOCK_RECONCILIATION_SCAN_WINDOW = z.coerce
   .number()
@@ -45,7 +45,7 @@ export const L2_BLOCK_RECONCILIATION_MAX_BLOCKS = z.coerce
   .number()
   .int()
   .positive()
-  .default(500)
+  .default(200)
   .parse(process.env.L2_BLOCK_RECONCILIATION_MAX_BLOCKS);
 export const L2_BLOCK_RECONCILIATION_TIP_REPAIR_WINDOW = z.coerce
   .number()
