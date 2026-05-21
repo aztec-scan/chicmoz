@@ -72,13 +72,13 @@ export const L2_BLOCK_RANGE_REQUEST_MAX_RANGES = z.coerce
   .number()
   .int()
   .positive()
-  .default(25)
+  .default(10)
   .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_RANGES);
 export const L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS = z.coerce
   .number()
   .int()
   .positive()
-  .default(500)
+  .default(200)
   .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS);
 export const L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS = z.coerce
   .number()
@@ -89,18 +89,18 @@ export const L2_BLOCK_RANGE_REQUEST_MAX_WIDTH = z.coerce
   .number()
   .int()
   .positive()
-  .default(1_000)
+  .default(250)
   .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_WIDTH);
 export const L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS = z.coerce
   .number()
   .nonnegative()
-  .default(100)
+  .default(250)
   .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS);
 export const L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER = z.coerce
   .number()
   .int()
   .positive()
-  .default(10)
+  .default(5)
   .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER);
 
 export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
