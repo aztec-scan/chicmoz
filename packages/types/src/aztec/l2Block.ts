@@ -79,6 +79,22 @@ export const chicmozL2TipsSchema = z.object({
 
 export type ChicmozL2Tips = z.infer<typeof chicmozL2TipsSchema>;
 
+export const chicmozL2TipsHealthSchema = z.object({
+  tips: chicmozL2TipsSchema,
+  observedAt: z.coerce.number().int().nonnegative(),
+  stale: z.boolean(),
+  stalenessMs: z.coerce.number().int().nonnegative(),
+  staleAfterMs: z.coerce.number().int().positive(),
+  degraded: z.boolean(),
+  degradedReason: z.string().optional(),
+  source: z.object({
+    rpcNodeName: z.string().optional(),
+    aztecNodeVersion: z.string().optional(),
+  }),
+});
+
+export type ChicmozL2TipsHealth = z.infer<typeof chicmozL2TipsHealthSchema>;
+
 export const chicmozL2BlockSchema = z.object({
   hash: hexStringSchema,
   height: z.coerce.bigint().nonnegative(),

@@ -22,6 +22,9 @@ export const DB_MAX_BLOCKS = 20;
 export const DB_MAX_TX_EFFECTS = 100;
 export const DB_MAX_CONTRACTS = 20;
 
+export const L2_TIPS_STALE_AFTER_MS =
+  Number(process.env.L2_TIPS_STALE_AFTER_MS) || 60_000;
+
 export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID,
 );
