@@ -68,7 +68,7 @@ export const BlockDetailPage: FC = () => {
     );
   }
 
-  const status = blockStatusToDisplay(block.finalizationStatus, !!block.orphan);
+  const status = blockStatusToDisplay(block.nativeStatus, !!block.orphan);
   const ts = Number(block.header.globalVariables.timestamp);
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
@@ -234,7 +234,8 @@ export const BlockDetailPage: FC = () => {
               {blockRollupVersion.toString()}
               {isOldRollup && chainInfo?.rollupVersion !== undefined ? (
                 <span className="mute">
-                  {" "}· current {chainInfo.rollupVersion.toString()}
+                  {" "}
+                  · current {chainInfo.rollupVersion.toString()}
                 </span>
               ) : null}
             </DetailField>
@@ -301,16 +302,18 @@ export const BlockDetailPage: FC = () => {
               />
             </DetailField>
             <DetailField label="Rollup contract" width="wide">
-              <AddressEtherscanLink
-                address={l1Anchor?.l1ContractAddress}
-              />
+              <AddressEtherscanLink address={l1Anchor?.l1ContractAddress} />
             </DetailField>
             <DetailField label="Prover" width="wide">
               <AddressEtherscanLink
                 address={block.proofVerifiedOnL1?.proverId ?? undefined}
                 content={
                   block.proofVerifiedOnL1?.proverId
-                    ? truncateHashString(block.proofVerifiedOnL1.proverId, 14, 12)
+                    ? truncateHashString(
+                        block.proofVerifiedOnL1.proverId,
+                        14,
+                        12,
+                      )
                     : "—"
                 }
                 title="View prover on Etherscan"

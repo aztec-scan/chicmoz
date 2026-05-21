@@ -680,6 +680,10 @@
   color: var(--green);
   border-color: rgba(49, 166, 123, 0.4);
 }
+.status-pill.checkpointed {
+  color: var(--blue, #5aa9ff);
+  border-color: rgba(90, 169, 255, 0.45);
+}
 .status-pill.finalized {
   color: var(--purple);
   border-color: rgba(113, 94, 194, 0.5);
@@ -689,6 +693,10 @@
   border-color: rgba(255, 119, 100, 0.4);
 }
 .status-pill.pending {
+  color: var(--ink-2);
+  border-color: var(--line);
+}
+.status-pill.unknown {
   color: var(--ink-2);
   border-color: var(--line);
 }

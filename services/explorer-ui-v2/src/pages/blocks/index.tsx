@@ -14,6 +14,7 @@ import {
   useBlocksByFinalizationStatus,
   useChainInfo,
   useLatestBlock,
+  useL2TipsHealth,
   usePaginatedTableBlocks,
 } from "~/hooks/api";
 import { useSortableTable } from "~/hooks/use-sortable-table";
@@ -27,14 +28,17 @@ const PAGE_SIZE = 20;
 const statusFilters: StatusFilter[] = [
   "all",
   "proposed",
+  "checkpointed",
   "proven",
   "finalized",
+  "unknown",
   "orphaned",
 ];
 
 export const BlocksPage: FC = () => {
   const { data: latestBlock } = useLatestBlock();
   const { data: blocksByStatus } = useBlocksByFinalizationStatus();
+  const { data: tipsHealth } = useL2TipsHealth();
 
   const { sortKey, sortDir, toggleSort, sortArrow } =
     useSortableTable<SortKey>("height");
@@ -65,13 +69,15 @@ export const BlocksPage: FC = () => {
   }, [blocks, sortKey, sortDir]);
 
   const latestHeight = latestBlock ? Number(latestBlock.height) : 0;
+  const proposedTipHeight = tipsHealth?.tips.proposed.number ?? latestHeight;
+  const provenTipHeight = tipsHealth?.tips.proven.block.number;
+  const finalizedTipHeight = tipsHealth?.tips.finalized.block.number;
   const provenHead = blocksByStatus?.find((b) => {
-    const display = blockStatusToDisplay(b.finalizationStatus, !!b.orphan);
+    const display = blockStatusToDisplay(b.nativeStatus, !!b.orphan);
     return display === "proven" || display === "finalized";
   });
   const finalized = blocksByStatus?.find(
-    (b) =>
-      blockStatusToDisplay(b.finalizationStatus, !!b.orphan) === "finalized",
+    (b) => blockStatusToDisplay(b.nativeStatus, !!b.orphan) === "finalized",
   );
 
   // totalPages is only meaningful for the unfiltered "all" view.
@@ -104,20 +110,30 @@ export const BlocksPage: FC = () => {
         <div className="mc">
           <div className="lbl">Proven head</div>
           <div className="val">
-            {provenHead ? `#${fmtNum(Number(provenHead.height))}` : "—"}
+            {provenTipHeight !== undefined
+              ? `#${fmtNum(provenTipHeight)}`
+              : provenHead
+                ? `#${fmtNum(Number(provenHead.height))}`
+                : "—"}
           </div>
           <div className="sub" style={{ color: "var(--green)" }}>
-            {provenHead
-              ? `${latestHeight - Number(provenHead.height)} behind tip`
-              : "—"}
+            {provenTipHeight !== undefined
+              ? `${proposedTipHeight - provenTipHeight} behind proposed`
+              : provenHead
+                ? `${latestHeight - Number(provenHead.height)} behind tip`
+                : "—"}
           </div>
         </div>
         <div className="mc">
           <div className="lbl">Finalized head</div>
           <div className="val">
-            {finalized ? `#${fmtNum(Number(finalized.height))}` : "—"}
+            {finalizedTipHeight !== undefined
+              ? `#${fmtNum(finalizedTipHeight)}`
+              : finalized
+                ? `#${fmtNum(Number(finalized.height))}`
+                : "—"}
           </div>
-          <div className="sub">L1-anchored</div>
+          <div className="sub">native finalized tip</div>
         </div>
         <div className="mc">
           <div className="lbl">Avg fees</div>
@@ -185,7 +201,7 @@ export const BlocksPage: FC = () => {
         </div>
         <div>
           {sortedBlocks.map((b) => {
-            const status = blockStatusToDisplay(b.blockStatus, b.orphan);
+            const status = blockStatusToDisplay(b.nativeStatus, b.orphan);
             const ts = Number(b.timestamp);
             return (
               <Link

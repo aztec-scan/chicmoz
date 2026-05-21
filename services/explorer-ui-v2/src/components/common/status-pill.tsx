@@ -2,10 +2,12 @@ import { type FC } from "react";
 
 export type BlockStatusKey =
   | "proposed"
+  | "checkpointed"
   | "proven"
   | "finalized"
   | "orphaned"
-  | "pending";
+  | "pending"
+  | "unknown";
 
 export type TxStatusKey = "mined" | "pending" | "dropped";
 

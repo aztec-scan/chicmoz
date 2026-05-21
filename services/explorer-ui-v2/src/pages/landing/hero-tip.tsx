@@ -16,10 +16,12 @@ interface Props {
 
 const STATUS_LABEL: Record<string, string> = {
   proposed: "proposed · awaiting proof",
+  checkpointed: "checkpointed",
   proven: "proven",
   finalized: "finalized",
   orphaned: "orphaned",
   pending: "pending",
+  unknown: "unknown",
 };
 
 export const HeroTip: FC<Props> = ({
@@ -38,7 +40,7 @@ export const HeroTip: FC<Props> = ({
     : undefined;
   const latestHash = latestBlock?.blockHash;
   const latestStatus = blockStatusToDisplay(
-    latestBlock?.blockStatus,
+    latestBlock?.nativeStatus,
     !!latestBlock?.orphan,
   );
 
