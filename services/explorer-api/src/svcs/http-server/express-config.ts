@@ -20,6 +20,11 @@ const safeJsonStringify = (value: unknown) => {
 };
 
 const requestLogger: express.ErrorRequestHandler = (err, req, _res, next) => {
+  const statusCode = (err as { code?: number } | undefined)?.code;
+  if (statusCode && statusCode < 500) {
+    next(err);
+    return;
+  }
   logger.error(
     `Request error: ${req.method} ${req.originalUrl} err=${safeJsonStringify({
       name: (err as Error | undefined)?.name,

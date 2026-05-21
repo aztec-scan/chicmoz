@@ -1,5 +1,7 @@
+import { BadRequestError } from "@chicmoz-pkg/error-middleware";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
+import { DB_MAX_BLOCKS } from "../../../../environment.js";
 import { controllers as db } from "../../../database/index.js";
 import {
   getBlockByHeightOrHashSchema,
@@ -119,7 +121,26 @@ export const openapi_GET_BLOCKS: OpenAPIObject["paths"] = {
 };
 
 export const GET_BLOCKS = asyncHandler(async (req, res) => {
-  const { from, to } = getBlocksSchema.parse(req).query;
+  let parsedReq: ReturnType<typeof getBlocksSchema.parse>;
+  try {
+    parsedReq = getBlocksSchema.parse(req);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new BadRequestError("Invalid block range parameters");
+    }
+    throw error;
+  }
+  const { from, to } = parsedReq.query;
+  if (from !== undefined && to !== undefined) {
+    if (from > to) {
+      throw new BadRequestError("Invalid range: from is greater than to");
+    }
+    if (to - from > BigInt(DB_MAX_BLOCKS)) {
+      throw new BadRequestError(
+        `Range too wide. Maximum is ${DB_MAX_BLOCKS} blocks.`,
+      );
+    }
+  }
   const blocksData = await dbWrapper.getLatest(["l2", "blocks", from, to], () =>
     db.l2Block.getBlocks({ from, to }),
   );

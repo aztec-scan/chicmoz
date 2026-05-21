@@ -31,7 +31,8 @@ export async function getHourlyCounts(
   hours: number,
 ): Promise<ChicmozL1ContractEventsHourlyCounts> {
   const cutoff = Date.now() - hours * HOUR_MS;
-  const bucketExpr = sql<number>`(${l1GenericContractEventTable.l1BlockTimestamp} / ${HOUR_MS}) * ${HOUR_MS}`;
+  const hourMs = sql.raw(String(HOUR_MS));
+  const bucketExpr = sql<number>`floor(${l1GenericContractEventTable.l1BlockTimestamp}::numeric / ${hourMs})::bigint * ${hourMs}`;
   const res = await db()
     .select({
       hourStartMs: bucketExpr,
@@ -39,7 +40,7 @@ export async function getHourlyCounts(
     })
     .from(l1GenericContractEventTable)
     .where(gte(l1GenericContractEventTable.l1BlockTimestamp, cutoff))
-    .groupBy(bucketExpr)
-    .orderBy(bucketExpr);
+    .groupBy(sql`1`)
+    .orderBy(sql`1`);
   return chicmozL1ContractEventsHourlyCountsSchema.parse(res);
 }

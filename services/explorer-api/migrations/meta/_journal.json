@@ -169,6 +169,13 @@
       "when": 1779235200000,
       "tag": "0023_l1_transaction_hashes",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1779321600000,
+      "tag": "0024_l2_tips",
+      "breakpoints": true
     }
   ]
 }

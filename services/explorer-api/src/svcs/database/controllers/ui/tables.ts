@@ -32,6 +32,7 @@ import {
 import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { logger } from "../../../../logger.js";
 import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
+import { deriveNativeStatus, getTips } from "../l2/tips.js";
 
 type GetBlocksByRange = {
   from: bigint | undefined;
@@ -84,6 +85,7 @@ export const getBlocksForUiTable = async ({
   const whereRange = getBlocksWhereRange({ from, to });
 
   const rollupVersion = await getCurrentRollupVersionNumber();
+  const l2Tips = await getTips();
   const versionFilter = rollupVersion !== null
     ? eq(l2Block.version, rollupVersion)
     : undefined;
@@ -208,6 +210,16 @@ export const getBlocksForUiTable = async ({
       blockHash: result.hash,
       height: result.height,
       blockStatus: finalizationStatusValue,
+      nativeStatus: deriveNativeStatus(
+        {
+          height: result.height,
+          hash: result.hash,
+          orphan: result.orphanTimestamp != null
+            ? { timestamp: result.orphanTimestamp, hasOrphanedParent: false }
+            : undefined,
+        },
+        l2Tips,
+      ),
       timestamp: result.timestamp,
       txEffectsLength: txCountMap.get(result.bodyId) ?? 0,
       orphan: result.orphanTimestamp != null,

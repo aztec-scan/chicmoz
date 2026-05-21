@@ -55,6 +55,7 @@ export const updateBlock = (
         txEffectsLength: block.body.txEffects.length,
         timestamp: block.header.globalVariables.timestamp,
         blockStatus: block.finalizationStatus,
+        nativeStatus: block.nativeStatus,
         orphan: false,
       };
       return [...oldData, mapedWebsockketBlock].sort((a, b) => {
@@ -174,6 +175,9 @@ export const handleWebSocketMessage = async (
     handlePendingTxs(queryClient, update.txs);
   }
   if (update.finalizationUpdate) {
+    await handleFinalizationUpdate(queryClient);
+  }
+  if (update.l2Tips) {
     await handleFinalizationUpdate(queryClient);
   }
 };

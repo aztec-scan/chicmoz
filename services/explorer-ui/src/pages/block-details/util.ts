@@ -1,4 +1,6 @@
 import {
+  type ChicmozL2BlockFinalizationStatus,
+  type ChicmozL2NativeBlockStatus,
   uiTxEffectTableSchema,
   type ChicmozL2Block,
   type ChicmozL2BlockLight,
@@ -7,6 +9,11 @@ import {
 import { type DetailItem } from "~/components/info-display/key-value-display";
 import { getFeeJuiceSymbol } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
+
+const statusValue = (
+  finalizationStatus: ChicmozL2BlockFinalizationStatus,
+  nativeStatus?: ChicmozL2NativeBlockStatus,
+) => nativeStatus ?? String(finalizationStatus);
 
 export const getBlockDetails = (
   latestBlock: ChicmozL2BlockLight,
@@ -67,7 +74,7 @@ export const getBlockDetails = (
     },
     {
       label: " Block status",
-      value: "" + latestBlock.finalizationStatus,
+      value: statusValue(latestBlock.finalizationStatus, latestBlock.nativeStatus),
     },
     {
       label: "Proposed on L1",

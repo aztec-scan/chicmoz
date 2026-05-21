@@ -1,4 +1,9 @@
-import { generateSvc, publishMessage as pub } from "@chicmoz-pkg/message-bus";
+import {
+  EventHandler,
+  generateSvc,
+  publishMessage as pub,
+  startSubscribe as sub,
+} from "@chicmoz-pkg/message-bus";
 import {
   L2_MESSAGES,
   generateL2TopicName,
@@ -23,6 +28,10 @@ export const publishMessageSync = (
   ...args: Parameters<typeof publishMessage>
 ) => {
   publishMessage(...args).catch((e) => logger.error((e as Error).message));
+};
+
+export const startSubscribe = async (eventHandler: EventHandler) => {
+  await sub(eventHandler, logger);
 };
 
 export const messageBusService: MicroserviceBaseSvc = generateSvc(

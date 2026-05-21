@@ -14,6 +14,7 @@ import {
   l2RpcNodeAliveHandler,
   l2RpcNodeErrorHandler,
 } from "./on-l2-rpc-node.js";
+import { l2TipsHandler } from "./on-l2-tips.js";
 import { l2RpcNodeInfoHandler } from "./on-rpc-node-info.js";
 import { pendingTxHandler } from "./on-pending-txs.js";
 import { stakingAssetInfoHandler } from "./on-staking-asset-info.js";
@@ -24,6 +25,7 @@ export const subscribeHandlers = async () => {
     startSubscribe(l2RpcNodeInfoHandler),
     startSubscribe(l2RpcNodeAliveHandler),
     startSubscribe(l2RpcNodeErrorHandler),
+    startSubscribe(l2TipsHandler),
     startSubscribe(blockHandler),
     startSubscribe(catchupHandler),
     startSubscribe(pendingTxHandler),

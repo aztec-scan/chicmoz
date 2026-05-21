@@ -1,12 +1,17 @@
 import { z } from "zod";
 import { ethAddressSchema, hexStringSchema } from "../general.js";
-import { chicmozL2BlockFinalizationStatusSchema } from "./l2Block.js";
+import {
+  chicmozL2BlockFinalizationStatusSchema,
+  chicmozL2NativeBlockStatusSchema,
+} from "./l2Block.js";
 import { frDecimalStringSchema, frTimestampSchema } from "./utils.js";
 
 export const uiBlockStatusFilterSchema = z.enum([
   "proposed",
+  "checkpointed",
   "proven",
   "finalized",
+  "unknown",
   "orphaned",
 ]);
 
@@ -18,6 +23,7 @@ export const uiBlockTableSchema = z.object({
   timestamp: frTimestampSchema,
   txEffectsLength: z.number(),
   blockStatus: chicmozL2BlockFinalizationStatusSchema,
+  nativeStatus: chicmozL2NativeBlockStatusSchema.optional(),
   // True when the block has been reorged out. The row should still be shown
   // (the design has an "orphaned" filter chip) but the StatusPill must
   // collapse to "orphaned" rather than its pre-orphan finalization status.

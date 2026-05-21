@@ -4,3 +4,4 @@ export * from "./rpc-node-health/index.js";
 export * from "./rpc-node-error/index.js";
 export * from "./rpc-node/index.js";
 export * from "./search.js";
+export * as tips from "./tips.js";
