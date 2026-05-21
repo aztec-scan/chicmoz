@@ -4,16 +4,29 @@ import {
   ChicmozL2Block,
   ChicmozL2NativeBlockStatus,
   ChicmozL2Tips,
+  HexString,
   L2NetworkId,
   chicmozL2TipsSchema,
 } from "@chicmoz-pkg/types";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { L2_NETWORK_ID } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { l2TipsTable, StoredL2Tips } from "../../schema/l2/tips.js";
+import {
+  l2TipBoundaryMismatchTable,
+  l2TipsTable,
+  StoredL2Tips,
+} from "../../schema/l2/tips.js";
 import { l2Block } from "../../schema/l2block/index.js";
 
 type TipBucket = "finalized" | "proven" | "checkpointed" | "proposed";
+
+type BoundaryValidationResult = {
+  bucket: TipBucket;
+  height: number;
+  expectedHash: HexString;
+  observedDbHash: HexString | null;
+  reason: string;
+};
 
 const toStoredTips = (row: typeof l2TipsTable.$inferSelect): StoredL2Tips => ({
   proposed: { number: row.proposedBlockNumber, hash: row.proposedBlockHash },
@@ -101,24 +114,90 @@ const getBoundaryBlock = async (height: number) => {
 const validateBoundary = async (
   bucket: TipBucket,
   tips: ChicmozL2Tips,
-): Promise<string | null> => {
+): Promise<BoundaryValidationResult | null> => {
   const tip = bucket === "proposed" ? tips.proposed : tips[bucket].block;
   const boundaryHash = await getBoundaryBlock(tip.number);
   if (!boundaryHash) {
-    return `${bucket} boundary block ${tip.number} is missing`;
+    return {
+      bucket,
+      height: tip.number,
+      expectedHash: tip.hash,
+      observedDbHash: null,
+      reason: `${bucket} boundary block ${tip.number} is missing`,
+    };
   }
   if (boundaryHash !== tip.hash) {
-    return `${bucket} boundary block ${tip.number} hash mismatch: db=${boundaryHash} tip=${tip.hash}`;
+    return {
+      bucket,
+      height: tip.number,
+      expectedHash: tip.hash,
+      observedDbHash: boundaryHash,
+      reason: `${bucket} boundary block ${tip.number} hash mismatch: db=${boundaryHash} tip=${tip.hash}`,
+    };
   }
   return null;
+};
+
+const mismatchId = ({
+  bucket,
+  height,
+  expectedHash,
+  observedDbHash,
+}: BoundaryValidationResult) =>
+  `${L2_NETWORK_ID}:${bucket}:${height}:${expectedHash}:${observedDbHash ?? "missing"}`;
+
+const recordBoundaryMismatch = async (mismatch: BoundaryValidationResult) => {
+  const values = {
+    id: mismatchId(mismatch),
+    l2NetworkId: L2_NETWORK_ID,
+    bucket: mismatch.bucket,
+    height: mismatch.height,
+    expectedHash: mismatch.expectedHash,
+    observedDbHash: mismatch.observedDbHash,
+    reason: mismatch.reason,
+    lastSeenAt: new Date(),
+    resolvedAt: null,
+  };
+
+  await db()
+    .insert(l2TipBoundaryMismatchTable)
+    .values(values)
+    .onConflictDoUpdate({
+      target: l2TipBoundaryMismatchTable.id,
+      set: {
+        reason: values.reason,
+        lastSeenAt: values.lastSeenAt,
+        occurrenceCount: sql`${l2TipBoundaryMismatchTable.occurrenceCount} + 1`,
+        resolvedAt: null,
+      },
+    });
+};
+
+const resolveBoundaryMismatches = async () => {
+  const database = db();
+  if (typeof database.update !== "function") {
+    return;
+  }
+  await database
+    .update(l2TipBoundaryMismatchTable)
+    .set({ resolvedAt: new Date() })
+    .where(
+      and(
+        eq(l2TipBoundaryMismatchTable.l2NetworkId, L2_NETWORK_ID),
+        isNull(l2TipBoundaryMismatchTable.resolvedAt),
+      ),
+    );
 };
 
 export const upsertTips = async (event: L2TipsEvent) => {
   const tips = chicmozL2TipsSchema.parse(event.tips);
   let degradedReason: string | null = null;
+  let degradedMismatch: BoundaryValidationResult | null = null;
   for (const bucket of ["finalized", "proven", "checkpointed", "proposed"] as const) {
-    degradedReason = await validateBoundary(bucket, tips);
-    if (degradedReason) {
+    const mismatch = await validateBoundary(bucket, tips);
+    if (mismatch) {
+      degradedReason = mismatch.reason;
+      degradedMismatch = mismatch;
       logger.warn(`L2 tips degraded: ${degradedReason}`);
       break;
     }
@@ -132,6 +211,23 @@ export const upsertTips = async (event: L2TipsEvent) => {
       target: l2TipsTable.l2NetworkId,
       set: values,
     });
+
+  if (degradedMismatch) {
+    await recordBoundaryMismatch(degradedMismatch);
+  } else {
+    await resolveBoundaryMismatches();
+  }
+};
+
+export const getRecentBoundaryMismatches = async (
+  l2NetworkId: L2NetworkId = L2_NETWORK_ID,
+) => {
+  return db()
+    .select()
+    .from(l2TipBoundaryMismatchTable)
+    .where(eq(l2TipBoundaryMismatchTable.l2NetworkId, l2NetworkId))
+    .orderBy(desc(l2TipBoundaryMismatchTable.lastSeenAt))
+    .limit(10);
 };
 
 export const getTips = async (

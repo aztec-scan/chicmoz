@@ -74,6 +74,7 @@ const onBlock = async ({
   }
 
   await storeBlock(parsedBlock);
+  await controllers.l2Block.markOpenGapsFulfilledByHeight(parsedBlock.height);
   await observeRollupVersion({
     l2NetworkId: L2_NETWORK_ID,
     rollupVersion: chicmozChainInfoSchema.shape.rollupVersion.parse(
