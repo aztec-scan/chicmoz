@@ -618,6 +618,10 @@
   font-family: var(--mono);
   font-size: 20px;
   color: var(--ink-1);
+  /* prevent long values from overflowing the cell on mobile */
+  overflow-wrap: break-word;
+  word-break: break-all;
+  min-width: 0;
 }
 .meta-strip .mc .val .u {
   color: var(--ink-3);
@@ -1739,7 +1743,20 @@
     border-bottom: none;
   }
   .stats-strip {
+    grid-auto-flow: row;
     grid-template-columns: repeat(2, 1fr);
+  }
+  /* fix borders when stats-strip wraps to 2 columns */
+  .stats-strip .sc {
+    border-bottom: 1px solid var(--line);
+  }
+  .stats-strip .sc:nth-child(even) {
+    border-right: none;
+  }
+  /* last row cells need no bottom border */
+  .stats-strip .sc:last-child,
+  .stats-strip .sc:nth-last-child(2):nth-child(odd) {
+    border-bottom: none;
   }
   .split,
   .twin {
@@ -1842,6 +1859,64 @@
   }
   .console-head {
     font-size: 10px;
+  }
+
+  /* ── /blocks filter buttons ── */
+  /* stack title + filter group vertically so the buttons don't overflow */
+  .panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  /* allow filter group to fill the available width and wrap across rows */
+  .panel-head .filter-group {
+    width: 100%;
+  }
+  .panel-head .filter-group button {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+  }
+
+  /* ── info tiles: stats-strip & meta-strip ── */
+  /* go single-column on small phones to avoid squished/overflowing text */
+  .stats-strip {
+    grid-auto-flow: row;
+    grid-auto-columns: unset;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-strip .sc {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  /* alternate cells get a right border to form a 2-col grid */
+  .stats-strip .sc:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+  .stats-strip .sc:last-child,
+  .stats-strip .sc:nth-last-child(2):nth-child(odd) {
+    border-bottom: none;
+  }
+  /* shrink the big value font so it fits in 2 columns */
+  .stats-strip .sc .val {
+    font-size: 17px;
+  }
+
+  .meta-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .meta-strip .mc {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .meta-strip .mc:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+  .meta-strip .mc:last-child,
+  .meta-strip .mc:nth-last-child(2):nth-child(odd) {
+    border-bottom: none;
+  }
+  .meta-strip .mc .val {
+    font-size: 16px;
   }
 }
 
