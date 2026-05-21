@@ -53,8 +53,6 @@ spec:
               value: "true"
             - name: AZTEC_ENABLE_FULL_SWEEP_CATCHUP
               value: "false"
-            - name: AZTEC_DISABLE_ETERNAL_CATCHUP
-              value: "true"
             - name: AZTEC_RPC_URLS
               valueFrom:
                 secretKeyRef:

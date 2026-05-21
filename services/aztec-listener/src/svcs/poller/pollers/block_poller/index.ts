@@ -24,21 +24,9 @@ import { handleProvenTransactions } from "./handle-proven-block-txs.js";
 let timeoutId: number | undefined;
 let cancelPolling = false;
 
-export const startPolling = async ({
-  forceStartFromProposedHeight,
-  forceStartFromProvenHeight,
-}: {
-  forceStartFromProposedHeight?: number;
-  forceStartFromProvenHeight?: number;
-} = {}) => {
+export const startPolling = () => {
   if (timeoutId) {
     throw new Error("Poller already started");
-  }
-  if (forceStartFromProposedHeight) {
-    await storeProcessedProposedBlockHeight(forceStartFromProposedHeight - 1);
-  }
-  if (forceStartFromProvenHeight) {
-    await storeProcessedProvenBlockHeight(forceStartFromProvenHeight - 1);
   }
   logger.info(
     AZTEC_ENABLE_FULL_SWEEP_CATCHUP

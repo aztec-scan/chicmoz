@@ -14,35 +14,22 @@ describe("full-sweep catchup config", () => {
 
   it("defaults full-sweep catchup off", async () => {
     delete process.env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP;
-    delete process.env.AZTEC_DISABLE_ETERNAL_CATCHUP;
 
-    const { AZTEC_ENABLE_FULL_SWEEP_CATCHUP, AZTEC_DISABLE_ETERNAL_CATCHUP } =
-      await import("../../src/environment.js");
+    const { AZTEC_ENABLE_FULL_SWEEP_CATCHUP } = await import(
+      "../../src/environment.js",
+    );
 
     expect(AZTEC_ENABLE_FULL_SWEEP_CATCHUP).toBe(false);
-    expect(AZTEC_DISABLE_ETERNAL_CATCHUP).toBe(true);
   });
 
   it("enables full-sweep catchup with the new explicit env var", async () => {
     process.env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP = "true";
-    process.env.AZTEC_DISABLE_ETERNAL_CATCHUP = "true";
 
-    const { AZTEC_ENABLE_FULL_SWEEP_CATCHUP, AZTEC_DISABLE_ETERNAL_CATCHUP } =
-      await import("../../src/environment.js");
-
-    expect(AZTEC_ENABLE_FULL_SWEEP_CATCHUP).toBe(true);
-    expect(AZTEC_DISABLE_ETERNAL_CATCHUP).toBe(false);
-  });
-
-  it("keeps legacy rollback behavior when the new env var is unset", async () => {
-    delete process.env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP;
-    process.env.AZTEC_DISABLE_ETERNAL_CATCHUP = "false";
-
-    const { AZTEC_ENABLE_FULL_SWEEP_CATCHUP, AZTEC_DISABLE_ETERNAL_CATCHUP } =
-      await import("../../src/environment.js");
+    const { AZTEC_ENABLE_FULL_SWEEP_CATCHUP } = await import(
+      "../../src/environment.js",
+    );
 
     expect(AZTEC_ENABLE_FULL_SWEEP_CATCHUP).toBe(true);
-    expect(AZTEC_DISABLE_ETERNAL_CATCHUP).toBe(false);
   });
 });
 
@@ -123,7 +110,7 @@ describe("block poller full-sweep behavior", () => {
   it("does not call full-sweep catchup when disabled", async () => {
     const poller = await importPoller(false);
 
-    await poller.startPolling();
+    poller.startPolling();
     await vi.waitFor(() => expect(storeBlockHeights).toHaveBeenCalled());
 
     expect(getBlock).not.toHaveBeenCalled();
@@ -138,7 +125,7 @@ describe("block poller full-sweep behavior", () => {
   it("keeps manual full-sweep catchup working when enabled", async () => {
     const poller = await importPoller(true);
 
-    await poller.startPolling();
+    poller.startPolling();
     await vi.waitFor(() => expect(onCatchupBlock).toHaveBeenCalled());
 
     expect(getBlock).toHaveBeenCalledWith(1);
