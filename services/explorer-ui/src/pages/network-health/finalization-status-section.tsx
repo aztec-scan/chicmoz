@@ -6,6 +6,7 @@ import { useBlocksByFinalizationStatus } from "~/hooks/api/blocks";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 import { type BlockWithStatuses } from "./types";
+import { type ChicmozL2NativeBlockStatus } from "@chicmoz-pkg/types";
 
 export const FinalizationStatusSection: FC = () => {
   const {
@@ -26,14 +27,15 @@ export const FinalizationStatusSection: FC = () => {
       return [];
     }
 
-    const allPossibleStatuses = [0, 1, 2, 3, 4, 5];
+    const allPossibleStatuses: ChicmozL2NativeBlockStatus[] = [
+      "finalized",
+      "proven",
+      "checkpointed",
+      "proposed",
+      "unknown",
+    ];
 
     const sortedBlocks = [...blocksByFinalizationStatus].sort((a, b) => {
-      const statusDiff =
-        Number(b.finalizationStatus) - Number(a.finalizationStatus);
-      if (statusDiff !== 0) {
-        return statusDiff;
-      }
       if (b.height === a.height) {
         return 0;
       }
@@ -43,10 +45,9 @@ export const FinalizationStatusSection: FC = () => {
     const result: BlockWithStatuses[] = [];
 
     for (const statusValue of allPossibleStatuses) {
-      const bestBlock =
-        sortedBlocks.find(
-          (block) => Number(block.finalizationStatus) === statusValue,
-        ) ?? sortedBlocks[0]; // Fallback to highest block if none found
+      const bestBlock = sortedBlocks.find(
+        (block) => (block.nativeStatus ?? "unknown") === statusValue,
+      );
 
       if (bestBlock) {
         result.push({
@@ -56,20 +57,15 @@ export const FinalizationStatusSection: FC = () => {
       }
     }
 
-    result.sort((a, b) => b.statuses[0] - a.statuses[0]);
-
     return result;
   }, [blocksByFinalizationStatus]);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
-      <h2 className="mb-4">Latest Blocks by Finalization Status</h2>
+      <h2 className="mb-4">Latest Blocks by Native Status</h2>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        Currently we are refactoring so that we will have fewer, less
-        complicated statuses. In the meantime, the UI is displaying the new
-        simpler statuses, except for this table, where we are showing both. It
-        also becomes painfully clear that the detailed status is not always
-        correct for each block height.
+        Statuses are derived from Aztec native L2 tips. L1 proposal and proof
+        events remain available as factual metadata on block detail pages.
       </p>
       {blocksByStatusLoading ? (
         <Loader amount={5} />
@@ -82,8 +78,7 @@ export const FinalizationStatusSection: FC = () => {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left">Finalization Status</th>
-                <th className="px-4 py-2 text-left">Detailed Status</th>
+                <th className="px-4 py-2 text-left">Native Status</th>
                 <th className="px-4 py-2 text-left">Block Height</th>
                 <th className="px-4 py-2 text-left">Block Hash</th>
                 <th className="px-4 py-2 text-left">Date & Time</th>
@@ -97,13 +92,7 @@ export const FinalizationStatusSection: FC = () => {
                     className="border-t dark:border-gray-700"
                   >
                     <td className="px-4 py-2">
-                      <BlockStatusBadge status={status} />
-                    </td>
-                    <td className="px-4 py-2">
-                      <BlockStatusBadge
-                        status={status}
-                        useSimplifiedStatuses={false}
-                      />
+                      <BlockStatusBadge nativeStatus={status} />
                     </td>
                     <td className="px-4 py-2">
                       <Link

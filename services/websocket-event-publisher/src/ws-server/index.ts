@@ -5,7 +5,6 @@ import {
   WebsocketUpdateMessageSender,
   jsonStringify,
 } from "@chicmoz-pkg/types";
-import { type ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
 import { WebSocket, WebSocketServer } from "ws";
 import { PORT } from "../environment.js";
 import { logger } from "../logger.js";
@@ -68,17 +67,6 @@ export const sendBlockToClients = (block: ChicmozL2Block) => {
   });
   logger.info(
     `📡 Sent block ${block.header.globalVariables.blockNumber} to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
-  );
-};
-
-export const sendFinalizationUpdateToClients = (
-  finalizationUpdate: ChicmozL2BlockFinalizationUpdateEvent,
-) => {
-  const { clientStatuses, totalClients } = sendUpdateToClients({
-    finalizationUpdate,
-  });
-  logger.info(
-    `📡 Sent finalization update for block ${finalizationUpdate.l2BlockHash} to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
   );
 };
 

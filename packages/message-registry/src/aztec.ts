@@ -1,6 +1,5 @@
 import type {
   ChicmozChainInfo,
-  ChicmozL2Block,
   ChicmozL2BlockFinalizationStatus,
   ChicmozL2Tips,
   ChicmozL2ContractInstanceDeployedEvent,
@@ -86,11 +85,6 @@ export type ChicmozChainInfoEvent = {
   chainInfo: ChicmozChainInfo;
 };
 
-export type ChicmozL2BlockFinalizationUpdateEvent = {
-  l2BlockHash: ChicmozL2Block["hash"];
-  status: ChicmozL2BlockFinalizationStatus;
-};
-
 export type CompileSourceRequestEvent = {
   jobId: string;
   contractClassId: string;
@@ -133,7 +127,6 @@ export type L2_MESSAGES = {
   L2_RPC_NODE_ALIVE_EVENT: ChicmozL2RpcNodeAliveEvent;
   L2_RPC_NODE_INFO_EVENT: ChicmozL2RpcNodeInfoEvent;
   CHAIN_INFO_EVENT: ChicmozChainInfoEvent;
-  L2_BLOCK_FINALIZATION_UPDATE_EVENT: ChicmozL2BlockFinalizationUpdateEvent;
   COMPILE_SOURCE_REQUEST_EVENT: CompileSourceRequestEvent;
   COMPILE_SOURCE_RESULT_EVENT: CompileSourceResultEvent;
 };

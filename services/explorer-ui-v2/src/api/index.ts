@@ -8,5 +8,6 @@ export * from "./l1-l2-validator";
 export * from "./search";
 export * from "./rpc-node";
 export * from "./stats";
+export * from "./tips";
 export * from "./tx";
 export * from "./tx-effect";

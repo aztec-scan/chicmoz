@@ -174,9 +174,6 @@ export const handleWebSocketMessage = async (
   if (update.txs) {
     handlePendingTxs(queryClient, update.txs);
   }
-  if (update.finalizationUpdate) {
-    await handleFinalizationUpdate(queryClient);
-  }
   if (update.l2Tips) {
     await handleFinalizationUpdate(queryClient);
   }

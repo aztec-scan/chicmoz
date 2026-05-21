@@ -38,6 +38,7 @@ export const queryKeyGenerator = {
   blocksByStatus: ["blocks", "by-status"],
   orphanedBlocks: ["blocks", "orphaned"],
   reorgs: ["reorgs"],
+  l2TipsHealth: ["l2TipsHealth"],
 
   latestTxEffects: ["latestTxEffects"],
   latestTableTxEffects: ["latestTableTxEffects"],

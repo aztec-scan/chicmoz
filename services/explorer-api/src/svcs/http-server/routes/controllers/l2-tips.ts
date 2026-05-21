@@ -12,8 +12,7 @@ export const openapi_GET_L2_TIPS: OpenAPIObject["paths"] = {
       summary: "Get latest Aztec native L2 tips and health state",
       description:
         "Returns the latest L2 tip snapshot observed from AztecNode.getL2Tips(). " +
-        "`nativeStatus` is the preferred additive block-display status derived from these tips; " +
-        "legacy `finalizationStatus` remains available for compatibility until a later migration. " +
+        "`nativeStatus` is the product-facing block-display status derived from these tips. " +
         "On Aztec v4, upstream `finalized` may currently equal `proven`. " +
         "`checkpointed` means the block is at or below the latest checkpointed tip; `unknown` means tips are missing, stale/degraded, orphaned, or the block is above the proposed tip.",
       responses: l2TipsHealthResponse,
