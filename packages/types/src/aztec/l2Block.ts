@@ -34,7 +34,10 @@ export const LAST_FINALIZATION_STATUS =
 
 export const chicmozL2BlockFinalizationStatusSchema = z
   .nativeEnum(ChicmozL2BlockFinalizationStatus)
-  .default(0);
+  .default(0)
+  .describe(
+    "Deprecated legacy compatibility status. Prefer nativeStatus for product display.",
+  );
 
 export const chicmozL2NativeBlockStatusSchema = z.enum([
   "proposed",
@@ -42,7 +45,9 @@ export const chicmozL2NativeBlockStatusSchema = z.enum([
   "proven",
   "finalized",
   "unknown",
-]);
+]).describe(
+  "Aztec-native block display status derived from current L2 tips. On Aztec v4, finalized may equal proven upstream.",
+);
 
 export type ChicmozL2NativeBlockStatus = z.infer<
   typeof chicmozL2NativeBlockStatusSchema
@@ -78,6 +83,22 @@ export const chicmozL2TipsSchema = z.object({
 });
 
 export type ChicmozL2Tips = z.infer<typeof chicmozL2TipsSchema>;
+
+export const chicmozL2TipsHealthSchema = z.object({
+  tips: chicmozL2TipsSchema,
+  observedAt: z.coerce.number().int().nonnegative(),
+  stale: z.boolean(),
+  stalenessMs: z.coerce.number().int().nonnegative(),
+  staleAfterMs: z.coerce.number().int().positive(),
+  degraded: z.boolean(),
+  degradedReason: z.string().optional(),
+  source: z.object({
+    rpcNodeName: z.string().optional(),
+    aztecNodeVersion: z.string().optional(),
+  }),
+});
+
+export type ChicmozL2TipsHealth = z.infer<typeof chicmozL2TipsHealthSchema>;
 
 export const chicmozL2BlockSchema = z.object({
   hash: hexStringSchema,

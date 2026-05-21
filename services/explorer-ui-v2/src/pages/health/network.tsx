@@ -13,6 +13,7 @@ import {
   useChainErrors,
   useChainInfo,
   useFeeRecipients,
+  useL2TipsHealth,
   useRpcNodes,
   useReorgs,
   useRollupVersions,
@@ -38,6 +39,7 @@ export const NetworkHealthPage: FC = () => {
   const { data: rollupVersions } = useRollupVersions();
   const { data: feeRecipients } = useFeeRecipients();
   const { data: rpcNodes } = useRpcNodes();
+  const { data: tipsHealth, error: tipsHealthError } = useL2TipsHealth();
   const status = useChainHealth();
   const feeJuiceDecimals = chainInfo?.feeJuiceDecimals ?? 18;
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
@@ -73,6 +75,14 @@ export const NetworkHealthPage: FC = () => {
   const latestReorg = (reorgs ?? []).find(
     (r) => now - r.timestamp.getTime() < SEVEN_DAYS_MS,
   );
+  const tipsObservedAge = tipsHealth
+    ? ageStr(tipsHealth.observedAt)
+    : undefined;
+  const tipsTone = tipsHealth?.degraded
+    ? "var(--red)"
+    : tipsHealth?.stale
+      ? "#c99800"
+      : "var(--green)";
   const renderL1ContractAddress = (
     address: string | undefined,
     title: string,
@@ -180,6 +190,27 @@ export const NetworkHealthPage: FC = () => {
 
       <div className="stats-strip">
         <div className="sc">
+          <div className="lbl">Native tips</div>
+          <div className="val" style={{ color: tipsTone }}>
+            {tipsHealthError
+              ? "unavailable"
+              : tipsHealth?.degraded
+                ? "degraded"
+                : tipsHealth?.stale
+                  ? "stale"
+                  : tipsHealth
+                    ? "fresh"
+                    : "—"}
+          </div>
+          <div className="sub">
+            {tipsHealth
+              ? `observed ${tipsObservedAge} · /api/l2/tips`
+              : tipsHealthError
+                ? tipsHealthError.message
+                : "loading /api/l2/tips"}
+          </div>
+        </div>
+        <div className="sc">
           <div className="lbl">Block cadence</div>
           <div className="val">
             {BLOCK_TIME_TARGET_SECONDS}
@@ -221,6 +252,62 @@ export const NetworkHealthPage: FC = () => {
             {errs24h.length === 0
               ? "no errors in last 24h"
               : `${errs24h.length} in last 24h`}
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-head">
+          <h3>
+            Native L2 tips<span className="tag">/api/l2/tips</span>
+          </h3>
+        </div>
+        <div className="kv-grid">
+          <div className="kv wide">
+            <span className="k">Proposed</span>
+            <span className="v">
+              {tipsHealth
+                ? `#${fmtNum(tipsHealth.tips.proposed.number)} · ${truncateHashString(tipsHealth.tips.proposed.hash)}`
+                : "—"}
+            </span>
+          </div>
+          <div className="kv wide">
+            <span className="k">Checkpointed</span>
+            <span className="v">
+              {tipsHealth
+                ? `#${fmtNum(tipsHealth.tips.checkpointed.block.number)} · ${truncateHashString(tipsHealth.tips.checkpointed.block.hash)}`
+                : "—"}
+            </span>
+          </div>
+          <div className="kv wide">
+            <span className="k">Proven</span>
+            <span className="v">
+              {tipsHealth
+                ? `#${fmtNum(tipsHealth.tips.proven.block.number)} · ${truncateHashString(tipsHealth.tips.proven.block.hash)}`
+                : "—"}
+            </span>
+          </div>
+          <div className="kv wide">
+            <span className="k">Finalized</span>
+            <span className="v">
+              {tipsHealth
+                ? `#${fmtNum(tipsHealth.tips.finalized.block.number)} · ${truncateHashString(tipsHealth.tips.finalized.block.hash)}`
+                : "—"}
+            </span>
+          </div>
+          <div className="kv wide">
+            <span className="k">Health</span>
+            <span className="v" style={{ color: tipsTone }}>
+              {tipsHealth
+                ? tipsHealth.degraded
+                  ? `degraded · ${tipsHealth.degradedReason ?? "unknown reason"}`
+                  : tipsHealth.stale
+                    ? `stale · ${fmtNum(tipsHealth.stalenessMs)}ms old`
+                    : `fresh · observed ${tipsObservedAge}`
+                : tipsHealthError
+                  ? tipsHealthError.message
+                  : "loading"}
+            </span>
           </div>
         </div>
       </div>
@@ -315,7 +402,8 @@ export const NetworkHealthPage: FC = () => {
         <div className="panel">
           <div className="panel-head">
             <h3>
-              Rollup versions<span className="tag">/api/l2/rollup-versions</span>
+              Rollup versions
+              <span className="tag">/api/l2/rollup-versions</span>
             </h3>
           </div>
           <div className="events-list">
@@ -436,7 +524,6 @@ export const NetworkHealthPage: FC = () => {
             )}
           </div>
         </div>
-
       </div>
     </Shell>
   );

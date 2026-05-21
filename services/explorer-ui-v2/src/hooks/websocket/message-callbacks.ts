@@ -10,10 +10,16 @@ export const handleWebSocketMessage = async (
   queryClient: QueryClient,
   raw: string,
 ): Promise<void> => {
-  let parsed: { block?: unknown; topic?: string; txs?: unknown };
+  let parsed: {
+    block?: unknown;
+    l2Tips?: unknown;
+    topic?: string;
+    txs?: unknown;
+  };
   try {
     parsed = JSON.parse(raw) as {
       block?: unknown;
+      l2Tips?: unknown;
       topic?: string;
       txs?: unknown;
     };
@@ -22,11 +28,15 @@ export const handleWebSocketMessage = async (
   }
 
   const topic = parsed.topic?.toLowerCase();
-  const hasBlockUpdate = parsed.block !== undefined || topic?.includes("block");
-  const hasTxUpdate = parsed.txs !== undefined || topic?.includes("tx");
-  const hasStatsUpdate = topic?.includes("stats");
+  const hasBlockUpdate =
+    parsed.block !== undefined || (topic?.includes("block") ?? false);
+  const hasTipsUpdate =
+    parsed.l2Tips !== undefined || (topic?.includes("tips") ?? false);
+  const hasTxUpdate =
+    parsed.txs !== undefined || (topic?.includes("tx") ?? false);
+  const hasStatsUpdate = topic?.includes("stats") ?? false;
 
-  if (hasBlockUpdate) {
+  if (hasBlockUpdate || hasTipsUpdate) {
     await queryClient.invalidateQueries({
       queryKey: queryKeyGenerator.latestBlock,
     });
@@ -34,7 +44,10 @@ export const handleWebSocketMessage = async (
       queryKey: queryKeyGenerator.latestTableBlocks,
     });
     await queryClient.invalidateQueries({
-      queryKey: queryKeyGenerator.blocksByStatus,
+      queryKey: queryKeyGenerator.blocksByNativeStatus,
+    });
+    await queryClient.invalidateQueries({
+      queryKey: queryKeyGenerator.l2TipsHealth,
     });
   }
 

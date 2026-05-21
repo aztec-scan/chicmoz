@@ -1,11 +1,11 @@
 import { useMemo, type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { useGetLatestTxEffects, useSubTitle } from "~/hooks";
-import { useBlocksByFinalizationStatus, useReorgs } from "~/hooks/api/blocks";
+import { useBlocksByNativeStatus, useReorgs } from "~/hooks/api/blocks";
 import { useValidatorTotals } from "~/hooks/api/l1-l2-validator";
 import { BaseLayout } from "~/layout/base-layout";
 import { BlockProductionSection } from "./block-production-section";
-import { FinalizationStatusSection } from "./finalization-status-section";
+import { NativeStatusSection } from "./native-status-section";
 import { OrphanedBlocksSection } from "./orphaned-blocks-section";
 import { ReorgSection } from "./reorg-section";
 import { ValidatorStatusSection } from "./validator-status-section";
@@ -26,10 +26,10 @@ export const NetworkHealth: FC = () => {
   } = useValidatorTotals();
 
   const {
-    data: blocksByFinalizationStatus,
-    isLoading: blocksByStatusLoading,
-    error: blocksByStatusError,
-  } = useBlocksByFinalizationStatus();
+    data: blocksByNativeStatus,
+    isLoading: blocksByNativeStatusLoading,
+    error: blocksByNativeStatusError,
+  } = useBlocksByNativeStatus();
 
   const {
     data: latestTxEffects,
@@ -96,15 +96,15 @@ export const NetworkHealth: FC = () => {
     return { validatorsTitle: title, validatorsData: data };
   }, [validatorTotals]);
 
-  const blocksByFinalizationStatusData = useMemo(() => {
-    if (!blocksByFinalizationStatus) {
+  const blocksByNativeStatusData = useMemo(() => {
+    if (!blocksByNativeStatus) {
       return "A lot";
     }
 
     let highestBlockHeight = 0n;
     let lowestBlockHeight = 0n;
 
-    for (const block of blocksByFinalizationStatus) {
+    for (const block of blocksByNativeStatus) {
       if (block.height > highestBlockHeight) {
         highestBlockHeight = block.height;
       }
@@ -114,7 +114,7 @@ export const NetworkHealth: FC = () => {
     }
 
     return (highestBlockHeight - lowestBlockHeight).toString();
-  }, [blocksByFinalizationStatus]);
+  }, [blocksByNativeStatus]);
 
   return (
     <BaseLayout>
@@ -144,15 +144,15 @@ export const NetworkHealth: FC = () => {
         />
         <InfoBadge
           title="Unproven Blocks"
-          isLoading={blocksByStatusLoading}
-          error={blocksByStatusError}
-          data={blocksByFinalizationStatusData}
+          isLoading={blocksByNativeStatusLoading}
+          error={blocksByNativeStatusError}
+          data={blocksByNativeStatusData}
         />
       </div>
 
       <BlockProductionSection />
       <ValidatorStatusSection />
-      <FinalizationStatusSection />
+      <NativeStatusSection />
       <ReorgSection />
       <OrphanedBlocksSection />
     </BaseLayout>

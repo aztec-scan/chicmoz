@@ -267,7 +267,7 @@
   min-height: 42px;
 }
 .row-block {
-  grid-template-columns: 100px 1fr 60px 90px 80px;
+  grid-template-columns: 100px minmax(0, 1fr) 40px 112px 80px;
 }
 .row-tx {
   grid-template-columns: 1fr 100px 80px 80px;
@@ -322,7 +322,7 @@
   gap: 10px;
 }
 .row-head.block-cols {
-  grid-template-columns: 100px minmax(0, 1fr) 60px 90px 80px;
+  grid-template-columns: 100px minmax(0, 1fr) 40px 112px 80px;
 }
 .row-head.tx-cols {
   grid-template-columns: minmax(0, 1fr) 100px 110px 80px;

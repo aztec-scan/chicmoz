@@ -339,16 +339,16 @@ The architecture follows an event-driven pattern:
 
 ### aztec-listener Configuration
 
-| Environment Variable                                      | Description                                 | Default Value                    |
-| --------------------------------------------------------- | ------------------------------------------- | -------------------------------- |
-| `AZTEC_RPC_URL`                                           | URL of the Aztec node                       | `http://aztec-sandbox-node:8081` |
-| `BLOCK_POLL_INTERVAL_MS`                                  | Polling interval for blocks in milliseconds | `500`                            |
-| `AZTEC_LISTEN_FOR_PENDING_TXS`                            | Whether to listen for pending transactions  | `true`                           |
-| `AZTEC_LISTEN_FOR_CHAIN_INFO`                             | Whether to listen for chain info updates    | `true`                           |
-| `AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS`                | Disable listening for proposed blocks       | `false`                          |
-| `AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS`                  | Disable listening for proven blocks         | `false`                          |
-| `AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT` | Force start from a specific block height    | `undefined`                      |
-| `L2_NETWORK_ID`                                           | Identifier for the L2 network               | Required                         |
+| Environment Variable                       | Description                                 | Default Value                    |
+| ------------------------------------------ | ------------------------------------------- | -------------------------------- |
+| `AZTEC_RPC_URL`                            | URL of the Aztec node                       | `http://aztec-sandbox-node:8081` |
+| `BLOCK_POLL_INTERVAL_MS`                   | Polling interval for blocks in milliseconds | `500`                            |
+| `AZTEC_LISTEN_FOR_PENDING_TXS`             | Whether to listen for pending transactions  | `true`                           |
+| `AZTEC_LISTEN_FOR_CHAIN_INFO`              | Whether to listen for chain info updates    | `true`                           |
+| `AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS` | Disable listening for proposed blocks       | `false`                          |
+| `AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS`   | Disable listening for proven blocks         | `false`                          |
+| `AZTEC_ENABLE_FULL_SWEEP_CATCHUP`          | Enable manual full-chain sweep catchup      | `false`                          |
+| `L2_NETWORK_ID`                            | Identifier for the L2 network               | Required                         |
 
 ### ethereum-listener Configuration
 
@@ -486,7 +486,7 @@ Get a list of blocks with pagination.
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 10)
 - `sort`: Sort direction (asc/desc)
-- `finalizationStatus`: Filter by finalization status
+- `status`: Filter by product-facing native block status (`proposed`, `checkpointed`, `proven`, `finalized`, `unknown`, `orphaned`) where supported.
 
 **Response**:
 
@@ -498,6 +498,7 @@ Get a list of blocks with pagination.
       "hash": "0x...",
       "timestamp": "2023-01-01T00:00:00Z",
       "transactionCount": 5,
+      "nativeStatus": "proven",
       "finalizationStatus": "L2_NODE_SEEN_PROVEN"
     }
   ],
@@ -531,11 +532,59 @@ Get details of a specific block.
     "transactionHashes": ["0x...", "0x..."],
     "version": "1.0.0"
   },
+  "nativeStatus": "proven",
   "finalizationStatus": "L2_NODE_SEEN_PROVEN",
   "l1Data": {
     "rollupContractAddress": "0x...",
     "l1BlockNumber": 12345
   }
+}
+```
+
+#### Native L2 status fields
+
+Block responses may include both:
+
+- `nativeStatus`: product-facing Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Use this for UI and consumer-facing status labels.
+- `finalizationStatus`: **deprecated** legacy compatibility status. It remains available until a later migration removes the old finalization-status path, but consumers should not use it to drive product display.
+
+Native status values:
+
+- `proposed`: block is at or below the latest proposed tip.
+- `checkpointed`: block is at or below the latest checkpointed tip.
+- `proven`: block is at or below the latest proven tip.
+- `finalized`: block is at or below the latest finalized tip. On Aztec v4 this may currently be equal to `proven` upstream.
+- `unknown`: tips are missing, stale/degraded, the block is orphaned, or the block is above the proposed tip.
+
+#### `GET /api/v1/{apiKey}/l2/tips`
+
+Get the latest Aztec-native L2 tips observed by `aztec-listener` and stored by `explorer-api`.
+
+**Response**:
+
+```json
+{
+  "tips": {
+    "proposed": { "number": 123, "hash": "0x..." },
+    "checkpointed": {
+      "block": { "number": 120, "hash": "0x..." },
+      "checkpoint": { "number": 12, "hash": "0x..." }
+    },
+    "proven": {
+      "block": { "number": 118, "hash": "0x..." },
+      "checkpoint": { "number": 11, "hash": "0x..." }
+    },
+    "finalized": {
+      "block": { "number": 118, "hash": "0x..." },
+      "checkpoint": { "number": 11, "hash": "0x..." }
+    }
+  },
+  "observedAt": 1710000000000,
+  "stale": false,
+  "stalenessMs": 1500,
+  "staleAfterMs": 60000,
+  "degraded": false,
+  "source": { "rpcNodeName": "aztec-rpc-1" }
 }
 ```
 

@@ -4,8 +4,6 @@ import {
   AZTEC_LISTEN_FOR_CHAIN_INFO,
   AZTEC_LISTEN_FOR_L2_TIPS,
   AZTEC_LISTEN_FOR_PENDING_TXS,
-  AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT,
-  AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
   getConfigStr,
 } from "../../environment.js";
 import { onL2RpcNodeError } from "../../events/emitted/index.js";
@@ -47,13 +45,8 @@ export const init = async () => {
   };
 };
 
-export const startPoller = async () => {
-  await blockPoller.startPolling({
-    forceStartFromProposedHeight:
-      AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT,
-    forceStartFromProvenHeight:
-      AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
-  });
+export const startPoller = () => {
+  blockPoller.startPolling();
   if (AZTEC_LISTEN_FOR_PENDING_TXS) {
     pendingTxsPoller.startPolling();
     droppedTxVerifier.start();

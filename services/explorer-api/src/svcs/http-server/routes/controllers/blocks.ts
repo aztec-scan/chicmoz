@@ -13,6 +13,7 @@ import {
   dbWrapper,
   reorgResponseArray,
 } from "./utils/index.js";
+import { parseWithFreshNativeStatuses } from "./utils/native-status-overlay.js";
 
 export const openapi_GET_LATEST_HEIGHT: OpenAPIObject["paths"] = {
   "/l2/latest-height": {
@@ -55,7 +56,7 @@ export const GET_LATEST_BLOCK = asyncHandler(async (_req, res) => {
     ["l2", "blocks"],
     db.l2Block.getLatestBlock,
   );
-  res.status(200).json(JSON.parse(latestBlockData));
+  res.status(200).json(await parseWithFreshNativeStatuses(latestBlockData));
 });
 
 export const openapi_GET_BLOCK: OpenAPIObject["paths"] = {
@@ -91,7 +92,7 @@ export const GET_BLOCK = asyncHandler(async (req, res) => {
   const blockData = await dbWrapper.get(["l2", "blocks", heightOrHash], () =>
     db.l2Block.getBlock(heightOrHash),
   );
-  res.status(200).json(JSON.parse(blockData));
+  res.status(200).json(await parseWithFreshNativeStatuses(blockData));
 });
 
 export const openapi_GET_BLOCKS: OpenAPIObject["paths"] = {
@@ -144,27 +145,27 @@ export const GET_BLOCKS = asyncHandler(async (req, res) => {
   const blocksData = await dbWrapper.getLatest(["l2", "blocks", from, to], () =>
     db.l2Block.getBlocks({ from, to }),
   );
-  res.status(200).json(JSON.parse(blocksData));
+  res.status(200).json(await parseWithFreshNativeStatuses(blocksData));
 });
 
-export const openapi_GET_BLOCKS_BY_FINALIZATION_STATUS: OpenAPIObject["paths"] =
+export const openapi_GET_BLOCKS_BY_NATIVE_STATUS: OpenAPIObject["paths"] =
   {
     "/l2/blocks/by-status": {
       get: {
         tags: ["L2", "blocks"],
-        summary: "Get one block for each finalization status",
+        summary: "Get representative blocks for native L2 status buckets",
         responses: blockResponseArray,
       },
     },
   };
 
-export const GET_BLOCKS_BY_FINALIZATION_STATUS = asyncHandler(
+export const GET_BLOCKS_BY_NATIVE_STATUS = asyncHandler(
   async (_req, res) => {
     const blocksData = await dbWrapper.getLatest(
       ["l2", "blocks", "by-status"],
-      () => db.l2Block.getBlocksByFinalizationStatus(),
+      () => db.l2Block.getBlocksByNativeStatus(),
     );
-    res.status(200).json(JSON.parse(blocksData));
+    res.status(200).json(await parseWithFreshNativeStatuses(blocksData));
   },
 );
 
@@ -183,7 +184,7 @@ export const GET_ORPHANED_BLOCKS = asyncHandler(async (_req, res) => {
     ["l2", "blocks", "orphaned"],
     () => db.l2Block.getOrphanedBlocks(),
   );
-  res.status(200).json(JSON.parse(orphanedBlocksData));
+  res.status(200).json(await parseWithFreshNativeStatuses(orphanedBlocksData));
 });
 
 export const openapi_GET_REORGS: OpenAPIObject["paths"] = {
@@ -218,5 +219,5 @@ export const GET_ORPHANED_BLOCKS_LIMITED = asyncHandler(async (_req, res) => {
     ["l2", "blocks", "orphans"],
     () => db.l2Block.getOrphanedBlocks(100),
   );
-  res.status(200).json(JSON.parse(orphanedBlocksData));
+  res.status(200).json(await parseWithFreshNativeStatuses(orphanedBlocksData));
 });

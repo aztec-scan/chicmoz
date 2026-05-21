@@ -2,7 +2,7 @@ import {
   AZTEC_SCAN_MANUAL_SOURCE_CODE_URLS,
   AZTEC_SCAN_NOTES,
 } from "./constants.js";
-import { L2_NETWORK_ID } from "./environment.js";
+import { L2_BLOCK_RECONCILIATION_ENABLED, L2_NETWORK_ID } from "./environment.js";
 import { subscribeHandlers } from "./events/received/index.js";
 import { l2BlockRangeRequest } from "./events/emitted/index.js";
 import { logger } from "./logger.js";
@@ -13,6 +13,7 @@ import { deleteAllTxs } from "./svcs/database/controllers/l2Tx/delete-all-txs.js
 import { updateContractClassManualSourceCodeUrl } from "./svcs/database/controllers/l2contract/update.js";
 import { initializeProtocolContracts } from "./utils/protocol-contracts.js";
 import { buildStartupMissingBlockRangeRequest } from "./svcs/database/controllers/l2block/missing-ranges.js";
+import { startL2BlockReconciliation } from "./svcs/reconciliation/l2-block-reconciliation.js";
 
 export const start = async () => {
   await deleteAllTxs(); // TODO: perhaps a more specific deleteAllTxs should be created, also some logs could be good.
@@ -49,4 +50,9 @@ URL: ${sourceCodeUrl}`);
 
   await subscribeHandlers();
   await l2BlockRangeRequest(await buildStartupMissingBlockRangeRequest());
+  if (L2_BLOCK_RECONCILIATION_ENABLED) {
+    startL2BlockReconciliation();
+  } else {
+    logger.info("Cadenced L2 block reconciliation is disabled");
+  }
 };

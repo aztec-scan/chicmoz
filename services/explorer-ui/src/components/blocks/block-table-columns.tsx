@@ -105,6 +105,7 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
       <BlockStatusBadge
         className="font-mono"
         nativeStatus={row.original.nativeStatus}
+        orphan={row.original.orphan}
         status={row.getValue("blockStatus")}
       />
     ),

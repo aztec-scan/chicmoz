@@ -9,7 +9,13 @@ import { CopyableText } from "../copy-text";
 import { CustomTooltip } from "../custom-tooltip";
 import { Loader } from "../loader";
 
-const nativeStatuses = ["proposed", "checkpointed", "proven", "finalized", "unknown"] as const;
+const nativeStatuses = [
+  "proposed",
+  "checkpointed",
+  "proven",
+  "finalized",
+  "unknown",
+] as const;
 
 interface KeyValueRowProps {
   label: string;
@@ -141,6 +147,7 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
                 ? (value as (typeof nativeStatuses)[number])
                 : undefined
             }
+            orphan={value === "orphaned"}
             status={Number(value)}
           />
         </div>
@@ -149,9 +156,7 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
         <span className={commonTextClasses}>
           {(() => {
             const timeSince = formatTimeSince(timestamp);
-            return `${new Date(
-              timestamp,
-            ).toLocaleString()} (${timeSince} ago)`;
+            return `${new Date(timestamp).toLocaleString()} (${timeSince} ago)`;
           })()}
         </span>
       )}

@@ -14,6 +14,7 @@ import {
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2RpcNodeErrorSchema,
+  chicmozL2TipsHealthSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozReorgSchema,
@@ -60,6 +61,12 @@ const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
 
 const cleanedBlockSchema = chicmozL2BlockLightSchema.extend({
   height: z.string(), // Convert height from BigInt to string
+  finalizationStatus: chicmozL2BlockLightSchema.shape.finalizationStatus.describe(
+    "Deprecated legacy compatibility status; prefer nativeStatus for product display.",
+  ),
+  nativeStatus: chicmozL2BlockLightSchema.shape.nativeStatus.describe(
+    "Product-facing Aztec-native block status derived from current L2 tips. `checkpointed` is a native L2 tip bucket; on Aztec v4, upstream `finalized` may equal `proven`.",
+  ),
   proposedOnL1: z
     .object({
       l1ContractAddress: z.string(),
@@ -282,6 +289,11 @@ const cleanedChainInfoSchema = chicmozChainInfoSchema.extend({
 export const chainInfoResponse = getResponse(
   cleanedChainInfoSchema,
   "chainInfo",
+);
+
+export const l2TipsHealthResponse = getResponse(
+  chicmozL2TipsHealthSchema,
+  "l2TipsHealth",
 );
 
 export const chainErrorsResponse = rpcNodeErrorResponseArray;

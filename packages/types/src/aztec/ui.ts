@@ -22,8 +22,12 @@ export const uiBlockTableSchema = z.object({
   height: z.coerce.bigint().nonnegative(),
   timestamp: frTimestampSchema,
   txEffectsLength: z.number(),
-  blockStatus: chicmozL2BlockFinalizationStatusSchema,
-  nativeStatus: chicmozL2NativeBlockStatusSchema.optional(),
+  blockStatus: chicmozL2BlockFinalizationStatusSchema.describe(
+    "Deprecated legacy finalization status kept for compatibility; do not drive UI display from this field.",
+  ),
+  nativeStatus: chicmozL2NativeBlockStatusSchema
+    .describe("Product-facing Aztec-native block status derived from L2 tips.")
+    .optional(),
   // True when the block has been reorged out. The row should still be shown
   // (the design has an "orphaned" filter chip) but the StatusPill must
   // collapse to "orphaned" rather than its pre-orphan finalization status.

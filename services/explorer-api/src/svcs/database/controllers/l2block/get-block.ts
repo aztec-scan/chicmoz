@@ -16,7 +16,6 @@ import {
   sql,
 } from "drizzle-orm";
 import { DB_MAX_BLOCKS } from "../../../../environment.js";
-import { logger } from "../../../../logger.js";
 import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 import { deriveNativeStatus, getTips } from "../l2/tips.js";
 import { getLatestBlockRollupVersion } from "./get-latest.js";
@@ -38,7 +37,6 @@ import {
   state,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
-import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
 import { getBlocksWhereRange, getTableColumnsWithoutId } from "../utils.js";
 
 enum GetTypes {
@@ -85,7 +83,9 @@ export interface BlockQueryOptions {
 const resolveRollupVersion = async (
   options: BlockQueryOptions,
 ): Promise<number | null> => {
-  if (options.rollupVersion !== undefined) {return options.rollupVersion;}
+  if (options.rollupVersion !== undefined) {
+    return options.rollupVersion;
+  }
   return (
     (await getCurrentRollupVersionNumber()) ??
     getLatestBlockRollupVersion(options)
@@ -122,62 +122,33 @@ export const getBlock = async (
 };
 
 /**
- * Get one block for each finalization status
- * @param options Options for retrieving blocks
- * @returns Array of blocks, one for each distinct finalization status
+ * Deprecated public path compatibility: returns representative native-tip
+ * boundary blocks instead of reading the retired finalization-status table.
  */
-export const getBlocksByFinalizationStatus = async (
+export const getBlocksByNativeStatus = async (
   options: BlockQueryOptions = {},
 ): Promise<ChicmozL2BlockLight[]> => {
-  // Get distinct finalization statuses
-  const distinctStatuses = await db()
-    .selectDistinct({
-      status: l2BlockFinalizationStatusTable.status,
-    })
-    .from(l2BlockFinalizationStatusTable)
-    .orderBy(desc(l2BlockFinalizationStatusTable.status));
-
-  // For each status, get the block with the highest block number
-  const blocks: ChicmozL2BlockLight[] = [];
-
-  for (const { status } of distinctStatuses) {
-    // Get the block with the highest block number for this status
-    const { includeOrphaned = false } = options;
-
-    const query = db()
-      .select({
-        blockHash: l2BlockFinalizationStatusTable.l2BlockHash,
-      })
-      .from(l2BlockFinalizationStatusTable)
-      .innerJoin(
-        l2Block,
-        eq(l2BlockFinalizationStatusTable.l2BlockHash, l2Block.hash),
-      )
-      .where(
-        includeOrphaned
-          ? eq(l2BlockFinalizationStatusTable.status, status)
-          : and(
-              eq(l2BlockFinalizationStatusTable.status, status),
-              isNull(l2Block.orphan_timestamp),
-            ),
-      );
-
-    const latestBlockForStatus = await query
-      .orderBy(desc(l2BlockFinalizationStatusTable.timestamp))
-      .limit(1); // Only get one block per status
-
-    if (latestBlockForStatus.length > 0) {
-      const blockHash = latestBlockForStatus[0].blockHash;
-      const block = await getBlock(blockHash, options);
-      if (block) {
-        blocks.push({
-          ...block,
-          finalizationStatus: status,
-        });
-      }
-    }
+  const tips = await getTips();
+  if (!tips || tips.degradedReason) {
+    const latest = await getBlock(-1n, options);
+    return latest ? [latest] : [];
   }
 
+  const heights = [
+    tips.finalized.block.number,
+    tips.proven.block.number,
+    tips.checkpointed.block.number,
+    tips.proposed.number,
+  ];
+  const blocks: ChicmozL2BlockLight[] = [];
+  const seen = new Set<string>();
+  for (const height of heights) {
+    const block = await getBlock(BigInt(height), options);
+    if (block && !seen.has(block.hash)) {
+      seen.add(block.hash);
+      blocks.push(block);
+    }
+  }
   return blocks;
 };
 
@@ -196,18 +167,6 @@ const _getBlocks = async (
       throw new Error("Invalid height");
     }
   }
-
-  const finalizationStatusSubquery = db()
-    .select({
-      l2BlockHash: l2BlockFinalizationStatusTable.l2BlockHash,
-      status: l2BlockFinalizationStatusTable.status,
-      rowNumber:
-        sql`ROW_NUMBER() OVER (PARTITION BY ${l2BlockFinalizationStatusTable.l2BlockHash} 
-      ORDER BY ${l2BlockFinalizationStatusTable.status} DESC, 
-      ${l2BlockFinalizationStatusTable.l2BlockNumber} DESC)`.as("row_number"),
-    })
-    .from(l2BlockFinalizationStatusTable)
-    .as("latest_status");
 
   const txEffectsSubquery = db()
     .select({
@@ -240,7 +199,6 @@ const _getBlocks = async (
       header_GlobalVariables: getTableColumnsWithoutId(globalVariables),
       header_GlobalVariables_GasFees: getTableColumnsWithoutId(gasFees),
       bodyId: body.id,
-      finalizationStatus: finalizationStatusSubquery.status,
       txEffects: txEffectsSubquery.txHashes,
     })
     .from(l2Block)
@@ -276,13 +234,6 @@ const _getBlocks = async (
         ),
       ),
     )
-    .leftJoin(
-      finalizationStatusSubquery,
-      and(
-        eq(finalizationStatusSubquery.l2BlockHash, l2Block.hash),
-        eq(finalizationStatusSubquery.rowNumber, 1),
-      ),
-    )
     .leftJoin(txEffectsSubquery, eq(txEffectsSubquery.bodyId, body.id));
 
   // Single source of truth for which rollup version this lookup should filter
@@ -290,7 +241,9 @@ const _getBlocks = async (
   // constant doesn't match (e.g. testnet running an unexpected version).
   const effectiveVersion = await resolveRollupVersion(options);
   const versionFilter =
-    effectiveVersion === null ? undefined : eq(l2Block.version, effectiveVersion);
+    effectiveVersion === null
+      ? undefined
+      : eq(l2Block.version, effectiveVersion);
 
   let whereQuery;
 
@@ -301,10 +254,7 @@ const _getBlocks = async (
         whereQuery = joinQuery;
         if (!includeOrphaned) {
           whereQuery = whereQuery.where(
-            and(
-              isNull(l2Block.orphan_timestamp),
-              versionFilter,
-            ),
+            and(isNull(l2Block.orphan_timestamp), versionFilter),
           );
         } else {
           whereQuery = whereQuery.where(versionFilter);
@@ -351,17 +301,10 @@ const _getBlocks = async (
       ? (result.txEffects as HexString[]).map((hash) => ({ txHash: hash }))
       : [];
 
-    // Use the finalization status from the subquery
-    let finalizationStatusValue = result.finalizationStatus;
-    if (finalizationStatusValue === undefined) {
-      finalizationStatusValue = FIRST_FINALIZATION_STATUS;
-      logger.warn(`Finalization status not found for block ${result.hash}`);
-    }
-
     const blockData = {
       hash: result.hash,
       height: result.height,
-      finalizationStatus: finalizationStatusValue,
+      finalizationStatus: FIRST_FINALIZATION_STATUS,
       archive: result.archive,
       proposedOnL1: result.l1L2BlockProposed?.l1BlockTimestamp
         ? result.l1L2BlockProposed
