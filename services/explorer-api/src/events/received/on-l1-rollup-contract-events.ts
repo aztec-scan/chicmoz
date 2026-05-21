@@ -19,13 +19,12 @@ import {
   addL1L2BlockProposed,
   addL1L2ProofVerified,
 } from "../../svcs/database/controllers/l2block/add_l1_data.js";
-import { emit } from "../index.js";
 
 const getLogStr = (
   prefix: string,
   l1BlockNumber: bigint,
   isFinalized: boolean,
-  suffix: string
+  suffix: string,
 ) => {
   const isFinalizedStr = isFinalized ? "✅" : "💤";
   return `${prefix} l1BlockNumber: ${l1BlockNumber} ${isFinalizedStr} ${suffix}`;
@@ -37,12 +36,11 @@ const onProp = async (event: ChicmozL1L2BlockProposed) => {
       "🎓",
       event.l1BlockNumber,
       event.isFinalized,
-      `L1L2BlockProposed l2BlockNumber: ${event.l2BlockNumber} archive: ${event.archive}`
-    )
+      `L1L2BlockProposed l2BlockNumber: ${event.l2BlockNumber} archive: ${event.archive}`,
+    ),
   );
   const parsed = chicmozL1L2BlockProposedSchema.parse(event);
-  const updateFinalizationEvent = await addL1L2BlockProposed(parsed);
-  await emit.l2BlockFinalizationUpdate(updateFinalizationEvent);
+  await addL1L2BlockProposed(parsed);
 };
 
 export const l1L2BlockProposedHandler: EventHandler = {
@@ -54,7 +52,7 @@ export const l1L2BlockProposedHandler: EventHandler = {
   topic: generateL1TopicName(
     L2_NETWORK_ID,
     getL1NetworkId(L2_NETWORK_ID),
-    "L1_L2_BLOCK_PROPOSED_EVENT"
+    "L1_L2_BLOCK_PROPOSED_EVENT",
   ),
   cb: onProp as (arg0: unknown) => Promise<void>,
 };
@@ -65,12 +63,11 @@ const onVerf = async (event: ChicmozL1L2ProofVerified) => {
       "🎩",
       event.l1BlockNumber,
       event.isFinalized,
-      `L1L2ProofVerified l2BlockNumber: ${event.l2BlockNumber} proverId: ${event.proverId}`
-    )
+      `L1L2ProofVerified l2BlockNumber: ${event.l2BlockNumber} proverId: ${event.proverId}`,
+    ),
   );
   const parsed = chicmozL1L2ProofVerifiedSchema.parse(event);
-  const updateFinalizationEvent = await addL1L2ProofVerified(parsed);
-  await emit.l2BlockFinalizationUpdate(updateFinalizationEvent);
+  await addL1L2ProofVerified(parsed);
 };
 
 export const l1L2ProofVerifiedHandler: EventHandler = {
@@ -82,7 +79,7 @@ export const l1L2ProofVerifiedHandler: EventHandler = {
   topic: generateL1TopicName(
     L2_NETWORK_ID,
     getL1NetworkId(L2_NETWORK_ID),
-    "L1_L2_PROOF_VERIFIED_EVENT"
+    "L1_L2_PROOF_VERIFIED_EVENT",
   ),
   cb: onVerf as (arg0: unknown) => Promise<void>,
 };
@@ -94,8 +91,8 @@ const onGeneric = async (event: ChicmozL1GenericContractEvent) => {
       "🍔",
       event.l1BlockNumber,
       event.isFinalized,
-      `${event.eventName}(generic) args: [${Object.keys(event.eventArgs ?? {}).join(", ")}]`
-    )
+      `${event.eventName}(generic) args: [${Object.keys(event.eventArgs ?? {}).join(", ")}]`,
+    ),
   );
   await store(event);
 };
@@ -109,7 +106,7 @@ export const l1GenericContractEventHandler: EventHandler = {
   topic: generateL1TopicName(
     L2_NETWORK_ID,
     getL1NetworkId(L2_NETWORK_ID),
-    "L1_GENERIC_CONTRACT_EVENT"
+    "L1_GENERIC_CONTRACT_EVENT",
   ),
   cb: onGeneric as (arg0: unknown) => Promise<void>,
 };
