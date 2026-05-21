@@ -3,14 +3,16 @@ import {
   L2BlockRangeRequestReason,
 } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, asc, gte, isNull, lte } from "drizzle-orm";
+import { and, asc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import {
   L2_BLOCK_RECONCILIATION_MAX_BLOCKS,
   L2_BLOCK_RECONCILIATION_SCAN_WINDOW,
   L2_BLOCK_RECONCILIATION_TIP_REPAIR_WINDOW,
+  L2_NETWORK_ID,
 } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
+import { l2OpenGapTable } from "../../schema/l2/open-gap.js";
 import { l2Block } from "../../schema/l2block/index.js";
 import { getTips } from "../l2/tips.js";
 import { getLatestHeight } from "./get-latest.js";
@@ -26,6 +28,105 @@ const rangesFromHeights = (missingHeights: number[]) => {
     }
   }
   return ranges;
+};
+
+const gapId = ({
+  from,
+  to,
+  reason,
+}: {
+  from: number;
+  to: number;
+  reason: L2BlockRangeRequestReason;
+}) => `${L2_NETWORK_ID}:${reason}:${from}:${to}`;
+
+const upsertOpenGaps = async ({
+  ranges,
+  reason,
+}: {
+  ranges: Array<{ from: number; to: number; statusHint: "proposed" }>;
+  reason: L2BlockRangeRequestReason;
+}) => {
+  for (const range of ranges) {
+    const values = {
+      id: gapId({ ...range, reason }),
+      l2NetworkId: L2_NETWORK_ID,
+      fromHeight: range.from,
+      toHeight: range.to,
+      reason,
+      statusHint: range.statusHint,
+      status: "open" as const,
+      lastSeenAt: new Date(),
+      fulfilledAt: null,
+      lastError: null,
+    };
+
+    await db()
+      .insert(l2OpenGapTable)
+      .values(values)
+      .onConflictDoUpdate({
+        target: l2OpenGapTable.id,
+        set: {
+          status: "open",
+          lastSeenAt: values.lastSeenAt,
+          statusHint: values.statusHint,
+          fulfilledAt: null,
+          lastError: null,
+        },
+      });
+  }
+};
+
+const getOpenGaps = async (maxBlocks: number) => {
+  const rows = await db()
+    .select()
+    .from(l2OpenGapTable)
+    .where(and(eq(l2OpenGapTable.l2NetworkId, L2_NETWORK_ID), eq(l2OpenGapTable.status, "open")))
+    .orderBy(asc(l2OpenGapTable.firstSeenAt))
+    .limit(maxBlocks);
+
+  const ranges: Array<{ from: number; to: number; statusHint: "proposed" }> = [];
+  let remaining = maxBlocks;
+  for (const row of rows) {
+    const size = row.toHeight - row.fromHeight + 1;
+    if (size <= remaining) {
+      ranges.push({ from: row.fromHeight, to: row.toHeight, statusHint: row.statusHint });
+      remaining -= size;
+    } else if (remaining > 0) {
+      ranges.push({
+        from: row.fromHeight,
+        to: row.fromHeight + remaining - 1,
+        statusHint: row.statusHint,
+      });
+      remaining = 0;
+    }
+    if (remaining <= 0) {
+      break;
+    }
+  }
+
+  return ranges;
+};
+
+const markGapsRequested = async (
+  ranges: Array<{ from: number; to: number; statusHint: "proposed" }>,
+) => {
+  for (const range of ranges) {
+    await db()
+      .update(l2OpenGapTable)
+      .set({
+        requestCount: sql`${l2OpenGapTable.requestCount} + 1`,
+        lastRequestedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(l2OpenGapTable.l2NetworkId, L2_NETWORK_ID),
+          eq(l2OpenGapTable.status, "open"),
+          lte(l2OpenGapTable.fromHeight, range.to),
+          gte(l2OpenGapTable.toHeight, range.from),
+        ),
+      );
+  }
 };
 
 export const findMissingHeightsInWindow = async ({
@@ -83,21 +184,27 @@ export const buildMissingBlockRangeRequest = async ({
   const allMissing = await findMissingHeightsInWindow({ from, upperBound });
   const missing = allMissing.slice(0, maxBlocks);
 
-  if (missing.length === 0) {
+  const ranges = rangesFromHeights(missing);
+  if (ranges.length > 0) {
+    await upsertOpenGaps({ ranges, reason });
+  }
+
+  const openGapRanges = await getOpenGaps(maxBlocks);
+  if (openGapRanges.length === 0) {
     logger.info(`${reason} L2 block reconciliation found no missing blocks`);
     return null;
   }
-
-  const ranges = rangesFromHeights(missing);
+  const requestRanges = openGapRanges.length > 0 ? openGapRanges : ranges;
+  await markGapsRequested(requestRanges);
   logger.info(
-    `${reason} L2 block reconciliation requesting ${missing.length} missing blocks in ${ranges.length} ranges from ${from} to ${upperBound}; remainingOpenGaps=${Math.max(0, allMissing.length - missing.length)}`,
+    `${reason} L2 block reconciliation requesting ${requestRanges.length} open-gap ranges from ${from} to ${upperBound}; newlyDiscoveredMissing=${missing.length}; remainingScanWindowMissing=${Math.max(0, allMissing.length - missing.length)}`,
   );
 
   return {
     requestId: randomUUID(),
     requestedAt: Date.now(),
     reason,
-    ranges,
+    ranges: requestRanges,
     maxBlocks,
   };
 };
@@ -126,6 +233,11 @@ export const buildTipBoundaryRepairRequest = async (): Promise<L2BlockRangeReque
   const repairWindow = L2_BLOCK_RECONCILIATION_TIP_REPAIR_WINDOW;
   const from = Math.max(1, height - repairWindow);
   const to = height + repairWindow;
+  await upsertOpenGaps({
+    reason: "tip_boundary_mismatch",
+    ranges: [{ from, to, statusHint: "proposed" }],
+  });
+  await markGapsRequested([{ from, to, statusHint: "proposed" }]);
   logger.warn(
     `Requesting L2 tip-boundary repair around block ${height}: ${from}-${to}; reason=${tips?.degradedReason}`,
   );
@@ -136,4 +248,31 @@ export const buildTipBoundaryRepairRequest = async (): Promise<L2BlockRangeReque
     ranges: [{ from, to, statusHint: "proposed" }],
     maxBlocks: Math.min(L2_BLOCK_RECONCILIATION_MAX_BLOCKS, to - from + 1),
   };
+};
+
+export const markOpenGapsFulfilledByHeight = async (height: bigint) => {
+  const candidateGaps = await db()
+    .select()
+    .from(l2OpenGapTable)
+    .where(
+      and(
+        eq(l2OpenGapTable.l2NetworkId, L2_NETWORK_ID),
+        eq(l2OpenGapTable.status, "open"),
+        lte(l2OpenGapTable.fromHeight, Number(height)),
+        gte(l2OpenGapTable.toHeight, Number(height)),
+      ),
+    );
+
+  for (const gap of candidateGaps) {
+    const missing = await findMissingHeightsInWindow({
+      from: gap.fromHeight,
+      upperBound: gap.toHeight,
+    });
+    if (missing.length === 0) {
+      await db()
+        .update(l2OpenGapTable)
+        .set({ status: "fulfilled", fulfilledAt: new Date(), lastError: null })
+        .where(eq(l2OpenGapTable.id, gap.id));
+    }
+  }
 };

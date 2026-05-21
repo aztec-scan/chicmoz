@@ -22,9 +22,13 @@ export const openapi_GET_L2_TIPS: OpenAPIObject["paths"] = {
 
 const buildTipsHealth = (
   tips: NonNullable<Awaited<ReturnType<typeof db.l2.tips.getTips>>>,
+  mismatches: Awaited<ReturnType<typeof db.l2.tips.getRecentBoundaryMismatches>>,
 ): ChicmozL2TipsHealth => {
   const stalenessMs = Math.max(0, Date.now() - tips.observedAt);
   const degraded = tips.degradedReason !== undefined;
+  const repeatedMismatch = mismatches.find(
+    (mismatch) => mismatch.occurrenceCount > 1 && !mismatch.resolvedAt,
+  );
   return {
     tips: {
       proposed: tips.proposed,
@@ -39,6 +43,18 @@ const buildTipsHealth = (
     staleAfterMs: L2_TIPS_STALE_AFTER_MS,
     degraded,
     degradedReason: tips.degradedReason,
+    repeatedDegradedBoundaryMismatch: repeatedMismatch
+      ? {
+          bucket: repeatedMismatch.bucket,
+          height: repeatedMismatch.height,
+          expectedHash: repeatedMismatch.expectedHash,
+          observedDbHash: repeatedMismatch.observedDbHash ?? undefined,
+          firstSeenAt: repeatedMismatch.firstSeenAt.toISOString(),
+          lastSeenAt: repeatedMismatch.lastSeenAt.toISOString(),
+          occurrenceCount: repeatedMismatch.occurrenceCount,
+          reason: repeatedMismatch.reason,
+        }
+      : undefined,
     source: tips.source,
   };
 };
@@ -49,5 +65,6 @@ export const GET_L2_TIPS = asyncHandler(async (_req, res) => {
     res.status(404).send("L2 tips not found");
     return;
   }
-  res.status(200).json(buildTipsHealth(tips));
+  const mismatches = await db.l2.tips.getRecentBoundaryMismatches();
+  res.status(200).json(buildTipsHealth(tips, mismatches));
 });
