@@ -21,6 +21,14 @@ body,
   min-height: 100%;
 }
 
+/* Make the root a full-height flex column so the footer can be pushed
+   to the bottom of the viewport on short-content pages. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
 html,
 body {
   background: var(--bg-0);

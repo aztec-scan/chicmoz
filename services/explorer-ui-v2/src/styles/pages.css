@@ -3658,7 +3658,7 @@
 
 /* ===== footer ===== */
 .footer {
-  margin-top: 48px;
+  margin-top: auto;
   padding: 22px 4px 24px;
   border-top: 1px solid var(--line-soft);
   display: flex;
