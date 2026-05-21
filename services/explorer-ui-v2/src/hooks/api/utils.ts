@@ -35,7 +35,7 @@ export const queryKeyGenerator = {
   ) => ["paginatedTableBlocks", page, pageSize, status],
   blockByHeight: (height: string) => ["blockByHeight", height],
   blockByRange: (min: number, max: number) => ["blockRange", min, max],
-  blocksByStatus: ["blocks", "by-status"],
+  blocksByNativeStatus: ["blocks", "by-native-status"],
   orphanedBlocks: ["blocks", "orphaned"],
   reorgs: ["reorgs"],
   l2TipsHealth: ["l2TipsHealth"],

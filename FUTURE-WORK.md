@@ -2,16 +2,7 @@
 
 ## Remaining correctness work
 
-- Add a regression test for the cache overlay path: cached block-detail and
-  table responses must recompute `nativeStatus` from fresh `/l2/tips` state
-  instead of serving stale `unknown` after a degraded/catchup window recovers.
-- Add focused tests for native status derivation:
-  - `deriveNativeStatus` for proposed, checkpointed, proven, finalized, unknown, and orphaned blocks.
-  - missing boundary block behavior.
-  - boundary hash mismatch behavior.
-  - Aztec v4 behavior where upstream `finalized` may equal `proven`.
 - Add focused tests for L2 tips storage and transport:
-  - `upsertTips` happy path.
   - stale/degraded health output.
   - `L2_TIPS_EVENT` publication, consumption, and websocket forwarding.
 - Add catchup/reconciliation tests:
@@ -24,13 +15,12 @@
 
 ## Remaining product/API cleanup
 
-- Rename remaining compatibility-oriented client/hook names such as `useBlocksByFinalizationStatus` and `/by-status` call sites to native-status terminology.
-- Update public docs/OpenAPI/SDK examples so consumers understand:
+- Update SDK examples so consumers understand:
   - `nativeStatus` is the product-facing block status.
   - `finalizationStatus` is legacy compatibility data and should not drive UI display.
   - `checkpointed` is a native Aztec L2 tip bucket.
   - on Aztec v4, upstream `finalized` may equal `proven`.
-- Add explicit deprecation notes for `finalizationStatus` in public response docs and SDK docs.
+- Add explicit deprecation notes for `finalizationStatus` in SDK docs.
 
 ## Remaining operational improvements
 

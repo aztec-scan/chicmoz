@@ -2,28 +2,28 @@ import { Link } from "@tanstack/react-router";
 import { useMemo, type FC } from "react";
 import { BlockStatusBadge } from "~/components/block-status-badge";
 import { Loader } from "~/components/loader";
-import { useBlocksByFinalizationStatus } from "~/hooks/api/blocks";
+import { useBlocksByNativeStatus } from "~/hooks/api/blocks";
 import { truncateHashString } from "~/lib/create-hash-string";
 import { routes } from "~/routes/__root";
 import { type BlockWithStatuses } from "./types";
 import { type ChicmozL2NativeBlockStatus } from "@chicmoz-pkg/types";
 
-export const FinalizationStatusSection: FC = () => {
+export const NativeStatusSection: FC = () => {
   const {
-    data: blocksByFinalizationStatus,
-    isLoading: blocksByStatusLoading,
-    error: blocksByStatusError,
-  } = useBlocksByFinalizationStatus();
+    data: blocksByNativeStatus,
+    isLoading: blocksByNativeStatusLoading,
+    error: blocksByNativeStatusError,
+  } = useBlocksByNativeStatus();
 
-  if (blocksByStatusError) {
+  if (blocksByNativeStatusError) {
     console.error(
-      "Error fetching blocks by finalization status:",
-      blocksByStatusError,
+      "Error fetching blocks by native status:",
+      blocksByNativeStatusError,
     );
   }
 
   const blocksWithStatuses = useMemo<BlockWithStatuses[]>(() => {
-    if (!blocksByFinalizationStatus) {
+    if (!blocksByNativeStatus) {
       return [];
     }
 
@@ -35,7 +35,7 @@ export const FinalizationStatusSection: FC = () => {
       "unknown",
     ];
 
-    const sortedBlocks = [...blocksByFinalizationStatus].sort((a, b) => {
+    const sortedBlocks = [...blocksByNativeStatus].sort((a, b) => {
       if (b.height === a.height) {
         return 0;
       }
@@ -58,7 +58,7 @@ export const FinalizationStatusSection: FC = () => {
     }
 
     return result;
-  }, [blocksByFinalizationStatus]);
+  }, [blocksByNativeStatus]);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8 dark:bg-gray-800">
@@ -67,10 +67,10 @@ export const FinalizationStatusSection: FC = () => {
         Statuses are derived from Aztec native L2 tips. L1 proposal and proof
         events remain available as factual metadata on block detail pages.
       </p>
-      {blocksByStatusLoading ? (
+      {blocksByNativeStatusLoading ? (
         <Loader amount={5} />
-      ) : blocksByStatusError ? (
-        <p>Error loading blocks: {blocksByStatusError.message}</p>
+      ) : blocksByNativeStatusError ? (
+        <p>Error loading blocks: {blocksByNativeStatusError.message}</p>
       ) : blocksWithStatuses.length === 0 ? (
         <p>No blocks available</p>
       ) : (

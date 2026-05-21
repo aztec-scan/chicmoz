@@ -122,10 +122,10 @@ export const getBlock = async (
 };
 
 /**
- * Deprecated compatibility endpoint: returns representative native-tip boundary
- * blocks instead of reading the retired finalization-status table.
+ * Deprecated public path compatibility: returns representative native-tip
+ * boundary blocks instead of reading the retired finalization-status table.
  */
-export const getBlocksByFinalizationStatus = async (
+export const getBlocksByNativeStatus = async (
   options: BlockQueryOptions = {},
 ): Promise<ChicmozL2BlockLight[]> => {
   const tips = await getTips();

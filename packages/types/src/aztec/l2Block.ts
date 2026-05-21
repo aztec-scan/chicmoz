@@ -34,7 +34,10 @@ export const LAST_FINALIZATION_STATUS =
 
 export const chicmozL2BlockFinalizationStatusSchema = z
   .nativeEnum(ChicmozL2BlockFinalizationStatus)
-  .default(0);
+  .default(0)
+  .describe(
+    "Deprecated legacy compatibility status. Prefer nativeStatus for product display.",
+  );
 
 export const chicmozL2NativeBlockStatusSchema = z.enum([
   "proposed",
@@ -42,7 +45,9 @@ export const chicmozL2NativeBlockStatusSchema = z.enum([
   "proven",
   "finalized",
   "unknown",
-]);
+]).describe(
+  "Aztec-native block display status derived from current L2 tips. On Aztec v4, finalized may equal proven upstream.",
+);
 
 export type ChicmozL2NativeBlockStatus = z.infer<
   typeof chicmozL2NativeBlockStatusSchema

@@ -31,7 +31,7 @@ export const paths = {
   latestBlock: "/l2/blocks/latest",
   block: `/l2/blocks/:${heightOrHash}`,
   blocks: "/l2/blocks",
-  blocksByStatus: "/l2/blocks/by-status",
+  blocksByNativeStatus: "/l2/blocks/by-status",
   orphanedBlocks: "/l2/blocks/orphaned",
   orphanedBlocksLimited: "/l2/blocks/orphans",
   reorgs: "/l2/reorgs",

@@ -64,13 +64,13 @@ export const useLatestTableBlocksByStatus = (
   });
 };
 
-export const useBlocksByFinalizationStatus = (): UseQueryResult<
+export const useBlocksByNativeStatus = (): UseQueryResult<
   ChicmozL2BlockLight[],
   Error
 > => {
   return useQuery<ChicmozL2BlockLight[], Error>({
-    queryKey: queryKeyGenerator.blocksByStatus,
-    queryFn: () => BlockAPI.getBlocksByStatus(),
+    queryKey: queryKeyGenerator.blocksByNativeStatus,
+    queryFn: () => BlockAPI.getBlocksByNativeStatus(),
     refetchInterval: SLOW_REFETCH_INTERVAL,
   });
 };

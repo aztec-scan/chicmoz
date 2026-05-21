@@ -44,7 +44,7 @@ export const handleWebSocketMessage = async (
       queryKey: queryKeyGenerator.latestTableBlocks,
     });
     await queryClient.invalidateQueries({
-      queryKey: queryKeyGenerator.blocksByStatus,
+      queryKey: queryKeyGenerator.blocksByNativeStatus,
     });
     await queryClient.invalidateQueries({
       queryKey: queryKeyGenerator.l2TipsHealth,

@@ -486,7 +486,7 @@ Get a list of blocks with pagination.
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 10)
 - `sort`: Sort direction (asc/desc)
-- `finalizationStatus`: Filter by finalization status
+- `status`: Filter by product-facing native block status (`proposed`, `checkpointed`, `proven`, `finalized`, `unknown`, `orphaned`) where supported.
 
 **Response**:
 
@@ -498,6 +498,7 @@ Get a list of blocks with pagination.
       "hash": "0x...",
       "timestamp": "2023-01-01T00:00:00Z",
       "transactionCount": 5,
+      "nativeStatus": "proven",
       "finalizationStatus": "L2_NODE_SEEN_PROVEN"
     }
   ],
@@ -531,6 +532,7 @@ Get details of a specific block.
     "transactionHashes": ["0x...", "0x..."],
     "version": "1.0.0"
   },
+  "nativeStatus": "proven",
   "finalizationStatus": "L2_NODE_SEEN_PROVEN",
   "l1Data": {
     "rollupContractAddress": "0x...",
@@ -543,8 +545,8 @@ Get details of a specific block.
 
 Block responses may include both:
 
-- `nativeStatus`: additive Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Prefer this for product display when present.
-- `finalizationStatus`: legacy compatibility status. This remains available until a later migration removes the old finalization-status path.
+- `nativeStatus`: product-facing Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Use this for UI and consumer-facing status labels.
+- `finalizationStatus`: **deprecated** legacy compatibility status. It remains available until a later migration removes the old finalization-status path, but consumers should not use it to drive product display.
 
 Native status values:
 
