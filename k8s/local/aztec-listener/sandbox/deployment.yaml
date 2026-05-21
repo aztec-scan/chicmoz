@@ -52,6 +52,8 @@ spec:
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS
               value: "true"
+            - name: AZTEC_ENABLE_FULL_SWEEP_CATCHUP
+              value: "false"
             - name: AZTEC_RPC_URLS
               value: "sandbox::http://aztec-sandbox-node:8081"
 status: {}

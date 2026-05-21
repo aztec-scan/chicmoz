@@ -64,10 +64,63 @@ export const AZTEC_LISTEN_FOR_L2_TIPS = z.coerce
   .parse(process.env.AZTEC_LISTEN_FOR_L2_TIPS);
 export const AZTEC_DISABLED = z.coerce
   .boolean().default(false).parse(process.env.AZTEC_DISABLED);
-export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
-  .boolean()
-  .default(false)
-  .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
+
+export const parseFullSweepCatchupEnabled = (env: {
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP: string | undefined;
+  AZTEC_DISABLE_ETERNAL_CATCHUP: string | undefined;
+}) => {
+  const parseBooleanEnv = (value: string) =>
+    z.enum(["true", "false"]).parse(value) === "true";
+
+  if (env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP !== undefined) {
+    return parseBooleanEnv(env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP);
+  }
+  if (env.AZTEC_DISABLE_ETERNAL_CATCHUP !== undefined) {
+    return !parseBooleanEnv(env.AZTEC_DISABLE_ETERNAL_CATCHUP);
+  }
+  return false;
+};
+export const AZTEC_ENABLE_FULL_SWEEP_CATCHUP = parseFullSweepCatchupEnabled({
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP:
+    process.env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP,
+  AZTEC_DISABLE_ETERNAL_CATCHUP: process.env.AZTEC_DISABLE_ETERNAL_CATCHUP,
+});
+export const AZTEC_DISABLE_ETERNAL_CATCHUP =
+  !AZTEC_ENABLE_FULL_SWEEP_CATCHUP;
+export const L2_BLOCK_RANGE_REQUEST_MAX_RANGES = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(10)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_RANGES);
+export const L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(200)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS);
+export const L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS = z.coerce
+  .number()
+  .positive()
+  .default(60 * 60 * 1000)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS);
+export const L2_BLOCK_RANGE_REQUEST_MAX_WIDTH = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(250)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_WIDTH);
+export const L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS = z.coerce
+  .number()
+  .nonnegative()
+  .default(250)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS);
+export const L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(5)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER);
 
 export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
   .number()
@@ -143,6 +196,14 @@ L2_TIPS_POLL_INTERVAL_MS:                                  ${L2_TIPS_POLL_INTERV
   }s
 L2_TIPS_HEARTBEAT_INTERVAL_MS:                             ${L2_TIPS_HEARTBEAT_INTERVAL_MS / 1000
   }s
-IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
+AZTEC_ENABLE_FULL_SWEEP_CATCHUP:                           ${AZTEC_ENABLE_FULL_SWEEP_CATCHUP ? "✅" : "❌"
   }
-MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}`;
+AZTEC_DISABLE_ETERNAL_CATCHUP:                             ${AZTEC_DISABLE_ETERNAL_CATCHUP ? "✅" : "❌"
+  }
+IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
+   }
+MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}
+L2_BLOCK_RANGE_REQUEST_MAX_RANGES:                         ${L2_BLOCK_RANGE_REQUEST_MAX_RANGES}
+L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS:                         ${L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS}
+L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS:                         ${L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS}
+L2_BLOCK_RANGE_REQUEST_MAX_WIDTH:                          ${L2_BLOCK_RANGE_REQUEST_MAX_WIDTH}`;
