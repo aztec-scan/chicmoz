@@ -14,6 +14,7 @@ manifests:
     - k8s/production/monitoring/prometheus-pvc.yaml
     - k8s/production/monitoring/prometheus-deployment.yaml
     - k8s/production/monitoring/prometheus-service.yaml
+    - k8s/production/monitoring/l2-tips-canary-cronjob.yaml
     - k8s/production/monitoring/otel-collector-config.yaml
     - k8s/production/monitoring/otel-collector-deployment.yaml
     - k8s/production/monitoring/otel-collector-service.yaml

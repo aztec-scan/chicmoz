@@ -32,6 +32,7 @@ spec:
             - |
               REMOTE_WRITE_URL_ESCAPED=$(printf '%s\n' "$REMOTE_WRITE_URL" | sed 's/[&]/\\&/g')
               sed "s|__REMOTE_WRITE_URL__|${REMOTE_WRITE_URL_ESCAPED}|g" /etc/prometheus/template/prometheus.yml.tmpl > /etc/prometheus/config/prometheus.yml
+              cp /etc/prometheus/template/rules.yml /etc/prometheus/config/rules.yml
           env:
             - name: REMOTE_WRITE_URL
               valueFrom:
@@ -79,6 +80,8 @@ spec:
             items:
               - key: prometheus.yml.tmpl
                 path: prometheus.yml.tmpl
+              - key: rules.yml
+                path: rules.yml
         - name: generated-config
           emptyDir: {}
         - name: storage

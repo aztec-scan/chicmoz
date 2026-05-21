@@ -1,5 +1,5 @@
 import { ChicmozL2Tips, HexString, L2NetworkId } from "@chicmoz-pkg/types";
-import { bigint, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { bigint, integer, pgTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { l2NetworkIdDbEnum } from "../utils.js";
 
 const blockNumber = (name: string) => bigint(name, { mode: "number" });
@@ -46,3 +46,33 @@ export type StoredL2Tips = ChicmozL2Tips & {
   };
   degradedReason?: string;
 };
+
+export const l2TipBoundaryMismatchTable = pgTable(
+  "l2_tip_boundary_mismatch",
+  {
+    id: varchar("id").primaryKey(),
+    l2NetworkId: l2NetworkIdDbEnum("l2_network_id")
+      .notNull()
+      .$type<L2NetworkId>(),
+    bucket: varchar("bucket").notNull().$type<"finalized" | "proven" | "checkpointed" | "proposed">(),
+    height: blockNumber("height").notNull(),
+    expectedHash: varchar("expected_hash").notNull().$type<HexString>(),
+    observedDbHash: varchar("observed_db_hash").$type<HexString>(),
+    reason: varchar("reason").notNull(),
+    firstSeenAt: timestamp("first_seen_at").notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at").notNull().defaultNow(),
+    occurrenceCount: integer("occurrence_count").notNull().default(1),
+    resolvedAt: timestamp("resolved_at"),
+  },
+  (table) => ({
+    l2TipBoundaryMismatchKey: uniqueIndex("l2_tip_boundary_mismatch_key").on(
+      table.l2NetworkId,
+      table.bucket,
+      table.height,
+      table.expectedHash,
+      table.observedDbHash,
+    ),
+  }),
+);
+
+export type L2TipBoundaryMismatchRow = typeof l2TipBoundaryMismatchTable.$inferSelect;

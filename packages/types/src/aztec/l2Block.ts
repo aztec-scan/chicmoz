@@ -92,6 +92,18 @@ export const chicmozL2TipsHealthSchema = z.object({
   staleAfterMs: z.coerce.number().int().positive(),
   degraded: z.boolean(),
   degradedReason: z.string().optional(),
+  repeatedDegradedBoundaryMismatch: z
+    .object({
+      bucket: z.enum(["finalized", "proven", "checkpointed", "proposed"]),
+      height: z.coerce.number().int().nonnegative(),
+      expectedHash: hexStringSchema,
+      observedDbHash: hexStringSchema.optional(),
+      firstSeenAt: z.coerce.string(),
+      lastSeenAt: z.coerce.string(),
+      occurrenceCount: z.coerce.number().int().positive(),
+      reason: z.string(),
+    })
+    .optional(),
   source: z.object({
     rpcNodeName: z.string().optional(),
     aztecNodeVersion: z.string().optional(),
