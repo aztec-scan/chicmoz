@@ -4,6 +4,7 @@ import { type FC, useMemo, useState } from "react";
 import {
   HashCell,
   Pagination,
+  SkeletonRows,
   StatusPill,
   TokenEtherscanLink,
 } from "~/components/common";
@@ -46,7 +47,7 @@ export const BlocksPage: FC = () => {
   const [page, setPage] = useState(0);
   const backendStatusFilter = statusFilter === "all" ? undefined : statusFilter;
 
-  const { data: blocks } = usePaginatedTableBlocks(
+  const { data: blocks, isPending: blocksLoading } = usePaginatedTableBlocks(
     page,
     PAGE_SIZE,
     backendStatusFilter,
@@ -228,10 +229,15 @@ export const BlocksPage: FC = () => {
               </Link>
             );
           })}
-          {(!blocks || sortedBlocks.length === 0) && (
-            <div className="empty-state">
-              {blocks ? "no blocks found" : "loading blocks..."}
-            </div>
+          {blocksLoading && (
+            <SkeletonRows
+              count={PAGE_SIZE}
+              columns="100px minmax(0,1fr) 40px 112px minmax(0,80px) 80px"
+              cells={6}
+            />
+          )}
+          {(!blocksLoading && (!blocks || sortedBlocks.length === 0)) && (
+            <div className="empty-state">no blocks found</div>
           )}
         </div>
         <Pagination

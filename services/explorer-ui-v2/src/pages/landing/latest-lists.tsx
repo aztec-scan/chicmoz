@@ -1,7 +1,7 @@
 import { type UiBlockTable, type UiTxEffectTable } from "@chicmoz-pkg/types";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type FC, type KeyboardEvent, type MouseEvent } from "react";
-import { HashCell, StatusPill, TokenEtherscanLink } from "~/components/common";
+import { HashCell, SkeletonRows, StatusPill, TokenEtherscanLink } from "~/components/common";
 import { blockStatusToDisplay } from "~/lib/block-status";
 import { ageStr, fmtNum, formatFees } from "~/lib/utils";
 
@@ -11,6 +11,8 @@ interface Props {
   feeJuiceDecimals: number;
   feeJuiceSymbol: string;
   feeJuiceAddress?: string;
+  isLoadingBlocks?: boolean;
+  isLoadingTxs?: boolean;
 }
 
 interface LatestTxRowProps {
@@ -85,6 +87,8 @@ export const LatestLists: FC<Props> = ({
   feeJuiceDecimals,
   feeJuiceSymbol,
   feeJuiceAddress,
+  isLoadingBlocks,
+  isLoadingTxs,
 }) => (
   <div className="split">
     <div className="panel">
@@ -104,6 +108,13 @@ export const LatestLists: FC<Props> = ({
         <div style={{ textAlign: "right" }}>Age</div>
       </div>
       <div className="rows">
+        {isLoadingBlocks && blocks.length === 0 && (
+          <SkeletonRows
+            count={10}
+            columns="100px minmax(0,1fr) 40px 112px 80px"
+            cells={5}
+          />
+        )}
         {blocks.map((b) => {
           const status = blockStatusToDisplay(b.nativeStatus, b.orphan);
           const ts = Number(b.timestamp);
@@ -127,7 +138,7 @@ export const LatestLists: FC<Props> = ({
             </Link>
           );
         })}
-        {blocks.length === 0 && (
+        {!isLoadingBlocks && blocks.length === 0 && (
           <div className="empty-state">waiting for blocks…</div>
         )}
       </div>
@@ -149,6 +160,13 @@ export const LatestLists: FC<Props> = ({
         <div style={{ textAlign: "right" }}>Age</div>
       </div>
       <div className="rows">
+        {isLoadingTxs && txs.length === 0 && (
+          <SkeletonRows
+            count={10}
+            columns="minmax(0,1fr) 100px 110px 80px"
+            cells={4}
+          />
+        )}
         {txs.map((t) => (
           <LatestTxRow
             key={t.txHash}
@@ -158,7 +176,7 @@ export const LatestLists: FC<Props> = ({
             feeJuiceAddress={feeJuiceAddress}
           />
         ))}
-        {txs.length === 0 && (
+        {!isLoadingTxs && txs.length === 0 && (
           <div className="empty-state">waiting for transactions…</div>
         )}
       </div>
