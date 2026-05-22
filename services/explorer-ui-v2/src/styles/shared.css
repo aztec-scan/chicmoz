@@ -1049,3 +1049,43 @@
 .etherscan-link svg {
   flex-shrink: 0;
 }
+
+/* ===== skeleton shimmer ===== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.skeleton {
+  display: inline-block;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-3) 25%,
+    var(--bg-2) 50%,
+    var(--bg-3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  /* prevent text content from being visible if accidentally given children */
+  color: transparent;
+  user-select: none;
+}
+
+/* Skeleton rows are real .row nodes with shimmer cells inside.
+   Pointer events disabled so they can't be accidentally clicked. */
+.skeleton-row {
+  pointer-events: none;
+  /* fade out each row slightly more than the previous to give a natural
+     trailing-off effect without JavaScript */
+}
+.skeleton-row:nth-child(n + 6) {
+  opacity: 0.7;
+}
+.skeleton-row:nth-child(n + 9) {
+  opacity: 0.4;
+}
