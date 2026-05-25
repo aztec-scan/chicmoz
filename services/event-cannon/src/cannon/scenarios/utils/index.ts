@@ -318,19 +318,28 @@ export const registerStandardContractArtifact = async (
   version: number,
   standardName: string,
   standardVersion: string,
+  options?: { throwOnError?: boolean },
 ) => {
   const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${version}/standard-artifact`;
   const postData = JSON.stringify({
     name: standardName,
     version: standardVersion,
   });
-  await callExplorerApi({
+  const res = await callExplorerApi({
     loggingString: `🏗 registerStandardContractArtifact ${contractLoggingName}`,
     urlStr: url,
     postData,
     method: "POST",
     waitForIndexing: true,
   });
+  if (
+    options?.throwOnError &&
+    !(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 202)
+  ) {
+    throw new Error(
+      `registerStandardContractArtifact failed (${contractLoggingName}): ${res.statusCode} ${res.statusMessage} ${res.data}`,
+    );
+  }
 };
 
 export const verifyContractInstanceDeployment = async ({
@@ -338,6 +347,7 @@ export const verifyContractInstanceDeployment = async ({
   contractInstanceAddress,
   verifyArgs,
   deployerMetadata,
+  throwOnError = false,
 }: {
   contractLoggingName: string;
   contractInstanceAddress: string;
@@ -346,6 +356,7 @@ export const verifyContractInstanceDeployment = async ({
     ChicmozL2ContractInstanceDeployerMetadata,
     "address" | "uploadedAt"
   >;
+  throwOnError?: boolean;
 }) => {
   const url = generateVerifyInstanceUrl(
     EXPLORER_API_URL,
@@ -358,14 +369,26 @@ export const verifyContractInstanceDeployment = async ({
   });
 
   try {
-    await callExplorerApi({
+    const res = await callExplorerApi({
       loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
       urlStr: url,
       postData,
       method: "POST",
       waitForIndexing: true,
     });
+    if (
+      throwOnError &&
+      !(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 202)
+    ) {
+      throw new Error(
+        `verifyContractInstanceDeployment failed (${contractLoggingName}): ${res.statusCode} ${res.statusMessage} ${res.data}`,
+      );
+    }
   } catch (err) {
+    if (throwOnError) {
+      throw err;
+    }
+
     // Explorer is best-effort here; failures should not break scenarios.
     logger.warn(
       `verifyContractInstanceDeployment failed (${contractLoggingName}): ${(err as Error).message}`,

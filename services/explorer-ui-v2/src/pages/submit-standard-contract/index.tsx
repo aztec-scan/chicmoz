@@ -2,17 +2,20 @@ import {
   CONTRACT_STANDARDS,
   type ContractStandardVersion,
 } from "@chicmoz-pkg/types";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
-import { ContractL2API } from "~/api";
+import { ContractL2API } from "~/api/contract";
 import { CopyableAddress } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
+import { queryKeyGenerator } from "~/hooks/api/utils";
 import { truncateHashString } from "~/lib/utils";
 
 export const SubmitStandardContractPage: FC = () => {
   const { id, version } = useParams({
     from: "/contracts/classes/$id/versions/$version/submit-standard-contract",
   });
+  const queryClient = useQueryClient();
 
   const [standardVersion, setStandardVersion] = useState<string>("");
   const [standardName, setStandardName] = useState<string>("");
@@ -50,15 +53,25 @@ export const SubmitStandardContractPage: FC = () => {
     setIsSubmitting(true);
     setResult(null);
     try {
-      await ContractL2API.submitStandardContract({
+      const updatedContractClass = await ContractL2API.submitStandardContract({
         classId: id,
         version,
         standardVersion,
         standardName,
       });
+      queryClient.setQueryData(
+        queryKeyGenerator.contractClass({ classId: id, version }),
+        updatedContractClass,
+      );
+      await queryClient.invalidateQueries({
+        queryKey: queryKeyGenerator.contractClass({ classId: id, version }),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeyGenerator.latestContractClasses,
+      });
       setResult({
         ok: true,
-        message: "Standard contract submitted successfully.",
+        message: `Standard contract submitted successfully: ${standardName} · v${standardVersion}.`,
       });
     } catch (err) {
       setResult({

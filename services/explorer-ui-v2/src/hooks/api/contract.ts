@@ -12,6 +12,7 @@ import {
   ContractL2API,
 } from "~/api";
 import {
+  DEFAULT_STALE_TIME,
   LONG_STALE_TIME,
   SLOW_REFETCH_INTERVAL,
   queryKeyGenerator,
@@ -91,8 +92,9 @@ export const useContractClass = ({
     queryKey: queryKeyGenerator.contractClass({ classId, version }),
     queryFn: () => ContractL2API.getContractClass({ classId, version }),
     enabled: !!classId && !!version,
-    // A registered class for a specific version is immutable.
-    staleTime: 10 * 60_000,
+    // The bytecode is immutable, but verification/source/standard metadata can
+    // be attached after registration through the explorer API.
+    staleTime: DEFAULT_STALE_TIME,
   });
 };
 
