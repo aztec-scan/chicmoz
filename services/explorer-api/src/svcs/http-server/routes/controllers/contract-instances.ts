@@ -48,6 +48,11 @@ const verifyContractRequestBody = generateSchema(
   }),
 );
 
+const contractClassWithArtifactKeys = (
+  contractClassId: string,
+  version: number,
+) => ["l2", "contract-classes", contractClassId, version, "with-artifact"];
+
 export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
     get: {
@@ -359,12 +364,10 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       return;
     }
     const contractClassString = await dbWrapper.get(
-      [
-        "l2",
-        "contract-classes",
+      contractClassWithArtifactKeys(
         dbContractInstance.currentContractClassId,
         dbContractInstance.version,
-      ],
+      ),
       () =>
         db.l2Contract.getL2RegisteredContractClass(
           dbContractInstance.currentContractClassId,
@@ -427,12 +430,10 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       };
 
       setEntry(
-        [
-          "l2",
-          "contract-classes",
+        contractClassWithArtifactKeys(
           dbContractInstance.currentContractClassId,
           dbContractInstance.version,
-        ],
+        ),
         JSON.stringify(completeContractClass),
         CACHE_TTL_SECONDS,
       ).catch((err) => {
