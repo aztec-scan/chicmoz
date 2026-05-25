@@ -100,7 +100,7 @@ export const ContractClassPage: FC = () => {
         <div className="panel-head">
           <h3>
             Class header
-            <span className="tag">chicmozL2ContractClassRegisteredEvent</span>
+            <span className="tag">registered class</span>
           </h3>
         </div>
         <div className="kv-grid">

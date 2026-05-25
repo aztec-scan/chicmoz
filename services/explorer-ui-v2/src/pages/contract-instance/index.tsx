@@ -161,7 +161,7 @@ export const ContractInstancePage: FC = () => {
         <div className="panel">
           <div className="panel-head">
             <h3>
-              AztecScanNotes
+              AztecScan notes
               <span className="tag">curated metadata</span>
             </h3>
             {instance.aztecScanNotes.category && (
@@ -203,7 +203,7 @@ export const ContractInstancePage: FC = () => {
         <div className="panel-head">
           <h3>
             Instance header
-            <span className="tag">ChicmozL2ContractInstanceDeluxe</span>
+            <span className="tag">deployed instance</span>
           </h3>
         </div>
         <div className="kv-grid">
@@ -250,7 +250,7 @@ export const ContractInstancePage: FC = () => {
           <div className="panel-head">
             <h3>
               Deployer metadata
-              <span className="tag">deployerMetadata</span>
+              <span className="tag">submitted metadata</span>
             </h3>
             {instance.deployerMetadata.reviewedAt && (
               <span
