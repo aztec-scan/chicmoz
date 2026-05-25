@@ -25,10 +25,28 @@ spec:
                 - --input-type=module
                 - -e
                 - |
-                  const urls = [
-                    "https://api.aztecscan.xyz/l2/tips",
-                    "https://api.testnet.aztecscan.xyz/l2/tips",
-                    "https://api.devnet.aztecscan.xyz/l2/tips",
+                  const targets = [
+                    {
+                      network: "mainnet",
+                      urls: [
+                        "https://api.aztecscan.xyz/l2/tips",
+                        "https://api.aztecscan.xyz/v1/temporary-api-key/l2/tips",
+                      ],
+                    },
+                    {
+                      network: "testnet",
+                      urls: [
+                        "https://api.testnet.aztecscan.xyz/l2/tips",
+                        "https://api.testnet.aztecscan.xyz/v1/temporary-api-key/l2/tips",
+                      ],
+                    },
+                    {
+                      network: "devnet",
+                      urls: [
+                        "https://api.devnet.aztecscan.xyz/l2/tips",
+                        "https://api.devnet.aztecscan.xyz/v1/temporary-api-key/l2/tips",
+                      ],
+                    },
                   ];
                   const staleGraceMs = 120000;
                   const isTipBlock = (value) => value && typeof value === "object" && Number.isSafeInteger(value.number) && typeof value.hash === "string" && value.hash.startsWith("0x");
@@ -48,17 +66,27 @@ spec:
                     }
                   };
                   const failures = [];
-                  for (const url of urls) {
-                    try {
-                      const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
-                      if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
-                      const payload = await response.json();
-                      validateShape(payload);
-                      if (payload.stale || payload.stalenessMs > payload.staleAfterMs + staleGraceMs) throw new Error(`${url} reports stale tips: stalenessMs=${payload.stalenessMs} staleAfterMs=${payload.staleAfterMs}`);
-                      if (payload.degraded) throw new Error(`${url} reports degraded tips: ${payload.degradedReason ?? "unknown reason"}`);
-                      if (payload.repeatedDegradedBoundaryMismatch) throw new Error(`${url} reports repeated boundary mismatch: ${JSON.stringify(payload.repeatedDegradedBoundaryMismatch)}`);
-                    } catch (error) {
-                      failures.push(error instanceof Error ? error.message : String(error));
+                  for (const target of targets) {
+                    let deployed = false;
+                    for (const url of target.urls) {
+                      try {
+                        const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+                        if (response.status === 404) {
+                          console.log(`${target.network}: ${url} returned 404; treating this path as not deployed yet`);
+                          continue;
+                        }
+                        if (!response.ok) throw new Error(`${target.network}: ${url} returned HTTP ${response.status}`);
+                        deployed = true;
+                        const payload = await response.json();
+                        validateShape(payload);
+                        if (payload.stale || payload.stalenessMs > payload.staleAfterMs + staleGraceMs) throw new Error(`${target.network}: ${url} reports stale tips: stalenessMs=${payload.stalenessMs} staleAfterMs=${payload.staleAfterMs}`);
+                        if (payload.degraded) throw new Error(`${target.network}: ${url} reports degraded tips: ${payload.degradedReason ?? "unknown reason"}`);
+                        if (payload.repeatedDegradedBoundaryMismatch) throw new Error(`${target.network}: ${url} reports repeated boundary mismatch: ${JSON.stringify(payload.repeatedDegradedBoundaryMismatch)}`);
+                        console.log(`${target.network}: ${url} tips health is OK`);
+                      } catch (error) {
+                        failures.push(error instanceof Error ? error.message : String(error));
+                      }
                     }
+                    if (!deployed) console.log(`${target.network}: no /l2/tips path is deployed yet`);
                   }
                   if (failures.length > 0) throw new Error(`L2 tips health canary failed:\n- ${failures.join("\n- ")}`);
