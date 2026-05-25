@@ -220,11 +220,16 @@ data:
       - name: l2-tips-health
         rules:
           - alert: L2TipsHealthCanaryFailing
-            expr: kube_job_status_failed{job_name=~"l2-tips-health-canary-.*"} > 0
+            expr: |
+              sum(
+                kube_job_status_failed{job_name=~"l2-tips-health-canary-.*"}
+                * on(namespace, job_name) group_left()
+                (time() - kube_job_status_start_time{job_name=~"l2-tips-health-canary-.*"} < 600)
+              ) > 0
             for: 4m
             labels:
               severity: critical
               component: explorer-api
             annotations:
               summary: "Native L2 tips health canary is failing"
-              description: "The /l2/tips canary failed. Check CronJob l2-tips-health-canary logs for missing responses, stale tips, degraded tips, or repeated boundary mismatches."
+              description: "The /l2/tips canary has failed within the last 10 minutes. Check recent CronJob l2-tips-health-canary logs for missing responses, stale tips, degraded tips, or repeated boundary mismatches."
