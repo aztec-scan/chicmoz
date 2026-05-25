@@ -196,7 +196,7 @@ export const BlockDetailPage: FC = () => {
         <div className="panel">
           <div className="panel-head">
             <h3>
-              Header<span className="tag">chicmozL2BlockLight</span>
+              Header<span className="tag">block summary</span>
             </h3>
           </div>
           <div className="kv-grid">
