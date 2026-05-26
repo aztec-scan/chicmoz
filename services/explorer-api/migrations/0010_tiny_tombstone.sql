@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS "source_verification_jobs" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "l2_contract_class_registered" ADD COLUMN "source_code_commit_hash" varchar;--> statement-breakpoint
-ALTER TABLE "l2_contract_class_registered" ADD COLUMN "source_code" jsonb;
+ALTER TABLE "l2_contract_class_registered" ADD COLUMN IF NOT EXISTS "source_code_commit_hash" varchar;--> statement-breakpoint
+ALTER TABLE "l2_contract_class_registered" ADD COLUMN IF NOT EXISTS "source_code" jsonb;
