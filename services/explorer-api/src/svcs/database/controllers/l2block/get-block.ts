@@ -1,7 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import {
   ChicmozL2BlockLight,
-  FIRST_FINALIZATION_STATUS,
   HexString,
   chicmozL2BlockLightSchema,
 } from "@chicmoz-pkg/types";
@@ -122,8 +121,7 @@ export const getBlock = async (
 };
 
 /**
- * Deprecated public path compatibility: returns representative native-tip
- * boundary blocks instead of reading the retired finalization-status table.
+ * Returns representative native-tip boundary blocks.
  */
 export const getBlocksByNativeStatus = async (
   options: BlockQueryOptions = {},
@@ -304,7 +302,6 @@ const _getBlocks = async (
     const blockData = {
       hash: result.hash,
       height: result.height,
-      finalizationStatus: FIRST_FINALIZATION_STATUS,
       archive: result.archive,
       proposedOnL1: result.l1L2BlockProposed?.l1BlockTimestamp
         ? result.l1L2BlockProposed

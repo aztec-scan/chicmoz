@@ -183,6 +183,13 @@
       "when": 1779408000000,
       "tag": "0025_l2_native_health_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1779494400000,
+      "tag": "0026_drop_l2_block_finalization_status",
+      "breakpoints": true
     }
   ]
 }

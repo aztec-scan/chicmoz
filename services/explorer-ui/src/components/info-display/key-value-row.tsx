@@ -148,7 +148,6 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
                 : undefined
             }
             orphan={value === "orphaned"}
-            status={Number(value)}
           />
         </div>
       )}

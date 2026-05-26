@@ -54,7 +54,6 @@ const hackyLogBlock = (b: L2Block) => {
 const onBlock = async ({
   block,
   blockNumber,
-  finalizationStatus,
 }: NewBlockEvent) => {
   if (!block) {
     logger.error("🚫 Block is empty");
@@ -64,7 +63,7 @@ const onBlock = async ({
   const b = blockFromBuffer(block);
   let parsedBlock;
   try {
-    parsedBlock = await parseBlock(b, finalizationStatus);
+    parsedBlock = await parseBlock(b);
   } catch (e) {
     logger.error(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -128,9 +127,6 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
     if (shouldRetry) {
       return storeBlock(parsedBlock, true);
     }
-    // When shouldRetry is false and the un-orphan path was taken,
-    // ensureFinalizationStatusStored was already called inside unOrphanCallback.
-    // No additional call needed here.
   });
 };
 

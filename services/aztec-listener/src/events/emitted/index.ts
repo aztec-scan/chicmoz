@@ -1,13 +1,16 @@
 import {
   ChicmozChainInfo,
   ChicmozL2Tips,
-  ChicmozL2BlockFinalizationStatus,
   ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
   chicmozL2RpcNodeErrorSchema,
   jsonStringify,
 } from "@chicmoz-pkg/types";
-import type { CatchupBlockEvent, L2TipsEvent } from "@chicmoz-pkg/message-registry";
+import type {
+  CatchupBlockEvent,
+  L2BlockStatusHint,
+  L2TipsEvent,
+} from "@chicmoz-pkg/message-registry";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
 import {
@@ -29,17 +32,16 @@ const toSafeBlockNumber = (value: bigint): number => {
 
 export const onBlock = async (
   block: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus,
+  statusHint: L2BlockStatusHint,
 ) => {
   const height = BigInt(block.header.globalVariables.blockNumber.toString());
   const heightNumber = toSafeBlockNumber(height);
-  const finalizationStatusStr =
-    finalizationStatus ===
-    ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
-      ? `🦊 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`
-      : `🐴 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`;
+  const statusHintStr =
+    statusHint === "proposed"
+      ? "🦊 publishing proposed block"
+      : "🐴 publishing proven block";
   logger.info(
-    `${finalizationStatusStr} block ${height} (hash: ${(
+    `${statusHintStr} ${height} (hash: ${(
       await block.hash()
     ).toString()})...`,
   );
@@ -47,7 +49,7 @@ export const onBlock = async (
   const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("NEW_BLOCK_EVENT", {
     block: blockStr,
-    finalizationStatus,
+    statusHint,
     blockNumber: heightNumber,
   });
   const potentiallyIncludedTxs = await txsController.getTxs([
@@ -61,11 +63,7 @@ export const onBlock = async (
   for (const potentialTx of potentiallyIncludedTxs) {
     const txFoundInBlock = blockTxHashes.includes(potentialTx.txHash);
     if (txFoundInBlock) {
-      const newState =
-        finalizationStatus ===
-        ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
-          ? "proposed"
-          : "proven";
+      const newState = statusHint;
       await txsController.storeOrUpdate(potentialTx, newState);
       logger.info(
         `✅ Transaction ${potentialTx.txHash} found in block ${height}, updated to ${newState}`,
@@ -76,7 +74,7 @@ export const onBlock = async (
 
 export const onCatchupBlock = async (
   block: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus,
+  statusHint: L2BlockStatusHint,
   metadata: Pick<CatchupBlockEvent, "requestId" | "catchupReason"> = {},
 ) => {
   const blockNumber = BigInt(
@@ -87,7 +85,7 @@ export const onCatchupBlock = async (
   const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("CATCHUP_BLOCK_EVENT", {
     block: blockStr,
-    finalizationStatus,
+    statusHint,
     blockNumber: blockNumberSafe,
     ...metadata,
   });

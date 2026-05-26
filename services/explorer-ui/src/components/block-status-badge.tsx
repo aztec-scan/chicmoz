@@ -2,7 +2,6 @@ import { type ChicmozL2NativeBlockStatus } from "@chicmoz-pkg/types";
 import { CustomTooltip } from "./custom-tooltip";
 
 interface BlockStatusBadgeProps {
-  status?: number;
   nativeStatus?: ChicmozL2NativeBlockStatus;
   className?: string;
   orphan?: boolean;
