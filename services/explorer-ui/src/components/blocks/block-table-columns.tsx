@@ -12,7 +12,7 @@ const text = {
   blockHash: "BLOCK HASH",
   txEffectsLength: "NBR OF TXS",
   timeSince: "AGE",
-  blockStatus: "BLOCK STATUS",
+  nativeStatus: "BLOCK STATUS",
 };
 
 export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
@@ -93,12 +93,12 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "blockStatus",
+    accessorKey: "nativeStatus",
     header: ({ column }) => (
       <DataTableColumnHeader
         className="text-purple-dark text-sm"
         column={column}
-        title={text.blockStatus}
+        title={text.nativeStatus}
       />
     ),
     cell: ({ row }) => (
@@ -106,7 +106,6 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
         className="font-mono"
         nativeStatus={row.original.nativeStatus}
         orphan={row.original.orphan}
-        status={row.getValue("blockStatus")}
       />
     ),
     enableSorting: false,

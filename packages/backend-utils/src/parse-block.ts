@@ -1,7 +1,6 @@
 // TODO: perhaps move this file to chicmoz-types?
 import {
   ChicmozL2Block,
-  ChicmozL2BlockFinalizationStatus,
   chicmozL2BlockSchema,
 } from "@chicmoz-pkg/types";
 import { parseTimeStamp } from "./time.js";
@@ -33,10 +32,7 @@ export const blockFromBuffer = (hexEncodedBlock: string): L2Block => {
   return L2Block.fromBuffer(Buffer.from(hexEncodedBlock, "hex"));
 };
 
-export const parseBlock = async (
-  b: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus,
-): Promise<ChicmozL2Block> => {
+export const parseBlock = async (b: L2Block): Promise<ChicmozL2Block> => {
   const blockHash = await b.hash();
 
   const blockWithTxEffectsHashesAdded = {
@@ -49,7 +45,6 @@ export const parseBlock = async (
   return chicmozL2BlockSchema.parse({
     hash: blockHash.toString(),
     height: b.number,
-    finalizationStatus,
     ...blockWithTxEffectsHashesAdded,
     header: {
       ...blockWithTxEffectsHashesAdded.header,

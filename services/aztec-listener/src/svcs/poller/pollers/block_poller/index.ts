@@ -1,4 +1,3 @@
-import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
 import {
   AZTEC_ENABLE_FULL_SWEEP_CATCHUP,
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS,
@@ -128,16 +127,13 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
   if (isCatchup) {
     await onCatchupBlock(
       block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+      "proposed",
       { catchupReason: "eternal" },
     );
     logger.info(`🐱 catchup proposed block ${height}`);
     await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
   } else {
-    await onBlock(
-      block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
-    );
+    await onBlock(block, "proposed");
   }
   await storeProcessedProposedBlockHeight(height);
 };
@@ -146,14 +142,11 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   const block = await internalGetBlock(height);
 
   if (isCatchup) {
-    await onCatchupBlock(
-      block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
-    );
+    await onCatchupBlock(block, "proven");
     logger.info(`🐱 catchup proven block ${height}`);
     await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
   } else {
-    await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
+    await onBlock(block, "proven");
   }
 
   await handleProvenTransactions(block);
@@ -201,10 +194,7 @@ const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
   // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
   const block = await internalGetBlock(currentEternalCatchupHeight);
   if (block) {
-    await onCatchupBlock(
-      block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
-    );
+    await onCatchupBlock(block, "proposed");
     currentEternalCatchupHeight =
       (currentEternalCatchupHeight + 1) % currentProposedHeight || 1;
     currentEternalCatchupHeight = Math.min(

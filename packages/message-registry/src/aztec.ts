@@ -1,6 +1,5 @@
 import type {
   ChicmozChainInfo,
-  ChicmozL2BlockFinalizationStatus,
   ChicmozL2Tips,
   ChicmozL2ContractInstanceDeployedEvent,
   ChicmozL2DroppedTx,
@@ -11,9 +10,11 @@ import type {
   SourceVerificationFailureStage,
 } from "@chicmoz-pkg/types";
 
+export type L2BlockStatusHint = "proposed" | "proven";
+
 export type NewBlockEvent = {
   blockNumber: number;
-  finalizationStatus: ChicmozL2BlockFinalizationStatus;
+  statusHint: L2BlockStatusHint;
   block?: string;
 };
 

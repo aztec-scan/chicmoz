@@ -22,7 +22,6 @@ import {
 import { getBlocksWhereRange } from "../utils.js";
 import { DB_MAX_BLOCKS, DB_MAX_TX_EFFECTS } from "../../../../environment.js";
 import {
-  FIRST_FINALIZATION_STATUS,
   type UiBlockTable,
   type UiBlockStatusFilter,
   uiBlockTableSchema,
@@ -149,7 +148,6 @@ export const getBlocksForUiTable = async ({
     const blockData = {
       blockHash: result.hash,
       height: result.height,
-      blockStatus: FIRST_FINALIZATION_STATUS,
       nativeStatus: deriveNativeStatus(
         {
           height: result.height,

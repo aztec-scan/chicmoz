@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { ethAddressSchema, hexStringSchema } from "../general.js";
-import {
-  chicmozL2BlockFinalizationStatusSchema,
-  chicmozL2NativeBlockStatusSchema,
-} from "./l2Block.js";
+import { chicmozL2NativeBlockStatusSchema } from "./l2Block.js";
 import { frDecimalStringSchema, frTimestampSchema } from "./utils.js";
 
 export const uiBlockStatusFilterSchema = z.enum([
@@ -22,15 +19,12 @@ export const uiBlockTableSchema = z.object({
   height: z.coerce.bigint().nonnegative(),
   timestamp: frTimestampSchema,
   txEffectsLength: z.number(),
-  blockStatus: chicmozL2BlockFinalizationStatusSchema.describe(
-    "Deprecated legacy finalization status kept for compatibility; do not drive UI display from this field.",
-  ),
   nativeStatus: chicmozL2NativeBlockStatusSchema
     .describe("Product-facing Aztec-native block status derived from L2 tips.")
     .optional(),
   // True when the block has been reorged out. The row should still be shown
   // (the design has an "orphaned" filter chip) but the StatusPill must
-  // collapse to "orphaned" rather than its pre-orphan finalization status.
+  // collapse to "orphaned" rather than its native tip-derived status.
   orphan: z.boolean().default(false),
   // The block's L1 coinbase — surfaced from `globalVariables.coinbase` so
   // the table can show a truncated address cell without a follow-up call

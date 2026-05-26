@@ -4,7 +4,6 @@ import {
   getConsumerGroupId,
   type L2BlockRangeRequestEvent,
 } from "@chicmoz-pkg/message-registry";
-import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
 import { INSTANCE_NAME } from "@chicmoz-pkg/microservice-base";
 import Bottleneck from "bottleneck";
 import {
@@ -127,9 +126,7 @@ const processL2BlockRangeRequest = async (event: L2BlockRangeRequestEvent) => {
       }
       await onCatchupBlock(
         block,
-        range.statusHint === "proven"
-          ? ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN
-          : ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+        range.statusHint,
         {
           requestId: event.requestId,
           catchupReason: event.reason === "tip_boundary_mismatch" ? "reorg_repair" : event.reason,
