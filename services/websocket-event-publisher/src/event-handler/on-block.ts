@@ -6,7 +6,6 @@ import { sendBlockToClients } from "../ws-server/index.js";
 export const onBlock = async ({
   block,
   blockNumber,
-  finalizationStatus,
 }: NewBlockEvent) => {
   if (!block) {
     logger.error("🚫 Block is empty");
@@ -16,7 +15,7 @@ export const onBlock = async ({
   let parsedBlock;
   try {
     const b = blockFromBuffer(block);
-    parsedBlock = await parseBlock(b, finalizationStatus);
+    parsedBlock = await parseBlock(b);
   } catch (e) {
     logger.error(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
