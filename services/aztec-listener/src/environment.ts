@@ -21,27 +21,22 @@ export const CHAIN_INFO_POLL_INTERVAL_MS = z.coerce
   .number()
   .default(30000)
   .parse(process.env.CHAIN_INFO_POLL_INTERVAL_MS);
+export const L2_TIPS_POLL_INTERVAL_MS = z.coerce
+  .number()
+  .default(5000)
+  .parse(process.env.L2_TIPS_POLL_INTERVAL_MS);
+export const L2_TIPS_HEARTBEAT_INTERVAL_MS = z.coerce
+  .number()
+  .default(60000)
+  .parse(process.env.L2_TIPS_HEARTBEAT_INTERVAL_MS);
 export const MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS = z.coerce
   .number()
   .default(50)
   .parse(process.env.MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS);
 export const AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS =
   process.env.AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS === "true";
-export const AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT =
-  z.coerce
-    .number()
-    .gt(0)
-    .optional()
-    .parse(
-      process.env.AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT,
-    );
 export const AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS =
   process.env.AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS === "true";
-export const AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT = z.coerce
-  .number()
-  .gt(0)
-  .optional()
-  .parse(process.env.AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT);
 export const AZTEC_LISTEN_FOR_PENDING_TXS = z.coerce
   .boolean()
   .default(true)
@@ -50,12 +45,62 @@ export const AZTEC_LISTEN_FOR_CHAIN_INFO = z.coerce
   .boolean()
   .default(true)
   .parse(process.env.AZTEC_LISTEN_FOR_CHAIN_INFO);
+export const AZTEC_LISTEN_FOR_L2_TIPS = z.coerce
+  .boolean()
+  .default(true)
+  .parse(process.env.AZTEC_LISTEN_FOR_L2_TIPS);
 export const AZTEC_DISABLED = z.coerce
   .boolean().default(false).parse(process.env.AZTEC_DISABLED);
-export const AZTEC_DISABLE_ETERNAL_CATCHUP = z.coerce
-  .boolean()
-  .default(false)
-  .parse(process.env.AZTEC_DISABLE_ETERNAL_CATCHUP);
+
+export const parseFullSweepCatchupEnabled = (env: {
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP: string | undefined;
+}) => {
+  const parseBooleanEnv = (value: string) =>
+    z.enum(["true", "false"]).parse(value) === "true";
+
+  if (env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP !== undefined) {
+    return parseBooleanEnv(env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP);
+  }
+  return false;
+};
+export const AZTEC_ENABLE_FULL_SWEEP_CATCHUP = parseFullSweepCatchupEnabled({
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP:
+    process.env.AZTEC_ENABLE_FULL_SWEEP_CATCHUP,
+});
+export const L2_BLOCK_RANGE_REQUEST_MAX_RANGES = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(10)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_RANGES);
+export const L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(200)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS);
+export const L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS = z.coerce
+  .number()
+  .positive()
+  .default(60 * 60 * 1000)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS);
+export const L2_BLOCK_RANGE_REQUEST_MAX_WIDTH = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(250)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_MAX_WIDTH);
+export const L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS = z.coerce
+  .number()
+  .nonnegative()
+  .default(250)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_MIN_TIME_MS);
+export const L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(5)
+  .parse(process.env.L2_BLOCK_RANGE_REQUEST_QUEUE_HIGH_WATER);
 
 export const DROPPED_TX_VERIFICATION_INTERVAL_MS = z.coerce
   .number()
@@ -73,9 +118,6 @@ export const MEMPOOL_SYNC_GRACE_PERIOD_MS = z.coerce
   .number()
   .default(30_000) // 30 seconds
   .parse(process.env.MEMPOOL_SYNC_GRACE_PERIOD_MS);
-
-export const IGNORE_PROCESSED_HEIGHT =
-  process.env.IGNORE_PROCESSED_HEIGHT === "true";
 
 export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID,
@@ -101,15 +143,7 @@ AZTEC_RPC_URL_POOL:                                        ${printPool()}
 =======================
 AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS:                  ${AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS ? "✅" : "❌"
   }
-AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT: ${AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT
-    ? AZTEC_LISTEN_FOR_PROPOSED_BLOCKS_FORCED_START_FROM_HEIGHT + "⚠️"
-    : "❌"
-  }
 AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS:                    ${AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS ? "✅" : "❌"
-  }
-AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT:   ${AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT
-    ? AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT + "⚠️"
-    : "❌"
   }
 AZTEC_LISTEN_FOR_PENDING_TXS:                              ${AZTEC_LISTEN_FOR_PENDING_TXS ? "✅" : "❌"
   }
@@ -125,6 +159,16 @@ AZTEC_LISTEN_FOR_CHAIN_INFO:                               ${AZTEC_LISTEN_FOR_CH
   }
 CHAIN_INFO_POLL_INTERVAL_MS:                               ${CHAIN_INFO_POLL_INTERVAL_MS / 1000
   }s
-IGNORE_PROCESSED_HEIGHT:                                   ${IGNORE_PROCESSED_HEIGHT ? "✅" : "❌"
+AZTEC_LISTEN_FOR_L2_TIPS:                                  ${AZTEC_LISTEN_FOR_L2_TIPS ? "✅" : "❌"
   }
-MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}`;
+L2_TIPS_POLL_INTERVAL_MS:                                  ${L2_TIPS_POLL_INTERVAL_MS / 1000
+  }s
+L2_TIPS_HEARTBEAT_INTERVAL_MS:                             ${L2_TIPS_HEARTBEAT_INTERVAL_MS / 1000
+  }s
+AZTEC_ENABLE_FULL_SWEEP_CATCHUP:                           ${AZTEC_ENABLE_FULL_SWEEP_CATCHUP ? "✅" : "❌"
+  }
+MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS:                        ${MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS}
+L2_BLOCK_RANGE_REQUEST_MAX_RANGES:                         ${L2_BLOCK_RANGE_REQUEST_MAX_RANGES}
+L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS:                         ${L2_BLOCK_RANGE_REQUEST_MAX_BLOCKS}
+L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS:                         ${L2_BLOCK_RANGE_REQUEST_MAX_AGE_MS}
+L2_BLOCK_RANGE_REQUEST_MAX_WIDTH:                          ${L2_BLOCK_RANGE_REQUEST_MAX_WIDTH}`;

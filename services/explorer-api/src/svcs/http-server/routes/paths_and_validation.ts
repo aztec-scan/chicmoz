@@ -31,7 +31,7 @@ export const paths = {
   latestBlock: "/l2/blocks/latest",
   block: `/l2/blocks/:${heightOrHash}`,
   blocks: "/l2/blocks",
-  blocksByStatus: "/l2/blocks/by-status",
+  blocksByNativeStatus: "/l2/blocks/by-status",
   orphanedBlocks: "/l2/blocks/orphaned",
   orphanedBlocksLimited: "/l2/blocks/orphans",
   reorgs: "/l2/reorgs",
@@ -104,6 +104,7 @@ export const paths = {
   l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
 
   chainInfo: "/l2/info",
+  l2Tips: "/l2/tips",
   rollupVersions: "/l2/rollup-versions",
   chainErrors: "/l2/errors",
   rpcNodes: "/l2/rpc-nodes",

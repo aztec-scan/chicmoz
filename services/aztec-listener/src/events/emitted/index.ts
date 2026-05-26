@@ -1,11 +1,13 @@
 import {
   ChicmozChainInfo,
+  ChicmozL2Tips,
   ChicmozL2BlockFinalizationStatus,
   ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
   chicmozL2RpcNodeErrorSchema,
   jsonStringify,
 } from "@chicmoz-pkg/types";
+import type { CatchupBlockEvent, L2TipsEvent } from "@chicmoz-pkg/message-registry";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
 import {
@@ -75,6 +77,7 @@ export const onBlock = async (
 export const onCatchupBlock = async (
   block: L2Block,
   finalizationStatus: ChicmozL2BlockFinalizationStatus,
+  metadata: Pick<CatchupBlockEvent, "requestId" | "catchupReason"> = {},
 ) => {
   const blockNumber = BigInt(
     block.header.globalVariables.blockNumber.toString(),
@@ -86,9 +89,22 @@ export const onCatchupBlock = async (
     block: blockStr,
     finalizationStatus,
     blockNumber: blockNumberSafe,
+    ...metadata,
   });
 };
-// TODO: onCatchupRequestFromExplorerApi
+
+export const onL2Tips = async (
+  tips: ChicmozL2Tips,
+  source: L2TipsEvent["source"] = {},
+) => {
+  const event: L2TipsEvent = {
+    tips,
+    observedAt: Date.now(),
+    source,
+  };
+  logger.info(`🔺 publishing L2_TIPS_EVENT ${jsonStringify(event)}`);
+  await publishMessage("L2_TIPS_EVENT", event);
+};
 
 export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   const event = { chainInfo };

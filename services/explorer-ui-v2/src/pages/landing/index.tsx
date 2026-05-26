@@ -23,10 +23,10 @@ import { HeroTip } from "./hero-tip";
 import { LatestLists } from "./latest-lists";
 
 export const Landing: FC = () => {
-  const { data: tableBlocks } = useLatestTableBlocks();
+  const { data: tableBlocks, isPending: blocksLoading } = useLatestTableBlocks();
   const { data: provenBlocks } = useLatestTableBlocksByStatus("proven");
   const { data: finalizedBlocks } = useLatestTableBlocksByStatus("finalized");
-  const { data: tableTxs } = useLatestTableTxEffects();
+  const { data: tableTxs, isPending: txsLoading } = useLatestTableTxEffects();
   const { data: pendingTxs } = usePendingTxs();
   const { data: droppedTxs24h } = useDroppedTxsLast24h();
   const { data: reorgs } = useReorgs();
@@ -102,6 +102,8 @@ export const Landing: FC = () => {
         feeJuiceDecimals={feeJuiceDecimals}
         feeJuiceSymbol={feeJuiceSymbol}
         feeJuiceAddress={feeJuiceAddress}
+        isLoadingBlocks={blocksLoading}
+        isLoadingTxs={txsLoading}
       />
 
       <ChainInfoBand

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type ChicmozL2Block } from "./aztec/l2Block.js";
+import { type ChicmozL2Block, type ChicmozL2Tips } from "./aztec/l2Block.js";
 import { type ChicmozL2PendingTx } from "./aztec/l2TxEffect.js";
 import { frSchema } from "./aztec/utils.js";
 
@@ -34,9 +34,11 @@ export type StringableChicmozL2Block = Omit<ChicmozL2Block, "header"> & {
 export type WebsocketUpdateMessageSender = {
   block?: StringableChicmozL2Block;
   txs?: ChicmozL2PendingTx[];
+  l2Tips?: ChicmozL2Tips;
 };
 
 export type WebsocketUpdateMessageReceiver = {
   block?: ChicmozL2Block;
   txs?: ChicmozL2PendingTx[];
+  l2Tips?: ChicmozL2Tips;
 };

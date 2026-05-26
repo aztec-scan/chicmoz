@@ -2,8 +2,8 @@ import { MicroserviceBaseSvc } from "@chicmoz-pkg/microservice-base";
 import { NODE_ENV, NodeEnv } from "@chicmoz-pkg/types";
 import {
   AZTEC_LISTEN_FOR_CHAIN_INFO,
+  AZTEC_LISTEN_FOR_L2_TIPS,
   AZTEC_LISTEN_FOR_PENDING_TXS,
-  AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
   getConfigStr,
 } from "../../environment.js";
 import { onL2RpcNodeError } from "../../events/emitted/index.js";
@@ -13,6 +13,7 @@ import * as blockPoller from "./pollers/block_poller/index.js";
 import * as chainInfoPoller from "./pollers/chain-info-poller.js";
 import * as pendingTxsPoller from "./pollers/txs_poller.js";
 import * as droppedTxVerifier from "./pollers/dropped-tx-verifier.js";
+import * as l2TipsPoller from "./pollers/l2-tips-poller.js";
 import { NodeInfo } from "@aztec/aztec.js/contracts";
 
 let nodeInfo: NodeInfo;
@@ -44,19 +45,17 @@ export const init = async () => {
   };
 };
 
-export const startPoller = async () => {
-  await blockPoller.startPolling({
-    forceStartFromProposedHeight:
-      AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
-    forceStartFromProvenHeight:
-      AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT,
-  });
+export const startPoller = () => {
+  blockPoller.startPolling();
   if (AZTEC_LISTEN_FOR_PENDING_TXS) {
     pendingTxsPoller.startPolling();
     droppedTxVerifier.start();
   }
   if (AZTEC_LISTEN_FOR_CHAIN_INFO) {
     chainInfoPoller.startPolling();
+  }
+  if (AZTEC_LISTEN_FOR_L2_TIPS) {
+    l2TipsPoller.startPolling();
   }
 };
 
@@ -73,6 +72,7 @@ export const pollerService: MicroserviceBaseSvc = {
     pendingTxsPoller.stopPolling();
     blockPoller.stopPolling();
     chainInfoPoller.stopPolling();
+    l2TipsPoller.stopPolling();
     droppedTxVerifier.stop();
   },
 };

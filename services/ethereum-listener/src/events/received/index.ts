@@ -64,7 +64,7 @@ const getTokenMetadata = async ({
       }),
     ]);
 
-    if (decimals > 255n) {
+    if (decimals > 255) {
       throw new Error(
         `Invalid ${tokenName} decimals for ${address}: ${decimals}`,
       );

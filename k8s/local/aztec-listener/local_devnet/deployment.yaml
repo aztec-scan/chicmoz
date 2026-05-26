@@ -48,6 +48,8 @@ spec:
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS
               value: "true"
+            - name: AZTEC_ENABLE_FULL_SWEEP_CATCHUP
+              value: "false"
             - name: AZTEC_RPC_URL
               value: "http://aztec-devnet-node:8080"
 status: {}

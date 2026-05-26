@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import {
   DetailEmptyState,
@@ -22,6 +22,10 @@ type Tab = "source" | "private" | "utility" | "instances";
 
 export const ContractClassPage: FC = () => {
   const { id: classId = "", version = "" } = useParams({ strict: false });
+  const location = useLocation();
+  const isOnChildRoute = location.pathname.includes(
+    "/submit-standard-contract",
+  );
 
   const { data: classData, isLoading } = useContractClass({
     classId,
@@ -33,6 +37,10 @@ export const ContractClassPage: FC = () => {
   const { data: source } = useContractClassSource(classId, version);
 
   const [tab, setTab] = useState<Tab>("source");
+
+  if (isOnChildRoute) {
+    return <Outlet />;
+  }
 
   const stubCrumbs = [
     { label: "aztec-scan", to: "/" },
@@ -92,7 +100,7 @@ export const ContractClassPage: FC = () => {
         <div className="panel-head">
           <h3>
             Class header
-            <span className="tag">chicmozL2ContractClassRegisteredEvent</span>
+            <span className="tag">registered class</span>
           </h3>
         </div>
         <div className="kv-grid">

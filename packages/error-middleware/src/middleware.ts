@@ -46,6 +46,13 @@ export const createErrorMiddleware = (logger: Logger): ErrorRequestHandler => {
       return;
     }
 
+    for (const ChicmozError of CHICMOZ_ERRORS) {
+      if (err instanceof ChicmozError && err.code < 500) {
+        res.status(err.code).send({ message: err.message });
+        return;
+      }
+    }
+
     if (err instanceof Error) {
       const errDetails = getErrDetails(err);
       logger.error(

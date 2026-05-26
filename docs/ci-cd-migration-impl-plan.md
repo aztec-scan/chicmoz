@@ -530,7 +530,7 @@ Source: `k8s/production/aztec-listener/mainnet/deployment.yaml`
   - `postgres-config-global` (unchanged)
   - `postgres-config-aztec-listener` (nameSuffix will append network suffix ✓)
 - Keep: `resources`
-- Base env: `NODE_ENV: production`, `IGNORE_PROCESSED_HEIGHT: "false"`, `AZTEC_LISTEN_FOR_BLOCKS: "true"`, `AZTEC_LISTEN_FOR_PENDING_TXS: "true"`
+- Base env: `NODE_ENV: production`, `AZTEC_LISTEN_FOR_BLOCKS: "true"`, `AZTEC_LISTEN_FOR_PENDING_TXS: "true"`
 - Remove from base: `INSTANCE_NAME`, `L2_NETWORK_ID`, `AZTEC_RPC_URLS` (secretKeyRef — overlay patch)
 
 **`services/aztec-listener/k8s/base/kustomization.yaml`**
@@ -579,8 +579,6 @@ patches:
 **Testnet overlay adds extra env vars** (present in testnet deployment but not mainnet):
 
 ```yaml
-- name: AZTEC_DISABLE_ETERNAL_CATCHUP
-  value: "false"
 - name: NODE_OPTIONS
   value: "--max-old-space-size=1536"
 ```

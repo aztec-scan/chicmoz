@@ -9,15 +9,27 @@ import { controllers as dbControllers } from "../../svcs/database/index.js";
 import {
   getLatestFinalizedHeight,
   getPublicHttpClient,
+  getPublicWsClient,
 } from "../client/index.js";
 import { getAllContractsEvents } from "./get-events.js";
-import { AztecContracts, UnwatchCallback, getTypedContract } from "./utils.js";
+import {
+  type AztecContracts,
+  type UnwatchCallback,
+  getTypedContract,
+} from "./utils.js";
 import { watchAllContractsEvents } from "./watch-events.js";
 import { queryStakingStateAndEmitUpdates } from "../client/get-attester-view.js";
 
-export const getL1Contracts = async (): Promise<AztecContracts> => {
+type L1ContractsTransport = "http" | "ws";
+
+export const getL1Contracts = async ({
+  transport = "http",
+}: {
+  transport?: L1ContractsTransport;
+} = {}): Promise<AztecContracts> => {
   const dbContracts = await dbControllers.getL1Contracts();
-  const publicClient = getPublicHttpClient();
+  const publicClient =
+    transport === "ws" ? getPublicWsClient() : getPublicHttpClient();
   return {
     rollup: getTypedContract(
       RollupAbi,
@@ -48,7 +60,7 @@ export const getL1Contracts = async (): Promise<AztecContracts> => {
 };
 
 export const startContractWatchers = async (): Promise<UnwatchCallback> => {
-  const contracts = await getL1Contracts();
+  const contracts = await getL1Contracts({ transport: "ws" });
   const latestHeight = await getLatestFinalizedHeight();
   return watchAllContractsEvents({ contracts, latestHeight });
 };

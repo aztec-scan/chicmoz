@@ -27,7 +27,6 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
     ),
     cell: ({ row }) => {
       const height = Number(row.getValue("height"));
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       const r = routes.blocks.route + "/" + height;
       return (
         <div className="text-purple-light">
@@ -105,6 +104,8 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
     cell: ({ row }) => (
       <BlockStatusBadge
         className="font-mono"
+        nativeStatus={row.original.nativeStatus}
+        orphan={row.original.orphan}
         status={row.getValue("blockStatus")}
       />
     ),

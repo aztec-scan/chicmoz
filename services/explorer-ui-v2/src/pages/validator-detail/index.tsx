@@ -134,7 +134,7 @@ export const ValidatorDetailPage: FC = () => {
       <div className="panel">
         <div className="panel-head">
           <h3>
-            Identity<span className="tag">ChicmozL1L2Validator</span>
+            Identity<span className="tag">validator profile</span>
           </h3>
         </div>
         <div className="kv-grid">

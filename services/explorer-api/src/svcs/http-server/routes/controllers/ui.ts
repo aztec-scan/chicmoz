@@ -11,6 +11,7 @@ import {
   getTxEffectsByBlockHeightSchema,
   getBlocksSchema,
 } from "../paths_and_validation.js";
+import { parseWithFreshNativeStatuses } from "./utils/native-status-overlay.js";
 
 export const openapi_GET_BLOCK_UI_TABLE_DATA: OpenAPIObject["paths"] = {
   "/l2/ui/blocks-for-table": {
@@ -37,7 +38,14 @@ export const openapi_GET_BLOCK_UI_TABLE_DATA: OpenAPIObject["paths"] = {
           in: "query",
           schema: {
             type: "string",
-            enum: ["proposed", "proven", "finalized", "orphaned"],
+            enum: [
+              "proposed",
+              "checkpointed",
+              "proven",
+              "finalized",
+              "unknown",
+              "orphaned",
+            ],
           },
         },
       ],
@@ -52,7 +60,7 @@ export const GET_BLOCK_UI_TABLE_DATA = asyncHandler(async (req, res) => {
     ["l2", "blocks", "ui", from, to, status],
     () => db.ui.getBlocksForUiTable({ from, to, status }),
   );
-  res.status(200).json(JSON.parse(blocksData));
+  res.status(200).json(await parseWithFreshNativeStatuses(blocksData));
 });
 
 export const openapi_GET_TX_EFFECTS_UI_TABLE_DATA: OpenAPIObject["paths"] = {

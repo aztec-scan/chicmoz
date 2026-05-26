@@ -8,6 +8,7 @@ export const chicmozL1L2BlockProposedSchema = z.object({
   l1BlockNumber: z.coerce.bigint(),
   l1BlockTimestamp: frTimestampSchema.optional().nullable(),
   l1BlockHash: z.string().startsWith("0x"),
+  l1TransactionHash: z.string().startsWith("0x").optional().nullable(),
   isFinalized: z.boolean().default(false),
   archive: frSchema,
 });
@@ -22,6 +23,7 @@ export const chicmozL1L2ProofVerifiedSchema = z.object({
   l1BlockNumber: z.coerce.bigint(),
   l1BlockTimestamp: frTimestampSchema.optional().nullable(),
   l1BlockHash: z.string().startsWith("0x"),
+  l1TransactionHash: z.string().startsWith("0x").optional().nullable(),
   isFinalized: z.boolean().default(false),
   proverId: ethAddressSchema,
 });
@@ -41,6 +43,7 @@ export const chicmozL1GenericContractEventSchema = z.object({
   l1ContractAddress: z.string(),
   isFinalized: z.boolean().default(false),
   l1TransactionHash: z.string().startsWith("0x").optional().nullable(),
+  l1LogIndex: z.coerce.number().int().nonnegative().optional().nullable(),
 });
 
 export type ChicmozL1GenericContractEvent = z.infer<

@@ -16,9 +16,7 @@ import { logger } from "../../../logger.js";
 import { observeRollupVersion } from "../../../svcs/database/controllers/l2/chain-info/rollup-version-cache.js";
 import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
 import { unOrphanBlock } from "../../../svcs/database/controllers/l2block/orphan.js";
-import { ensureFinalizationStatusStored } from "../../../svcs/database/controllers/l2block/store.js";
 import { controllers } from "../../../svcs/database/index.js";
-import { emit } from "../../index.js";
 import { handleDuplicateBlockError } from "../utils.js";
 import { storeContracts } from "./contracts.js";
 import { detectReorg, handleReorg } from "./reorg-handler.js";
@@ -76,6 +74,7 @@ const onBlock = async ({
   }
 
   await storeBlock(parsedBlock);
+  await controllers.l2Block.markOpenGapsFulfilledByHeight(parsedBlock.height);
   await observeRollupVersion({
     l2NetworkId: L2_NETWORK_ID,
     rollupVersion: chicmozChainInfoSchema.shape.rollupVersion.parse(
@@ -102,46 +101,37 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
   parsedBlock.orphan = undefined;
 
   // Store the new block
-  const storeRes = await controllers.l2Block
-    .store(parsedBlock)
-    .catch(async (e) => {
-      if (haveRetried) {
-        throw new Error(
-          `Failed to store block ${parsedBlock.height} after retry: ${e}`,
-        );
-      }
-
-      // If we still get an error, we'll try the old approach as fallback
-      const shouldRetry = await handleDuplicateBlockError(
-        e as Error,
-        `block ${parsedBlock.height}`,
-        async () => {
-          logger.warn(
-            `Deleting block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
-          );
-          await deleteL2BlockByHeight(parsedBlock.height);
-        },
-        async () => {
-          // The block hash already exists but is orphaned — un-orphan it
-          // since the node is serving it as the canonical block.
-          await unOrphanBlock(parsedBlock.hash);
-          await ensureFinalizationStatusStored(
-            parsedBlock.hash,
-            parsedBlock.height,
-            parsedBlock.finalizationStatus,
-          );
-        },
+  await controllers.l2Block.store(parsedBlock).catch(async (e) => {
+    if (haveRetried) {
+      throw new Error(
+        `Failed to store block ${parsedBlock.height} after retry: ${e}`,
       );
+    }
 
-      if (shouldRetry) {
-        return storeBlock(parsedBlock, true);
-      }
-      // When shouldRetry is false and the un-orphan path was taken,
-      // ensureFinalizationStatusStored was already called inside unOrphanCallback.
-      // No additional call needed here.
-    });
+    // If we still get an error, we'll try the old approach as fallback
+    const shouldRetry = await handleDuplicateBlockError(
+      e as Error,
+      `block ${parsedBlock.height}`,
+      async () => {
+        logger.warn(
+          `Deleting block ${parsedBlock.height} (hash: ${parsedBlock.hash})`,
+        );
+        await deleteL2BlockByHeight(parsedBlock.height);
+      },
+      async () => {
+        // The block hash already exists but is orphaned — un-orphan it
+        // since the node is serving it as the canonical block.
+        await unOrphanBlock(parsedBlock.hash);
+      },
+    );
 
-  await emit.l2BlockFinalizationUpdate(storeRes?.finalizationUpdate ?? null);
+    if (shouldRetry) {
+      return storeBlock(parsedBlock, true);
+    }
+    // When shouldRetry is false and the un-orphan path was taken,
+    // ensureFinalizationStatusStored was already called inside unOrphanCallback.
+    // No additional call needed here.
+  });
 };
 
 const pendingTxsHook = async (txEffects: ChicmozL2TxEffect[]) => {

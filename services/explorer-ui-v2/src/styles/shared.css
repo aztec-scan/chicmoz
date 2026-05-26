@@ -631,6 +631,8 @@
 .kv .v {
   color: var(--ink-1);
   word-break: break-all;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .kv .v a {
   color: var(--purple);
@@ -662,6 +664,7 @@
   align-items: center;
   gap: 4px;
   width: fit-content;
+  white-space: nowrap;
 }
 .status-pill .s-dot {
   width: 5px;
@@ -680,6 +683,10 @@
   color: var(--green);
   border-color: rgba(49, 166, 123, 0.4);
 }
+.status-pill.checkpointed {
+  color: var(--blue, #5aa9ff);
+  border-color: rgba(90, 169, 255, 0.45);
+}
 .status-pill.finalized {
   color: var(--purple);
   border-color: rgba(113, 94, 194, 0.5);
@@ -689,6 +696,10 @@
   border-color: rgba(255, 119, 100, 0.4);
 }
 .status-pill.pending {
+  color: var(--ink-2);
+  border-color: var(--line);
+}
+.status-pill.unknown {
   color: var(--ink-2);
   border-color: var(--line);
 }
@@ -739,6 +750,11 @@
   border-bottom: 1px solid var(--line);
   padding: 0 18px;
   background: var(--bg-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* hide scrollbar on non-hover so it's unobtrusive */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 .tabs button {
   background: transparent;
@@ -752,6 +768,8 @@
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .tabs button:hover {
   color: var(--ink-1);
@@ -891,6 +909,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 12px 18px;
   font-family: var(--mono);
   font-size: 11px;
@@ -898,6 +918,7 @@
 }
 .pagination .pages {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 .pagination button {
@@ -1027,4 +1048,44 @@
 }
 .etherscan-link svg {
   flex-shrink: 0;
+}
+
+/* ===== skeleton shimmer ===== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.skeleton {
+  display: inline-block;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-3) 25%,
+    var(--bg-2) 50%,
+    var(--bg-3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  /* prevent text content from being visible if accidentally given children */
+  color: transparent;
+  user-select: none;
+}
+
+/* Skeleton rows are real .row nodes with shimmer cells inside.
+   Pointer events disabled so they can't be accidentally clicked. */
+.skeleton-row {
+  pointer-events: none;
+  /* fade out each row slightly more than the previous to give a natural
+     trailing-off effect without JavaScript */
+}
+.skeleton-row:nth-child(n + 6) {
+  opacity: 0.7;
+}
+.skeleton-row:nth-child(n + 9) {
+  opacity: 0.4;
 }

@@ -1,13 +1,6 @@
-import { ChicmozL2BlockFinalizationUpdateEvent } from "@chicmoz-pkg/message-registry";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import {
-  ChicmozL2BlockFinalizationStatus,
-  HexString,
-  type ChicmozL2Block,
-} from "@chicmoz-pkg/types";
-import { and, asc, eq, isNull, lt } from "drizzle-orm";
+import { HexString, type ChicmozL2Block } from "@chicmoz-pkg/types";
 import { v4 as uuidv4 } from "uuid";
-import { logger } from "../../../../logger.js";
 import {
   archive,
   body,
@@ -25,14 +18,8 @@ import {
   state,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
-import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
-import { ensureL1FinalizationIsStored } from "./add_l1_data.js";
 
-export const store = async (
-  block: ChicmozL2Block,
-): Promise<{
-  finalizationUpdate: ChicmozL2BlockFinalizationUpdateEvent | null;
-}> => {
+export const store = async (block: ChicmozL2Block): Promise<void> => {
   return await db().transaction(async (dbTx) => {
     // Insert l2Block
     await dbTx.insert(l2Block).values({
@@ -182,116 +169,6 @@ export const store = async (
           value: pdw.value,
         });
       }
-    }
-    await ensureFinalizationStatusStored(
-      block.hash,
-      block.height,
-      block.finalizationStatus,
-    );
-    const finalizationUpdate = await ensureL1FinalizationIsStored(
-      block.hash,
-      block.height,
-      block.archive.root,
-    );
-    return { finalizationUpdate };
-  });
-};
-
-const _ensureFinalizationStatusStored = async (
-  l2BlockHash: HexString,
-  l2BlockNumber: bigint,
-  status: ChicmozL2BlockFinalizationStatus,
-): Promise<void> => {
-  await db()
-    .insert(l2BlockFinalizationStatusTable)
-    .values({
-      l2BlockHash,
-      l2BlockNumber,
-      status,
-    })
-    .onConflictDoNothing();
-};
-
-export const ensureFinalizationStatusStored = async (
-  l2BlockHash: HexString,
-  l2BlockNumber: bigint,
-  status: ChicmozL2BlockFinalizationStatus,
-): Promise<void> => {
-  await _ensureFinalizationStatusStored(l2BlockHash, l2BlockNumber, status);
-  await ensureParentBlocksFinalizationStatusStored(l2BlockNumber, status);
-};
-
-const ensureParentBlocksFinalizationStatusStored = async (
-  l2BlockNumber: bigint,
-  status: ChicmozL2BlockFinalizationStatus,
-): Promise<void> => {
-  const parentBlockNumber = l2BlockNumber;
-  await db().transaction(async (tx) => {
-    const blocksOnOtherStatus = tx
-      .selectDistinctOn([l2BlockFinalizationStatusTable.l2BlockNumber], {
-        blockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
-        hash: l2Block.hash,
-      })
-      .from(l2BlockFinalizationStatusTable)
-      .innerJoin(
-        l2Block,
-        eq(l2BlockFinalizationStatusTable.l2BlockHash, l2Block.hash),
-      )
-      .where(
-        and(
-          lt(l2BlockFinalizationStatusTable.status, status),
-          lt(l2BlockFinalizationStatusTable.l2BlockNumber, parentBlockNumber),
-          isNull(l2Block.orphan_timestamp),
-        ),
-      );
-
-    const allBlocksOnSameStatus = tx
-      .select({
-        blockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
-        hash: l2Block.hash,
-      })
-      .from(l2BlockFinalizationStatusTable)
-      .innerJoin(
-        l2Block,
-        eq(l2BlockFinalizationStatusTable.l2BlockHash, l2Block.hash),
-      )
-      .where(
-        and(
-          eq(l2BlockFinalizationStatusTable.status, status),
-          lt(l2BlockFinalizationStatusTable.l2BlockNumber, parentBlockNumber),
-          isNull(l2Block.orphan_timestamp),
-        ),
-      );
-
-    const blocksWithMissingStatus = await blocksOnOtherStatus
-      .except(allBlocksOnSameStatus)
-      .orderBy(asc(l2BlockFinalizationStatusTable.l2BlockNumber));
-
-    if (blocksWithMissingStatus.length === 0) {
-      return;
-    }
-
-    logger.info(
-      `Ensuring finalization status ${ChicmozL2BlockFinalizationStatus[status]} for ${blocksWithMissingStatus.length} blocks before block ${l2BlockNumber}`,
-    );
-
-    const rowsToInsert = blocksWithMissingStatus.map((block) => ({
-      l2BlockHash: block.hash,
-      l2BlockNumber: block.blockNumber,
-      status,
-    }));
-
-    // Batch the INSERTs so each statement stays below PostgreSQL's
-    // 65,535 bind-parameter limit. We insert 3 columns per row.
-    const insertedColumnCount = 3;
-    const maxBindParameters = 65_535;
-    const batchSize = Math.floor(maxBindParameters / insertedColumnCount);
-
-    for (let i = 0; i < rowsToInsert.length; i += batchSize) {
-      await tx
-        .insert(l2BlockFinalizationStatusTable)
-        .values(rowsToInsert.slice(i, i + batchSize))
-        .onConflictDoNothing();
     }
   });
 };

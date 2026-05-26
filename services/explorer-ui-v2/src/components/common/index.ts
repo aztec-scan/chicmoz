@@ -8,5 +8,6 @@ export * from "./etherscan-address-link";
 export * from "./fee-payment-method-badge";
 export * from "./hash-cell";
 export * from "./pagination";
+export * from "./skeleton";
 export * from "./status-pill";
 export * from "./token-etherscan-link";

@@ -153,7 +153,7 @@ export const TxDetailPage: FC = () => {
           <div className="panel">
             <div className="panel-head">
               <h3>
-                Transaction<span className="tag">ChicmozL2TxEffectDeluxe</span>
+                Transaction<span className="tag">mined transaction</span>
               </h3>
             </div>
             <div className="kv-grid">

@@ -255,6 +255,9 @@
 .row:hover {
   background: var(--bg-2);
 }
+.row[role="link"] {
+  cursor: pointer;
+}
 .row.new {
   animation: rowflash 1.4s ease-out 1;
 }
@@ -264,7 +267,7 @@
   min-height: 42px;
 }
 .row-block {
-  grid-template-columns: 100px 1fr 60px 90px 80px;
+  grid-template-columns: 100px minmax(0, 1fr) 40px 112px 80px;
 }
 .row-tx {
   grid-template-columns: 1fr 100px 80px 80px;
@@ -319,7 +322,7 @@
   gap: 10px;
 }
 .row-head.block-cols {
-  grid-template-columns: 100px minmax(0, 1fr) 60px 90px 80px;
+  grid-template-columns: 100px minmax(0, 1fr) 40px 112px 80px;
 }
 .row-head.tx-cols {
   grid-template-columns: minmax(0, 1fr) 100px 110px 80px;
@@ -659,10 +662,12 @@
 }
 .detail-header h1 {
   font-family: var(--mono);
-  font-size: 44px;
+  font-size: clamp(24px, 5vw, 44px);
   color: var(--ink-1);
   margin: 0 0 10px 0;
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .detail-header h1 .pfx {
   color: var(--ink-3);
@@ -1806,7 +1811,7 @@
     grid-template-columns: 1fr;
   }
   .detail-header h1 {
-    font-size: 32px;
+    font-size: clamp(20px, 4vw, 32px);
   }
   .kv,
   .kv.wide,
@@ -1842,6 +1847,21 @@
   }
   .console-head {
     font-size: 10px;
+  }
+  /* Prevent console-head comment from being clipped on narrow screens */
+  .console-head .comment {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  /* Search: shorten placeholder so it doesn't visually bleed */
+  .search input::placeholder {
+    font-size: 10px;
+  }
+  /* stats-strip inner variant: collapse to 2-col just like the outer strip */
+  .stats-strip.inner {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-flow: row;
   }
 }
 

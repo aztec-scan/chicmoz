@@ -55,6 +55,7 @@ export const updateBlock = (
         txEffectsLength: block.body.txEffects.length,
         timestamp: block.header.globalVariables.timestamp,
         blockStatus: block.finalizationStatus,
+        nativeStatus: block.nativeStatus,
         orphan: false,
       };
       return [...oldData, mapedWebsockketBlock].sort((a, b) => {
@@ -145,6 +146,21 @@ export const handlePendingTxs = (
   updatePendingTxs(queryClient, txs);
 };
 
+export const handleFinalizationUpdate = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+) => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeyGenerator.latestBlock }),
+    queryClient.invalidateQueries({
+      queryKey: queryKeyGenerator.latestTableBlocks,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: queryKeyGenerator.paginatedTableBlocks(0, 0).slice(0, 1),
+      exact: false,
+    }),
+  ]);
+};
+
 export const handleWebSocketMessage = async (
   queryClient: ReturnType<typeof useQueryClient>,
   data: string,
@@ -157,5 +173,8 @@ export const handleWebSocketMessage = async (
   }
   if (update.txs) {
     handlePendingTxs(queryClient, update.txs);
+  }
+  if (update.l2Tips) {
+    await handleFinalizationUpdate(queryClient);
   }
 };

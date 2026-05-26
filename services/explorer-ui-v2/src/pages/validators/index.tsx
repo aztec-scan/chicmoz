@@ -3,6 +3,7 @@ import { type FC, useMemo, useState } from "react";
 import {
   AddressEtherscanLink,
   Pagination,
+  SkeletonRows,
   StatusPill,
   TokenEtherscanLink,
 } from "~/components/common";
@@ -36,7 +37,7 @@ const PAGE_SIZE = 20;
 
 export const ValidatorsPage: FC = () => {
   const navigate = useNavigate();
-  const { data: validators } = useL1L2Validators();
+  const { data: validators, isPending: validatorsLoading } = useL1L2Validators();
   const { data: totals } = useValidatorTotals();
   const { data: chainInfo } = useChainInfo();
   const stakingAssetDecimals = chainInfo?.stakingAssetDecimals ?? 18;
@@ -263,6 +264,13 @@ export const ValidatorsPage: FC = () => {
           </div>
         </div>
         <div>
+          {validatorsLoading && (
+            <SkeletonRows
+              count={PAGE_SIZE}
+              columns="40px minmax(0,1fr) 160px 90px 90px 90px"
+              cells={6}
+            />
+          )}
           {paged.map((v, i) => {
             const status = validatorStatusToDisplay(v.status);
             return (
@@ -328,9 +336,9 @@ export const ValidatorsPage: FC = () => {
               </div>
             );
           })}
-          {paged.length === 0 && (
+          {!validatorsLoading && paged.length === 0 && (
             <div className="empty-state">
-              {validators ? "no validators match" : "loading validators…"}
+              {validators ? "no validators match" : "no validators found"}
             </div>
           )}
         </div>
