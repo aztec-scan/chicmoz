@@ -1,11 +1,16 @@
 import {
   ChicmozChainInfo,
-  ChicmozL2BlockFinalizationStatus,
+  ChicmozL2Tips,
+  ChicmozL2RpcNode,
   ChicmozL2RpcNodeError,
-  ChicmozL2Sequencer,
   chicmozL2RpcNodeErrorSchema,
   jsonStringify,
 } from "@chicmoz-pkg/types";
+import type {
+  CatchupBlockEvent,
+  L2BlockStatusHint,
+  L2TipsEvent,
+} from "@chicmoz-pkg/message-registry";
 import { logger } from "../../logger.js";
 import { txsController } from "../../svcs/database/index.js";
 import {
@@ -15,18 +20,28 @@ import {
 import { onL2RpcNodeAlive } from "./on-node-alive.js";
 import { L2Block } from "@aztec/stdlib/block";
 
+const toSafeBlockNumber = (value: bigint): number => {
+  const blockNumber = Number(value);
+
+  if (!Number.isSafeInteger(blockNumber) || blockNumber < 0) {
+    throw new Error(`Block number ${value.toString()} is not a safe integer`);
+  }
+
+  return blockNumber;
+};
+
 export const onBlock = async (
   block: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus,
+  statusHint: L2BlockStatusHint,
 ) => {
-  const height = Number(block.header.globalVariables.blockNumber);
-  const finalizationStatusStr =
-    finalizationStatus ===
-    ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
-      ? `🦊 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`
-      : `🐴 publishing (${ChicmozL2BlockFinalizationStatus[finalizationStatus]})`;
+  const height = BigInt(block.header.globalVariables.blockNumber.toString());
+  const heightNumber = toSafeBlockNumber(height);
+  const statusHintStr =
+    statusHint === "proposed"
+      ? "🦊 publishing proposed block"
+      : "🐴 publishing proven block";
   logger.info(
-    `${finalizationStatusStr} block ${height} (hash: ${(
+    `${statusHintStr} ${height} (hash: ${(
       await block.hash()
     ).toString()})...`,
   );
@@ -34,8 +49,8 @@ export const onBlock = async (
   const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("NEW_BLOCK_EVENT", {
     block: blockStr,
-    finalizationStatus,
-    blockNumber: height,
+    statusHint,
+    blockNumber: heightNumber,
   });
   const potentiallyIncludedTxs = await txsController.getTxs([
     "pending",
@@ -48,11 +63,7 @@ export const onBlock = async (
   for (const potentialTx of potentiallyIncludedTxs) {
     const txFoundInBlock = blockTxHashes.includes(potentialTx.txHash);
     if (txFoundInBlock) {
-      const newState =
-        finalizationStatus ===
-        ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED
-          ? "proposed"
-          : "proven";
+      const newState = statusHint;
       await txsController.storeOrUpdate(potentialTx, newState);
       logger.info(
         `✅ Transaction ${potentialTx.txHash} found in block ${height}, updated to ${newState}`,
@@ -63,17 +74,35 @@ export const onBlock = async (
 
 export const onCatchupBlock = async (
   block: L2Block,
-  finalizationStatus: ChicmozL2BlockFinalizationStatus,
+  statusHint: L2BlockStatusHint,
+  metadata: Pick<CatchupBlockEvent, "requestId" | "catchupReason"> = {},
 ) => {
+  const blockNumber = BigInt(
+    block.header.globalVariables.blockNumber.toString(),
+  );
+  const blockNumberSafe = toSafeBlockNumber(blockNumber);
   const blockBuffer = block.toBuffer() as Uint8Array;
   const blockStr = Buffer.from(blockBuffer).toString("hex");
   await publishMessage("CATCHUP_BLOCK_EVENT", {
     block: blockStr,
-    finalizationStatus,
-    blockNumber: Number(block.header.globalVariables.blockNumber),
+    statusHint,
+    blockNumber: blockNumberSafe,
+    ...metadata,
   });
 };
-// TODO: onCatchupRequestFromExplorerApi
+
+export const onL2Tips = async (
+  tips: ChicmozL2Tips,
+  source: L2TipsEvent["source"] = {},
+) => {
+  const event: L2TipsEvent = {
+    tips,
+    observedAt: Date.now(),
+    source,
+  };
+  logger.info(`🔺 publishing L2_TIPS_EVENT ${jsonStringify(event)}`);
+  await publishMessage("L2_TIPS_EVENT", event);
+};
 
 export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   const event = { chainInfo };
@@ -81,10 +110,10 @@ export const onChainInfo = async (chainInfo: ChicmozChainInfo) => {
   await publishMessage("CHAIN_INFO_EVENT", event);
 };
 
-export const onL2SequencerInfo = async (sequencer: ChicmozL2Sequencer) => {
-  const event = { sequencer };
-  logger.info(`🔍 publishing SEQUENCER_INFO_EVENT ${jsonStringify(event)}`);
-  await publishMessage("SEQUENCER_INFO_EVENT", event);
+export const onL2RpcNodeInfo = async (rpcNode: ChicmozL2RpcNode) => {
+  const event = { rpcNode };
+  logger.info(`🔍 publishing L2_RPC_NODE_INFO_EVENT ${jsonStringify(event)}`);
+  await publishMessage("L2_RPC_NODE_INFO_EVENT", event);
 };
 
 const isIpAddress = (str: string) => {
@@ -143,7 +172,7 @@ export const onL2RpcNodeError = (
     return;
   }
   logger.info(
-    `❌ publishing L2_RPC_NODE_ERROR_EVENT ${rpcNodeError.nodeName ? `(${rpcNodeError.nodeName})` : ""}...`,
+    `❌ publishing L2_RPC_NODE_ERROR_EVENT ${rpcNodeError.rpcNodeName ? `(${rpcNodeError.rpcNodeName})` : ""}...`,
   );
   event.nodeError.cause = replaceIpAddress(event.nodeError.cause);
   event.nodeError.stack = replaceIpAddress(event.nodeError.stack);

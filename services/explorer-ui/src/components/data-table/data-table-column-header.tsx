@@ -16,22 +16,31 @@ import {
 import { cn } from "~/lib/utils";
 
 interface DataTableColumnHeaderProps<TData, TValue>
-  extends React.HTMLAttributes<HTMLDivElement> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   column: Column<TData, TValue>;
-  title: string;
+  title: React.ReactNode;
+  supplement?: React.ReactNode;
 }
 
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
+  supplement,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
-  if (!column.getCanSort()) return <div className={cn(className)}>{title}</div>;
+  if (!column.getCanSort()) {
+    return (
+      <div className={cn("flex items-center justify-start gap-1", className)}>
+        <div>{title}</div>
+        {supplement ? <div>{supplement}</div> : null}
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex items-center justify-start w-full", className)}>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex flex-row w-full !p-0">
+        <DropdownMenuTrigger className="flex flex-row items-center !p-0">
           <span className="text-left">{title}</span>
           {column.getIsSorted() === "desc" ? (
             <ArrowDownIcon className="ml-2 h-4 w-4" />
@@ -57,6 +66,7 @@ export function DataTableColumnHeader<TData, TValue>({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {supplement ? <div className="ml-1">{supplement}</div> : null}
     </div>
   );
 }

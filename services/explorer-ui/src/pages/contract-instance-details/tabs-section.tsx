@@ -3,11 +3,19 @@ import { useState, type FC } from "react";
 import { KeyValueDisplay } from "~/components/info-display/key-value-display";
 import { Loader } from "~/components/loader";
 import { OptionButtons } from "~/components/option-buttons";
-import { useContractClass, useContractInstanceBalanceHistory } from "~/hooks";
+import {
+  useChainInfo,
+  useContractClass,
+  useContractInstanceBalanceHistory,
+  usePublicCallRequestsByContract,
+  useL2ToL1MsgsByContract,
+} from "~/hooks";
 import { type SimpleArtifactData } from "../contract-class-details/artifact-parser";
 import { ArtifactExplorerTab } from "../contract-class-details/tabs/artifact-explorer-tab";
 import { ArtifactJsonTab } from "../contract-class-details/tabs/artifact-json-tab";
 import { FeeJuiceBalance } from "./feejuice-balance";
+import { L2ToL1MsgsTab } from "./tabs/l2-to-l1-msgs-tab";
+import { PublicCallRequestsTab } from "./tabs/public-call-requests-tab";
 import { verifiedDeploymentTabs, type TabId } from "./types";
 import { getVerifiedContractInstanceDeploymentData } from "./util";
 
@@ -17,6 +25,7 @@ interface PillSectionProps {
 export const TabsSection: FC<PillSectionProps> = ({
   contractInstanceDetails,
 }) => {
+  const { data: chainInfo } = useChainInfo();
   const { verifiedDeploymentArguments, deployerMetadata, aztecScanNotes } =
     getVerifiedContractInstanceDeploymentData(contractInstanceDetails);
 
@@ -27,6 +36,14 @@ export const TabsSection: FC<PillSectionProps> = ({
   });
 
   const balanceHistoryRes = useContractInstanceBalanceHistory(
+    contractInstanceDetails.address,
+  );
+
+  const publicCallRequestsRes = usePublicCallRequestsByContract(
+    contractInstanceDetails.address,
+  );
+
+  const l2ToL1MsgsRes = useL2ToL1MsgsByContract(
     contractInstanceDetails.address,
   );
 
@@ -44,6 +61,9 @@ export const TabsSection: FC<PillSectionProps> = ({
       !!selectedVersionWithArtifactRes.data?.artifactJson,
     feeJuiceBalance:
       !!balanceHistoryRes.data && balanceHistoryRes.data.length > 0,
+    publicCallRequests:
+      !!publicCallRequestsRes.data && publicCallRequestsRes.data.length > 0,
+    l2ToL1Msgs: !!l2ToL1MsgsRes.data && l2ToL1MsgsRes.data.length > 0,
   };
 
   // Check if any options are available
@@ -55,7 +75,11 @@ export const TabsSection: FC<PillSectionProps> = ({
         return balanceHistoryRes.isLoading ? (
           <Loader amount={1} />
         ) : (
-          <FeeJuiceBalance historyData={balanceHistoryRes.data ?? []} />
+          <FeeJuiceBalance
+            historyData={balanceHistoryRes.data ?? []}
+            feeJuiceDecimals={chainInfo?.feeJuiceDecimals}
+            feeJuiceSymbol={chainInfo?.feeJuiceSymbol}
+          />
         );
       case "contactDetails":
         return <KeyValueDisplay data={deployerMetadata ?? []} />;
@@ -85,6 +109,20 @@ export const TabsSection: FC<PillSectionProps> = ({
           <ArtifactExplorerTab
             data={selectedVersionWithArtifactRes.data?.artifactJson}
           />
+        );
+      case "publicCallRequests":
+        return publicCallRequestsRes.isLoading ? (
+          <Loader amount={1} />
+        ) : (
+          <PublicCallRequestsTab
+            publicCallRequests={publicCallRequestsRes.data ?? []}
+          />
+        );
+      case "l2ToL1Msgs":
+        return l2ToL1MsgsRes.isLoading ? (
+          <Loader amount={1} />
+        ) : (
+          <L2ToL1MsgsTab messages={l2ToL1MsgsRes.data ?? []} />
         );
       default:
         return null;

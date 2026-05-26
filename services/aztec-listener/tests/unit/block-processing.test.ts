@@ -2,7 +2,6 @@
 // Tests the real implementation with mocked dependencies
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
 import {
   mockTxsController,
   mockMessageBus,
@@ -51,7 +50,7 @@ describe("onBlock Function", () => {
     await onBlock(
       // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+      "proposed",
     );
 
     // Verify: NEW_BLOCK_EVENT published
@@ -59,8 +58,7 @@ describe("onBlock Function", () => {
       "NEW_BLOCK_EVENT",
       expect.objectContaining({
         blockNumber: 100,
-        finalizationStatus:
-          ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+        statusHint: "proposed",
       }),
     );
 
@@ -101,7 +99,7 @@ describe("onBlock Function", () => {
     await onBlock(
       // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
+      "proven",
     );
 
     // Verify: Transactions found in block promoted to "proven"
@@ -137,7 +135,7 @@ describe("onBlock Function", () => {
     await onBlock(
       // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+      "proposed",
     );
 
     // Verify: Block event published
@@ -169,7 +167,7 @@ describe("onBlock Function", () => {
     await onBlock(
       // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
+      "proven",
     );
 
     // Verify: Only pending and suspected_dropped are queried
@@ -205,7 +203,7 @@ describe("onBlock Function", () => {
     await onBlock(
       // @ts-expect-error - Mock object doesn't implement full L2Block interface
       mockBlock,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+      "proposed",
     );
 
     // Verify: Appropriate logs generated

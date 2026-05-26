@@ -4,6 +4,7 @@ metadata:
   name: remote_devnet
 requires:
   - path: ./common/skaffold.infra.yaml
+  - path: ./gateways/skaffold.remote_devnet.yaml
   - path: ./explorer-ui/skaffold.remote_devnet.yaml
   - path: ./ethereum-listener/skaffold.remote_devnet.yaml
   - path: ./explorer-api/skaffold.remote_devnet.yaml

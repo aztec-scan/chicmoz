@@ -1,0 +1,510 @@
+import { type ChicmozL1GenericContractEvent } from "@chicmoz-pkg/types";
+import { type FC, useMemo, useState } from "react";
+import {
+  AddressEtherscanLink,
+  CopyableAddress,
+  Pagination,
+  TxEtherscanLink,
+} from "~/components/common";
+import { ConsoleHead, Shell } from "~/components/layout";
+import {
+  useChainInfo,
+  useL1ContractEvents,
+  useL1ContractEventsHourlyCounts,
+} from "~/hooks/api";
+import { usePaginated } from "~/hooks/use-paginated";
+import { useReactiveTime } from "~/hooks/use-reactive-time";
+import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
+import {
+  argsPreview,
+  eventKind,
+  eventTimestampMs,
+  findL2BlockNumber,
+} from "./helpers";
+
+const PAGE_SIZE = 25;
+
+type TimeWindow = "24h" | "7d" | "all";
+type ContractKey =
+  | "all"
+  | "rollup"
+  | "staking"
+  | "registry"
+  | "inbox"
+  | "outbox"
+  | "fee-juice";
+
+interface ContractTab {
+  key: ContractKey;
+  name: string;
+  desc: string;
+}
+
+/**
+ * Staking-related events are emitted by the Rollup contract itself (deposits,
+ * withdrawals, slashing, validator membership). Match by event-name substring
+ * so the Staking tab pulls them out of the Rollup tab.
+ */
+const STAKING_EVENT_PATTERNS = [
+  "deposit",
+  "withdraw",
+  "slash",
+  "validator",
+  "attester",
+  "stake",
+];
+
+const isStakingEvent = (eventName: string): boolean => {
+  const n = eventName.toLowerCase();
+  return STAKING_EVENT_PATTERNS.some((p) => n.includes(p));
+};
+
+const CONTRACT_TABS: ContractTab[] = [
+  {
+    key: "all",
+    name: "All",
+    desc: "All events across every rollup L1 contract.",
+  },
+  {
+    key: "rollup",
+    name: "Rollup",
+    desc: "Core rollup contract. Emits block proposal & proof events; state root anchor.",
+  },
+  {
+    key: "staking",
+    name: "Staking",
+    desc: "Validator deposits, withdrawals, and slashing. Emitted from the Rollup contract.",
+  },
+  {
+    key: "inbox",
+    name: "Inbox",
+    desc: "L1 → L2 message mailbox. Consumed by the sequencer on every block.",
+  },
+  {
+    key: "outbox",
+    name: "Outbox",
+    desc: "L2 → L1 message outbox. Users consume messages here to withdraw.",
+  },
+  {
+    key: "fee-juice",
+    name: "FeeJuice",
+    desc: "L1 fee token portal. Mints & burns FeeJuice for L2 prepayment.",
+  },
+  {
+    key: "registry",
+    name: "Registry",
+    desc: "Canonical registry of rollup versions & addresses.",
+  },
+];
+
+export const L1EventsPage: FC = () => {
+  const { data: chainInfo } = useChainInfo();
+  const { data: events } = useL1ContractEvents();
+  const { data: hourlyCounts } = useL1ContractEventsHourlyCounts(24);
+
+  const [contractKey, setContractKey] = useState<ContractKey>("all");
+  const [eventFilter, setEventFilter] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState("");
+  const [window, setWindow] = useState<TimeWindow>("24h");
+
+  /** Map a ContractKey to an actual L1 address using live chain info. */
+  const contractAddrByKey = useMemo<Partial<Record<ContractKey, string>>>(
+    () => {
+      const a = chainInfo?.l1ContractAddresses;
+      return {
+        rollup: a?.rollupAddress,
+        // Staking events come from the Rollup contract — same address; the
+        // distinction is on event-name only.
+        staking: a?.rollupAddress,
+        registry: a?.registryAddress,
+        inbox: a?.inboxAddress,
+        outbox: a?.outboxAddress,
+        "fee-juice": a?.feeJuiceAddress,
+      };
+    },
+    [chainInfo],
+  );
+
+  /** Normalise address comparison — both sides lowercased. */
+  const matchesContract = (
+    evt: ChicmozL1GenericContractEvent,
+    key: ContractKey,
+  ): boolean => {
+    if (key === "all") {return true;}
+    const tabAddr = contractAddrByKey[key];
+    if (!tabAddr) {return false;}
+    if (evt.l1ContractAddress.toLowerCase() !== tabAddr.toLowerCase()) {
+      return false;
+    }
+    // Rollup and Staking share an address — split on event-name.
+    if (key === "staking") {return isStakingEvent(evt.eventName);}
+    if (key === "rollup") {return !isStakingEvent(evt.eventName);}
+    return true;
+  };
+
+  const allEvents = useMemo(() => events ?? [], [events]);
+
+  /** Per-contract event counts. */
+  const byContract: Record<ContractKey, number> = useMemo(() => {
+    const counts: Record<ContractKey, number> = {
+      all: allEvents.length,
+      rollup: 0,
+      staking: 0,
+      registry: 0,
+      inbox: 0,
+      outbox: 0,
+      "fee-juice": 0,
+    };
+    allEvents.forEach((e) => {
+      (Object.keys(counts) as ContractKey[]).forEach((k) => {
+        if (k !== "all" && matchesContract(e, k)) {counts[k] += 1;}
+      });
+    });
+    return counts;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allEvents, chainInfo]);
+
+  /** Event types available in the current contract scope, with counts. */
+  const typeCounts: Record<string, number> = useMemo(() => {
+    const c: Record<string, number> = {};
+    allEvents.forEach((e) => {
+      if (matchesContract(e, contractKey)) {
+        c[e.eventName] = (c[e.eventName] ?? 0) + 1;
+      }
+    });
+    return c;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allEvents, contractKey, chainInfo]);
+
+  const eventTypesForContract = useMemo(
+    () =>
+      Object.entries(typeCounts)
+        .sort(([, a], [, b]) => b - a)
+        .map(([k]) => k),
+    [typeCounts],
+  );
+
+  const now = useReactiveTime(30_000);
+  const day = 24 * 3_600_000;
+  const cutoff = window === "24h" ? now - day : window === "7d" ? now - 7 * day : 0;
+
+  const filtered = useMemo(() => {
+    return allEvents.filter((e) => {
+      if (!matchesContract(e, contractKey)) {return false;}
+      if (eventFilter.size > 0 && !eventFilter.has(e.eventName)) {return false;}
+      if (cutoff) {
+        const ts = eventTimestampMs(e);
+        if (ts === null || ts < cutoff) {return false;}
+      }
+      if (query) {
+        const needle = query.toLowerCase();
+        return (
+          e.eventName.toLowerCase().includes(needle) ||
+          (e.l1TransactionHash?.toLowerCase().includes(needle) ?? false) ||
+          e.l1BlockNumber.toString().includes(needle) ||
+          e.l1ContractAddress.toLowerCase().includes(needle)
+        );
+      }
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allEvents, contractKey, eventFilter, query, cutoff, chainInfo]);
+
+  const last24h = useMemo(
+    () =>
+      allEvents.filter((e) => {
+        const ts = eventTimestampMs(e);
+        return ts !== null && ts >= now - day;
+      }).length,
+    [allEvents, now, day],
+  );
+  const last7d = useMemo(
+    () =>
+      allEvents.filter((e) => {
+        const ts = eventTimestampMs(e);
+        return ts !== null && ts >= now - 7 * day;
+      }).length,
+    [allEvents, now, day],
+  );
+
+  /** Sparkline — per-hour bin count over the last 24h.
+   *  Backend returns sparse buckets (zero hours omitted); we expand to a
+   *  fixed 24-bin array anchored on the current hour boundary. */
+  const sparkData = useMemo(() => {
+    const bins = Array(24).fill(0) as number[];
+    if (!hourlyCounts) {return bins;}
+    const HOUR = 3_600_000;
+    // Anchor the rightmost bin on the current hour.
+    const currentHourStart = Math.floor(now / HOUR) * HOUR;
+    for (const bucket of hourlyCounts) {
+      const hoursAgo = Math.floor(
+        (currentHourStart - bucket.hourStartMs) / HOUR,
+      );
+      if (hoursAgo >= 0 && hoursAgo < 24) {bins[23 - hoursAgo] = bucket.count;}
+    }
+    return bins;
+  }, [hourlyCounts, now]);
+  const sparkMax = Math.max(...sparkData, 1);
+
+  const { page, setPage, paged, totalPages } = usePaginated(filtered, PAGE_SIZE);
+
+  const toggleEvtType = (t: string): void => {
+    setEventFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) {next.delete(t);}
+      else {next.add(t);}
+      return next;
+    });
+    setPage(0);
+  };
+
+  const resetAll = (): void => {
+    setEventFilter(new Set());
+    setQuery("");
+    setPage(0);
+  };
+
+  const activeContract = CONTRACT_TABS.find((c) => c.key === contractKey);
+  const activeAddr =
+    contractKey === "all" ? undefined : contractAddrByKey[contractKey];
+  const latestEvent = allEvents[0];
+
+  return (
+    <Shell active="l1events">
+      <ConsoleHead
+        crumbs={[
+          { label: "aztec-scan", to: "/" },
+          { label: "l1" },
+          { label: "contract-events", active: true },
+        ]}
+        comment="events emitted by rollup L1 contracts on Ethereum"
+      />
+
+      <div className="stats-strip">
+        <div className="sc">
+          <div className="lbl">Events · 24h</div>
+          <div className="val">{fmtNum(last24h)}</div>
+          <div className="sub">{(last24h / 24).toFixed(1)} per hour avg</div>
+        </div>
+        <div className="sc">
+          <div className="lbl">Events · 7d</div>
+          <div className="val">{fmtNum(last7d)}</div>
+          <div className="sub">{(last7d / 7).toFixed(0)} per day avg</div>
+        </div>
+        <div className="sc">
+          <div className="lbl">L1 block · latest</div>
+          <div className="val">
+            {latestEvent ? fmtNum(latestEvent.l1BlockNumber) : "—"}
+          </div>
+          <div className="sub">
+            {latestEvent
+              ? `indexed ${ageStr(eventTimestampMs(latestEvent))}`
+              : "no events"}
+          </div>
+        </div>
+        <div className="sc">
+          <div className="lbl">Contracts tracked</div>
+          <div className="val">{CONTRACT_TABS.length - 2}</div>
+          <div className="sub">rollup · inbox · outbox · …</div>
+        </div>
+      </div>
+
+      <div className="contract-tabs">
+        {CONTRACT_TABS.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            className={"ct-btn" + (contractKey === c.key ? " on" : "")}
+            onClick={() => {
+              setContractKey(c.key);
+              setEventFilter(new Set());
+              setPage(0);
+            }}
+          >
+            <span className="nm">{c.name}</span>
+            <span className="addr">
+              {c.key === "all"
+                ? "all rollup contracts"
+                : contractAddrByKey[c.key]
+                  ? truncateHashString(contractAddrByKey[c.key], 6, 4)
+                  : "—"}
+            </span>
+            <span className="count">{fmtNum(byContract[c.key])} events</span>
+          </button>
+        ))}
+      </div>
+
+      {contractKey !== "all" && activeContract && (
+        <div className="contract-header">
+          <div>
+            <div className="nm">
+              Rollup <em>·</em> {activeContract.name}
+            </div>
+            <div className="desc">{activeContract.desc}</div>
+            <div className="addr-row">
+              <CopyableAddress
+                value={activeAddr}
+                title={`Copy ${activeContract.name.toLowerCase()} address`}
+              />
+              {activeAddr && (
+                <AddressEtherscanLink
+                  address={activeAddr}
+                  content="etherscan ↗"
+                  showExternalLinkIcon={false}
+                  title={`View ${activeContract.name.toLowerCase()} address on Etherscan`}
+                />
+              )}
+            </div>
+          </div>
+          <div>
+            <div className="spark-label">events · last 24h</div>
+            <div className="spark">
+              {sparkData.map((n, i) => (
+                <span
+                  key={i}
+                  className="bar"
+                  style={{ height: `${(n / sparkMax) * 100}%` }}
+                  title={`h-${23 - i}: ${n}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="evt-filter">
+        {eventTypesForContract.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={"evt-chip" + (eventFilter.has(t) ? " on" : "")}
+            onClick={() => toggleEvtType(t)}
+          >
+            <span>{t}</span>
+            <span className="c">{typeCounts[t] ?? 0}</span>
+          </button>
+        ))}
+        {(eventFilter.size > 0 || query) && (
+          <button
+            type="button"
+            className="evt-chip"
+            onClick={resetAll}
+            style={{ color: "var(--ink-3)" }}
+          >
+            × clear
+          </button>
+        )}
+      </div>
+
+      <div className="filters-row">
+        <input
+          className="search-inline"
+          placeholder="filter by event · tx hash · L1 block · address…"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(0);
+          }}
+          spellCheck={false}
+        />
+        <div className="time-toggle">
+          {(["24h", "7d", "all"] as TimeWindow[]).map((w) => (
+            <button
+              key={w}
+              type="button"
+              className={window === w ? "on" : ""}
+              onClick={() => {
+                setWindow(w);
+                setPage(0);
+              }}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-head">
+          <h3>
+            Contract events
+            <span className="c">· {fmtNum(filtered.length)} shown</span>
+          </h3>
+          <span className="live-indicator">
+            <span className="dot" />
+            live
+          </span>
+        </div>
+        <div className="table-head l1-events-cols">
+          <div>L1 block</div>
+          <div>Event</div>
+          <div>L2 context</div>
+          <div>Args</div>
+          <div className="right">Age</div>
+          <div className="right">Tx</div>
+        </div>
+        <div>
+          {paged.map((e) => {
+            const l2Block = findL2BlockNumber(e.eventArgs);
+            const kind = eventKind(e.eventName);
+            const ts = eventTimestampMs(e);
+            const row = (
+              <>
+                <span className="l1b">#{fmtNum(e.l1BlockNumber)}</span>
+                <span className={"evt e-" + kind}>
+                  <span className="ebullet" />
+                  {e.eventName}
+                </span>
+                <span className="l2ref">
+                  {l2Block !== null ? (
+                    <>
+                      L2 <em>#{fmtNum(l2Block)}</em>
+                    </>
+                  ) : (
+                    <span style={{ color: "var(--ink-4)" }}>—</span>
+                  )}
+                </span>
+                <span className="args">{argsPreview(e.eventArgs)}</span>
+                <span className="age">{ageStr(ts)}</span>
+                <span className="ex">
+                  {e.l1TransactionHash ? (
+                    <TxEtherscanLink
+                      txHash={e.l1TransactionHash}
+                      content={`${truncateHashString(e.l1TransactionHash, 4, 4)} ↗`}
+                      eventLog
+                      showExternalLinkIcon={false}
+                      title="View transaction event log on Etherscan"
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </span>
+              </>
+            );
+            const key = `${e.l1BlockNumber.toString()}-${e.eventName}-${e.id ?? ""}`;
+            return (
+              <div key={key} className="trow l1-events-cols">
+                {row}
+              </div>
+            );
+          })}
+          {paged.length === 0 && (
+            <div className="empty-state">
+              {events ? "no events match the current filters" : "loading…"}
+            </div>
+          )}
+        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(n) => setPage(n)}
+        />
+      </div>
+
+      <div className="eco-pr-cta">
+        indexed from Ethereum L1 by the aztec-scan indexer · updates every
+        ~12s
+      </div>
+    </Shell>
+  );
+};

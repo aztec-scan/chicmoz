@@ -6,7 +6,11 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import { generateEthAddressColumn, generateFrColumn, generateFrNumberColumn  } from "../utils.js";
+import {
+  generateEthAddressColumn,
+  generateFrColumn,
+  generateTimestampColumn,
+} from "../utils.js";
 
 export const l1L2BlockProposedTable = pgTable(
   "l1_l2_block_proposed",
@@ -17,7 +21,8 @@ export const l1L2BlockProposedTable = pgTable(
     l2BlockNumber: bigint("l2_block_number", { mode: "bigint" }).notNull(),
     l1BlockNumber: bigint("l1_block_number", { mode: "bigint" }).notNull(),
     l1BlockHash: varchar("l1_block_hash").notNull(),
-    l1BlockTimestamp: generateFrNumberColumn("l1_block_timestamp").notNull(),
+    l1TransactionHash: varchar("l1_transaction_hash"),
+    l1BlockTimestamp: generateTimestampColumn("l1_block_timestamp").notNull(),
     isFinalized: boolean("is_finalized").default(false),
     archive: generateFrColumn("archive").notNull(),
   },
@@ -38,7 +43,8 @@ export const l1L2ProofVerifiedTable = pgTable(
     l2BlockNumber: bigint("l2_block_number", { mode: "bigint" }).notNull(),
     l1BlockNumber: bigint("l1_block_number", { mode: "bigint" }).notNull(),
     l1BlockHash: varchar("l1_block_hash").notNull(),
-    l1BlockTimestamp: generateFrNumberColumn("l1_block_timestamp").notNull(),
+    l1TransactionHash: varchar("l1_transaction_hash"),
+    l1BlockTimestamp: generateTimestampColumn("l1_block_timestamp").notNull(),
     isFinalized: boolean("is_finalized").default(false),
     proverId: generateEthAddressColumn("prover_id").notNull(),
   },

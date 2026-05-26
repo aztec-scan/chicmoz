@@ -1,12 +1,11 @@
-import { L1L2ValidatorStatus } from "@chicmoz-pkg/types";
 import { useMemo, type FC } from "react";
 import { InfoBadge } from "~/components/info-badge";
 import { useGetLatestTxEffects, useSubTitle } from "~/hooks";
-import { useBlocksByFinalizationStatus, useReorgs } from "~/hooks/api/blocks";
-import { useL1L2Validators } from "~/hooks/api/l1-l2-validator";
+import { useBlocksByNativeStatus, useReorgs } from "~/hooks/api/blocks";
+import { useValidatorTotals } from "~/hooks/api/l1-l2-validator";
 import { BaseLayout } from "~/layout/base-layout";
 import { BlockProductionSection } from "./block-production-section";
-import { FinalizationStatusSection } from "./finalization-status-section";
+import { NativeStatusSection } from "./native-status-section";
 import { OrphanedBlocksSection } from "./orphaned-blocks-section";
 import { ReorgSection } from "./reorg-section";
 import { ValidatorStatusSection } from "./validator-status-section";
@@ -21,16 +20,16 @@ export const NetworkHealth: FC = () => {
   } = useReorgs();
 
   const {
-    data: validators,
-    isLoading: validatorsLoading,
-    error: validatorsError,
-  } = useL1L2Validators();
+    data: validatorTotals,
+    isLoading: validatorTotalsLoading,
+    error: validatorTotalsError,
+  } = useValidatorTotals();
 
   const {
-    data: blocksByFinalizationStatus,
-    isLoading: blocksByStatusLoading,
-    error: blocksByStatusError,
-  } = useBlocksByFinalizationStatus();
+    data: blocksByNativeStatus,
+    isLoading: blocksByNativeStatusLoading,
+    error: blocksByNativeStatusError,
+  } = useBlocksByNativeStatus();
 
   const {
     data: latestTxEffects,
@@ -83,29 +82,29 @@ export const NetworkHealth: FC = () => {
     let title = "Number of Validators";
     let data = "0";
 
-    if (validators) {
-      const validatingValidatorsCount = validators.filter(
-        (validator) => validator.status === L1L2ValidatorStatus.VALIDATING,
-      ).length;
-      const validatingValidatorsPercentage = Math.round(
-        (validatingValidatorsCount / validators.length) * 100,
-      );
+    if (validatorTotals) {
+      const totalValidators = validatorTotals.total;
+      const validatingValidatorsPercentage =
+        totalValidators > 0
+          ? Math.round((validatorTotals.validating / totalValidators) * 100)
+          : 0;
+
       title = `Number of Validators (${validatingValidatorsPercentage}%)`;
-      data = `${validatingValidatorsCount}`;
+      data = `${totalValidators}`;
     }
 
     return { validatorsTitle: title, validatorsData: data };
-  }, [validators]);
+  }, [validatorTotals]);
 
-  const blocksByFinalizationStatusData = useMemo(() => {
-    if (!blocksByFinalizationStatus) {
+  const blocksByNativeStatusData = useMemo(() => {
+    if (!blocksByNativeStatus) {
       return "A lot";
     }
 
     let highestBlockHeight = 0n;
     let lowestBlockHeight = 0n;
 
-    for (const block of blocksByFinalizationStatus) {
+    for (const block of blocksByNativeStatus) {
       if (block.height > highestBlockHeight) {
         highestBlockHeight = block.height;
       }
@@ -115,7 +114,7 @@ export const NetworkHealth: FC = () => {
     }
 
     return (highestBlockHeight - lowestBlockHeight).toString();
-  }, [blocksByFinalizationStatus]);
+  }, [blocksByNativeStatus]);
 
   return (
     <BaseLayout>
@@ -133,8 +132,8 @@ export const NetworkHealth: FC = () => {
         />
         <InfoBadge
           title={validatorsTitle}
-          isLoading={validatorsLoading}
-          error={validatorsError}
+          isLoading={validatorTotalsLoading}
+          error={validatorTotalsError}
           data={validatorsData}
         />
         <InfoBadge
@@ -145,15 +144,15 @@ export const NetworkHealth: FC = () => {
         />
         <InfoBadge
           title="Unproven Blocks"
-          isLoading={blocksByStatusLoading}
-          error={blocksByStatusError}
-          data={blocksByFinalizationStatusData}
+          isLoading={blocksByNativeStatusLoading}
+          error={blocksByNativeStatusError}
+          data={blocksByNativeStatusData}
         />
       </div>
 
       <BlockProductionSection />
       <ValidatorStatusSection />
-      <FinalizationStatusSection />
+      <NativeStatusSection />
       <ReorgSection />
       <OrphanedBlocksSection />
     </BaseLayout>

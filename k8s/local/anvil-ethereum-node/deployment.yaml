@@ -10,7 +10,8 @@ spec:
   selector:
     matchLabels:
       app: anvil-ethereum-node
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -21,8 +22,8 @@ spec:
           name: anvil-ethereum-node
           resources:
             requests:
-              memory: 64Mi
-              cpu: 10m
+              memory: 300Mi
+              cpu: 100m
             limits:
               memory: 300Mi
               cpu: 250m

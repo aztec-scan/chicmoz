@@ -1,6 +1,7 @@
 import {
   INIFINITE_LOOP,
-  SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT,
+  SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT,
+  SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY,
   SCENARIO_DELAY,
   SCENARIO_DEPLOY_AND_UPDATE,
   SCENARIO_FUNCTIONS_VOTE,
@@ -11,6 +12,7 @@ import {
   SCENARIO_SIMPLE_LOG,
   SCENARIO_TOKEN_CONTRACT,
   SCENARIO_VERIFY_SOURCE_CODE,
+  SCENARIO_EXPLORER_SHOWCASE,
 } from "../environment.js";
 import { logger } from "../logger.js";
 import { setup } from "./pxe.js";
@@ -79,10 +81,17 @@ export async function init() {
     });
   }
 
-  if (SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT) {
+  if (SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY) {
     scenariosToRun.push({
-      envVar: "SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT",
-      scenario: scenarios.deployAztecStandardTokenContract,
+      envVar: "SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY",
+      scenario: scenarios.deployAztecStandardTokenContractLegacy,
+    });
+  }
+
+  if (SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT) {
+    scenariosToRun.push({
+      envVar: "SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT",
+      scenario: scenarios.deployAztecStandardTokenContractCurrent,
     });
   }
 
@@ -90,6 +99,13 @@ export async function init() {
     scenariosToRun.push({
       envVar: "SCENARIO_VERIFY_SOURCE_CODE",
       scenario: scenarios.verifySourceCode,
+    });
+  }
+
+  if (SCENARIO_EXPLORER_SHOWCASE) {
+    scenariosToRun.push({
+      envVar: "SCENARIO_EXPLORER_SHOWCASE",
+      scenario: scenarios.deployAndInteractExplorerShowcase,
     });
   }
 
@@ -107,8 +123,10 @@ SCENARIO_SIMPLE_CONTRACT:               ${SCENARIO_SIMPLE_CONTRACT ? "✅" : "�
 SCENARIO_SIMPLE_LOG:                    ${SCENARIO_SIMPLE_LOG ? "✅" : "❌"}
 SCENARIO_L1L2_PUBLIC_MESSAGING:         ${SCENARIO_L1L2_PUBLIC_MESSAGING ? "✅" : "❌"}
 SCENARIO_L1L2_PRIVATE_MESSAGING:        ${SCENARIO_L1L2_PRIVATE_MESSAGING ? "✅" : "❌"}
-SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT ? "✅" : "❌"}
+SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY ? "✅" : "❌"}
+SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT: ${SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT ? "✅" : "❌"}
 SCENARIO_VERIFY_SOURCE_CODE:            ${SCENARIO_VERIFY_SOURCE_CODE ? "✅" : "❌"}
+SCENARIO_EXPLORER_SHOWCASE:             ${SCENARIO_EXPLORER_SHOWCASE ? "✅" : "❌"}
 `);
 
   await setup();

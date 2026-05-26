@@ -1,6 +1,6 @@
 import {
   blockHandler,
-  l2BlockFinalizationHandler,
+  l2TipsHandler,
   pendingTxHandler,
 } from "./event-handler/index.js";
 import { logger } from "./logger.js";
@@ -17,5 +17,5 @@ export const start = async () => {
   registerShutdownCallback(shutdownMb);
   await startSubscribe(blockHandler);
   await startSubscribe(pendingTxHandler);
-  await startSubscribe(l2BlockFinalizationHandler);
+  await startSubscribe(l2TipsHandler);
 };

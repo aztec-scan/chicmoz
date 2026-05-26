@@ -9,6 +9,8 @@ build:
       docker:
         dockerfile: Dockerfile.compile-contracts
         buildArgs:
+          BASE_AZTEC_IMAGE: "aztecprotocol/aztec:4.2.0"
+          NARGO_AZTEC_VERSION: "v4.2.0-aztecnr-rc.2"
           DOCKER_DEFAULT_PLATFORM: "linux/amd64"
   tagPolicy:
     customTemplate:

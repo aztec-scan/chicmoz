@@ -1,0 +1,25 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: aztec-sandbox-node
+  namespace: chicmoz
+  labels:
+    app.kubernetes.io/name: aztec-sandbox-node
+    app.kubernetes.io/part-of: chicmoz-local
+spec:
+  parentRefs:
+    - name: chicmoz-gateway
+      sectionName: aztec-sandbox
+    - name: chicmoz-gateway
+      sectionName: aztec-sandbox-remote
+  hostnames:
+    - aztec.sandbox.chicmoz.localhost
+    - aztec.remote.chicmoz.localhost
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: aztec-sandbox-node
+          port: 8081

@@ -2,7 +2,7 @@
 import { deriveStorageSlotInMap } from "@aztec/stdlib/hash";
 import {
   ChicmozChainInfo,
-  ChicmozL2Sequencer,
+  ChicmozL2RpcNode,
   NODE_ENV,
   NodeEnv,
 } from "@chicmoz-pkg/types";
@@ -14,7 +14,7 @@ import {
 import {
   onChainInfo,
   onL2RpcNodeAlive,
-  onL2SequencerInfo,
+  onL2RpcNodeInfo,
 } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
 import {
@@ -27,7 +27,7 @@ import {
 } from "./pool.js";
 import {
   getChicmozChainInfoFromNodeInfo,
-  getSequencerFromNodeInfo,
+  getRpcNodeFromNodeInfo,
 } from "./utils.js";
 import { AztecNode, NodeInfo } from "@aztec/aztec.js/node";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
@@ -100,6 +100,18 @@ const sleep = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+const toSafeAztecBlockNumber = (value: bigint): number => {
+  const blockNumber = Number(value);
+
+  if (!Number.isSafeInteger(blockNumber) || blockNumber < 0) {
+    throw new Error(
+      `Block number ${value.toString()} cannot be represented safely as a number`,
+    );
+  }
+
+  return blockNumber;
+};
+
 export const init = async () => {
   initPool();
   await sleep(1000);
@@ -108,14 +120,14 @@ export const init = async () => {
 
 export const getFreshInfo = async (): Promise<{
   chainInfo: ChicmozChainInfo;
-  sequencers: ChicmozL2Sequencer[];
+  rpcNodes: ChicmozL2RpcNode[];
 }> => {
   const allNodes = getAllRpcNodes();
   if (allNodes.length === 0) {
     throw new Error("No Aztec nodes available in the pool");
   }
   let chainInfo: ChicmozChainInfo | undefined = undefined;
-  const sequencers: ChicmozL2Sequencer[] = [];
+  const rpcNodes: ChicmozL2RpcNode[] = [];
   for (const node of allNodes) {
     try {
       const {
@@ -145,16 +157,17 @@ export const getFreshInfo = async (): Promise<{
         chainInfo = cInfo;
       }
 
-      const sequencer = getSequencerFromNodeInfo(
+      const rpcNode = getRpcNodeFromNodeInfo(
         L2_NETWORK_ID,
+        node.name,
         node.url,
         nodeInfo,
       );
-      sequencers.push(sequencer);
+      rpcNodes.push(rpcNode);
 
-      await onL2SequencerInfo(sequencer).catch((e) => {
+      await onL2RpcNodeInfo(rpcNode).catch((e) => {
         logger.error(
-          `Aztec failed to publish sequencer info: ${(e as Error).message}`,
+          `Aztec failed to publish rpc node info: ${(e as Error).message}`,
         );
       });
     } catch (e) {
@@ -171,7 +184,7 @@ export const getFreshInfo = async (): Promise<{
 
   return {
     chainInfo,
-    sequencers,
+    rpcNodes,
   };
 };
 
@@ -204,15 +217,21 @@ export const getLatestProvenHeight = async () => {
   return await callNodeFunction("getProvenBlockNumber");
 };
 
+export const getL2Tips = async () => {
+  return await callNodeFunction("getL2Tips");
+};
+
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");
 
 export const getBalanceOf = async (
-  blockNumber: number | "latest",
+  blockNumber: bigint | "latest",
   address: AztecAddress,
 ) => {
   const slot = await deriveStorageSlotInMap(new Fr(1), address);
   const blockParam =
-    blockNumber === "latest" ? "latest" : BlockNumber(blockNumber);
+    blockNumber === "latest"
+      ? "latest"
+      : BlockNumber(toSafeAztecBlockNumber(blockNumber));
   return callNodeFunction("getPublicStorageAt", [
     blockParam,
     ProtocolContractAddress.FeeJuice,

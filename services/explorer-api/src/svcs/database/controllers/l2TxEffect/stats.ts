@@ -7,9 +7,10 @@ import {
   l2Block,
   txEffect,
 } from "../../../database/schema/l2block/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 
 export const getTotalTxEffects = async (): Promise<number> => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const dbRes = await db()
     .select({ count: count() })
     .from(txEffect)
@@ -18,7 +19,9 @@ export const getTotalTxEffects = async (): Promise<number> => {
     .where(
       and(
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        currentRollupVersion !== null
+          ? eq(l2Block.version, currentRollupVersion)
+          : undefined,
       ),
     )
     .execute();
@@ -27,6 +30,7 @@ export const getTotalTxEffects = async (): Promise<number> => {
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 export const getTotalTxEffectsLast24h = async (): Promise<number> => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const dbRes = await db()
     .select({ count: count() })
     .from(txEffect)
@@ -39,7 +43,9 @@ export const getTotalTxEffectsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        currentRollupVersion !== null
+          ? eq(l2Block.version, currentRollupVersion)
+          : undefined,
       ),
     )
     .execute();

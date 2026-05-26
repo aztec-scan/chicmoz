@@ -1,6 +1,5 @@
-import { ChicmozL2BlockFinalizationStatus } from "@chicmoz-pkg/types";
 import {
-  AZTEC_DISABLE_ETERNAL_CATCHUP,
+  AZTEC_ENABLE_FULL_SWEEP_CATCHUP,
   AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS,
   AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS,
   BLOCK_POLL_INTERVAL_MS,
@@ -24,22 +23,15 @@ import { handleProvenTransactions } from "./handle-proven-block-txs.js";
 let timeoutId: number | undefined;
 let cancelPolling = false;
 
-export const startPolling = async ({
-  forceStartFromProposedHeight,
-  forceStartFromProvenHeight,
-}: {
-  forceStartFromProposedHeight?: number;
-  forceStartFromProvenHeight?: number;
-} = {}) => {
+export const startPolling = () => {
   if (timeoutId) {
     throw new Error("Poller already started");
   }
-  if (forceStartFromProposedHeight) {
-    await storeProcessedProposedBlockHeight(forceStartFromProposedHeight - 1);
-  }
-  if (forceStartFromProvenHeight) {
-    await storeProcessedProvenBlockHeight(forceStartFromProvenHeight - 1);
-  }
+  logger.info(
+    AZTEC_ENABLE_FULL_SWEEP_CATCHUP
+      ? "Full-sweep catchup is enabled; listener will sweep historical blocks when live head is idle."
+      : "Full-sweep catchup is disabled; request-driven reconciliation is the primary missing-block repair path.",
+  );
   syncRecursivePolling(true);
 };
 
@@ -135,15 +127,13 @@ const pollProposedBlock = async (height: number, isCatchup: boolean) => {
   if (isCatchup) {
     await onCatchupBlock(
       block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
+      "proposed",
+      { catchupReason: "eternal" },
     );
     logger.info(`🐱 catchup proposed block ${height}`);
     await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
   } else {
-    await onBlock(
-      block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
-    );
+    await onBlock(block, "proposed");
   }
   await storeProcessedProposedBlockHeight(height);
 };
@@ -152,14 +142,11 @@ const pollProvenBlock = async (height: number, isCatchup: boolean) => {
   const block = await internalGetBlock(height);
 
   if (isCatchup) {
-    await onCatchupBlock(
-      block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN,
-    );
+    await onCatchupBlock(block, "proven");
     logger.info(`🐱 catchup proven block ${height}`);
     await new Promise((r) => setTimeout(r, CATCHUP_POLL_WAIT_TIME_MS));
   } else {
-    await onBlock(block, ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROVEN);
+    await onBlock(block, "proven");
   }
 
   await handleProvenTransactions(block);
@@ -201,16 +188,13 @@ const ensureSaneValues = async (
 
 let currentEternalCatchupHeight = 1;
 const oneEternalCatchupFetch = async (currentProposedHeight: number) => {
-  if (AZTEC_DISABLE_ETERNAL_CATCHUP) {
+  if (!AZTEC_ENABLE_FULL_SWEEP_CATCHUP) {
     return;
   }
   // NOTE: if we have started the poller without catchup, we at least want it to eventually be in sync
   const block = await internalGetBlock(currentEternalCatchupHeight);
   if (block) {
-    await onCatchupBlock(
-      block,
-      ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED,
-    );
+    await onCatchupBlock(block, "proposed");
     currentEternalCatchupHeight =
       (currentEternalCatchupHeight + 1) % currentProposedHeight || 1;
     currentEternalCatchupHeight = Math.min(

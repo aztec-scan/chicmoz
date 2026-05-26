@@ -9,20 +9,18 @@ data:
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_sandbox')\gexec
     SELECT 'CREATE DATABASE aztec_listener_testnet'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_testnet')\gexec
-    SELECT 'CREATE DATABASE aztec_listener_local_devnet'
+    select 'CREATE DATABASE aztec_listener_local_devnet'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_local_devnet')\gexec
-    SELECT 'CREATE DATABASE aztec_listener_remote_devnet'
+    select 'CREATE DATABASE aztec_listener_remote_devnet'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'aztec_listener_remote_devnet')\gexec
-
-    SELECT 'CREATE DATABASE ethereum_listener_sandbox'
+    select 'CREATE DATABASE ethereum_listener_sandbox'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_sandbox')\gexec
-    SELECT 'CREATE DATABASE ethereum_listener_testnet'
+    select 'CREATE DATABASE ethereum_listener_testnet'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_testnet')\gexec
-    SELECT 'CREATE DATABASE ethereum_listener_local_devnet'
+    select 'CREATE DATABASE ethereum_listener_local_devnet'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_local_devnet')\gexec
-    SELECT 'CREATE DATABASE ethereum_listener_remote_devnet'
+    select 'CREATE DATABASE ethereum_listener_remote_devnet'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ethereum_listener_remote_devnet')\gexec
-
     SELECT 'CREATE DATABASE explorer_api_sandbox'
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'explorer_api_sandbox')\gexec
     SELECT 'CREATE DATABASE explorer_api_testnet'
@@ -127,7 +125,7 @@ spec:
     spec:
       containers:
         - name: postgresql
-          image: postgres:15-alpine
+          image: postgres:18.1-alpine
           ports:
             - containerPort: 5432
           env:
@@ -138,8 +136,6 @@ spec:
                 secretKeyRef:
                   name: postgres-auth
                   key: password
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
@@ -150,8 +146,8 @@ spec:
               memory: "1Gi"
               cpu: "500m"
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: "256Mi"
+              cpu: "100m"
       volumes:
         - name: init-scripts
           configMap:
@@ -163,7 +159,7 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 5Gi
+            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service

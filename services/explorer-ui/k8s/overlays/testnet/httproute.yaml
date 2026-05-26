@@ -9,19 +9,15 @@ metadata:
 spec:
   parentRefs:
     - name: aztecscan-gateway
-      sectionName: ui-testnet-http
+      sectionName: ui-v1-testnet-http
     - name: aztecscan-gateway
-      sectionName: ui-testnet-https
-    - name: aztecscan-gateway
-      sectionName: ui-testnet-primary-http
-    - name: aztecscan-gateway
-      sectionName: ui-testnet-primary-https
+      sectionName: ui-v1-testnet-https
   hostnames:
-    - testnet.aztecscan.xyz
+    - v1.testnet.aztecscan.xyz
   rules:
     - backendRefs:
         - name: explorer-ui-testnet # hardcoded — nameSuffix does NOT transform backendRefs
-          port: 80
+          port: 8
       matches:
         - path:
             type: PathPrefix

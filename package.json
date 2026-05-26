@@ -22,6 +22,8 @@
     "typescript": "5.8.3"
   },
   "scripts": {
+    "build:contract-compiler": "bash scripts/build_contract_compiler.sh",
+    "build:contract-compiler-from-nargo": "bash scripts/build_contract_compiler_from_nargo.sh",
     "build:packages": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build",
     "lint:packages": "yarn workspaces foreach --parallel -j 1 --all --topological-dev --verbose --include '@chicmoz-pkg/*' run lint",
     "build-all-slow": "yarn workspaces foreach --all --topological-dev --verbose --include '@chicmoz-pkg/*' run build && yarn workspaces foreach --all --topological-dev --verbose --include 'services/*' run build",

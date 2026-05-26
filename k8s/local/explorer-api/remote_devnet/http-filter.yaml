@@ -1,0 +1,12 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: HTTPRouteFilter
+metadata:
+  name: explorer-api-remote-devnet-rewrite
+  namespace: chicmoz
+spec:
+  urlRewrite:
+    path:
+      type: ReplaceRegexMatch
+      replaceRegexMatch:
+        pattern: ^/v1/[^/]+/(.*)$
+        substitution: '/\1'

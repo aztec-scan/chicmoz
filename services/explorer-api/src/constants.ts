@@ -16,6 +16,7 @@ export const AZTEC_SCAN_NOTES: Record<
       name: "Example",
       origin: "This is an example note",
       comment: "EXAMPLE",
+      category: "dev",
       relatedL1ContractAddresses: [
         {
           address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -25,28 +26,27 @@ export const AZTEC_SCAN_NOTES: Record<
     },
   },
   DEVNET: {
-    "0x0299fbace3b22cb92f77105cf0858fa28cb81fdde8224bd9f547103b62549015": {
-      name: "GregoCoin",
-      origin: "Example token on devnet",
-      comment: "Used to swap for GregoCoin Premium on https://gregoswap.anothercoffeefor.me"
-    },
-    "0x2c183370da7ba6ec38eae88e741d3784924f3705e83fd21db38f22b8b35d4761": {
-      name: "GregoCoin Premium",
-      origin: "Example token on devnet",
-      comment: "Used to swap for GregoCoin on https://gregoswap.anothercoffeefor.me"
-    },
-    "0x27a055c07cf0149068f3acff87a31c9cbd019a810d3f6f49d068c323bc506719": {
-      name: "Train",
-      origin: "Train Protocol – https://github.com/TrainProtocol/contracts",
-      comment: "Trustless, permissionless cross-chain bridge using improved HTLCs. Enables asset transfers across chains without oracles or 3rd parties."
-    }
   },
   TESTNET: {
-    "0x0fb5144f2518c5501dfde73723cad1d1ac7f5a3ab15486ae4d444d228a205448": {
-      name: "DAI test token",
-      origin: "DeFi-wonderland",
-      comment:
-        "This is a test token deployed by DeFi-wonderland. It is a test token for the DAI token. It only has 9 decimals.",
+    "0x23aa89a473816a75a38e5cbead8652fd047a0820657fd2b5ed97eba5b220a3ce": {
+      name: "Bridged USDC",
+      origin: "Raven House",
+      comment: "Available at: https://bridge.ravenhouse.xyz",
+      category: "bridge",
+      relatedL1ContractAddresses: [
+        {
+          address: "0x3c7E4990F18bd36029CC562B336022C657427c6A",
+          note: "Bridge router address",
+        },
+        {
+          address: "0xf98F4dd494833e0C686BA80454923D916C71CeC4",
+          note: "Raven House mocked 'USDC'"
+        },
+        {
+          address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+          note: "USDC"
+        }
+      ],
     },
   },
 };

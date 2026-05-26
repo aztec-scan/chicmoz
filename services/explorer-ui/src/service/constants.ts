@@ -6,7 +6,7 @@ export const aztecExplorer = {
   getL2BlockByHash: "/l2/blocks/",
   getL2BlockByHeight: "/l2/blocks/",
   getL2BlocksByHeightRange: "/l2/blocks",
-  getL2BlocksByStatus: "/l2/blocks/by-status",
+  getL2BlocksByNativeStatus: "/l2/blocks/by-status",
   getL2OrphanedBlocks: "/l2/blocks/orphaned",
   getL2OrphanedBlocksLimited: "/l2/blocks/orphans",
   getL2Reorgs: "/l2/reorgs",
@@ -59,6 +59,16 @@ export const aztecExplorer = {
   getL2VerifiedContracts: "/l2/verified-contracts",
   getL2VerifiedContractByInstanceAddress: (address: string) =>
     `/l2/verified-contracts/${address}`,
+  getL2PublicCallRequestsByContract: (address: string) =>
+    `/l2/public-call-requests?contractAddress=${address}`,
+  getL2ToL1MsgsByContract: (address: string) =>
+    `/l2/l2-to-l1-msgs/contract/${address}`,
+  getL2PublicCallRequestsBySender: (address: string) =>
+    `/l2/public-call-requests?senderAddress=${address}`,
+  getL2PublicCallRequestsByTxHash: (txHash: string) =>
+    `/l2/public-call-requests/${txHash}`,
+  getL2ToL1MsgsByRecipient: (address: string) =>
+    `/l2/l2-to-l1-msgs/recipient/${address}`,
 
   getL2TotalTxEffects: "/l2/stats/total-tx-effects",
   getL2TotalTxEffectsLast24h: "/l2/stats/tx-effects-last-24h",
@@ -69,8 +79,8 @@ export const aztecExplorer = {
   getL2SearchResult: "/l2/search",
   getL2ChainInfo: "/l2/info",
   getL2ChainErrors: "/l2/errors",
-  getL2Sequencers: "/l2/sequencers",
-  getL2Sequencer: (enr: string) => `/l2/sequencers/${enr}`,
+  getL2RpcNodes: "/l2/rpc-nodes",
+  getL2RpcNode: (rpcNodeName: string) => `/l2/rpc-nodes/${rpcNodeName}`,
   getL2FeeRecipients: "/l2/fee-recipients",
   getL1GenericContractEvents: "/l1/contract-events",
   getL1L2Validators: `/l1/l2-validators`,

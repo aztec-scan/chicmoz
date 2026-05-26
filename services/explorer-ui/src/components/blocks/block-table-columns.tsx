@@ -12,7 +12,7 @@ const text = {
   blockHash: "BLOCK HASH",
   txEffectsLength: "NBR OF TXS",
   timeSince: "AGE",
-  blockStatus: "BLOCK STATUS",
+  nativeStatus: "BLOCK STATUS",
 };
 
 export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
@@ -27,7 +27,6 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
     ),
     cell: ({ row }) => {
       const height = Number(row.getValue("height"));
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       const r = routes.blocks.route + "/" + height;
       return (
         <div className="text-purple-light">
@@ -94,18 +93,19 @@ export const BlockTableColumns: ColumnDef<UiBlockTable>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "blockStatus",
+    accessorKey: "nativeStatus",
     header: ({ column }) => (
       <DataTableColumnHeader
         className="text-purple-dark text-sm"
         column={column}
-        title={text.blockStatus}
+        title={text.nativeStatus}
       />
     ),
     cell: ({ row }) => (
       <BlockStatusBadge
         className="font-mono"
-        status={row.getValue("blockStatus")}
+        nativeStatus={row.original.nativeStatus}
+        orphan={row.original.orphan}
       />
     ),
     enableSorting: false,

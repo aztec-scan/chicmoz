@@ -10,31 +10,90 @@ import {
 } from "../index.js";
 import { deepPartial } from "../utils.js";
 import { chicmozL2TxEffectSchema } from "./l2TxEffect.js";
-import { frNumberSchema, frSchema, frTimestampSchema } from "./utils.js";
+import {
+  frDecimalStringSchema,
+  frSchema,
+  frSmallIntSchema,
+  frTimestampSchema,
+} from "./utils.js";
 
-export enum ChicmozL2BlockFinalizationStatus {
-  L2_NODE_SEEN_PROPOSED = 0,
-  L1_SEEN_PROPOSED = 1,
-  L1_MINED_PROPOSED = 2,
-  L2_NODE_SEEN_PROVEN = 3,
-  L1_SEEN_PROVEN = 4,
-  L1_MINED_PROVEN = 5,
-}
+export const chicmozL2NativeBlockStatusSchema = z.enum([
+  "proposed",
+  "checkpointed",
+  "proven",
+  "finalized",
+  "unknown",
+]).describe(
+  "Aztec-native block display status derived from current L2 tips. On Aztec v4, finalized may equal proven upstream.",
+);
 
-export const FIRST_FINALIZATION_STATUS =
-  ChicmozL2BlockFinalizationStatus.L2_NODE_SEEN_PROPOSED;
+export type ChicmozL2NativeBlockStatus = z.infer<
+  typeof chicmozL2NativeBlockStatusSchema
+>;
 
-export const LAST_FINALIZATION_STATUS =
-  ChicmozL2BlockFinalizationStatus.L1_MINED_PROVEN;
+export const chicmozL2TipBlockSchema = z.object({
+  number: z.coerce.number().int().nonnegative(),
+  hash: hexStringSchema,
+});
 
-export const chicmozL2BlockFinalizationStatusSchema = z
-  .nativeEnum(ChicmozL2BlockFinalizationStatus)
-  .default(0);
+export type ChicmozL2TipBlock = z.infer<typeof chicmozL2TipBlockSchema>;
+
+export const chicmozL2CheckpointRefSchema = z.object({
+  number: z.coerce.number().int().nonnegative(),
+  hash: hexStringSchema,
+});
+
+export const chicmozL2CheckpointTipSchema = z.object({
+  block: chicmozL2TipBlockSchema,
+  checkpoint: chicmozL2CheckpointRefSchema,
+});
+
+export type ChicmozL2CheckpointTip = z.infer<
+  typeof chicmozL2CheckpointTipSchema
+>;
+
+export const chicmozL2TipsSchema = z.object({
+  proposed: chicmozL2TipBlockSchema,
+  proposedCheckpoint: chicmozL2CheckpointTipSchema.optional(),
+  checkpointed: chicmozL2CheckpointTipSchema,
+  proven: chicmozL2CheckpointTipSchema,
+  finalized: chicmozL2CheckpointTipSchema,
+});
+
+export type ChicmozL2Tips = z.infer<typeof chicmozL2TipsSchema>;
+
+export const chicmozL2TipsHealthSchema = z.object({
+  tips: chicmozL2TipsSchema,
+  observedAt: z.coerce.number().int().nonnegative(),
+  stale: z.boolean(),
+  stalenessMs: z.coerce.number().int().nonnegative(),
+  staleAfterMs: z.coerce.number().int().positive(),
+  degraded: z.boolean(),
+  degradedReason: z.string().optional(),
+  repeatedDegradedBoundaryMismatch: z
+    .object({
+      bucket: z.enum(["finalized", "proven", "checkpointed", "proposed"]),
+      height: z.coerce.number().int().nonnegative(),
+      expectedHash: hexStringSchema,
+      observedDbHash: hexStringSchema.optional(),
+      firstSeenAt: z.coerce.string(),
+      lastSeenAt: z.coerce.string(),
+      occurrenceCount: z.coerce.number().int().positive(),
+      reason: z.string(),
+    })
+    .optional(),
+  source: z.object({
+    rpcNodeName: z.string().optional(),
+    aztecNodeVersion: z.string().optional(),
+  }),
+});
+
+export type ChicmozL2TipsHealth = z.infer<typeof chicmozL2TipsHealthSchema>;
 
 export const chicmozL2BlockSchema = z.object({
   hash: hexStringSchema,
   height: z.coerce.bigint().nonnegative(),
-  finalizationStatus: chicmozL2BlockFinalizationStatusSchema,
+  nativeStatus: chicmozL2NativeBlockStatusSchema.optional(),
   proposedOnL1: z.lazy(() =>
     chicmozL1L2BlockProposedSchema.omit({ l2BlockNumber: true }).optional(),
   ),
@@ -78,16 +137,16 @@ export const chicmozL2BlockSchema = z.object({
       }),
     }),
     globalVariables: z.object({
-      chainId: frNumberSchema,
-      version: frNumberSchema,
-      blockNumber: frNumberSchema,
-      slotNumber: frNumberSchema,
+      chainId: frSmallIntSchema,
+      version: frSmallIntSchema,
+      blockNumber: frSmallIntSchema,
+      slotNumber: frSmallIntSchema,
       timestamp: frTimestampSchema,
       coinbase: ethAddressSchema,
       feeRecipient: aztecAddressSchema,
       gasFees: z.object({
-        feePerDaGas: frNumberSchema,
-        feePerL2Gas: frNumberSchema,
+        feePerDaGas: frDecimalStringSchema,
+        feePerL2Gas: frDecimalStringSchema,
       }),
     }),
     totalFees: z.coerce.bigint(),

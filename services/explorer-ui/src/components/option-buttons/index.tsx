@@ -50,7 +50,7 @@ export const OptionButtons = <T extends OptionItems>({
 }: OptionButtonProps<T>) => {
   // Check if any options are available
   const hasAnyAvailableOptions = Object.values(availableOptions).some(Boolean);
-  
+
   return (
     <>
       <div className="hidden lg:flex flex-row gap-4 mb-4 justify-center">
@@ -76,7 +76,7 @@ export const OptionButtons = <T extends OptionItems>({
           );
         })}
       </div>
-      <div className="mb-1 mt-4 lg:hidden">
+      <div className="mb-4 mt-4 lg:hidden">
         <Select onValueChange={onOptionSelect} value={selectedItem}>
           <SelectTrigger className="h-8 w-3/5 bg-primary text-white">
             <SelectValue placeholder={selectedItem} />

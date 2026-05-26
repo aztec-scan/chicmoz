@@ -55,6 +55,9 @@ export const SourceCodeTab: FC<SourceCodeTabProps> = ({
         <SourceCodeViewer
           sourceFiles={sourceData.sourceCode}
           sourceCodeUrl={sourceData.sourceCodeUrl}
+          sourceCodeCommitHash={sourceData.sourceCodeCommitHash}
+          gitRef={sourceData.gitRef}
+          resolvedAztecVersion={sourceData.aztecVersion}
         />
       );
     }

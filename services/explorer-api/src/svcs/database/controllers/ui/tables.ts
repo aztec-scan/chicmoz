@@ -5,8 +5,12 @@ import {
   desc,
   eq,
   getTableColumns,
+  gt,
   inArray,
+  isNotNull,
   isNull,
+  lte,
+  sql,
 } from "drizzle-orm";
 import {
   body,
@@ -18,50 +22,101 @@ import {
 import { getBlocksWhereRange } from "../utils.js";
 import { DB_MAX_BLOCKS, DB_MAX_TX_EFFECTS } from "../../../../environment.js";
 import {
-  FIRST_FINALIZATION_STATUS,
-  UiBlockTable,
+  type UiBlockTable,
+  type UiBlockStatusFilter,
   uiBlockTableSchema,
-  UiTxEffectTable,
+  type UiTxEffectTable,
   uiTxEffectTableSchema,
 } from "@chicmoz-pkg/types";
-import { l2BlockFinalizationStatusTable } from "../../schema/l2block/finalization-status.js";
-import { logger } from "../../../../logger.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
-import { getExistingRollupVersion } from "../l2block/get-latest.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
+import { deriveNativeStatus, getTips } from "../l2/tips.js";
 
 type GetBlocksByRange = {
   from: bigint | undefined;
   to: bigint | undefined;
+  status?: UiBlockStatusFilter;
+};
+
+const statusFilterWhere = (
+  status: Exclude<UiBlockStatusFilter, "orphaned">,
+  l2Tips: Awaited<ReturnType<typeof getTips>>,
+) => {
+  if (!l2Tips || l2Tips.degradedReason) {
+    return status === "unknown" ? isNull(l2Block.orphan_timestamp) : sql`false`;
+  }
+
+  const finalizedHeight = BigInt(l2Tips.finalized.block.number);
+  const provenHeight = BigInt(l2Tips.proven.block.number);
+  const checkpointedHeight = BigInt(l2Tips.checkpointed.block.number);
+  const proposedHeight = BigInt(l2Tips.proposed.number);
+
+  switch (status) {
+    case "proposed":
+      return and(
+        isNull(l2Block.orphan_timestamp),
+        gt(l2Block.height, checkpointedHeight),
+        lte(l2Block.height, proposedHeight),
+      );
+    case "checkpointed":
+      return and(
+        isNull(l2Block.orphan_timestamp),
+        gt(l2Block.height, provenHeight),
+        lte(l2Block.height, checkpointedHeight),
+      );
+    case "proven":
+      return and(
+        isNull(l2Block.orphan_timestamp),
+        gt(l2Block.height, finalizedHeight),
+        lte(l2Block.height, provenHeight),
+      );
+    case "finalized":
+      return and(
+        isNull(l2Block.orphan_timestamp),
+        lte(l2Block.height, finalizedHeight),
+      );
+    case "unknown":
+      return and(
+        isNull(l2Block.orphan_timestamp),
+        gt(l2Block.height, proposedHeight),
+      );
+  }
 };
 
 export const getBlocksForUiTable = async ({
   from,
   to,
+  status,
 }: GetBlocksByRange): Promise<UiBlockTable[]> => {
   const whereRange = getBlocksWhereRange({ from, to });
 
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+  const rollupVersion = await getCurrentRollupVersionNumber();
+  const l2Tips = await getTips();
+  const versionFilter =
+    rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined;
 
-  // Initial query to get basic block information
+  const statusWhere =
+    status === "orphaned"
+      ? isNotNull(l2Block.orphan_timestamp)
+      : status
+        ? statusFilterWhere(status, l2Tips)
+        : undefined;
+
+  // Initial query to get basic block information. Orphans are intentionally
+  // included when unfiltered so the UI can render an "orphaned" pill.
   const dbRes = await db()
     .select({
       height: getTableColumns(l2Block).height,
       hash: getTableColumns(l2Block).hash,
       timestamp: getTableColumns(globalVariables).timestamp,
+      coinbase: getTableColumns(globalVariables).coinbase,
+      orphanTimestamp: getTableColumns(l2Block).orphan_timestamp,
       bodyId: body.id,
     })
     .from(l2Block)
     .innerJoin(header, eq(l2Block.hash, header.blockHash))
     .innerJoin(globalVariables, eq(header.id, globalVariables.headerId))
     .innerJoin(body, eq(body.blockHash, l2Block.hash))
-    .where(
-      and(
-        whereRange,
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, rollupVersion),
-      ),
-    )
+    .where(and(whereRange, versionFilter, statusWhere))
     .orderBy(desc(l2Block.height))
     .limit(DB_MAX_BLOCKS)
     .execute();
@@ -70,9 +125,8 @@ export const getBlocksForUiTable = async ({
     return [];
   }
 
-  // Collect bodyIds and blockHashes for bulk queries
+  // Collect bodyIds for bulk queries.
   const bodyIds = dbRes.map((result) => result.bodyId);
-  const blockHashes = dbRes.map((result) => result.hash);
 
   // Bulk query to get transaction counts for all blocks at once
   const txCounts = await db()
@@ -88,60 +142,27 @@ export const getBlocksForUiTable = async ({
   // Create a map for quick lookup of tx counts by bodyId
   const txCountMap = new Map(txCounts.map((item) => [item.bodyId, item.count]));
 
-  // Bulk query to get finalization statuses for all blocks
-  const allStatuses = await db()
-    .select({
-      l2BlockHash: l2BlockFinalizationStatusTable.l2BlockHash,
-      status: l2BlockFinalizationStatusTable.status,
-      l2BlockNumber: l2BlockFinalizationStatusTable.l2BlockNumber,
-    })
-    .from(l2BlockFinalizationStatusTable)
-    .where(
-      and(inArray(l2BlockFinalizationStatusTable.l2BlockHash, blockHashes)),
-    )
-    .execute();
-
-  // Group statuses by block hash
-  const statusesByBlockHash = new Map<string, typeof allStatuses>();
-  for (const status of allStatuses) {
-    if (!statusesByBlockHash.has(status.l2BlockHash)) {
-      statusesByBlockHash.set(status.l2BlockHash, []);
-    }
-    statusesByBlockHash.get(status.l2BlockHash)!.push(status);
-  }
-
-  // For each block hash, find the status with the highest value
-  const statusMap = new Map<string, number>();
-  for (const blockHash of blockHashes) {
-    const blockStatuses = statusesByBlockHash.get(blockHash) ?? [];
-    // Sort by status (desc) and then by l2BlockNumber (desc)
-    blockStatuses.sort((a, b) => {
-      if (a.status !== b.status) {
-        return b.status - a.status; // Descending by status
-      }
-      return Number(b.l2BlockNumber) - Number(a.l2BlockNumber); // Descending by l2BlockNumber
-    });
-    // Take the first one (highest status, highest block number) if available
-    if (blockStatuses.length > 0) {
-      statusMap.set(blockHash, blockStatuses[0].status);
-    }
-  }
-
   // Build the final blocks array using the maps for lookup
   const blocks: UiBlockTable[] = [];
   for (const result of dbRes) {
-    let finalizationStatusValue = statusMap.get(result.hash);
-    if (finalizationStatusValue === undefined) {
-      finalizationStatusValue = FIRST_FINALIZATION_STATUS;
-      logger.warn(`Finalization status not found for block ${result.hash}`);
-    }
-
     const blockData = {
       blockHash: result.hash,
       height: result.height,
-      blockStatus: finalizationStatusValue,
+      nativeStatus: deriveNativeStatus(
+        {
+          height: result.height,
+          hash: result.hash,
+          orphan:
+            result.orphanTimestamp != null
+              ? { timestamp: result.orphanTimestamp, hasOrphanedParent: false }
+              : undefined,
+        },
+        l2Tips,
+      ),
       timestamp: result.timestamp,
       txEffectsLength: txCountMap.get(result.bodyId) ?? 0,
+      orphan: result.orphanTimestamp != null,
+      coinbase: result.coinbase,
     };
     blocks.push(await uiBlockTableSchema.parseAsync(blockData));
   }
@@ -167,8 +188,9 @@ type GetTableTxEffectsByBlockHeightRange = {
 export const getTxEffectForUiTable = async (
   args: GetTableTxEffectByBlockHeight | GetTableTxEffectsByBlockHeightRange,
 ): Promise<UiTxEffectTable[]> => {
-  const rollupVersion =
-    (await getExistingRollupVersion()) ?? parseInt(CURRENT_ROLLUP_VERSION);
+  const rollupVersion = await getCurrentRollupVersionNumber();
+  const versionFilter =
+    rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined;
 
   const joinQuery = db()
     .select({
@@ -194,29 +216,21 @@ export const getTxEffectForUiTable = async (
             and(
               getBlocksWhereRange({ from: args.from, to: args.to }),
               isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, rollupVersion),
+              versionFilter,
             ),
           )
           .orderBy(desc(l2Block.height), desc(txEffect.index))
           .limit(DB_MAX_TX_EFFECTS);
       } else {
         whereQuery = joinQuery
-          .where(
-            and(
-              isNull(l2Block.orphan_timestamp),
-              eq(l2Block.version, rollupVersion),
-            ),
-          )
+          .where(and(isNull(l2Block.orphan_timestamp), versionFilter))
           .orderBy(desc(l2Block.height), desc(txEffect.index))
           .limit(DB_MAX_TX_EFFECTS);
       }
       break;
     case GetTypes.BlockHeight:
       whereQuery = joinQuery.where(
-        and(
-          eq(l2Block.height, args.blockHeight),
-          eq(l2Block.version, rollupVersion),
-        ),
+        and(eq(l2Block.height, args.blockHeight), versionFilter),
       );
       break;
   }

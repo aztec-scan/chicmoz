@@ -1,14 +1,22 @@
 import {
+  type ChicmozL2NativeBlockStatus,
   uiTxEffectTableSchema,
   type ChicmozL2Block,
   type ChicmozL2BlockLight,
   type UiTxEffectTable,
 } from "@chicmoz-pkg/types";
 import { type DetailItem } from "~/components/info-display/key-value-display";
+import { getFeeJuiceSymbol } from "~/lib/utils";
 import { API_URL, aztecExplorer } from "~/service/constants";
+
+const statusValue = (
+  nativeStatus?: ChicmozL2NativeBlockStatus,
+  orphan?: boolean,
+) => (orphan ? "orphaned" : (nativeStatus ?? "unknown"));
 
 export const getBlockDetails = (
   latestBlock: ChicmozL2BlockLight,
+  feeJuiceSymbol?: string,
 ): DetailItem[] => {
   const l2BlockTimestamp = latestBlock.header.globalVariables.timestamp;
 
@@ -42,7 +50,7 @@ export const getBlockDetails = (
       tooltip: "L2 address that receives the transaction fees for this block.",
     },
     {
-      label: "totalFees (FJ)",
+      label: `totalFees (${getFeeJuiceSymbol(feeJuiceSymbol)})`,
       value: "" + latestBlock.header.totalFees,
     },
     {
@@ -52,23 +60,28 @@ export const getBlockDetails = (
     {
       label: "feePerDaGas",
       value: "" + latestBlock.header.globalVariables.gasFees.feePerDaGas,
-      tooltip:
-        "FJ paid for the data usage by the transaction, e.g. creating/spending notes, emitting logs, etc.",
+      tooltip: `${getFeeJuiceSymbol(
+        feeJuiceSymbol,
+      )} paid for the data usage by the transaction, e.g. creating/spending notes, emitting logs, etc.`,
     },
     {
       label: "feePerL2Gas",
       value: "" + latestBlock.header.globalVariables.gasFees.feePerL2Gas,
-      tooltip: "FJ paid for the computation usage of the public VM.",
+      tooltip: `${getFeeJuiceSymbol(
+        feeJuiceSymbol,
+      )} paid for the computation usage of the public VM.`,
     },
     {
       label: " Block status",
-      value: "" + latestBlock.finalizationStatus,
+      value: statusValue(
+        latestBlock.nativeStatus,
+        latestBlock.orphan !== undefined,
+      ),
     },
     {
       label: "Proposed on L1",
       value: "Not yet proposed",
-      timestamp:
-        Math.floor((proposedOnL1Date?? 0)) ?? undefined,
+      timestamp: Math.floor(proposedOnL1Date ?? 0) ?? undefined,
     },
     // NOTE: not all blocks have this
     //{

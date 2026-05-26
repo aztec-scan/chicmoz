@@ -1,4 +1,3 @@
-import { ApiKey } from "@chicmoz-pkg/types";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { PUBLIC_API_KEY } from "../../environment.js";
 import { openApiPaths } from "./routes/index.js";
@@ -14,14 +13,33 @@ Currently there is no sign-up process for an API key. There will however be rate
 
 This is also subject to change, and the latest updates on this will always be available here.
 
-Expirimental SDK can be found here: https://github.com/aztec-scan/aztec-scan-sdk`,
+Experimental SDK can be found here: [aztec-scan-sdk](https://github.com/aztec-scan/aztec-scan-sdk)`,
     contact: {
       name: "Github",
       url: "https://github.com/aztec-scan/chicmoz",
     },
   },
   servers: [
-    // TODO: parameterize URLs
+    {
+      url: "https://api.aztecscan.xyz/v1/{apiKey}",
+      description: "Mainnet Aztecscan API",
+      variables: {
+        apiKey: {
+          default: PUBLIC_API_KEY,
+          description: "Aztecscan API key",
+        },
+      },
+    },
+    {
+      url: "https://api.mainnet.aztecscan.xyz/v1/{apiKey}",
+      description: "Mainnet Aztecscan API alias",
+      variables: {
+        apiKey: {
+          default: PUBLIC_API_KEY,
+          description: "Aztecscan API key",
+        },
+      },
+    },
     {
       url: "https://api.testnet.aztecscan.xyz/v1/{apiKey}",
       description: "Testnet Aztecscan API",
@@ -42,27 +60,11 @@ Expirimental SDK can be found here: https://github.com/aztec-scan/aztec-scan-sdk
         },
       },
     },
-    {
-      url: "http://api.sandbox.chicmoz.localhost/v1/{apiKey}",
-      description: "LOCAL sandbox Aztecscan API",
-      variables: {
-        apiKey: {
-          default: ApiKey.DEV,
-          description: "Aztecscan API key",
-        },
-      },
-    },
-    {
-      url: "http://api.testnet.chicmoz.localhost/v1/{apiKey}",
-      description: "LOCAL Testnet Aztecscan API",
-      variables: {
-        apiKey: {
-          default: ApiKey.DEV,
-          description: "Aztecscan API key",
-        },
-      },
-    },
   ],
+  externalDocs: {
+    description: "Experimental Aztec Scan SDK",
+    url: "https://github.com/aztec-scan/aztec-scan-sdk",
+  },
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   paths: openApiPaths,
 });

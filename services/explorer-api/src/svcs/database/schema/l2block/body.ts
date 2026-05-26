@@ -1,3 +1,4 @@
+import { generateAztecAddressColumn } from "@chicmoz-pkg/backend-utils";
 import { HexString } from "@chicmoz-pkg/types";
 import {
   index,
@@ -11,7 +12,7 @@ import {
 import { sql } from "drizzle-orm";
 import {
   generateFrColumn,
-  generateFrNumberColumn,
+  generateLargeIntegerColumn,
   generateTimestampColumn,
 } from "../utils.js";
 import { l2Block } from "./root.js";
@@ -42,7 +43,10 @@ export const txEffect = pgTable(
       .default(sql`EXTRACT(EPOCH FROM NOW()) * 1000`),
     index: integer("index").notNull(),
     revertCode: smallint("revert_code").notNull(),
-    transactionFee: generateFrNumberColumn("transaction_fee").notNull(),
+    transactionFee: generateLargeIntegerColumn("transaction_fee").notNull(),
+    feePayer: generateAztecAddressColumn("fee_payer"),
+    feePaymentMethod: varchar("fee_payment_method"),
+    initiator: generateAztecAddressColumn("initiator"),
     // NOTE: below three are arrays of Fr they might be needed in separate tables
     noteHashes: jsonb("note_hashes").notNull(),
     nullifiers: jsonb("nullifiers").notNull(),

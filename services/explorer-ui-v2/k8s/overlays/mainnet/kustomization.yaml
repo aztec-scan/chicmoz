@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chicmoz-prod
+nameSuffix: -mainnet
+
+resources:
+  - ../../base
+  - httproute.yaml
+
+images:
+  - name: registry.digitalocean.com/aztlan-containers/explorer-ui-v2
+    newTag: mainnet-latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: explorer-ui-v2
+      spec:
+        template:
+          metadata:
+            labels:
+              app: explorer-ui-v2
+              network: mainnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: explorer-ui-v2
+      spec:
+        selector:
+          app: explorer-ui-v2
+          network: mainnet

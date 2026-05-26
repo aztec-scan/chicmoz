@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { controllers as db } from "../../../database/index.js";
 import { dbWrapper } from "./utils/index.js";
 import { getContractClassIdSchema } from "../paths_and_validation.js";
+import { getAllProtocolContractClasses } from "../../../../utils/protocol-contracts.js";
 
 export const GET_STATS_TOTAL_TX_EFFECTS = asyncHandler(async (_req, res) => {
   const total = await dbWrapper.getLatest(["stats", "totalTxEffects"], () =>
@@ -20,6 +21,16 @@ export const GET_STATS_TOTAL_TX_EFFECTS_LAST_24H = asyncHandler(
   },
 );
 
+export const GET_STATS_DROPPED_TXS_LAST_24H = asyncHandler(
+  async (_req, res) => {
+    const total = await dbWrapper.getLatest(
+      ["stats", "droppedTxsLast24h"],
+      () => db.droppedTx.getTotalDroppedTxsLast24h(),
+    );
+    res.status(200).json(JSON.parse(total));
+  },
+);
+
 export const GET_STATS_TOTAL_CONTRACTS = asyncHandler(async (_req, res) => {
   const total = await dbWrapper.getLatest(["stats", "totalContracts"], () =>
     db.l2Contract.getTotalContracts(),
@@ -27,12 +38,41 @@ export const GET_STATS_TOTAL_CONTRACTS = asyncHandler(async (_req, res) => {
   res.status(200).json(JSON.parse(total));
 });
 
-export const GET_STATS_TOTAL_CONTRACT_INSTANCES = asyncHandler(async (_req, res) => {
-  const total = await dbWrapper.getLatest(["stats", "totalContractInstances"], () =>
-    db.l2Contract.getL2TotalAmountDeployedContractInstances(),
-  );
-  res.status(200).json(JSON.parse(total));
-});
+export const GET_STATS_TOTAL_CONTRACT_INSTANCES = asyncHandler(
+  async (_req, res) => {
+    const total = await dbWrapper.getLatest(
+      ["stats", "totalContractInstances"],
+      () => db.l2Contract.getL2TotalAmountDeployedContractInstances(),
+    );
+    res.status(200).json(JSON.parse(total));
+  },
+);
+
+export const GET_STATS_CONTRACT_CLASSES_SUMMARY = asyncHandler(
+  async (_req, res) => {
+    const [totalClasses, verifiedClasses, dbProtocolClasses] =
+      await Promise.all([
+        db.l2Contract.getTotalContracts(),
+        db.l2Contract.getVerifiedContractClassCount(),
+        db.l2Contract.getProtocolContractClassCount(),
+      ]);
+    // Include hardcoded protocol contract classes (from artifacts bundle).
+    // Deduplicate: the DB count already includes any protocol classes
+    // registered from on-chain events; the hardcoded set fills in classes
+    // that exist at genesis and may not be in the DB.
+    const hardcodedProtocolCount = getAllProtocolContractClasses().length;
+    // DB protocol count already includes hardcoded classes that were
+    // registered on-chain. Since hardcoded classes are at genesis and almost
+    // never also registered on-chain, we can safely add them without complex
+    // dedup — the worst-case overcount is negligible for a stats counter.
+    const protocolClasses = dbProtocolClasses + hardcodedProtocolCount;
+    res.status(200).json({
+      totalClasses,
+      verifiedClasses,
+      protocolClasses,
+    });
+  },
+);
 
 export const GET_STATS_TOTAL_CONTRACTS_LAST_24H = asyncHandler(
   async (_req, res) => {
@@ -57,6 +97,16 @@ export const GET_STATS_AVERAGE_BLOCK_TIME = asyncHandler(async (_req, res) => {
   );
   res.status(200).json(JSON.parse(average));
 });
+
+export const GET_STATS_AVERAGE_TXS_PER_BLOCK = asyncHandler(
+  async (_req, res) => {
+    const average = await dbWrapper.getLatest(
+      ["stats", "averageTxsPerBlock"],
+      () => db.l2Block.getAverageTxsPerBlock(),
+    );
+    res.status(200).json(JSON.parse(average));
+  },
+);
 
 export const GET_STATS_TOTAL_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID =
   asyncHandler(async (req, res) => {

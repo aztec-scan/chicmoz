@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: aztec-listener-sandbox-label
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -28,8 +30,8 @@ spec:
         - image: aztec-listener:latest
           resources:
             requests:
-              memory: 64Mi
-              cpu: 10m
+              memory: 750Mi
+              cpu: 100m
             limits:
               memory: 750Mi
               cpu: 500m
@@ -50,6 +52,8 @@ spec:
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS
               value: "true"
+            - name: AZTEC_ENABLE_FULL_SWEEP_CATCHUP
+              value: "false"
             - name: AZTEC_RPC_URLS
               value: "sandbox::http://aztec-sandbox-node:8081"
 status: {}

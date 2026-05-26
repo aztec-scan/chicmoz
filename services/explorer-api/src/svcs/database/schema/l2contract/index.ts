@@ -93,6 +93,7 @@ export const l2ContractClassRegistered = pgTable(
     packedBytecode: bufferType("packed_bytecode").notNull(),
     artifactJson: varchar("artifact_json"),
     artifactContractName: varchar("artifact_contract_name"),
+    selectorMap: jsonb("selector_map").$type<Record<string, string>>(),
     standardContractType: varchar("contract_type"),
     standardContractVersion: varchar("contract_version"),
     sourceCodeUrl: varchar("source_code_url"),
@@ -135,6 +136,7 @@ export const l2ContractInstanceAztecScanNotes = pgTable(
     name: varchar("name").notNull(),
     origin: varchar("origin").notNull(),
     comment: varchar("comment").notNull(),
+    category: varchar("category"),
     relatedL1ContractAddresses: jsonb("related_l1_contract_addresses"),
     uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -150,6 +152,7 @@ export const l2ContractInstanceVerifiedDeploymentArguments = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     address: generateAztecAddressColumn("address")
       .notNull()
+      .unique("verified_deployment_arguments_address_unique")
       .references(() => l2ContractInstanceDeployed.address, {
         onDelete: "cascade",
       }),
@@ -288,6 +291,24 @@ export const sourceVerificationStatusEnum = pgEnum(
   ["PENDING", "COMPILING", "VERIFYING", "VERIFIED", "FAILED"],
 );
 
+export const sourceVerificationFailureStageEnum = pgEnum(
+  "source_verification_failure_stage",
+  [
+    "INPUT_VALIDATION",
+    "NARGO_DISCOVERY",
+    "IMAGE_RESOLUTION",
+    "CLONE",
+    "CHECKOUT",
+    "COMPILE",
+    "TRANSPILATION",
+    "ARTIFACT_DISCOVERY",
+    "ARTIFACT_VERIFICATION",
+    "SOURCE_EXTRACTION",
+    "TIMEOUT",
+    "INTERNAL",
+  ],
+);
+
 export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   id: uuid("id").primaryKey().defaultRandom(),
   contractClassId: text("contract_class_id").notNull(),
@@ -295,11 +316,13 @@ export const sourceVerificationJobs = pgTable("source_verification_jobs", {
   githubUrl: text("github_url").notNull(),
   gitRef: text("git_ref"),
   subPath: text("sub_path"),
-  aztecVersion: text("aztec_version").notNull(),
+  aztecVersion: text("aztec_version"),
   commitHash: text("commit_hash"),
   clientIp: text("client_ip"),
   status: sourceVerificationStatusEnum("status").notNull().default("PENDING"),
   error: text("error"),
+  failureStage: sourceVerificationFailureStageEnum("failure_stage"),
+  compileOutput: text("compile_output"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()

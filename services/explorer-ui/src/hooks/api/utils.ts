@@ -4,7 +4,7 @@ export const statsKey = "stats";
 export const queryKeyGenerator = {
   txEffectsByBlockHeight: (height: string | number | bigint | undefined) => [
     "txEffectsByBlockHeight",
-    Number(height),
+    height?.toString(),
   ],
   txEffectByHash: (hash: string) => ["txEffectByHash", hash],
   latestTxEffects: ["latestTxEffects"],
@@ -36,10 +36,12 @@ export const queryKeyGenerator = {
   contractClass: ({
     classId,
     version,
+    verifiedSourceOnly,
   }: {
     classId?: string;
     version?: string;
-  }) => ["contractClass", classId, version],
+    verifiedSourceOnly?: boolean;
+  }) => ["contractClass", classId, version, verifiedSourceOnly],
   contractClassPrivateFunctions: (classId: string) => [
     "contractClassPrivateFunctions",
     classId,
@@ -75,8 +77,8 @@ export const queryKeyGenerator = {
   ],
   chainInfo: ["chainInfo"],
   chainErrors: ["chainErrors"],
-  sequencers: ["sequencers"],
-  sequencer: (enr: string) => ["sequencer", enr],
+  rpcNodes: ["rpcNodes"],
+  rpcNode: (rpcNodeName: string) => ["rpcNode", rpcNodeName],
   feeRecipients: ["feeRecipients"],
   l1L2Validators: ["l1L2Validators"],
   l1L2ValidatorTotals: ["l1L2ValidatorTotals"],
@@ -109,5 +111,22 @@ export const queryKeyGenerator = {
     classId,
     version,
     jobId,
+  ],
+  publicCallRequestsByContract: (address: string) => [
+    "publicCallRequestsByContract",
+    address,
+  ],
+  l2ToL1MsgsByContract: (address: string) => ["l2ToL1MsgsByContract", address],
+  publicCallRequestsBySender: (address: string) => [
+    "publicCallRequestsBySender",
+    address,
+  ],
+  l2ToL1MsgsByRecipient: (address: string) => [
+    "l2ToL1MsgsByRecipient",
+    address,
+  ],
+  publicCallRequestsByTxHash: (txHash: string) => [
+    "publicCallRequestsByTxHash",
+    txHash,
   ],
 };

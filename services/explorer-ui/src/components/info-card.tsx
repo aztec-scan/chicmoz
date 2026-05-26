@@ -15,6 +15,7 @@ interface InfoCardProps {
   details?: string;
   isLoading: boolean;
   error: Error | null;
+  topRightAdornment?: ReactNode;
 }
 
 export const InfoCard: FC<InfoCardProps> = ({
@@ -23,6 +24,7 @@ export const InfoCard: FC<InfoCardProps> = ({
   details,
   isLoading,
   error,
+  topRightAdornment,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -59,6 +61,9 @@ export const InfoCard: FC<InfoCardProps> = ({
         !isExpanded ? "h-40" : ""
       }`}
     >
+      {topRightAdornment ? (
+        <div className="absolute right-4 top-4 z-10">{topRightAdornment}</div>
+      ) : null}
       <div className="p-5 pb-2 flex-grow overflow-hidden">
         <p className="text-xs text-primary dark:text-white">{title}</p>
 

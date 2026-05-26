@@ -1,3 +1,4 @@
+import { BadRequestError } from "@chicmoz-pkg/error-middleware";
 import { Table, and, getTableColumns, gte, lt } from "drizzle-orm";
 import { ZodError } from "zod";
 import { DB_MAX_BLOCKS } from "../../../environment.js";
@@ -41,10 +42,12 @@ export const getBlocksWhereRange = ({
   let whereRange;
   if (to && from) {
     if (from > to) {
-      throw new Error("Invalid range: from is greater than to");
+      throw new BadRequestError("Invalid range: from is greater than to");
     }
     if (to - from > DB_MAX_BLOCKS) {
-      throw new Error("Invalid range: too wide of a range requested");
+      throw new BadRequestError(
+        `Range too wide. Maximum is ${DB_MAX_BLOCKS} blocks.`,
+      );
     }
     whereRange = and(gte(l2Block.height, from), lt(l2Block.height, to));
   } else if (from) {

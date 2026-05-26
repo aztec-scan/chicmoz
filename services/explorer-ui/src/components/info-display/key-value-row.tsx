@@ -9,6 +9,14 @@ import { CopyableText } from "../copy-text";
 import { CustomTooltip } from "../custom-tooltip";
 import { Loader } from "../loader";
 
+const nativeStatuses = [
+  "proposed",
+  "checkpointed",
+  "proven",
+  "finalized",
+  "unknown",
+] as const;
+
 interface KeyValueRowProps {
   label: string;
   timestamp?: number;
@@ -133,16 +141,21 @@ export const KeyValueRow: FC<KeyValueRowProps> = ({
       )}
       {displayType === DisplayType.BLOCK_BADGE && (
         <div className={commonTextClasses}>
-          <BlockStatusBadge status={Number(value)} />
+          <BlockStatusBadge
+            nativeStatus={
+              nativeStatuses.includes(value as (typeof nativeStatuses)[number])
+                ? (value as (typeof nativeStatuses)[number])
+                : undefined
+            }
+            orphan={value === "orphaned"}
+          />
         </div>
       )}
       {displayType === DisplayType.DATE && timestamp && (
         <span className={commonTextClasses}>
           {(() => {
             const timeSince = formatTimeSince(timestamp);
-            return `${new Date(
-              timestamp,
-            ).toLocaleString()} (${timeSince} ago)`;
+            return `${new Date(timestamp).toLocaleString()} (${timeSince} ago)`;
           })()}
         </span>
       )}

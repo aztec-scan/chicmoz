@@ -48,8 +48,6 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
-            - name: IGNORE_PROCESSED_HEIGHT
-              value: "false"
             - name: AZTEC_LISTEN_FOR_BLOCKS
               value: "true"
             - name: AZTEC_LISTEN_FOR_PENDING_TXS

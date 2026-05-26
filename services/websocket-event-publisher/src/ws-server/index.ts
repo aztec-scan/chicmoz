@@ -1,6 +1,7 @@
 import {
   ChicmozL2Block,
   ChicmozL2PendingTx,
+  ChicmozL2Tips,
   WebsocketUpdateMessageSender,
   jsonStringify,
 } from "@chicmoz-pkg/types";
@@ -13,7 +14,9 @@ let wss: WebSocketServer;
 
 const sendUpdateToClients = (update: WebsocketUpdateMessageSender) => {
   const stringifiedUpdate = jsonStringify(update);
-  if (!wss) throw new Error("WebSocket server is not initialized");
+  if (!wss) {
+    throw new Error("WebSocket server is not initialized");
+  }
   const clientStatuses: {
     sent: number;
     failed: number;
@@ -64,6 +67,13 @@ export const sendBlockToClients = (block: ChicmozL2Block) => {
   });
   logger.info(
     `📡 Sent block ${block.header.globalVariables.blockNumber} to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
+  );
+};
+
+export const sendL2TipsToClients = (l2Tips: ChicmozL2Tips) => {
+  const { clientStatuses, totalClients } = sendUpdateToClients({ l2Tips });
+  logger.info(
+    `📡 Sent L2 tips to ${clientStatuses.sent} clients (failed: ${clientStatuses.failed}, total: ${totalClients})`,
   );
 };
 

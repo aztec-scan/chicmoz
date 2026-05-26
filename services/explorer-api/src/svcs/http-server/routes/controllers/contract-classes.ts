@@ -1,17 +1,22 @@
 import { verifyArtifactPayload } from "@chicmoz-pkg/contract-verification";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import {
+  type ChicmozL2ContractClassRegisteredEvent,
   chicmozL2ContractClassRegisteredEventSchema,
-  ContractStandard,
+  type ContractStandard,
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { getProtocolContractByClassId } from "../../../../utils/protocol-contracts.js";
+import {
+  getAllProtocolContractClasses,
+  getProtocolContractByClassId,
+} from "../../../../utils/protocol-contracts.js";
 import { controllers as db } from "../../../database/index.js";
 import {
   getContractClassesByCurrentClassIdSchema,
+  getContractClassesSchema,
   getContractClassSchema,
   postContrctClassArtifactSchema,
 } from "../paths_and_validation.js";
@@ -21,6 +26,19 @@ import {
   dbWrapper,
 } from "./utils/index.js";
 import { NoirCompiledContract } from "@aztec/aztec.js/abi";
+
+
+const contractClassKeys = (
+  contractClassId: string,
+  version: number,
+  includeArtifactJson?: boolean,
+) => [
+  "l2",
+  "contract-classes",
+  contractClassId,
+  version,
+  includeArtifactJson ? "with-artifact" : "without-artifact",
+];
 
 export const openapi_GET_L2_REGISTERED_CONTRACT_CLASS: OpenAPIObject["paths"] =
   {
@@ -70,7 +88,7 @@ export const GET_L2_REGISTERED_CONTRACT_CLASS = asyncHandler(
       return;
     }
     const contractClass = await dbWrapper.get(
-      ["l2", "contract-classes", contractClassId, version],
+      contractClassKeys(contractClassId, version, includeArtifactJson),
       () =>
         db.l2Contract.getL2RegisteredContractClass(
           contractClassId,
@@ -127,20 +145,66 @@ export const openapi_GET_L2_REGISTERED_CONTRACT_CLASSES: OpenAPIObject["paths"] 
       get: {
         tags: ["L2", "contract-classes"],
         summary: "Get latest registered contract classes",
+        parameters: [
+          {
+            name: "verifiedSourceOnly",
+            in: "query",
+            schema: {
+              type: "boolean",
+            },
+          },
+        ],
         responses: contractClassResponseArray,
       },
     },
   };
 
 export const GET_L2_REGISTERED_CONTRACT_CLASSES = asyncHandler(
-  async (_req, res) => {
+  async (req, res) => {
     const includeArtifactJson = false;
+    const { verifiedSourceOnly, offset, limit, verified, protocol } =
+      getContractClassesSchema.parse(req).query;
     const contractClasses = await dbWrapper.getLatest(
-      ["l2", "contract-classes"],
+      [
+        "l2",
+        "contract-classes",
+        verifiedSourceOnly ? "verified-source" : "all",
+        offset,
+        limit,
+        verified ? "v" : undefined,
+        protocol ? "p" : undefined,
+      ],
       () =>
-        db.l2Contract.getL2RegisteredContractClasses({ includeArtifactJson }),
+        db.l2Contract.getL2RegisteredContractClasses({
+          includeArtifactJson,
+          verifiedSourceOnly,
+          offset,
+          limit,
+          verified,
+          protocol,
+        }),
     );
-    res.status(200).json(JSON.parse(contractClasses));
+    const parsedClasses = JSON.parse(
+      contractClasses,
+    ) as ChicmozL2ContractClassRegisteredEvent[];
+    // Merge protocol contract classes so they appear in the PROTOCOL filter.
+    // Merge when: on the first page (or non-paginated) AND the active filter is
+    // NOT "verified" or "verifiedSourceOnly" (those exclude non-verified protocol
+    // classes, which would bypass the filter). The "protocol" filter and "all"
+    // filter both allow protocol classes.
+    const excludesProtocol = verifiedSourceOnly === true || verified === true;
+    const isFirstPageOrNonPaginated = offset === undefined || offset === 0;
+    const protocolClasses =
+      !excludesProtocol && isFirstPageOrNonPaginated
+        ? getAllProtocolContractClasses()
+        : [];
+    // Deduplicate: don't add protocol classes that already exist in the DB results
+    const dbClassIds = new Set(parsedClasses.map((c) => c.contractClassId));
+    const merged = [
+      ...parsedClasses,
+      ...protocolClasses.filter((pc) => !dbClassIds.has(pc.contractClassId)),
+    ];
+    res.status(200).json(merged);
   },
 );
 
@@ -201,8 +265,13 @@ export const verifyArtifact = async ({
   standardData?: ContractStandard;
 }) => {
   const contractClassString = await dbWrapper.get(
-    ["l2", "contract-classes", contractClassId, version],
-    () => db.l2Contract.getL2RegisteredContractClass(contractClassId, version),
+    contractClassKeys(contractClassId, version, true),
+    () =>
+      db.l2Contract.getL2RegisteredContractClass(
+        contractClassId,
+        version,
+        true,
+      ),
   );
 
   let dbContractClass;
@@ -254,19 +323,25 @@ export const verifyArtifact = async ({
   };
 
   setEntry(
-    ["l2", "contract-classes", contractClassId, version.toString()],
+    contractClassKeys(contractClassId, version, true),
     JSON.stringify(completeContractClass),
     CACHE_TTL_SECONDS,
   ).catch((err) => {
     logger.warn(`Failed to cache contract class: ${err}`);
   });
 
-  await db.l2Contract.addArtifactData({
+  const { selectorMap } = await db.l2Contract.addArtifactData({
     contractClassId: dbContractClass.contractClassId,
     version: dbContractClass.version,
     artifactJson: artifactJsonString,
     contractName: parsed.name,
     standardData: standardData,
+  });
+  await db.l2Contract.backfillPublicCallRequestNames({
+    contractClassId: dbContractClass.contractClassId,
+    version: dbContractClass.version,
+    selectorMap,
+    contractName: parsed.name,
   });
 
   return {

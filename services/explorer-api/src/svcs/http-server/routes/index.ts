@@ -12,7 +12,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_LATEST_BLOCK,
   ...controller.openapi_GET_BLOCK,
   ...controller.openapi_GET_BLOCKS, // TODO: rename to L2_GET_BLOCKS?
-  ...controller.openapi_GET_BLOCKS_BY_FINALIZATION_STATUS,
+  ...controller.openapi_GET_BLOCKS_BY_NATIVE_STATUS,
   ...controller.openapi_GET_ORPHANED_BLOCKS,
   ...controller.openapi_GET_ORPHANED_BLOCKS_LIMITED,
   ...controller.openapi_GET_REORGS,
@@ -25,6 +25,12 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_TX_EFFECT_BY_TX_EFFECT_HASH,
 
   ...controller.openapi_GET_PENDING_TXS,
+  ...controller.openapi_GET_PENDING_TX_BY_HASH,
+  ...controller.openapi_GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  ...controller.openapi_GET_PUBLIC_CALL_REQUESTS,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_TX_HASH,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_CONTRACT_ADDRESS,
+  ...controller.openapi_GET_L2_TO_L1_MSGS_BY_RECIPIENT,
   ...controller.openapi_GET_DROPPED_TX_BY_HASH,
 
   ...controller.openapi_GET_L2_REGISTERED_CONTRACT_CLASS,
@@ -61,14 +67,21 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L1_L2_VALIDATOR_HISTORY,
 
   ...controller.openapi_GET_L1_CONTRACT_EVENTS,
+  ...controller.openapi_GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
 
   ...controller.openapi_GET_CHAIN_INFO,
+  ...controller.openapi_GET_L2_TIPS,
+  ...controller.openapi_GET_ROLLUP_VERSIONS,
   ...controller.openapi_GET_CHAIN_ERRORS,
 
-  ...controller.openapi_GET_L2_SEQUENCER,
-  ...controller.openapi_GET_L2_SEQUENCERS,
+  ...controller.openapi_GET_L2_RPC_NODE,
+  ...controller.openapi_GET_L2_RPC_NODES,
 
   ...controller.openapi_L2_SEARCH_PUBLIC_LOGS,
+
+  ...controller.openapi_GET_BLOCK_UI_TABLE_DATA,
+  ...controller.openapi_GET_TX_EFFECTS_UI_TABLE_DATA,
+  ...controller.openapi_GET_TX_EFFECTS_BY_BLOCK_HEIGHT_UI_TABLE,
 };
 
 const otherPaths = [
@@ -79,6 +92,10 @@ const otherPaths = [
   {
     path: paths.statsTotalTxEffectsLast24h,
     controller: controller.GET_STATS_TOTAL_TX_EFFECTS_LAST_24H,
+  },
+  {
+    path: paths.statsDroppedTxsLast24h,
+    controller: controller.GET_STATS_DROPPED_TXS_LAST_24H,
   },
   {
     path: paths.statsTotalContracts,
@@ -101,9 +118,17 @@ const otherPaths = [
     controller: controller.GET_STATS_AVERAGE_BLOCK_TIME,
   },
   {
+    path: paths.statsAverageTxsPerBlock,
+    controller: controller.GET_STATS_AVERAGE_TXS_PER_BLOCK,
+  },
+  {
     path: paths.statsTotalContractInstancesByContractClassId,
     controller:
       controller.GET_STATS_TOTAL_CONTRACT_INSTANCES_BY_CONTRACT_CLASS_ID,
+  },
+  {
+    path: paths.statsContractClassesSummary,
+    controller: controller.GET_STATS_CONTRACT_CLASSES_SUMMARY,
   },
 ];
 
@@ -127,13 +152,12 @@ const checkDocsStatus = () => {
 
 export const init = ({ router }: { router: Router }) => {
   checkDocsStatus();
-  router.get("/l2/index", controller.GET_ROUTES);
 
   router.get(paths.latestHeight, controller.GET_LATEST_HEIGHT);
   router.get(paths.latestBlock, controller.GET_LATEST_BLOCK);
   router.get(
-    paths.blocksByStatus,
-    controller.GET_BLOCKS_BY_FINALIZATION_STATUS,
+    paths.blocksByNativeStatus,
+    controller.GET_BLOCKS_BY_NATIVE_STATUS,
   );
   router.get(paths.orphanedBlocks, controller.GET_ORPHANED_BLOCKS);
   router.get(
@@ -161,7 +185,22 @@ export const init = ({ router }: { router: Router }) => {
 
   router.get(paths.txs, controller.GET_PENDING_TXS);
   router.get(paths.txByHash, controller.GET_PENDING_TX_BY_HASH);
+  router.get(
+    paths.publicCallRequestsByTxHash,
+    controller.GET_PUBLIC_CALL_REQUESTS_BY_TX_HASH,
+  );
+  router.get(paths.publicCallRequests, controller.GET_PUBLIC_CALL_REQUESTS);
   router.get(paths.droppedTxByHash, controller.GET_DROPPED_TX_BY_HASH);
+
+  router.get(paths.l2ToL1MsgsByTx, controller.GET_L2_TO_L1_MSGS_BY_TX_HASH);
+  router.get(
+    paths.l2ToL1MsgsByContract,
+    controller.GET_L2_TO_L1_MSGS_BY_CONTRACT_ADDRESS,
+  );
+  router.get(
+    paths.l2ToL1MsgsByRecipient,
+    controller.GET_L2_TO_L1_MSGS_BY_RECIPIENT,
+  );
 
   router.get(paths.contractClass, controller.GET_L2_REGISTERED_CONTRACT_CLASS);
   router.get(
@@ -258,13 +297,19 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L1_L2_VALIDATOR_HISTORY,
   );
 
+  router.get(
+    paths.l1ContractEventsHourlyCounts,
+    controller.GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
+  );
   router.get(paths.l1ContractEvents, controller.GET_L1_CONTRACT_EVENTS);
 
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);
+  router.get(paths.l2Tips, controller.GET_L2_TIPS);
+  router.get(paths.rollupVersions, controller.GET_ROLLUP_VERSIONS);
   router.get(paths.chainErrors, controller.GET_CHAIN_ERRORS);
 
-  router.get(paths.sequencer, controller.GET_L2_SEQUENCER);
-  router.get(paths.sequencers, controller.GET_L2_SEQUENCERS);
+  router.get(paths.rpcNode, controller.GET_L2_RPC_NODE);
+  router.get(paths.rpcNodes, controller.GET_L2_RPC_NODES);
 
   router.get(paths.uiBlockTable, controller.GET_BLOCK_UI_TABLE_DATA);
   router.get(paths.uiTxEffectTable, controller.GET_TX_EFFECTS_UI_TABLE_DATA);

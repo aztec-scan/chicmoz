@@ -1,22 +1,63 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, count, eq, gt, isNull, lt } from "drizzle-orm";
+import { and, count, eq, gt, isNotNull, isNull, lt, or } from "drizzle-orm";
 import {
   globalVariables,
   header,
   l2Block,
   l2ContractClassRegistered,
 } from "../../../database/schema/index.js";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
+
+const getBaseFilters = async () => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
+  return [
+    isNull(l2Block.orphan_timestamp),
+    currentRollupVersion !== null
+      ? eq(l2Block.version, currentRollupVersion)
+      : undefined,
+  ] as const;
+};
 
 export const getTotalContracts = async (): Promise<number> => {
+  const baseFilters = await getBaseFilters();
+  const dbRes = await db()
+    .select({ count: count() })
+    .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
+    .where(and(...baseFilters))
+    .execute();
+  return dbRes[0].count;
+};
+
+export const getVerifiedContractClassCount = async (): Promise<number> => {
+  const baseFilters = await getBaseFilters();
   const dbRes = await db()
     .select({ count: count() })
     .from(l2ContractClassRegistered)
     .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
     .where(
       and(
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        ...baseFilters,
+        or(
+          isNotNull(l2ContractClassRegistered.artifactContractName),
+          isNotNull(l2ContractClassRegistered.sourceCodeUrl),
+        ),
+      ),
+    )
+    .execute();
+  return dbRes[0].count;
+};
+
+export const getProtocolContractClassCount = async (): Promise<number> => {
+  const baseFilters = await getBaseFilters();
+  const dbRes = await db()
+    .select({ count: count() })
+    .from(l2ContractClassRegistered)
+    .innerJoin(l2Block, eq(l2ContractClassRegistered.blockHash, l2Block.hash))
+    .where(
+      and(
+        ...baseFilters,
+        isNotNull(l2ContractClassRegistered.standardContractType),
       ),
     )
     .execute();
@@ -26,6 +67,7 @@ export const getTotalContracts = async (): Promise<number> => {
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 export const getTotalContractsLast24h = async (): Promise<number> => {
+  const currentRollupVersion = await getCurrentRollupVersionNumber();
   const dbRes = await db()
     .select({ count: count() })
     .from(l2ContractClassRegistered)
@@ -37,7 +79,9 @@ export const getTotalContractsLast24h = async (): Promise<number> => {
         gt(globalVariables.timestamp, Date.now() - ONE_DAY),
         lt(globalVariables.timestamp, Date.now()),
         isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
+        currentRollupVersion !== null
+          ? eq(l2Block.version, currentRollupVersion)
+          : undefined,
       ),
     )
     .execute();

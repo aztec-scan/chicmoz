@@ -65,6 +65,12 @@ export const chicmozL2ContractClassRegisteredEventSchema = z.object({
   packedBytecode: bufferSchema,
   artifactJson: z.string().nullable().optional(),
   artifactContractName: z.string().nullable().optional(),
+  // Built at artifact-upload time. Maps a 4-byte function-selector hex
+  // (e.g. `0x86500181`) to the canonical function signature
+  // (e.g. `transfer_from(AztecAddress,AztecAddress,Field,Field)`). Older
+  // entries persisted before signatures were added carry just the bare
+  // function name — both forms render correctly on the frontend.
+  selectorMap: z.record(z.string(), z.string()).nullable().optional(),
   standardContractType: z.string().nullable().optional(),
   standardContractVersion: z.string().nullable().optional(),
   sourceCodeUrl: z.string().nullable().optional(),
@@ -130,6 +136,25 @@ export type SourceVerificationStatus = z.infer<
   typeof sourceVerificationStatusEnum
 >;
 
+export const sourceVerificationFailureStageEnum = z.enum([
+  "INPUT_VALIDATION",
+  "NARGO_DISCOVERY",
+  "IMAGE_RESOLUTION",
+  "CLONE",
+  "CHECKOUT",
+  "COMPILE",
+  "TRANSPILATION",
+  "ARTIFACT_DISCOVERY",
+  "ARTIFACT_VERIFICATION",
+  "SOURCE_EXTRACTION",
+  "TIMEOUT",
+  "INTERNAL",
+]);
+
+export type SourceVerificationFailureStage = z.infer<
+  typeof sourceVerificationFailureStageEnum
+>;
+
 export const sourceCodeEntrySchema = z.object({
   path: z.string(),
   content: z.string(),
@@ -144,7 +169,6 @@ export const compileSourceRequestSchema = z.object({
   githubUrl: z.string().url(),
   gitRef: z.string().optional(),
   subPath: z.string().optional(),
-  aztecVersion: z.string(),
 });
 
 export type CompileSourceRequest = z.infer<typeof compileSourceRequestSchema>;
@@ -154,10 +178,13 @@ export const compileSourceResultSchema = z.object({
   contractClassId: frSchema,
   version: z.number(),
   status: z.enum(["success", "compilation_failed", "clone_failed", "timeout"]),
+  aztecVersion: z.string().optional(),
   artifactJson: z.string().optional(),
   sourceFiles: sourceCodeEntrySchema.array().optional(),
   commitHash: z.string().optional(),
   error: z.string().optional(),
+  failureStage: sourceVerificationFailureStageEnum.optional(),
+  compileOutput: z.string().optional(),
 });
 
 export type CompileSourceResult = z.infer<typeof compileSourceResultSchema>;
@@ -169,10 +196,12 @@ export const sourceVerificationJobSchema = z.object({
   githubUrl: z.string().url(),
   gitRef: z.string().nullable().optional(),
   subPath: z.string().nullable().optional(),
-  aztecVersion: z.string(),
+  aztecVersion: z.string().nullable().optional(),
   commitHash: z.string().nullable().optional(),
   status: sourceVerificationStatusEnum,
   error: z.string().nullable().optional(),
+  failureStage: sourceVerificationFailureStageEnum.nullable().optional(),
+  compileOutput: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -180,7 +209,22 @@ export const sourceVerificationJobSchema = z.object({
 export type SourceVerificationJob = z.infer<typeof sourceVerificationJobSchema>;
 
 export const CONTRACT_STANDARDS = {
-  "4.0.3": ["token", "dripper", "escrow", "nft", "generic_proxy", "test_logic"],
+  "4.1.0-rc.4": [
+    "token",
+    "dripper",
+    "escrow",
+    "nft",
+    "generic_proxy",
+    "test_logic",
+  ],
+  "4.2.0-aztecnr-rc.2": [
+    "token",
+    "dripper",
+    "escrow",
+    "nft",
+    "generic_proxy",
+    "test_logic",
+  ],
 };
 
 export const contractStandardVersionSchema = z.enum(

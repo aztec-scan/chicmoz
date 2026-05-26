@@ -7,11 +7,12 @@ import {
 } from "lucide-react";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
+import { CustomTooltip } from "~/components/custom-tooltip";
 import { InfoCard } from "~/components/info-card";
 import {
-  useContractClasses,
   useContractInstancesWithAztecScanNotes,
   useSubTitle,
+  useVerifiedSourceContractClasses,
 } from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
 import { truncateHashString } from "~/lib/create-hash-string";
@@ -23,7 +24,7 @@ export const Ecosystem: FC = () => {
     data: contractClasses,
     isLoading: isLoadingClasses,
     error: classesError,
-  } = useContractClasses();
+  } = useVerifiedSourceContractClasses();
   useSubTitle("Ecosystem");
   const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
 
@@ -45,6 +46,7 @@ export const Ecosystem: FC = () => {
         name,
         address,
         comment: contract.aztecScanNotes.comment,
+        isStandardContract: Boolean(contract.standardContractType),
       };
     });
   }, [data]);
@@ -53,7 +55,7 @@ export const Ecosystem: FC = () => {
     if (!contractClasses) {
       return [];
     }
-    return contractClasses.filter((cc) => !!cc.sourceCodeUrl);
+    return contractClasses;
   }, [contractClasses]);
 
   const sdkLink = (
@@ -83,13 +85,23 @@ export const Ecosystem: FC = () => {
           </p>
           <ul className="list-disc list-inside">
             <li>
+              Bridge funds from Ethereum to Aztec via{" "}
               <a
                 href="https://bridge.human.tech/"
                 target="_blank"
                 rel="noreferrer"
                 className="text-purple-light hover:font-bold"
               >
-                Bridge funds from Ethereum to Aztec
+                Human Tech
+              </a>{" "}
+              or{" "}
+              <a
+                href="https://bridge.ravenhouse.xyz/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-purple-light hover:font-bold"
+              >
+                Raven House
               </a>
             </li>
             <li>
@@ -133,9 +145,10 @@ export const Ecosystem: FC = () => {
             >
               <h3>Contract Metadata</h3>
               <p className="mb-4">
-                There are four things that add metadata to contracts:
-                AztecScanNotes, uploading artifact, verifying deployment, and
-                deployer details.
+                There are five things that add metadata to contracts and
+                contract classes: AztecScanNotes, verified contract class
+                artifacts, verified source code, verified deployment arguments,
+                and deployer details.
               </p>
 
               <h4 className="font-medium mt-3">Aztec Scan Notes</h4>
@@ -155,30 +168,45 @@ export const Ecosystem: FC = () => {
                 .
               </p>
 
-              <h4 className="font-medium mt-3">Uploading Artifact</h4>
+              <h4 className="font-medium mt-3">Verified Artifact</h4>
               <p className="mb-4">
-                Anyone can upload an artifact to a contract. This will add the
-                artifact to the contract and make it available for anyone to
-                see.
+                Anyone can submit an Aztec contract artifact for a contract
+                class. Aztec Scan checks that the compiled artifact bytecode
+                matches the registered on-chain contract class, then stores the
+                artifact and contract name for display in the explorer.
+                <br />
+                {sdkLink}
+              </p>
+
+              <h4 className="font-medium mt-3">Verified Source Code</h4>
+              <p className="mb-4">
+                Verified source code links a contract class to a public GitHub
+                repository. Aztec Scan compiles the submitted source, verifies
+                that the produced artifact matches the registered on-chain
+                contract class, and stores the source URL, commit hash, and
+                source files. This verifies a bytecode/source match; it does not
+                mean that the code is audited or safe to use.
                 <br />
                 {sdkLink}
               </p>
 
               <h4 className="font-medium mt-3">Verified Deployment</h4>
               <p className="mb-4">
-                Verified deployment is a way to verify the deployment of a
-                contract. This is done by the deployer of the contract. It
-                verifies the deployment arguments and makes them available for
-                anyone to see.
+                Verified deployment checks the deployment arguments for a
+                contract instance. Aztec Scan validates the provided public
+                keys, salt, deployer, constructor arguments, and artifact
+                against the indexed instance and stores those verified
+                deployment arguments for anyone to inspect.
                 <br />
                 {sdkLink}
               </p>
               <h4 className="font-medium mt-3">Deployer Details</h4>
               <p className="mb-4">
-                Deployer details are a way to add metadata to the deployer of a
-                contract. This is done by the verified deployer of the contract.
-                It adds the contact information and makes it available for
-                anyone to see.
+                Deployer details add human-readable metadata to a verified
+                contract instance deployment, such as the contract identifier,
+                project details, creator name and contact, app URL, and repo
+                URL. These details are accepted together with a successful
+                deployment verification and then made visible in the explorer.
                 <br />
                 {sdkLink}
               </p>
@@ -230,6 +258,15 @@ export const Ecosystem: FC = () => {
                   details={contract.comment}
                   isLoading={isLoading}
                   error={error}
+                  topRightAdornment={
+                    contract.isStandardContract ? (
+                      <CustomTooltip content="standard contract">
+                        <span className="cursor-default text-lg leading-none">
+                          📜
+                        </span>
+                      </CustomTooltip>
+                    ) : undefined
+                  }
                 />
               </div>
             );
@@ -242,7 +279,9 @@ export const Ecosystem: FC = () => {
           <p className="text-sm text-gray-600 mb-4 px-4">
             Contract classes with verified source code. The source code has been
             compiled and its bytecode matched against the on-chain contract
-            class.
+            class. This confirms that the submitted source produces the
+            registered contract class artifact; it is not an audit, endorsement,
+            or safety guarantee.
           </p>
         </div>
 

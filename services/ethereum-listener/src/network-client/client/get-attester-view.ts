@@ -1,11 +1,11 @@
 import { RollupAbi } from "@aztec/l1-artifacts";
 import {
-  ChicmozL1L2Validator,
+  type ChicmozL1L2Validator,
   chicmozL1L2ValidatorSchema,
 } from "@chicmoz-pkg/types";
 import { emit } from "../../events/index.js";
 import { logger } from "../../logger.js";
-import { AztecContracts } from "../contracts/utils.js";
+import { type AztecContracts } from "../contracts/utils.js";
 import { getPublicHttpBackupClient, getPublicHttpClient } from "./index.js";
 import {
   ATTESTER_BATCH_DELAY_MS,
@@ -15,7 +15,6 @@ import {
   ATTESTER_INITIAL_BACKOFF_MS,
   ATTESTER_MAX_RETRIES,
 } from "../../environment.js";
-export { startContractWatchers as watchContractsEvents } from "../contracts/index.js";
 
 type AttesterView = {
   status: number;
@@ -44,6 +43,10 @@ type OutOfBoundsDetails = {
 let latestPublishedHeight = 0n;
 let consecutiveFailures = 0;
 let circuitBreakerOpenUntil = 0;
+const indexOffsetCache = new Map<`0x${string}`, number>();
+
+const isOutOfBoundsError = (error: unknown): boolean =>
+  String(error).includes("GSE__OutOfBounds");
 
 export const queryStakingStateAndEmitUpdates = async ({
   contracts,
@@ -69,11 +72,16 @@ export const queryStakingStateAndEmitUpdates = async ({
     return;
   }
 
-  const indexOffset = await determineIndexOffset(contracts.rollup.address);
+  const indexOffset = await determineIndexOffset(
+    contracts.rollup.address,
+    latestHeight,
+    attesterCount,
+  );
   const attesters = await fetchAllAttesters(
     contracts.rollup.address,
     attesterCount,
     indexOffset,
+    latestHeight,
   );
 
   await emit.l1Validator(attesters);
@@ -95,18 +103,27 @@ const getAttesterCount = async (
 
 const determineIndexOffset = async (
   rollupAddress: `0x${string}`,
+  blockNumber: bigint,
+  attesterCount: number,
 ): Promise<number> => {
+  const cached = indexOffsetCache.get(rollupAddress);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   // Try 0-based indexing with public client first
   try {
     await getPublicHttpClient().readContract({
       address: rollupAddress,
       abi: RollupAbi,
       functionName: "getAttesterAtIndex",
+      blockNumber,
       args: [0n],
     });
     logger.info("Using 0-based indexing");
+    indexOffsetCache.set(rollupAddress, 0);
     return 0;
-  } catch {
+  } catch (error) {
     const backup = getPublicHttpBackupClient();
     if (backup) {
       try {
@@ -114,44 +131,22 @@ const determineIndexOffset = async (
           address: rollupAddress,
           abi: RollupAbi,
           functionName: "getAttesterAtIndex",
+          blockNumber,
           args: [0n],
         });
         logger.info("Using 0-based indexing");
+        indexOffsetCache.set(rollupAddress, 0);
         return 0;
-      } catch {
-        logger.warn("Unable to determine indexing - trying 1-based next");
+      } catch (backupError) {
+        throw new Error(
+          `Unable to read attester index 0 for ${rollupAddress} with backup client: ${String(backupError)}`,
+        );
       }
     }
+    throw new Error(
+      `Unable to read attester index 0 for ${rollupAddress} with ${attesterCount} attesters at block ${blockNumber}: ${String(error)}`,
+    );
   }
-
-  // Try 1-based indexing with public client first
-  try {
-    await getPublicHttpClient().readContract({
-      address: rollupAddress,
-      abi: RollupAbi,
-      functionName: "getAttesterAtIndex",
-      args: [1n],
-    });
-    logger.info("Using 1-based indexing");
-    return 1;
-  } catch {
-    const backup = getPublicHttpBackupClient();
-    if (backup) {
-      try {
-        await backup.readContract({
-          address: rollupAddress,
-          abi: RollupAbi,
-          functionName: "getAttesterAtIndex",
-          args: [1n],
-        });
-        logger.info("Using 1-based indexing");
-        return 1;
-      } catch {
-        logger.warn("Unable to determine indexing - assuming 0-based");
-      }
-    }
-  }
-  return 0;
 };
 
 const getETA = (estimatedTotal: number, elapsedTime: number): string => {
@@ -167,7 +162,12 @@ const fetchAllAttesters = async (
   rollupAddress: `0x${string}`,
   totalCount: number,
   indexOffset: number,
+  blockNumber: bigint,
 ): Promise<ChicmozL1L2Validator[]> => {
+  if (!Number.isInteger(BATCH_SIZE) || BATCH_SIZE <= 0) {
+    throw new Error(`ATTESTER_BATCH_SIZE must be positive, got ${BATCH_SIZE}`);
+  }
+
   const attesters: ChicmozL1L2Validator[] = [];
   const estimatedTotalBatches = Math.ceil(totalCount / BATCH_SIZE);
   const startTime = Date.now();
@@ -175,9 +175,7 @@ const fetchAllAttesters = async (
   logger.info(
     `🔍 Starting: ${totalCount} attesters in ${estimatedTotalBatches} batches (${ATTESTER_BATCH_DELAY_MS}ms delays)`,
   );
-  let counter = 0;
-  let isFinished = false;
-  while (!isFinished) {
+  for (let counter = 0; counter < totalCount; counter += BATCH_SIZE) {
     await sleep(ATTESTER_BATCH_DELAY_MS);
     const batchNumber = Math.floor(counter / BATCH_SIZE) + 1;
 
@@ -185,21 +183,19 @@ const fetchAllAttesters = async (
       rollupAddress,
       counter,
       indexOffset,
+      blockNumber,
+      totalCount,
     );
     attesters.push(...batchAttesters);
 
     if (outOfBoundsDetails) {
-      const lessOrMore =
-        outOfBoundsDetails.attemptedIndex - 1 < totalCount ? "less" : "more";
-      logger.warn(
-        `Finished due to out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex}` +
-        `(${Math.abs(outOfBoundsDetails.attemptedIndex - totalCount)} ${lessOrMore} than previous ${totalCount})`,
+      throw new Error(
+        `Unexpected out-of-bounds access at index ${outOfBoundsDetails.attemptedIndex} while fetching ${totalCount} attesters`,
       );
-      isFinished = true;
     }
 
     // Log progress every 100 batches or on completion
-    if (batchNumber % 100 === 0 || isFinished) {
+    if (batchNumber % 100 === 0 || counter + BATCH_SIZE >= totalCount) {
       const totalProgress = (
         (batchNumber / estimatedTotalBatches) *
         100
@@ -214,7 +210,6 @@ const fetchAllAttesters = async (
         `ETA: ${getETA(estimatedTotal, elapsedTime)}`,
       );
     }
-    counter += BATCH_SIZE;
   }
 
   const totalDuration = (Date.now() - startTime) / 1000;
@@ -248,17 +243,26 @@ const processBatchWithRetry = async (
   rollupAddress: `0x${string}`,
   batchStart: number,
   indexOffset: number,
+  blockNumber: bigint,
+  totalCount: number,
 ): Promise<[ChicmozL1L2Validator[], OutOfBoundsDetails | null]> => {
   if (isCircuitBreakerOpen()) {
-    logger.warn(`Circuit breaker is open, skipping batch ${batchStart}`);
-    return [[], null];
+    throw new Error(
+      `Circuit breaker is open, cannot safely publish attester snapshot for batch ${batchStart}`,
+    );
   }
 
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= ATTESTER_MAX_RETRIES; attempt++) {
     try {
-      const result = await processBatch(rollupAddress, batchStart, indexOffset);
+      const result = await processBatch(
+        rollupAddress,
+        batchStart,
+        indexOffset,
+        blockNumber,
+        totalCount,
+      );
       resetCircuitBreaker();
       return result;
     } catch (error) {
@@ -281,26 +285,28 @@ const processBatchWithRetry = async (
     openCircuitBreaker();
   }
 
-  logger.error(
+  throw new Error(
     `All ${ATTESTER_MAX_RETRIES} attempts failed for batch ${batchStart}: ${String(lastError)}`,
   );
-  return [[], null];
 };
 
 const processBatch = async (
   rollupAddress: `0x${string}`,
   batchStart: number,
   indexOffset: number,
+  blockNumber: bigint,
+  totalCount: number,
 ): Promise<[ChicmozL1L2Validator[], OutOfBoundsDetails | null]> => {
-  const batchEnd = batchStart + BATCH_SIZE;
+  const batchEnd = Math.min(batchStart + BATCH_SIZE, totalCount);
 
   const [addresses, outOfBoundsDetails] = await fetchAttesterAddresses(
     rollupAddress,
     batchStart,
     batchEnd,
     indexOffset,
+    blockNumber,
   );
-  const views = await fetchAttesterViews(rollupAddress, addresses);
+  const views = await fetchAttesterViews(rollupAddress, addresses, blockNumber);
 
   return [
     createValidatorObjects(rollupAddress, addresses, views),
@@ -313,9 +319,10 @@ const fetchAttesterAddresses = async (
   start: number,
   end: number,
   indexOffset: number,
+  blockNumber: bigint,
 ): Promise<[`0x${string}`[], OutOfBoundsDetails | null]> => {
   const results: (`0x${string}` | null)[] = [];
-  let outOfBoundsDetails: OutOfBoundsDetails | null = null;
+  const outOfBoundsDetails: OutOfBoundsDetails | null = null;
 
   for (let i = start; i < end; i++) {
     const contractIndex = i + indexOffset;
@@ -324,6 +331,7 @@ const fetchAttesterAddresses = async (
         address: rollupAddress,
         abi: RollupAbi,
         functionName: "getAttesterAtIndex",
+        blockNumber,
         args: [BigInt(contractIndex)],
       });
       results.push(addr);
@@ -332,12 +340,10 @@ const fetchAttesterAddresses = async (
       logger.warn(
         `Failed to get attester at index ${contractIndex} with public client: ${errorString}`,
       );
-      if (errorString.includes("GSE__OutOfBounds")) {
-        outOfBoundsDetails = {
-          attemptedIndex: contractIndex,
-        };
-        logger.warn(`Out of bounds detected at index ${contractIndex}`);
-        break; // Stop fetching more addresses
+      if (isOutOfBoundsError(error)) {
+        throw new Error(
+          `Unexpected out-of-bounds at attester index ${contractIndex}`,
+        );
       }
       const backup = getPublicHttpBackupClient();
       if (backup) {
@@ -346,33 +352,31 @@ const fetchAttesterAddresses = async (
             address: rollupAddress,
             abi: RollupAbi,
             functionName: "getAttesterAtIndex",
+            blockNumber,
             args: [BigInt(contractIndex)],
           });
           results.push(addr);
         } catch (backupError) {
           const backupErrorString = String(backupError);
-          if (backupErrorString.includes("GSE__OutOfBounds")) {
+          if (isOutOfBoundsError(backupError)) {
             const match = backupErrorString.match(
               /GSE__OutOfBounds\((\d+),\s*(\d+)\)/,
             );
             if (match) {
               const attemptedIndex = parseInt(match[1], 10);
-              outOfBoundsDetails = {
-                attemptedIndex,
-              };
-              logger.warn(
-                `Out of bounds detected at index ${contractIndex} with backup client: ${backupErrorString}`,
+              throw new Error(
+                `Unexpected out-of-bounds at attester index ${attemptedIndex}: ${backupErrorString}`,
               );
-              break;
             }
           }
-          logger.warn(
+          throw new Error(
             `Failed to get attester at index ${contractIndex} with backup client: ${backupErrorString}`,
           );
-          results.push(null);
         }
       } else {
-        results.push(null);
+        throw new Error(
+          `Failed to get attester at index ${contractIndex}: ${errorString}`,
+        );
       }
     }
   }
@@ -386,12 +390,14 @@ const fetchAttesterAddresses = async (
 const fetchAttesterViews = async (
   rollupAddress: `0x${string}`,
   addresses: `0x${string}`[],
+  blockNumber: bigint,
 ): Promise<AttesterView[]> => {
   const promises = addresses.map((address) =>
     getPublicHttpClient().readContract({
       address: rollupAddress,
       abi: RollupAbi,
       functionName: "getAttesterView",
+      blockNumber,
       args: [address],
     }),
   );

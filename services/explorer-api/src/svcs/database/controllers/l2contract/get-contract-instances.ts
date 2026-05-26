@@ -9,7 +9,6 @@ import {
   isNotNull,
   isNull,
 } from "drizzle-orm";
-import { CURRENT_ROLLUP_VERSION } from "../../../../constants/versions.js";
 import { DB_MAX_CONTRACTS } from "../../../../environment.js";
 import { globalVariables, header, l2Block } from "../../schema/index.js";
 import {
@@ -20,6 +19,7 @@ import {
   l2ContractInstanceVerifiedDeploymentArguments,
 } from "../../schema/l2contract/index.js";
 import { getBlocksWhereRange } from "../utils.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 import { getContractClassRegisteredColumns, parseDeluxe } from "./utils.js";
 
 const DEFAULT_SORT =
@@ -104,13 +104,38 @@ export const getL2DeployedContractInstances = async ({
   fromHeight,
   toHeight,
   includeArtifactJson,
+  offset,
+  limit,
+  verified,
+  protocol,
 }: {
   fromHeight?: bigint;
   toHeight?: bigint;
   includeArtifactJson?: boolean;
+  offset?: number;
+  limit?: number;
+  verified?: boolean;
+  protocol?: boolean;
 }): Promise<ChicmozL2ContractInstanceDeluxe[]> => {
+  const rollupVersion = await getCurrentRollupVersionNumber();
   const whereRange = getBlocksWhereRange({ from: fromHeight, to: toHeight });
-  const result = await db()
+  const queryLimit = limit ?? DB_MAX_CONTRACTS;
+  const baseFilters = [
+    whereRange,
+    isNull(l2Block.orphan_timestamp),
+    rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined,
+  ];
+
+  if (verified) {
+    baseFilters.push(
+      isNotNull(l2ContractInstanceVerifiedDeploymentArguments.address),
+    );
+  }
+  if (protocol) {
+    baseFilters.push(isNotNull(l2ContractClassRegistered.standardContractType));
+  }
+
+  const query = db()
     .select({
       instance: getTableColumns(l2ContractInstanceDeployed),
       class: getContractClassRegisteredColumns(includeArtifactJson),
@@ -155,15 +180,13 @@ export const getL2DeployedContractInstances = async ({
       ),
     )
     .innerJoin(l2Block, eq(l2Block.hash, l2ContractInstanceDeployed.blockHash))
-    .where(
-      and(
-        whereRange,
-        isNull(l2Block.orphan_timestamp),
-        eq(l2Block.version, parseInt(CURRENT_ROLLUP_VERSION)),
-      ),
-    )
+    .where(and(...baseFilters))
     .orderBy(DEFAULT_SORT)
-    .limit(DB_MAX_CONTRACTS);
+    .limit(queryLimit);
+
+  const finalQuery =
+    offset !== undefined && offset > 0 ? query.offset(offset) : query;
+  const result = await finalQuery;
 
   const parsed = result.map((r) => {
     return parseDeluxe({

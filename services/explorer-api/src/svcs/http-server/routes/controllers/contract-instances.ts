@@ -13,13 +13,17 @@ import {
   NodeEnv,
   chicmozL2ContractClassRegisteredEventSchema,
   chicmozL2ContractInstanceDeployedEventSchema,
+  type ChicmozL2ContractInstanceDeluxe,
 } from "@chicmoz-pkg/types";
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import { z } from "zod";
 import { CACHE_TTL_SECONDS } from "../../../../environment.js";
 import { logger } from "../../../../logger.js";
-import { getProtocolContractInstance } from "../../../../utils/protocol-contracts.js";
+import {
+  getAllProtocolContractInstances,
+  getProtocolContractInstance,
+} from "../../../../utils/protocol-contracts.js";
 import { l2Contract } from "../../../database/controllers/index.js";
 import { controllers as db } from "../../../database/index.js";
 import {
@@ -43,6 +47,11 @@ const verifyContractRequestBody = generateSchema(
     verifiedDeploymentArguments: verifyInstanceDeploymentPayloadSchema.schema,
   }),
 );
+
+const contractClassWithArtifactKeys = (
+  contractClassId: string,
+  version: number,
+) => ["l2", "contract-classes", contractClassId, version, "with-artifact"];
 
 export const openapi_GET_L2_CONTRACT_INSTANCE: OpenAPIObject["paths"] = {
   "/l2/contract-instances/{address}": {
@@ -164,18 +173,54 @@ export const openapi_GET_L2_CONTRACT_INSTANCES: OpenAPIObject["paths"] = {
 };
 
 export const GET_L2_CONTRACT_INSTANCES = asyncHandler(async (req, res) => {
-  const { fromHeight, toHeight } = getContractInstancesSchema.parse(req).query;
+  const { fromHeight, toHeight, offset, limit, verified, protocol } =
+    getContractInstancesSchema.parse(req).query;
   const includeArtifactJson = false;
   const instances = await dbWrapper.getLatest(
-    ["l2", "contract-instances", fromHeight, toHeight],
+    [
+      "l2",
+      "contract-instances",
+      fromHeight,
+      toHeight,
+      offset,
+      limit,
+      verified ? "v" : undefined,
+      protocol ? "p" : undefined,
+    ],
     () =>
       db.l2Contract.getL2DeployedContractInstances({
         fromHeight,
         toHeight,
         includeArtifactJson,
+        offset,
+        limit,
+        verified,
+        protocol,
       }),
   );
-  res.status(200).json(JSON.parse(instances));
+  const parsedInstances = JSON.parse(
+    instances,
+  ) as ChicmozL2ContractInstanceDeluxe[];
+  // Merge protocol contract instances into the response so they appear in the
+  // PROTOCOL filter. Merge when: on the first page (or non-paginated) AND
+  // the active filter is NOT "verified" (which would exclude non-verified
+  // protocol instances). The "protocol" and "all" filters allow them.
+  const excludesProtocol = verified === true;
+  const isFirstPageOrNonPaginated = offset === undefined || offset === 0;
+  const protocolInstances =
+    !excludesProtocol &&
+    isFirstPageOrNonPaginated &&
+    fromHeight === undefined &&
+    toHeight === undefined
+      ? getAllProtocolContractInstances()
+      : [];
+  // Deduplicate: don't add protocol instances that already exist in the DB results
+  const dbAddresses = new Set(parsedInstances.map((i) => i.address));
+  const merged = [
+    ...parsedInstances,
+    ...protocolInstances.filter((pi) => !dbAddresses.has(pi.address)),
+  ];
+  res.status(200).json(merged);
 });
 
 export const openapi_GET_L2_CONTRACT_INSTANCES_BY_BLOCK_HASH: OpenAPIObject["paths"] =
@@ -319,12 +364,10 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       return;
     }
     const contractClassString = await dbWrapper.get(
-      [
-        "l2",
-        "contract-classes",
+      contractClassWithArtifactKeys(
         dbContractInstance.currentContractClassId,
         dbContractInstance.version,
-      ],
+      ),
       () =>
         db.l2Contract.getL2RegisteredContractClass(
           dbContractInstance.currentContractClassId,
@@ -387,21 +430,25 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       };
 
       setEntry(
-        [
-          "l2",
-          "contract-classes",
+        contractClassWithArtifactKeys(
           dbContractInstance.currentContractClassId,
           dbContractInstance.version,
-        ],
+        ),
         JSON.stringify(completeContractClass),
         CACHE_TTL_SECONDS,
       ).catch((err) => {
         logger.warn(`Failed to cache contract class: ${err}`);
       });
-      await db.l2Contract.addArtifactData({
+      const { selectorMap } = await db.l2Contract.addArtifactData({
         contractClassId: dbContractClass.contractClassId,
         version: dbContractClass.version,
         artifactJson: stringifiedArtifactJson,
+        contractName: artifactContractName,
+      });
+      await db.l2Contract.backfillPublicCallRequestNames({
+        contractClassId: dbContractClass.contractClassId,
+        version: dbContractClass.version,
+        selectorMap,
         contractName: artifactContractName,
       });
     }

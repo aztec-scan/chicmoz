@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: explorer-api-sandbox-label
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -31,8 +33,8 @@ spec:
         - image: explorer-api:latest
           resources:
             requests:
-              memory: 64Mi
-              cpu: 10m
+              memory: 600Mi
+              cpu: 100m
             limits:
               memory: 600Mi
               cpu: 500m

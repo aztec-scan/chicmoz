@@ -28,13 +28,16 @@ export const updateBlock = (
       }
       const maxKnownHeight =
         oldData.length > 0
-          ? Math.max(...oldData.map((b) => Number(b.height)))
-          : 0;
+          ? oldData.reduce<bigint>(
+              (maxHeight, currentBlock) =>
+                currentBlock.height > maxHeight
+                  ? currentBlock.height
+                  : maxHeight,
+              oldData[0].height,
+            )
+          : 0n;
 
       if (block.height < maxKnownHeight) {
-        console.log(
-          `Reorg detected: incoming block ${block.height} < max known ${maxKnownHeight}`,
-        );
         void Promise.all([
           queryClient.invalidateQueries({
             queryKey: queryKeyGenerator.latestTableBlocks,
@@ -51,11 +54,16 @@ export const updateBlock = (
         blockHash: block.hash,
         txEffectsLength: block.body.txEffects.length,
         timestamp: block.header.globalVariables.timestamp,
-        blockStatus: block.finalizationStatus,
+        nativeStatus: block.nativeStatus,
+        orphan: false,
       };
-      return [...oldData, mapedWebsockketBlock].sort((a, b) =>
-        Number(b.height - a.height),
-      );
+      return [...oldData, mapedWebsockketBlock].sort((a, b) => {
+        if (b.height === a.height) {
+          return 0;
+        }
+
+        return b.height > a.height ? 1 : -1;
+      });
     },
   );
 };
@@ -137,6 +145,21 @@ export const handlePendingTxs = (
   updatePendingTxs(queryClient, txs);
 };
 
+export const handleFinalizationUpdate = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+) => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeyGenerator.latestBlock }),
+    queryClient.invalidateQueries({
+      queryKey: queryKeyGenerator.latestTableBlocks,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: queryKeyGenerator.paginatedTableBlocks(0, 0).slice(0, 1),
+      exact: false,
+    }),
+  ]);
+};
+
 export const handleWebSocketMessage = async (
   queryClient: ReturnType<typeof useQueryClient>,
   data: string,
@@ -149,5 +172,8 @@ export const handleWebSocketMessage = async (
   }
   if (update.txs) {
     handlePendingTxs(queryClient, update.txs);
+  }
+  if (update.l2Tips) {
+    await handleFinalizationUpdate(queryClient);
   }
 };

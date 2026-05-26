@@ -12,7 +12,7 @@ export const openapi_L2_SEARCH: OpenAPIObject["paths"] = {
     get: {
       tags: ["L2", "search"],
       summary:
-        "Search for blocks, txEffects, contract classes and contract instances on Aztec",
+        "Search for blocks by hash, height, or slot; txEffects; contract classes; contract instances; and validators on Aztec",
       parameters: [
         {
           name: "q",

@@ -1,11 +1,10 @@
-import { CHICMOZ_TYPES_AZTEC_VERSION } from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import {
   useChainErrors,
   useChainInfo,
   useContractInstancesWithBalance,
-  useSequencers,
+  useRpcNodes,
   useSubTitle,
 } from "~/hooks";
 import { BaseLayout } from "~/layout/base-layout";
@@ -34,10 +33,10 @@ export const DevPage: FC = () => {
   } = useChainErrors();
 
   const {
-    data: sequencers,
-    isLoading: isSequencersLoading,
-    error: sequencersError,
-  } = useSequencers();
+    data: rpcNodes,
+    isLoading: isRpcNodesLoading,
+    error: rpcNodesError,
+  } = useRpcNodes();
 
   const {
     data: contractInstancesWithBalance,
@@ -72,7 +71,6 @@ export const DevPage: FC = () => {
         {generateCard(
           "Misc",
           <pre>
-            <p>{`Aztec.js version           ${CHICMOZ_TYPES_AZTEC_VERSION}`}</p>
             <p>{`Explorer version           ${VERSION_STRING}`}</p>
             <p>{`API URL                    ${API_URL}`}</p>
             <p>{`WS URL                     ${WS_URL}`}</p>
@@ -156,16 +154,16 @@ stack:          ${error.stack}
           </>,
         )}
         {generateCard(
-          "Sequencers",
+          "RPC Nodes",
           <>
-            {isSequencersLoading && <p>Loading...</p>}
-            {sequencersError && <p>Error: {sequencersError.message}</p>}
-            {sequencers && (
+            {isRpcNodesLoading && <p>Loading...</p>}
+            {rpcNodesError && <p>Error: {rpcNodesError.message}</p>}
+            {rpcNodes && (
               <pre>
                 {JSON.stringify(
-                  sequencers.map((s) => ({
-                    ...s,
-                    rollupVersion: s.rollupVersion.toString(),
+                  rpcNodes.map((rpcNode) => ({
+                    ...rpcNode,
+                    rollupVersion: rpcNode.rollupVersion.toString(),
                   })),
                   null,
                   2,

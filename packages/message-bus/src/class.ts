@@ -111,7 +111,6 @@ export class MessageBus {
     await this.#producer!.send({ topic, messages: kafkaMessages });
   }
 
-  // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
   async subscribe<T>(
     groupId: string,
     topic: string,
@@ -180,9 +179,6 @@ export class MessageBus {
     await this.#consumers[groupId]!.consumer.run({
       // TODO: https://kafka.js.org/docs/consuming; probably need to look into manually committing instead in future
       eachMessage: async ({ topic, message, heartbeat }) => {
-        // this.logger.info(
-        //   `Kafka: received message from topic ${topic} in group ${groupId}`
-        // );
         // Yield the event loop between messages so that other consumers sharing
         // this Node.js process get a chance to fetch and process their messages.
         // Without this, a consumer with a large backlog (e.g. catchup) can
@@ -190,8 +186,6 @@ export class MessageBus {
         // monopolizing the event loop with back-to-back await chains.
         await new Promise((resolve) => setTimeout(resolve, 0));
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        // Convert Buffer to Uint8Array before deserializing
         const messageValue = message.value!;
         const valueAsUint8Array =
           messageValue instanceof Buffer
@@ -199,7 +193,6 @@ export class MessageBus {
             : typeof messageValue === "string"
               ? new TextEncoder().encode(messageValue)
               : new Uint8Array(0);
-        // Add proper type assertion to satisfy the linter
         const deserializedObj = BSON.deserialize(valueAsUint8Array);
         if (typeof deserializedObj?.data !== "object") {
           throw new Error(

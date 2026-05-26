@@ -3,8 +3,18 @@ import {
   ChicmozL1L2BlockProposed,
   ChicmozL1L2ProofVerified,
   ChicmozL1L2Validator,
+  type ChicmozChainInfo,
 } from "@chicmoz-pkg/types";
 import { publishMessage } from "../../svcs/message-bus/index.js";
+
+type StakingAssetInfoEvent = {
+  chainInfo: ChicmozChainInfo & {
+    stakingAssetSymbol?: string;
+    stakingAssetDecimals?: number;
+    feeJuiceSymbol?: string;
+    feeJuiceDecimals?: number;
+  };
+};
 
 export const l1Validator = async (validators: ChicmozL1L2Validator[]) => {
   const objsToSend = validators.map((validator) => ({
@@ -38,4 +48,11 @@ export const genericContractEvent = async (
   genericContractEvent: ChicmozL1GenericContractEvent,
 ) => {
   await publishMessage("L1_GENERIC_CONTRACT_EVENT", genericContractEvent);
+};
+
+export const stakingAssetInfo = async (event: StakingAssetInfoEvent) => {
+  await publishMessage(
+    "STAKING_ASSET_INFO_EVENT" as Parameters<typeof publishMessage>[0],
+    event,
+  );
 };

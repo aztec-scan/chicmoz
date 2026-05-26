@@ -39,8 +39,6 @@ Default settings is to set up a sandbox in the local cluster.
 
 ⚠️ _Make sure you have .chicmoz.env file in the root_
 
-TODO
-
 ## Pro tip
 
 ### 1
@@ -54,6 +52,37 @@ yarn
 yarn build
 yarn dev
 ```
+
+You can also keep the backend stack on another machine and tunnel the sandbox gateway over SSH.
+
+Run the backend machine as usual:
+
+```sh
+skaffold run --filename k8s/local/skaffold.sandbox_no_ui.yaml
+./scripts/miscellaneous.sh
+```
+
+Then, on the UI machine, forward a local port to the backend machine's current gateway NodePort and keep using the existing sandbox hostname locally:
+
+```sh
+ssh -N -L 8080:<remote-minikube-ip>:<remote-gateway-nodeport> <remote-host>
+```
+
+You can discover those values on the backend machine with:
+
+```sh
+minikube ip
+kubectl get svc -n envoy-gateway-system -o wide
+```
+
+```sh
+VITE_L2_NETWORK_ID=SANDBOX \
+VITE_API_KEY=dev-api-key \
+VITE_API_URL=http://api.sandbox.chicmoz.localhost:8080/v1 \
+yarn dev
+```
+
+If websocket forwarding is not set up yet, leave `VITE_WS_URL` unset.
 
 ## Code Overview
 
@@ -310,16 +339,16 @@ The architecture follows an event-driven pattern:
 
 ### aztec-listener Configuration
 
-| Environment Variable                                      | Description                                 | Default Value                    |
-| --------------------------------------------------------- | ------------------------------------------- | -------------------------------- |
-| `AZTEC_RPC_URL`                                           | URL of the Aztec node                       | `http://aztec-sandbox-node:8080` |
-| `BLOCK_POLL_INTERVAL_MS`                                  | Polling interval for blocks in milliseconds | `500`                            |
-| `AZTEC_LISTEN_FOR_PENDING_TXS`                            | Whether to listen for pending transactions  | `true`                           |
-| `AZTEC_LISTEN_FOR_CHAIN_INFO`                             | Whether to listen for chain info updates    | `true`                           |
-| `AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS`                | Disable listening for proposed blocks       | `false`                          |
-| `AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS`                  | Disable listening for proven blocks         | `false`                          |
-| `AZTEC_LISTEN_FOR_PROVEN_BLOCKS_FORCED_START_FROM_HEIGHT` | Force start from a specific block height    | `undefined`                      |
-| `L2_NETWORK_ID`                                           | Identifier for the L2 network               | Required                         |
+| Environment Variable                       | Description                                 | Default Value                    |
+| ------------------------------------------ | ------------------------------------------- | -------------------------------- |
+| `AZTEC_RPC_URL`                            | URL of the Aztec node                       | `http://aztec-sandbox-node:8081` |
+| `BLOCK_POLL_INTERVAL_MS`                   | Polling interval for blocks in milliseconds | `500`                            |
+| `AZTEC_LISTEN_FOR_PENDING_TXS`             | Whether to listen for pending transactions  | `true`                           |
+| `AZTEC_LISTEN_FOR_CHAIN_INFO`              | Whether to listen for chain info updates    | `true`                           |
+| `AZTEC_DISABLE_LISTEN_FOR_PROPOSED_BLOCKS` | Disable listening for proposed blocks       | `false`                          |
+| `AZTEC_DISABLE_LISTEN_FOR_PROVEN_BLOCKS`   | Disable listening for proven blocks         | `false`                          |
+| `AZTEC_ENABLE_FULL_SWEEP_CATCHUP`          | Enable manual full-chain sweep catchup      | `false`                          |
+| `L2_NETWORK_ID`                            | Identifier for the L2 network               | Required                         |
 
 ### ethereum-listener Configuration
 
@@ -457,7 +486,7 @@ Get a list of blocks with pagination.
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 10)
 - `sort`: Sort direction (asc/desc)
-- `finalizationStatus`: Filter by finalization status
+- `status`: Filter by product-facing native block status (`proposed`, `checkpointed`, `proven`, `finalized`, `unknown`, `orphaned`) where supported.
 
 **Response**:
 
@@ -469,7 +498,7 @@ Get a list of blocks with pagination.
       "hash": "0x...",
       "timestamp": "2023-01-01T00:00:00Z",
       "transactionCount": 5,
-      "finalizationStatus": "L2_NODE_SEEN_PROVEN"
+      "nativeStatus": "proven"
     }
   ],
   "pagination": {
@@ -502,11 +531,55 @@ Get details of a specific block.
     "transactionHashes": ["0x...", "0x..."],
     "version": "1.0.0"
   },
-  "finalizationStatus": "L2_NODE_SEEN_PROVEN",
+  "nativeStatus": "proven",
   "l1Data": {
     "rollupContractAddress": "0x...",
     "l1BlockNumber": 12345
   }
+}
+```
+
+#### Native L2 status fields
+
+Block responses may include `nativeStatus`, the product-facing Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Use this for UI and consumer-facing status labels.
+
+Native status values:
+
+- `proposed`: block is at or below the latest proposed tip.
+- `checkpointed`: block is at or below the latest checkpointed tip.
+- `proven`: block is at or below the latest proven tip.
+- `finalized`: block is at or below the latest finalized tip. On Aztec v4 this may currently be equal to `proven` upstream.
+- `unknown`: tips are missing, stale/degraded, the block is orphaned, or the block is above the proposed tip.
+
+#### `GET /api/v1/{apiKey}/l2/tips`
+
+Get the latest Aztec-native L2 tips observed by `aztec-listener` and stored by `explorer-api`.
+
+**Response**:
+
+```json
+{
+  "tips": {
+    "proposed": { "number": 123, "hash": "0x..." },
+    "checkpointed": {
+      "block": { "number": 120, "hash": "0x..." },
+      "checkpoint": { "number": 12, "hash": "0x..." }
+    },
+    "proven": {
+      "block": { "number": 118, "hash": "0x..." },
+      "checkpoint": { "number": 11, "hash": "0x..." }
+    },
+    "finalized": {
+      "block": { "number": 118, "hash": "0x..." },
+      "checkpoint": { "number": 11, "hash": "0x..." }
+    }
+  },
+  "observedAt": 1710000000000,
+  "stale": false,
+  "stalenessMs": 1500,
+  "staleAfterMs": 60000,
+  "degraded": false,
+  "source": { "rpcNodeName": "aztec-rpc-1" }
 }
 ```
 

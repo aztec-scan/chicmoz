@@ -1,8 +1,12 @@
-import { generateSvc, publishMessage as pub } from "@chicmoz-pkg/message-bus";
+import {
+  EventHandler,
+  generateSvc,
+  publishMessage as pub,
+  startSubscribe as sub,
+} from "@chicmoz-pkg/message-bus";
 import {
   L2_MESSAGES,
   generateL2TopicName,
-  type ChicmozMessageBusPayload,
 } from "@chicmoz-pkg/message-registry";
 import {
   INSTANCE_NAME,
@@ -11,9 +15,9 @@ import {
 import { L2_NETWORK_ID } from "../../environment.js";
 import { logger } from "../../logger.js";
 
-export const publishMessage = async (
-  eventType: keyof L2_MESSAGES,
-  message: ChicmozMessageBusPayload
+export const publishMessage = async <K extends keyof L2_MESSAGES>(
+  eventType: K,
+  message: L2_MESSAGES[K],
 ) => {
   const topic = generateL2TopicName(L2_NETWORK_ID, eventType);
   logger.info(`Publishing message to topic ${topic}`);
@@ -26,7 +30,11 @@ export const publishMessageSync = (
   publishMessage(...args).catch((e) => logger.error((e as Error).message));
 };
 
+export const startSubscribe = async (eventHandler: EventHandler) => {
+  await sub(eventHandler, logger);
+};
+
 export const messageBusService: MicroserviceBaseSvc = generateSvc(
   INSTANCE_NAME,
-  logger
+  logger,
 );

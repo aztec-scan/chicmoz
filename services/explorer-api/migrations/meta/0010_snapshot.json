@@ -1,6 +1,6 @@
 {
-  "id": "47a53954-c762-4baa-b2a6-5d919ff21775",
-  "prevId": "47c8e7ae-44aa-4659-85ec-263608cfb757",
+  "id": "b445686d-e704-470f-ada7-aafc28ee88a3",
+  "prevId": "ff2330f1-479b-4b70-b1b1-108becd44b60",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -654,13 +654,13 @@
         },
         "total_fees": {
           "name": "total_fees",
-          "type": "bigint",
+          "type": "numeric(77, 0)",
           "primaryKey": false,
           "notNull": true
         },
         "total_mana_used": {
           "name": "total_mana_used",
-          "type": "bigint",
+          "type": "numeric(77, 0)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1384,18 +1384,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "source_code_commit_hash": {
-          "name": "source_code_commit_hash",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "source_code": {
-          "name": "source_code",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -1930,93 +1918,6 @@
           "columns": ["contract_class_id", "utility_function_selector_value"]
         }
       },
-      "uniqueConstraints": {}
-    },
-    "public.source_verification_jobs": {
-      "name": "source_verification_jobs",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "contract_class_id": {
-          "name": "contract_class_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "github_url": {
-          "name": "github_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "git_ref": {
-          "name": "git_ref",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sub_path": {
-          "name": "sub_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aztec_version": {
-          "name": "aztec_version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "commit_hash": {
-          "name": "commit_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "source_verification_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'PENDING'"
-        },
-        "error": {
-          "name": "error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "public.tx": {
@@ -2663,13 +2564,7 @@
       "uniqueConstraints": {}
     }
   },
-  "enums": {
-    "public.source_verification_status": {
-      "name": "source_verification_status",
-      "schema": "public",
-      "values": ["PENDING", "COMPILING", "VERIFYING", "VERIFIED", "FAILED"]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "_meta": {

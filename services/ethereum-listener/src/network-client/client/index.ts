@@ -103,48 +103,80 @@ export const getEarliestRollupBlockNumber = async () => {
   if (!l1Contracts) {
     throw new Error("Contracts not initialized");
   }
+  const cacheKey = `${L2_NETWORK_ID}:${l1Contracts.rollup.address.toLowerCase()}`;
+  const cached = earliestRollupBlockNumberCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const discovered = discoverEarliestRollupBlockNumber(
+    l1Contracts.rollup.address,
+  ).catch((error) => {
+    earliestRollupBlockNumberCache.delete(cacheKey);
+    throw error;
+  });
+  earliestRollupBlockNumberCache.set(cacheKey, discovered);
+  return discovered;
+};
+
+const earliestRollupBlockNumberCache = new Map<string, Promise<bigint>>();
+
+const discoverEarliestRollupBlockNumber = async (
+  rollupAddress: `0x${string}`,
+) => {
+  const hardcodedValue = hardcodedRollupGenesisBlocks(
+    rollupAddress,
+    L2_NETWORK_ID,
+  );
+  if (hardcodedValue > 0n) {
+    return hardcodedValue;
+  }
+
   let end = await getLatestFinalizedHeight();
   let start = 0n;
   logger.info(`Searching for tips time between blocks ${start} and ${end}`);
-  let foundL2ProvenBlockNumber = maxInt256;
+  let foundRollupBlockNumber = maxInt256;
   while (start < end) {
     const blockNbr = (start + end) / 2n;
     try {
-      const res = await getPublicHttpClient().readContract({
-        address: l1Contracts.rollup.address,
+      await getPublicHttpClient().readContract({
+        address: rollupAddress,
         abi: RollupAbi,
         functionName: "getTips",
         blockNumber: BigInt(blockNbr),
       });
-      if (res.proven === 0n) {
-        start = BigInt(blockNbr);
-        foundL2ProvenBlockNumber = BigInt(blockNbr);
-      }
+      foundRollupBlockNumber = BigInt(blockNbr);
       end = BigInt(blockNbr);
     } catch (e) {
-      if (
-        e instanceof Error &&
-        e.message.includes("Missing or invalid parameters")
-      ) {
+      if (isPreDeployReadError(e)) {
         start = BigInt(blockNbr) + 1n;
       } else {
         throw e;
       }
     }
   }
-  if (foundL2ProvenBlockNumber === maxInt256) {
-    const hardcodedValue = hardcodedRollupGenesisBlocks(
-      l1Contracts.rollup.address,
-      L2_NETWORK_ID,
-    );
+  if (foundRollupBlockNumber === maxInt256) {
     logger.info(
       `No proven block number found, using hardcoded value ${hardcodedValue}`,
     );
     return hardcodedValue;
   } else {
     const betterSafeThanSorry = 100n;
-    return start - betterSafeThanSorry;
+    return start > betterSafeThanSorry ? start - betterSafeThanSorry : 0n;
   }
+};
+
+const isPreDeployReadError = (error: unknown) => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    error.message.includes("Missing or invalid parameters") ||
+    error.message.includes("returned no data") ||
+    error.message.includes("could not decode result data") ||
+    error.message.includes("ContractFunctionExecutionError")
+  );
 };
 
 const hardcodedRollupGenesisBlocks = (
@@ -156,20 +188,24 @@ const hardcodedRollupGenesisBlocks = (
     `Hardcoded rollup genesis block for ${rollupAddress} on ${networkId}`,
   );
   if (
-    networkId === "TESTNET" &&
-    rollupAddress.toLowerCase() === "0xebd99ff0ff6677205509ae73f93d0ca52ac85d67"
+    networkId === "TESTNET"
   ) {
-    return 8125387n;
+    switch (rollupAddress.toLowerCase()) {
+      case "0xebd99ff0ff6677205509ae73f93d0ca52ac85d67":
+        return 8125387n;
+      case "0xf6d0d42ace06829becb78c74f49879528fc632c1":
+        return 10391387n;
+    }
   } else if (
     networkId === "DEVNET" &&
     rollupAddress.toLowerCase() === "0xcd1a7be18501092f3ba8d80ce5629501ba178de0"
   ) {
     return 10286799n;
   } else if (
-    networkId === "DEVNET" &&
-    rollupAddress.toLowerCase() === "0x9d2b61821c441280537bedc5e2e936dfb0710754"
+    networkId === "MAINNET" &&
+    rollupAddress.toLowerCase() === "0xae2001f7e21d5ecabf6234e9fdd1e76f50f74962"
   ) {
-    return 10603051n;
+    return 24586322n;
   }
   return 0n;
 };

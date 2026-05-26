@@ -58,6 +58,9 @@ spec:
             - name: KAFKA_PROCESS_ROLES
               value: "broker,controller"
 
+            # This logic assumes we might scale up to 3 nodes eventually.
+            # Only nodes 0, 1, 2 participate in the quorum.
+            # If replicas=1, only node 0 exists and is the sole voter.
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: "0@kafka-0.kafka-headless.chicmoz.svc.cluster.local:9093"
 
@@ -88,6 +91,7 @@ spec:
               value: "1073741824"
 
             # Single-node & Scalability Safety
+            # Allow creating topics with replication factor 1 (essential for 1-node clusters)
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
@@ -107,8 +111,8 @@ spec:
               memory: "1Gi"
               cpu: "500m"
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: "512Mi"
+              cpu: "200m"
       volumes:
         - name: jaas-config
           secret:
@@ -120,7 +124,7 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 5Gi
+            storage: 1Gi
 ---
 apiVersion: v1
 kind: Service

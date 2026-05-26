@@ -1,3 +1,4 @@
+import { ContractInitializationStatus, Wallet } from "@aztec/aztec.js/wallet";
 import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
 import { publishContractClass } from "@aztec/aztec.js/deployment";
 import {
@@ -18,8 +19,7 @@ import {
   Contract,
   type ContractInstanceWithAddress,
   DeployMethod,
-  type TxSendResultMined,
-  type SimulationResult,
+  TxSendResultMined,
 } from "@aztec/aztec.js/contracts";
 import { FunctionType, NoirCompiledContract } from "@aztec/aztec.js/abi";
 import { PXE } from "@aztec/pxe/server";
@@ -28,7 +28,6 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AztecNode } from "@aztec/aztec.js/node";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-import { Wallet, ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
@@ -39,11 +38,13 @@ export const truncateHashString = (value: string) => {
 };
 
 export const logAndWaitForTx = async (
-  txSendPromise: Promise<TxSendResultMined<TxReceipt>>,
+  txReceiptPromise: Promise<TxReceipt> | Promise<TxSendResultMined<TxReceipt>>,
   additionalInfo: string,
 ) => {
   logger.info(`📫 TX (${additionalInfo}) waiting...`);
-  const { receipt } = await txSendPromise;
+  const receipt = await txReceiptPromise.then((result) =>
+    "receipt" in result ? result.receipt : result,
+  );
   const hash = receipt.txHash.toString();
   logger.info(
     `⛏  TX ${hash} (${additionalInfo}) block ${receipt.blockNumber}`,
@@ -57,8 +58,10 @@ export const simulateThenSend = async ({
   additionalInfo,
 }: {
   method: {
-    simulate: (opts: { from: AztecAddress }) => Promise<SimulationResult>;
-    send: (opts: { from: AztecAddress }) => Promise<TxSendResultMined>;
+    simulate: (opts: { from: AztecAddress }) => Promise<unknown>;
+    send: (opts: {
+      from: AztecAddress;
+    }) => Promise<TxSendResultMined<TxReceipt>>;
   };
   from: AztecAddress;
   additionalInfo: string;
@@ -117,12 +120,12 @@ export const getNewSchnorrAccount = async ({
   // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
   // but fails in devnet/testnet where it has no balance.
   const feePayer = getAccounts().alice.address;
-  const deployReceipt = await deployFunction.send({
+  const { receipt: deployReceipt } = await deployFunction.send({
     from: feePayer,
     wait: { returnReceipt: true },
   });
   logger.info(
-    `    Account deployed (${accountName}) block ${deployReceipt.receipt.blockNumber}`,
+    `    Account deployed (${accountName}) block ${deployReceipt.blockNumber}`,
   );
   logger.info(`    Getting Schnorr account wallet... (${accountName})`);
   logger.info(
@@ -198,22 +201,22 @@ export const deployContract = async <T extends Contract>({
   const feePayer = from ?? getAccounts().alice.address;
 
   logger.info(`📫 ${contractLoggingName} (Deploying contract)`);
-  const deployResult = await deployMethod.send({
+  const { receipt: deployResult } = await deployMethod.send({
     from: feePayer,
     wait: { returnReceipt: true },
   });
 
-  const { contract: deployedContract, instance } = deployResult.receipt;
+  const { contract: deployedContract, instance } = deployResult;
   const addressString = deployedContract.address.toString();
   const newClassId = await getNewContractClassId(
     node,
-    deployResult.receipt.blockNumber,
+    deployResult.blockNumber,
   );
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
     : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
-    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.receipt.blockNumber} ${classIdString}`,
+    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.blockNumber} ${classIdString}`,
   );
   if (broadcastWithWallet) {
     await broadcastFunctions({
@@ -267,7 +270,8 @@ export const publicDeployAccounts = async (
   ).then((results) =>
     results.filter(
       (result) =>
-        result.initializationStatus !== ContractInitializationStatus.INITIALIZED,
+        result.initializationStatus !==
+        ContractInitializationStatus.INITIALIZED,
     ),
   );
   if (notPubliclyDeployedAccounts.length === 0) {
@@ -280,9 +284,7 @@ export const publicDeployAccounts = async (
   // Register each contract instance individually
   for (const contractMetadata of notPubliclyDeployedAccounts) {
     if (!contractMetadata.instance) {
-      logger.warn(
-        `🚨 Contract instance not found for contract initializationStatus: ${contractMetadata.initializationStatus}`,
-      );
+      logger.warn(`🚨 Contract instance not found (contract not initialized)`);
       continue;
     }
     await wallet.registerContract(contractMetadata.instance);
@@ -316,19 +318,28 @@ export const registerStandardContractArtifact = async (
   version: number,
   standardName: string,
   standardVersion: string,
+  options?: { throwOnError?: boolean },
 ) => {
   const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${version}/standard-artifact`;
   const postData = JSON.stringify({
     name: standardName,
     version: standardVersion,
   });
-  await callExplorerApi({
+  const res = await callExplorerApi({
     loggingString: `🏗 registerStandardContractArtifact ${contractLoggingName}`,
     urlStr: url,
     postData,
     method: "POST",
     waitForIndexing: true,
   });
+  if (
+    options?.throwOnError &&
+    !(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 202)
+  ) {
+    throw new Error(
+      `registerStandardContractArtifact failed (${contractLoggingName}): ${res.statusCode} ${res.statusMessage} ${res.data}`,
+    );
+  }
 };
 
 export const verifyContractInstanceDeployment = async ({
@@ -336,6 +347,7 @@ export const verifyContractInstanceDeployment = async ({
   contractInstanceAddress,
   verifyArgs,
   deployerMetadata,
+  throwOnError = false,
 }: {
   contractLoggingName: string;
   contractInstanceAddress: string;
@@ -344,6 +356,7 @@ export const verifyContractInstanceDeployment = async ({
     ChicmozL2ContractInstanceDeployerMetadata,
     "address" | "uploadedAt"
   >;
+  throwOnError?: boolean;
 }) => {
   const url = generateVerifyInstanceUrl(
     EXPLORER_API_URL,
@@ -356,14 +369,26 @@ export const verifyContractInstanceDeployment = async ({
   });
 
   try {
-    await callExplorerApi({
+    const res = await callExplorerApi({
       loggingString: `🧐 verifyContractInstanceDeployment ${contractLoggingName}`,
       urlStr: url,
       postData,
       method: "POST",
       waitForIndexing: true,
     });
+    if (
+      throwOnError &&
+      !(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 202)
+    ) {
+      throw new Error(
+        `verifyContractInstanceDeployment failed (${contractLoggingName}): ${res.statusCode} ${res.statusMessage} ${res.data}`,
+      );
+    }
   } catch (err) {
+    if (throwOnError) {
+      throw err;
+    }
+
     // Explorer is best-effort here; failures should not break scenarios.
     logger.warn(
       `verifyContractInstanceDeployment failed (${contractLoggingName}): ${(err as Error).message}`,

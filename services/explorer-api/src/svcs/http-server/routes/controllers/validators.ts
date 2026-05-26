@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { OpenAPIObject } from "openapi3-ts/oas31";
+import { chicmozL1L2ValidatorTotalsSchema } from "@chicmoz-pkg/types";
 import { controllers as db } from "../../../database/index.js";
 import {
   getL1L2ValidatorSchema,
@@ -128,9 +129,30 @@ export const openapi_GET_L1_L2_VALIDATOR_TOTALS: OpenAPIObject["paths"] = {
               schema: {
                 type: "object",
                 properties: {
+                  total: { type: "integer" },
                   validating: { type: "integer" },
                   nonValidating: { type: "integer" },
+                  statusCounts: {
+                    type: "object",
+                    additionalProperties: { type: "integer" },
+                  },
+                  totalStake: { type: "string", description: "uint256" },
+                  validatingStake: { type: "string", description: "uint256" },
+                  maxStake: { type: "string", description: "uint256" },
+                  stakeByStatus: {
+                    type: "object",
+                    additionalProperties: {
+                      type: "string",
+                      description: "uint256",
+                    },
+                  },
                 },
+                required: [
+                  "total",
+                  "validating",
+                  "nonValidating",
+                  "statusCounts",
+                ],
               },
             },
           },
@@ -144,5 +166,7 @@ export const GET_L1_L2_VALIDATOR_TOTALS = asyncHandler(async (_req, res) => {
   const totals = await dbWrapper.get(["l1", "l2-validators", "totals"], () =>
     db.l1.getValidatorTotals(),
   );
-  res.status(200).json(JSON.parse(totals));
+  res
+    .status(200)
+    .json(chicmozL1L2ValidatorTotalsSchema.parse(JSON.parse(totals)));
 });

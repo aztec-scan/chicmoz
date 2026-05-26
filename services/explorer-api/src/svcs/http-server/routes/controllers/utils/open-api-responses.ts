@@ -14,12 +14,15 @@ import {
   chicmozL2PendingTxSchema,
   chicmozL2PrivateFunctionBroadcastedEventSchema,
   chicmozL2RpcNodeErrorSchema,
-  chicmozL2SequencerDeluxeSchema,
-  chicmozL2SequencerSchema,
+  chicmozL2TipsHealthSchema,
   chicmozL2TxEffectDeluxeSchema,
   chicmozL2UtilityFunctionBroadcastedEventSchema,
   chicmozReorgSchema,
   chicmozSearchResultsSchema,
+  publicChicmozL2RpcNodeDeluxeSchema,
+  publicChicmozL2RpcNodeSchema,
+  uiBlockTableSchema,
+  uiTxEffectTableSchema,
 } from "@chicmoz-pkg/types";
 import { z } from "zod";
 import { logger } from "../../../../../logger.js";
@@ -58,6 +61,9 @@ const getResponse = (zodSchema: z.ZodType<any, any>, name?: string) => {
 
 const cleanedBlockSchema = chicmozL2BlockLightSchema.extend({
   height: z.string(), // Convert height from BigInt to string
+  nativeStatus: chicmozL2BlockLightSchema.shape.nativeStatus.describe(
+    "Product-facing Aztec-native block status derived from current L2 tips. `checkpointed` is a native L2 tip bucket; on Aztec v4, upstream `finalized` may equal `proven`.",
+  ),
   proposedOnL1: z
     .object({
       l1ContractAddress: z.string(),
@@ -206,6 +212,24 @@ export const searchResultResponse = getResponse(
   "searchResult",
 );
 
+const cleanedUiBlockTableSchema = uiBlockTableSchema.extend({
+  height: z.string(),
+});
+
+export const uiBlockTableResponseArray = getResponse(
+  z.array(cleanedUiBlockTableSchema),
+  "uiBlockTableArray",
+);
+
+const cleanedUiTxEffectTableSchema = uiTxEffectTableSchema.extend({
+  blockNumber: z.string(),
+});
+
+export const uiTxEffectTableResponseArray = getResponse(
+  z.array(cleanedUiTxEffectTableSchema),
+  "uiTxEffectTableArray",
+);
+
 const cleanedValidatorSchema = chicmozL1L2ValidatorSchema.extend({
   stake: z.string(),
 });
@@ -232,27 +256,27 @@ export const reorgResponseArray = getResponse(
   "reorgArray",
 );
 
-const cleanedSequencerDeluxeSchema = chicmozL2SequencerDeluxeSchema.extend({
+const cleanedRpcNodeDeluxeSchema = publicChicmozL2RpcNodeDeluxeSchema.extend({
   rollupVersion: z.string(), // Convert BigInt to string
 });
 
-export const sequencerResponse = getResponse(
-  cleanedSequencerDeluxeSchema,
-  "l2SequencerDeluxe",
+export const rpcNodeResponse = getResponse(
+  cleanedRpcNodeDeluxeSchema,
+  "l2RpcNodeDeluxe",
 );
 
-const cleanedSequencerSchema = chicmozL2SequencerSchema.extend({
+const cleanedRpcNodeSchema = publicChicmozL2RpcNodeSchema.extend({
   rollupVersion: z.string(), // Convert BigInt to string
 });
 
-export const sequencerResponseArray = getResponse(
-  z.array(cleanedSequencerSchema),
-  "l2SequencerArrayDeluxe",
+export const rpcNodeResponseArray = getResponse(
+  z.array(cleanedRpcNodeSchema),
+  "l2RpcNodeArrayDeluxe",
 );
 
-export const sequencerErrorResponseArray = getResponse(
+export const rpcNodeErrorResponseArray = getResponse(
   z.array(chicmozL2RpcNodeErrorSchema),
-  "l2SequencerErrorArray",
+  "l2RpcNodeErrorArray",
 );
 
 const cleanedChainInfoSchema = chicmozChainInfoSchema.extend({
@@ -264,7 +288,12 @@ export const chainInfoResponse = getResponse(
   "chainInfo",
 );
 
-export const chainErrorsResponse = sequencerErrorResponseArray;
+export const l2TipsHealthResponse = getResponse(
+  chicmozL2TipsHealthSchema,
+  "l2TipsHealth",
+);
+
+export const chainErrorsResponse = rpcNodeErrorResponseArray;
 
 const cleanedContractEventsSchema = chicmozL1GenericContractEventSchema.extend({
   l1BlockNumber: z.string(), // Convert BigInt to string

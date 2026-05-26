@@ -28,5 +28,5 @@ deploy:
 manifests:
   rawYaml:
     - ./sandbox/service.yaml
-    - ./sandbox/ingress.yaml
+    - ./sandbox/httproute.yaml
     - ./sandbox/deployment.yaml
