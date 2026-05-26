@@ -498,8 +498,7 @@ Get a list of blocks with pagination.
       "hash": "0x...",
       "timestamp": "2023-01-01T00:00:00Z",
       "transactionCount": 5,
-      "nativeStatus": "proven",
-      "finalizationStatus": "L2_NODE_SEEN_PROVEN"
+      "nativeStatus": "proven"
     }
   ],
   "pagination": {
@@ -533,7 +532,6 @@ Get details of a specific block.
     "version": "1.0.0"
   },
   "nativeStatus": "proven",
-  "finalizationStatus": "L2_NODE_SEEN_PROVEN",
   "l1Data": {
     "rollupContractAddress": "0x...",
     "l1BlockNumber": 12345
@@ -543,10 +541,7 @@ Get details of a specific block.
 
 #### Native L2 status fields
 
-Block responses may include both:
-
-- `nativeStatus`: product-facing Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Use this for UI and consumer-facing status labels.
-- `finalizationStatus`: **deprecated** legacy compatibility status. It remains available until a later migration removes the old finalization-status path, but consumers should not use it to drive product display.
+Block responses may include `nativeStatus`, the product-facing Aztec-native display status derived from `AztecNode.getL2Tips()` snapshots. Use this for UI and consumer-facing status labels.
 
 Native status values:
 

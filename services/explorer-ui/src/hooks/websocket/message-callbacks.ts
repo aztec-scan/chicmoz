@@ -54,7 +54,6 @@ export const updateBlock = (
         blockHash: block.hash,
         txEffectsLength: block.body.txEffects.length,
         timestamp: block.header.globalVariables.timestamp,
-        blockStatus: block.finalizationStatus,
         nativeStatus: block.nativeStatus,
         orphan: false,
       };

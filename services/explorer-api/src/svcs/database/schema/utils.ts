@@ -1,7 +1,4 @@
-import {
-  ChicmozL2BlockFinalizationStatus,
-  L2NetworkId,
-} from "@chicmoz-pkg/types";
+import { L2NetworkId } from "@chicmoz-pkg/types";
 import { ColumnBuilderBaseConfig, ColumnDataType } from "drizzle-orm";
 import {
   PgColumnBuilderBase,
@@ -10,7 +7,6 @@ import {
   integer,
   numeric,
   pgTable,
-  smallint,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -60,5 +56,3 @@ export const bufferType = customType<{
 
 export const l2NetworkIdDbEnum = (name: string) =>
   varchar(name).$type<L2NetworkId>();
-export const l2BlockFinalizationStatusDbEnum = (name: string) =>
-  smallint(name).$type<ChicmozL2BlockFinalizationStatus>();
