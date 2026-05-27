@@ -11,6 +11,7 @@ import {
   primaryKey,
 } from "drizzle-orm/pg-core";
 import { generateEthAddressColumn, generateTimestampColumn } from "../utils.js";
+import type { ProposalState } from "@chicmoz-pkg/types";
 
 // ── l1_governance_proposals ──────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ export const l1GovernanceProposalsTable = pgTable(
     governanceProposerAddress: generateEthAddressColumn(
       "governance_proposer_address",
     ),
-    state: varchar("state").notNull().default("Pending"),
+    state: varchar("state").notNull().default("Pending").$type<ProposalState>(),
     createdAt: generateTimestampColumn("created_at").notNull(),
     pendingThrough: generateTimestampColumn("pending_through"),
     activeThrough: generateTimestampColumn("active_through"),

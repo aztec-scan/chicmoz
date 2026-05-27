@@ -134,6 +134,21 @@ export type ChicmozL1GovernanceProposerUpdated = z.infer<
   typeof chicmozL1GovernanceProposerUpdatedSchema
 >;
 
+// ── Governance Proposal States ───────────────────────────────────────────────
+
+/** Valid lifecycle states for a governance proposal (as stored in the DB). */
+export const PROPOSAL_STATES = [
+  "Pending",
+  "Active",
+  "Queued",
+  "Executable",
+  "Executed",
+  "Dropped",
+] as const;
+export type ProposalState = (typeof PROPOSAL_STATES)[number];
+
+export const proposalStateSchema = z.enum(PROPOSAL_STATES);
+
 // ── Governance API Response Schemas (database rows) ──────────────────────────
 
 /** A governance proposal as stored in the DB and returned by the API. */
@@ -143,7 +158,7 @@ export const chicmozL1GovernanceProposalSchema = z.object({
   payloadAddress: ethAddressSchema,
   proposer: ethAddressSchema.nullable(),
   governanceProposerAddress: ethAddressSchema.nullable(),
-  state: z.string(),
+  state: proposalStateSchema,
   createdAt: z.coerce.date(),
   pendingThrough: z.coerce.date().nullable().optional(),
   activeThrough: z.coerce.date().nullable().optional(),

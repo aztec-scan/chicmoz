@@ -1,5 +1,6 @@
 import { eq, desc, and } from "drizzle-orm";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
+import type { ProposalState } from "@chicmoz-pkg/types";
 import {
   l1GovernanceProposalsTable,
   l1GovernanceVotesTable,
@@ -12,7 +13,7 @@ import {
 // ── Proposals ────────────────────────────────────────────────────────────────
 
 export const getProposals = async (params?: {
-  state?: string;
+  state?: ProposalState;
   from?: number;
   to?: number;
   offset?: number;

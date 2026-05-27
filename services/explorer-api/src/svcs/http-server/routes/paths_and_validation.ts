@@ -9,6 +9,7 @@ import {
   contractStandardSchema,
   ethAddressSchema,
   hexStringSchema,
+  proposalStateSchema,
   uiBlockStatusFilterSchema,
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
@@ -382,7 +383,7 @@ export const getContractClassSourceSchema = z.object({
 
 export const getGovernanceProposalsSchema = z.object({
   query: z.object({
-    state: z.string().optional(),
+    state: proposalStateSchema.optional(),
     from: z.coerce.number().optional(),
     to: z.coerce.number().optional(),
     offset: z.coerce.number().nonnegative().optional().default(0),

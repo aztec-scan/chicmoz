@@ -8,12 +8,13 @@ import {
   useGovernanceSignals,
 } from "~/hooks/api";
 import { usePaginated } from "~/hooks/use-paginated";
-import { ageStr, fmtNum, truncateHashString } from "~/lib/utils";
+import { PROPOSAL_STATES, type ProposalState } from "@chicmoz-pkg/types";
+import { ageStr, fmtNum, formatDuration, truncateHashString } from "~/lib/utils";
 
 const PAGE_SIZE = 20;
 
 type TabKey = "proposals" | "signals" | "configurations" | "proposer-history";
-type ProposalState = "all" | "Pending" | "Active" | "Queued" | "Executable" | "Executed" | "Dropped";
+type ProposalFilter = "all" | ProposalState;
 
 interface TabDef {
   key: TabKey;
@@ -28,14 +29,9 @@ const TABS: TabDef[] = [
   { key: "proposer-history", label: "Proposer History", desc: "Changes to the active governance proposer address." },
 ];
 
-const STATE_FILTERS: { key: ProposalState; label: string }[] = [
+const STATE_FILTERS: { key: ProposalFilter; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "Pending", label: "Pending" },
-  { key: "Active", label: "Active" },
-  { key: "Queued", label: "Queued" },
-  { key: "Executable", label: "Executable" },
-  { key: "Executed", label: "Executed" },
-  { key: "Dropped", label: "Dropped" },
+  ...PROPOSAL_STATES.map((s) => ({ key: s, label: s })),
 ];
 
 const stateColor = (state: string): string => {
@@ -51,14 +47,14 @@ const stateColor = (state: string): string => {
 };
 
 const fmtBigInt = (v: bigint | string | number | null | undefined): string => {
-  if (v === null || v === undefined) {return "—";}
+  if (v === null || v === undefined) { return "—"; }
   const n = typeof v === "bigint" ? v : BigInt(v);
   return fmtNum(n);
 };
 
 export const GovernancePage: FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("proposals");
-  const [stateFilter, setStateFilter] = useState<ProposalState>("all");
+  const [stateFilter, setStateFilter] = useState<ProposalFilter>("all");
 
   const { data: proposals, isLoading: proposalsLoading } = useGovernanceProposals(
     stateFilter !== "all" ? { state: stateFilter, limit: 100 } : { limit: 100 },
@@ -69,25 +65,64 @@ export const GovernancePage: FC = () => {
 
   // ── Proposal stats ──────────────────────────────────────────────────
   const proposalStats = useMemo(() => {
-    if (!proposals) {return { total: 0, byState: {} as Record<string, number>, totalYea: 0n, totalNay: 0n };}
+    if (!proposals) {
+      return {
+        total: 0,
+        active: 0,
+        byState: {} as Record<string, number>,
+        totalYea: 0n,
+        totalNay: 0n,
+        avgNay: 0n,
+        avgSignalingDurationMs: 0,
+        hasSignalingData: false,
+      };
+    }
     const byState: Record<string, number> = {};
     let totalYea = 0n;
     let totalNay = 0n;
+    let active = 0;
+    let signalingDurationSum = 0;
+    let signalingDurationCount = 0;
+
     for (const p of proposals) {
       byState[p.state] = (byState[p.state] ?? 0) + 1;
       totalYea += BigInt(p.summedYea);
       totalNay += BigInt(p.summedNay);
-    }
-    return { total: proposals.length, byState, totalYea, totalNay };
-  }, [proposals]);
 
-  // ── Signal stats ────────────────────────────────────────────────────
-  const signalStats = useMemo(() => {
-    if (!signals) {return { total: 0, rounds: 0, uniquePayloads: 0 };}
-    const rounds = new Set(signals.map((s) => s.round.toString()));
-    const payloads = new Set(signals.map((s) => s.payloadAddress.toLowerCase()));
-    return { total: signals.length, rounds: rounds.size, uniquePayloads: payloads.size };
-  }, [signals]);
+      // Active = neither dropped nor executed
+      if (p.state !== "Executed" && p.state !== "Dropped") {
+        active++;
+      }
+
+      // Signaling duration: time from createdAt through pendingThrough
+      if (p.createdAt && p.pendingThrough) {
+        const createdMs = p.createdAt.getTime();
+        const pendingEndMs = p.pendingThrough.getTime();
+        if (Number.isFinite(createdMs) && Number.isFinite(pendingEndMs) && pendingEndMs >= createdMs) {
+          signalingDurationSum += pendingEndMs - createdMs;
+          signalingDurationCount++;
+        }
+      }
+    }
+
+    const proposalsWithNay = proposals.filter((p) => BigInt(p.summedNay) > 0n);
+    const avgNay = proposalsWithNay.length > 0
+      ? totalNay / BigInt(proposalsWithNay.length)
+      : 0n;
+
+    return {
+      total: proposals.length,
+      active,
+      byState,
+      totalYea,
+      totalNay,
+      avgNay,
+      avgSignalingDurationMs: signalingDurationCount > 0
+        ? Math.round(signalingDurationSum / signalingDurationCount)
+        : 0,
+      hasSignalingData: signalingDurationCount > 0,
+    };
+  }, [proposals]);
 
   // ── Paged data per tab ──────────────────────────────────────────────
   const proposalPage = usePaginated(proposals ?? [], PAGE_SIZE);
@@ -97,9 +132,9 @@ export const GovernancePage: FC = () => {
 
   const currentPage =
     activeTab === "proposals" ? proposalPage :
-    activeTab === "signals" ? signalPage :
-    activeTab === "configurations" ? configPage :
-    proposerPage;
+      activeTab === "signals" ? signalPage :
+        activeTab === "configurations" ? configPage :
+          proposerPage;
 
   const isLoading =
     (activeTab === "proposals" && proposalsLoading) ||
@@ -112,10 +147,10 @@ export const GovernancePage: FC = () => {
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
     // Reset page for the target tab
-    if (tab === "proposals") {proposalPage.setPage(0);}
-    else if (tab === "signals") {signalPage.setPage(0);}
-    else if (tab === "configurations") {configPage.setPage(0);}
-    else {proposerPage.setPage(0);}
+    if (tab === "proposals") { proposalPage.setPage(0); }
+    else if (tab === "signals") { signalPage.setPage(0); }
+    else if (tab === "configurations") { configPage.setPage(0); }
+    else { proposerPage.setPage(0); }
   };
 
   return (
@@ -131,7 +166,7 @@ export const GovernancePage: FC = () => {
       {/* Stats strip */}
       <div className="stats-strip">
         <div className="sc">
-          <div className="lbl">Proposals</div>
+          <div className="lbl">Total Proposals</div>
           <div className="val">{fmtNum(proposalStats.total)}</div>
           <div className="sub">
             {proposalStats.total > 0
@@ -140,21 +175,23 @@ export const GovernancePage: FC = () => {
           </div>
         </div>
         <div className="sc">
-          <div className="lbl">Total Yea</div>
-          <div className="val">{fmtBigInt(proposalStats.totalYea)}</div>
-          <div className="sub">aggregate across all proposals</div>
+          <div className="lbl">Active Proposals</div>
+          <div className="val">{fmtNum(proposalStats.active)}</div>
+          <div className="sub">neither dropped nor executed</div>
         </div>
         <div className="sc">
-          <div className="lbl">Total Nay</div>
-          <div className="val">{fmtBigInt(proposalStats.totalNay)}</div>
-          <div className="sub">aggregate across all proposals</div>
-        </div>
-        <div className="sc">
-          <div className="lbl">Signals</div>
-          <div className="val">{fmtNum(signalStats.total)}</div>
-          <div className="sub">
-            {signalStats.rounds} rounds · {signalStats.uniquePayloads} payloads
+          <div className="lbl">Avg Signaling Duration</div>
+          <div className="val">
+            {proposalStats.hasSignalingData
+              ? formatDuration(proposalStats.avgSignalingDurationMs)
+              : "—"}
           </div>
+          <div className="sub">time in pending before voting</div>
+        </div>
+        <div className="sc">
+          <div className="lbl">Average Nay</div>
+          <div className="val">{fmtBigInt(proposalStats.avgNay)}</div>
+          <div className="sub">votes against governance recommendation</div>
         </div>
       </div>
 
@@ -356,10 +393,6 @@ export const GovernancePage: FC = () => {
           totalPages={currentPage.totalPages}
           onPageChange={currentPage.setPage}
         />
-      </div>
-
-      <div className="eco-pr-cta">
-        indexed from Ethereum L1 governance contracts by the aztec-scan indexer
       </div>
     </Shell>
   );
