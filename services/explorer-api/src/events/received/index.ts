@@ -18,6 +18,17 @@ import { l2TipsHandler } from "./on-l2-tips.js";
 import { l2RpcNodeInfoHandler } from "./on-rpc-node-info.js";
 import { pendingTxHandler } from "./on-pending-txs.js";
 import { stakingAssetInfoHandler } from "./on-staking-asset-info.js";
+import {
+  governanceProposedHandler,
+  governanceVoteCastHandler,
+  governanceProposalExecutedHandler,
+  governanceProposalDroppedHandler,
+  governanceSignalCastHandler,
+  governancePayloadSubmittableHandler,
+  governancePayloadSubmittedHandler,
+  governanceConfigUpdatedHandler,
+  governanceProposerUpdatedHandler,
+} from "./on-governance-events.js";
 
 export const subscribeHandlers = async () => {
   await Promise.all([
@@ -37,5 +48,15 @@ export const subscribeHandlers = async () => {
     startSubscribe(l1L2ProofVerifiedHandler),
     startSubscribe(l1GenericContractEventHandler),
     startSubscribe(stakingAssetInfoHandler),
+    // Governance handlers
+    startSubscribe(governanceProposedHandler),
+    startSubscribe(governanceVoteCastHandler),
+    startSubscribe(governanceProposalExecutedHandler),
+    startSubscribe(governanceProposalDroppedHandler),
+    startSubscribe(governanceSignalCastHandler),
+    startSubscribe(governancePayloadSubmittableHandler),
+    startSubscribe(governancePayloadSubmittedHandler),
+    startSubscribe(governanceConfigUpdatedHandler),
+    startSubscribe(governanceProposerUpdatedHandler),
   ]);
 };

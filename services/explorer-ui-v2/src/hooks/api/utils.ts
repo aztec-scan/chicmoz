@@ -168,4 +168,39 @@ export const queryKeyGenerator = {
   ],
 
   search: (query: string) => ["search", query],
+
+  // Governance
+  governanceProposals: (params?: {
+    state?: string;
+    offset?: number;
+    limit?: number;
+  }) => ["governance", "proposals", params],
+  governanceProposal: (proposalId: string) => [
+    "governance",
+    "proposal",
+    proposalId,
+  ],
+  governanceProposalVotes: (
+    proposalId: string,
+    params?: { support?: boolean; offset?: number; limit?: number },
+  ) => ["governance", "proposal", "votes", proposalId, params],
+  governanceProposalSignals: (
+    proposalId: string,
+    params?: { offset?: number; limit?: number },
+  ) => ["governance", "proposal", "signals", proposalId, params],
+  governanceSignals: (params?: {
+    payloadAddress?: string;
+    round?: number;
+    signaler?: string;
+    offset?: number;
+    limit?: number;
+  }) => ["governance", "signals", params],
+  governanceConfigurations: (params?: {
+    offset?: number;
+    limit?: number;
+  }) => ["governance", "configurations", params],
+  governanceProposerHistory: (params?: {
+    offset?: number;
+    limit?: number;
+  }) => ["governance", "proposerHistory", params],
 };

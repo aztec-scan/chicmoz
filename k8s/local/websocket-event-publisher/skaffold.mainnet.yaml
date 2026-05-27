@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: websocket-event-publisher-mainnet
+requires:
+  - path: ./common/skaffold.base.yaml
+deploy:
+  kubectl:
+    flags:
+      apply: ["--force"]
+manifests:
+  rawYaml:
+    - ./mainnet/service.yaml
+    - ./mainnet/deployment.yaml
+    - ./mainnet/httproute.yaml
+    - ./mainnet/clienttrafficpolicy.yaml

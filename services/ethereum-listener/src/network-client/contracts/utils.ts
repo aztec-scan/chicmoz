@@ -1,5 +1,7 @@
 import {
   FeeJuicePortalAbi,
+  GovernanceAbi,
+  GovernanceProposerAbi,
   InboxAbi,
   OutboxAbi,
   RegistryAbi,
@@ -12,7 +14,9 @@ type AztecAbi =
   | typeof RegistryAbi
   | typeof InboxAbi
   | typeof OutboxAbi
-  | typeof FeeJuicePortalAbi;
+  | typeof FeeJuicePortalAbi
+  | typeof GovernanceAbi
+  | typeof GovernanceProposerAbi;
 
 export const getTypedContract = <T extends AztecAbi>(
   abi: T,
@@ -41,6 +45,12 @@ export type OutboxContract = ReturnType<
 export type FeeJuicePortalContract = ReturnType<
   typeof getTypedContract<typeof FeeJuicePortalAbi>
 >;
+export type GovernanceContract = ReturnType<
+  typeof getTypedContract<typeof GovernanceAbi>
+>;
+export type GovernanceProposerContract = ReturnType<
+  typeof getTypedContract<typeof GovernanceProposerAbi>
+>;
 
 export type AztecContracts = {
   rollup: RollupContract;
@@ -48,6 +58,8 @@ export type AztecContracts = {
   inbox: InboxContract;
   outbox: OutboxContract;
   feeJuicePortal: FeeJuicePortalContract;
+  governance: GovernanceContract;
+  governanceProposer: GovernanceProposerContract;
 };
 
 export type AztecContract =
@@ -55,6 +67,8 @@ export type AztecContract =
   | RegistryContract
   | InboxContract
   | OutboxContract
-  | FeeJuicePortalContract;
+  | FeeJuicePortalContract
+  | GovernanceContract
+  | GovernanceProposerContract;
 
 export type UnwatchCallback = () => void;
