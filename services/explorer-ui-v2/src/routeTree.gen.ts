@@ -22,6 +22,7 @@ const SearchLazyImport = createFileRoute('/search')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const EcosystemLazyImport = createFileRoute('/ecosystem')()
+const DevLazyImport = createFileRoute('/dev')()
 const AboutUsLazyImport = createFileRoute('/about-us')()
 const IndexLazyImport = createFileRoute('/')()
 const ValidatorsIndexLazyImport = createFileRoute('/validators/')()
@@ -90,6 +91,11 @@ const EcosystemLazyRoute = EcosystemLazyImport.update({
   path: '/ecosystem',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/ecosystem.lazy').then((d) => d.Route))
+
+const DevLazyRoute = DevLazyImport.update({
+  path: '/dev',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/dev.lazy').then((d) => d.Route))
 
 const AboutUsLazyRoute = AboutUsLazyImport.update({
   path: '/about-us',
@@ -243,6 +249,13 @@ declare module '@tanstack/react-router' {
       path: '/about-us'
       fullPath: '/about-us'
       preLoaderRoute: typeof AboutUsLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevLazyImport
       parentRoute: typeof rootRoute
     }
     '/ecosystem': {
@@ -414,6 +427,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   AboutUsLazyRoute,
+  DevLazyRoute,
   EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
   PrivacyPolicyLazyRoute,
@@ -451,6 +465,7 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/about-us",
+        "/dev",
         "/ecosystem",
         "/fee-recipients",
         "/privacy-policy",
@@ -480,6 +495,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/about-us": {
       "filePath": "about-us.lazy.tsx"
+    },
+    "/dev": {
+      "filePath": "dev.lazy.tsx"
     },
     "/ecosystem": {
       "filePath": "ecosystem.lazy.tsx"
