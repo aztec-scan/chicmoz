@@ -217,4 +217,6 @@ const hardcodedRollupGenesisBlocks = (
         return 24586322n; // NOTE: probably it will never be a lower block than this on mainnet
     }
   }
+  // Fallback for unknown networks
+  return 0n;
 };
