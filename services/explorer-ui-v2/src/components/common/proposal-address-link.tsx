@@ -14,7 +14,7 @@ export const ProposalAddressLink: FC<Props> = ({
   content,
   payloadAddress,
   className,
-  showExternalLinkIcon = true,
+  showExternalLinkIcon = false,
   title = "View proposal details",
 }) => {
   const cls = `proposal-link${className ? ` ${className}` : ""}`;

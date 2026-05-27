@@ -10,6 +10,23 @@ import {
   l1GovernanceProposerHistoryTable,
 } from "../../../schema/l1/governance.js";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Flatten metadata JSONB into top-level fields expected by the API schema / UI. */
+const flattenProposalMetadata = <T extends { metadata: unknown }>(row: T): T & {
+  title: string | null;
+  forum_link: string | null;
+  github_pr: unknown;
+} => {
+  const meta = (row.metadata as Record<string, unknown> | null) ?? {};
+  return {
+    ...row,
+    title: (meta?.title as string | undefined) ?? null,
+    forum_link: (meta?.forum_link as string | undefined) ?? null,
+    github_pr: (meta?.github_pr as Record<string, unknown> | null) ?? null,
+  };
+};
+
 // ── Proposals ────────────────────────────────────────────────────────────────
 
 export const getProposals = async (params?: {
@@ -26,13 +43,15 @@ export const getProposals = async (params?: {
     conditions.push(eq(l1GovernanceProposalsTable.state, state));
   }
 
-  return await db()
+  const rows = await db()
     .select()
     .from(l1GovernanceProposalsTable)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(l1GovernanceProposalsTable.createdAt))
     .limit(limit)
     .offset(offset);
+
+  return rows.map(flattenProposalMetadata);
 };
 
 export const getProposalById = async (proposalId: string) => {
@@ -42,7 +61,8 @@ export const getProposalById = async (proposalId: string) => {
     .where(eq(l1GovernanceProposalsTable.proposalId, proposalId))
     .limit(1);
 
-  return results[0] ?? null;
+  const row = results[0];
+  return row ? flattenProposalMetadata(row) : null;
 };
 
 export const getProposalVotes = async (

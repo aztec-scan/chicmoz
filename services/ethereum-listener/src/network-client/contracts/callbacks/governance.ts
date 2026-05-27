@@ -7,10 +7,31 @@ import {
   chicmozL1GovernanceSignalCastSchema,
   chicmozL1GovernanceVoteCastSchema,
 } from "@chicmoz-pkg/types";
-import { getPublicHttpClient , getBlockTimestamp } from "../../client/index.js";
+import { type Address } from "viem";
+import { getBlockTimestamp, getPublicHttpClient } from "../../client/index.js";
 import { emit } from "../../../events/index.js";
 import { logger } from "../../../logger.js";
 import { asyncForEach } from "./index.js";
+
+const payloadUriAbi = [
+  {
+    type: "function",
+    name: "getURI",
+    inputs: [],
+    outputs: [{ type: "string", name: "" }],
+    stateMutability: "view",
+  },
+] as const;
+
+const proposerPayloadAbi = [
+  {
+    type: "function",
+    name: "getOriginalPayload",
+    inputs: [],
+    outputs: [{ type: "address", name: "" }],
+    stateMutability: "view",
+  },
+] as const;
 
 const onError = (name: string) => (e: Error) => {
   logger.error(`${name}: ${e.stack}`);
@@ -20,6 +41,59 @@ type OnLogsCallbackWrapperArgs = {
   isFinalized: boolean;
   updateHeight: (height: bigint) => void;
   storeHeight: () => Promise<void>;
+};
+
+const readPayloadUri = async (address: Address, blockNumber?: bigint) =>
+  await getPublicHttpClient().readContract({
+    address,
+    abi: payloadUriAbi,
+    functionName: "getURI",
+    ...(blockNumber === undefined ? {} : { blockNumber }),
+  });
+
+const readOriginalPayload = async (address: Address) =>
+  await getPublicHttpClient().readContract({
+    address,
+    abi: proposerPayloadAbi,
+    functionName: "getOriginalPayload",
+  });
+
+const resolvePayloadUri = async (proposalAddress: Address, blockNumber: bigint) => {
+  try {
+    return await readPayloadUri(proposalAddress, blockNumber);
+  } catch (atBlockError) {
+    try {
+      const uri = await readPayloadUri(proposalAddress);
+      logger.info(
+        `Fetched URI for payload ${proposalAddress} at latest block after block ${blockNumber} read failed: ${formatError(atBlockError)}`,
+      );
+      return uri;
+    } catch (latestError) {
+      try {
+        const originalPayload = await readOriginalPayload(proposalAddress);
+        if (originalPayload.toLowerCase() === proposalAddress.toLowerCase()) {
+          return null;
+        }
+        const uri = await readPayloadUri(originalPayload);
+        logger.info(
+          `Fetched URI for payload ${proposalAddress} from original payload ${originalPayload}`,
+        );
+        return uri;
+      } catch (originalPayloadError) {
+        logger.warn(
+          `Failed to fetch URI for payload ${proposalAddress} at block ${blockNumber}, latest block, and original payload fallback. blockError=${formatError(atBlockError)} latestError=${formatError(latestError)} originalPayloadError=${formatError(originalPayloadError)}`,
+        );
+        return null;
+      }
+    }
+  }
+};
+
+const formatError = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 };
 
 // ── Governance (formal proposal) callbacks ──────────────────────────────────
@@ -36,28 +110,7 @@ const proposedOnLogs =
         throw new Error("Proposed event: proposal address is undefined");
       }
 
-      // Fetch URI from the payload contract via eth_call at the event's block
-      let uri: string | null = null;
-      try {
-        uri = (await getPublicHttpClient().readContract({
-          address: log.args.proposal,
-          abi: [
-            {
-              type: "function",
-              name: "getURI",
-              inputs: [],
-              outputs: [{ type: "string", name: "" }],
-              stateMutability: "view",
-            },
-          ],
-          functionName: "getURI",
-          blockNumber: log.blockNumber,
-        }));
-      } catch {
-        logger.warn(
-          `Failed to fetch URI for payload ${log.args.proposal} at block ${log.blockNumber}`,
-        );
-      }
+      const uri = await resolvePayloadUri(log.args.proposal, log.blockNumber);
 
       await emit.governanceProposed(
         chicmozL1GovernanceProposedSchema.parse({

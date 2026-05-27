@@ -1,4 +1,5 @@
 import { type FC, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { DashtecAddressLink, Pagination, ProposalAddressLink } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
@@ -250,8 +251,9 @@ export const GovernancePage: FC = () => {
           <div>
             <div className="table-head gov-proposal-cols">
               <div>ID</div>
-              <div>Payload</div>
-              <div>Proposer</div>
+              <div>Title</div>
+              <div>Forum</div>
+              <div>GitHub PR</div>
               <div>State</div>
               <div className="right">Yea</div>
               <div className="right">Nay</div>
@@ -261,18 +263,31 @@ export const GovernancePage: FC = () => {
               const total = BigInt(p.summedYea) + BigInt(p.summedNay);
               const yeaPct = total > 0n ? Number((BigInt(p.summedYea) * 100n) / total) : 0;
               return (
-                <div key={p.proposalId} className="trow gov-proposal-cols">
+                <Link
+                  key={p.proposalId}
+                  to="/governance/proposal/$payloadAddress"
+                  params={{ payloadAddress: p.payloadAddress }}
+                  className="trow gov-proposal-cols"
+                >
                   <span className="pid">#{p.proposalId}</span>
-                  <span className="payload">
-                    <ProposalAddressLink
-                      content={truncateHashString(p.payloadAddress, 6, 4)}
-                      payloadAddress={p.payloadAddress}
-                    />
+                  <span className="title">{p.title || "—"}</span>
+                  <span className="forum-link">
+                    {p.forum_link ? (
+                      <a href={p.forum_link} target="_blank" rel="noopener noreferrer" className="external-link">
+                        Link
+                      </a>
+                    ) : (
+                      "—"
+                    )}
                   </span>
-                  <span className="proposer">
-                    {p.proposer
-                      ? truncateHashString(p.proposer, 6, 4)
-                      : "—"}
+                  <span className="github-pr">
+                    {p.github_pr ? (
+                      <a href={p.github_pr} target="_blank" rel="noopener noreferrer" className="external-link">
+                        Link
+                      </a>
+                    ) : (
+                      "—"
+                    )}
                   </span>
                   <span className="state-pill" style={{ color: stateColor(p.state) }}>
                     {p.state}
@@ -288,7 +303,7 @@ export const GovernancePage: FC = () => {
                   </span>
                   <span className="right">{fmtBigInt(p.summedNay)}</span>
                   <span className="right age">{ageStr(p.createdAt?.getTime?.() ?? 0)}</span>
-                </div>
+                </Link>
               );
             })}
             {proposalPage.paged.length === 0 && (
