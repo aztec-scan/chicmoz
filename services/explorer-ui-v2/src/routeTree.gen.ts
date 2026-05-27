@@ -20,7 +20,6 @@ const TermsAndConditionsLazyImport = createFileRoute('/terms-and-conditions')()
 const StakingLazyImport = createFileRoute('/staking')()
 const SearchLazyImport = createFileRoute('/search')()
 const PrivacyPolicyLazyImport = createFileRoute('/privacy-policy')()
-const GovernanceLazyImport = createFileRoute('/governance')()
 const FeeRecipientsLazyImport = createFileRoute('/fee-recipients')()
 const EcosystemLazyImport = createFileRoute('/ecosystem')()
 const AboutUsLazyImport = createFileRoute('/about-us')()
@@ -28,6 +27,7 @@ const IndexLazyImport = createFileRoute('/')()
 const ValidatorsIndexLazyImport = createFileRoute('/validators/')()
 const TxEffectsIndexLazyImport = createFileRoute('/tx-effects/')()
 const HealthIndexLazyImport = createFileRoute('/health/')()
+const GovernanceIndexLazyImport = createFileRoute('/governance/')()
 const ContractsIndexLazyImport = createFileRoute('/contracts/')()
 const BlocksIndexLazyImport = createFileRoute('/blocks/')()
 const ValidatorsAttesterAddressLazyImport = createFileRoute(
@@ -39,6 +39,9 @@ const HealthAztecscanLazyImport = createFileRoute('/health/aztecscan')()
 const BlocksBlockNumberLazyImport = createFileRoute('/blocks/$blockNumber')()
 const AddressAddressLazyImport = createFileRoute('/address/$address')()
 const L1AddressAddressLazyImport = createFileRoute('/l1/address/$address')()
+const GovernanceProposalPayloadAddressLazyImport = createFileRoute(
+  '/governance/proposal/$payloadAddress',
+)()
 const ContractsInstancesAddressLazyImport = createFileRoute(
   '/contracts/instances/$address',
 )()
@@ -75,11 +78,6 @@ const PrivacyPolicyLazyRoute = PrivacyPolicyLazyImport.update({
 } as any).lazy(() =>
   import('./routes/privacy-policy.lazy').then((d) => d.Route),
 )
-
-const GovernanceLazyRoute = GovernanceLazyImport.update({
-  path: '/governance',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/governance.lazy').then((d) => d.Route))
 
 const FeeRecipientsLazyRoute = FeeRecipientsLazyImport.update({
   path: '/fee-recipients',
@@ -121,6 +119,13 @@ const HealthIndexLazyRoute = HealthIndexLazyImport.update({
   path: '/health/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/health/index.lazy').then((d) => d.Route))
+
+const GovernanceIndexLazyRoute = GovernanceIndexLazyImport.update({
+  path: '/governance/',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/governance/index.lazy').then((d) => d.Route),
+)
 
 const ContractsIndexLazyRoute = ContractsIndexLazyImport.update({
   path: '/contracts/',
@@ -184,6 +189,16 @@ const L1AddressAddressLazyRoute = L1AddressAddressLazyImport.update({
   import('./routes/l1/address.$address.lazy').then((d) => d.Route),
 )
 
+const GovernanceProposalPayloadAddressLazyRoute =
+  GovernanceProposalPayloadAddressLazyImport.update({
+    path: '/governance/proposal/$payloadAddress',
+    getParentRoute: () => rootRoute,
+  } as any).lazy(() =>
+    import('./routes/governance/proposal.$payloadAddress.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const ContractsInstancesAddressLazyRoute =
   ContractsInstancesAddressLazyImport.update({
     path: '/contracts/instances/$address',
@@ -242,13 +257,6 @@ declare module '@tanstack/react-router' {
       path: '/fee-recipients'
       fullPath: '/fee-recipients'
       preLoaderRoute: typeof FeeRecipientsLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/governance': {
-      id: '/governance'
-      path: '/governance'
-      fullPath: '/governance'
-      preLoaderRoute: typeof GovernanceLazyImport
       parentRoute: typeof rootRoute
     }
     '/privacy-policy': {
@@ -335,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsIndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/governance/': {
+      id: '/governance/'
+      path: '/governance'
+      fullPath: '/governance'
+      preLoaderRoute: typeof GovernanceIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/health/': {
       id: '/health/'
       path: '/health'
@@ -361,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/contracts/instances/$address'
       fullPath: '/contracts/instances/$address'
       preLoaderRoute: typeof ContractsInstancesAddressLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/governance/proposal/$payloadAddress': {
+      id: '/governance/proposal/$payloadAddress'
+      path: '/governance/proposal/$payloadAddress'
+      fullPath: '/governance/proposal/$payloadAddress'
+      preLoaderRoute: typeof GovernanceProposalPayloadAddressLazyImport
       parentRoute: typeof rootRoute
     }
     '/l1/address/$address': {
@@ -394,7 +416,6 @@ export const routeTree = rootRoute.addChildren({
   AboutUsLazyRoute,
   EcosystemLazyRoute,
   FeeRecipientsLazyRoute,
-  GovernanceLazyRoute,
   PrivacyPolicyLazyRoute,
   SearchLazyRoute,
   StakingLazyRoute,
@@ -407,10 +428,12 @@ export const routeTree = rootRoute.addChildren({
   ValidatorsAttesterAddressLazyRoute,
   BlocksIndexLazyRoute,
   ContractsIndexLazyRoute,
+  GovernanceIndexLazyRoute,
   HealthIndexLazyRoute,
   TxEffectsIndexLazyRoute,
   ValidatorsIndexLazyRoute,
   ContractsInstancesAddressLazyRoute,
+  GovernanceProposalPayloadAddressLazyRoute,
   L1AddressAddressLazyRoute,
   ContractsClassesIdVersionsVersionLazyRoute:
     ContractsClassesIdVersionsVersionLazyRoute.addChildren({
@@ -430,7 +453,6 @@ export const routeTree = rootRoute.addChildren({
         "/about-us",
         "/ecosystem",
         "/fee-recipients",
-        "/governance",
         "/privacy-policy",
         "/search",
         "/staking",
@@ -443,10 +465,12 @@ export const routeTree = rootRoute.addChildren({
         "/validators/$attesterAddress",
         "/blocks/",
         "/contracts/",
+        "/governance/",
         "/health/",
         "/tx-effects/",
         "/validators/",
         "/contracts/instances/$address",
+        "/governance/proposal/$payloadAddress",
         "/l1/address/$address",
         "/contracts/classes/$id/versions/$version"
       ]
@@ -462,9 +486,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/fee-recipients": {
       "filePath": "fee-recipients.lazy.tsx"
-    },
-    "/governance": {
-      "filePath": "governance.lazy.tsx"
     },
     "/privacy-policy": {
       "filePath": "privacy-policy.lazy.tsx"
@@ -502,6 +523,9 @@ export const routeTree = rootRoute.addChildren({
     "/contracts/": {
       "filePath": "contracts/index.lazy.tsx"
     },
+    "/governance/": {
+      "filePath": "governance/index.lazy.tsx"
+    },
     "/health/": {
       "filePath": "health/index.lazy.tsx"
     },
@@ -513,6 +537,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/contracts/instances/$address": {
       "filePath": "contracts/instances.$address.lazy.tsx"
+    },
+    "/governance/proposal/$payloadAddress": {
+      "filePath": "governance/proposal.$payloadAddress.lazy.tsx"
     },
     "/l1/address/$address": {
       "filePath": "l1/address.$address.lazy.tsx"

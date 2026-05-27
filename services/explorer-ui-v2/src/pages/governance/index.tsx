@@ -1,5 +1,5 @@
 import { type FC, useMemo, useState } from "react";
-import { CopyableAddress, Pagination } from "~/components/common";
+import { DashtecAddressLink, Pagination, ProposalAddressLink } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
   useGovernanceConfigurations,
@@ -264,9 +264,9 @@ export const GovernancePage: FC = () => {
                 <div key={p.proposalId} className="trow gov-proposal-cols">
                   <span className="pid">#{p.proposalId}</span>
                   <span className="payload">
-                    <CopyableAddress
-                      value={p.payloadAddress}
-                      title="Copy payload address"
+                    <ProposalAddressLink
+                      content={truncateHashString(p.payloadAddress, 6, 4)}
+                      payloadAddress={p.payloadAddress}
                     />
                   </span>
                   <span className="proposer">
@@ -312,15 +312,15 @@ export const GovernancePage: FC = () => {
                 <div key={key} className="trow gov-signal-cols">
                   <span className="round">#{fmtNum(s.round)}</span>
                   <span className="payload">
-                    <CopyableAddress
-                      value={s.payloadAddress}
-                      title="Copy payload address"
+                    <ProposalAddressLink
+                      content={truncateHashString(s.payloadAddress, 6, 4)}
+                      payloadAddress={s.payloadAddress}
                     />
                   </span>
                   <span className="signaler">
-                    <CopyableAddress
-                      value={s.signaler}
-                      title="Copy signaler address"
+                    <DashtecAddressLink
+                      address={s.signaler}
+                      content={truncateHashString(s.signaler, 6, 4)}
                     />
                   </span>
                   <span className="l1-block">{fmtNum(s.l1BlockNumber)}</span>
@@ -370,10 +370,7 @@ export const GovernancePage: FC = () => {
               return (
                 <div key={h.id} className="trow gov-proposer-cols">
                   <span className="proposer">
-                    <CopyableAddress
-                      value={h.governanceProposerAddress}
-                      title="Copy proposer address"
-                    />
+                    {truncateHashString(h.governanceProposerAddress, 6, 4)}
                   </span>
                   <span className="updated">{ageStr(h.updatedAt?.getTime?.() ?? 0)}</span>
                   <span className="l1-block">{fmtNum(h.l1BlockNumber)}</span>
