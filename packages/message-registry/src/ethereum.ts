@@ -36,6 +36,27 @@ export type StakingAssetInfoEvent = {
   chainInfo: ChicmozChainInfo;
 };
 
+export type L1GovernanceUriRequestEvent = {
+  requestId: string;
+  requestedAt: number;
+  reason: "startup" | "cadence" | "manual";
+  proposals: Array<{
+    proposalId: string;
+    proposalAddress: EthAddress;
+    l1BlockNumber: bigint;
+  }>;
+  maxProposals?: number;
+};
+
+export type L1GovernanceUriResolvedEvent = {
+  requestId?: string;
+  proposalId: string;
+  proposalAddress: EthAddress;
+  uri: string | null;
+  resolvedAt: number;
+  error?: string;
+};
+
 export type L1Topic = `${L2NetworkId}_${L1NetworkId}__${keyof L1_MESSAGES}`;
 
 export function generateL1TopicName(
@@ -64,6 +85,8 @@ export type L1_MESSAGES = {
   L1_GOVERNANCE_PROPOSAL_DROPPED_EVENT: ChicmozL1GovernanceProposalDropped;
   L1_GOVERNANCE_CONFIG_UPDATED_EVENT: ChicmozL1GovernanceConfigUpdated;
   L1_GOVERNANCE_PROPOSER_UPDATED_EVENT: ChicmozL1GovernanceProposerUpdated;
+  L1_GOVERNANCE_URI_REQUEST_EVENT: L1GovernanceUriRequestEvent;
+  L1_GOVERNANCE_URI_RESOLVED_EVENT: L1GovernanceUriResolvedEvent;
 };
 
 export type L1Payload = L1_MESSAGES[keyof L1_MESSAGES];

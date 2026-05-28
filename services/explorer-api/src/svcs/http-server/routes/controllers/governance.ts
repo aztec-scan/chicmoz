@@ -18,6 +18,12 @@ import {
 // Helper to safely serialize response data that may contain BigInt values
 const safeJson = <T>(data: T): T => JSON.parse(jsonStringify(data)) as T;
 
+const compactProposalForList = <T extends { metadata?: unknown }>(proposal: T) => {
+  const rest = { ...proposal };
+  delete rest.metadata;
+  return rest;
+};
+
 // ── GET /l1/governance/proposals ─────────────────────────────────────────────
 
 export const openapi_GET_L1_GOVERNANCE_PROPOSALS: OpenAPIObject["paths"] = {
@@ -50,7 +56,7 @@ export const openapi_GET_L1_GOVERNANCE_PROPOSALS: OpenAPIObject["paths"] = {
 export const GET_L1_GOVERNANCE_PROPOSALS = asyncHandler(async (req, res) => {
   const parsed = getGovernanceProposalsSchema.parse(req);
   const proposals = await queries.getProposals(parsed.query);
-  res.status(200).json(safeJson(proposals));
+  res.status(200).json(safeJson(proposals.map(compactProposalForList)));
 });
 
 // ── GET /l1/governance/proposals/:proposalId ─────────────────────────────────

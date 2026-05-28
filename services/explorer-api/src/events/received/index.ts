@@ -28,6 +28,7 @@ import {
   governancePayloadSubmittedHandler,
   governanceConfigUpdatedHandler,
   governanceProposerUpdatedHandler,
+  governanceUriResolvedHandler,
 } from "./on-governance-events.js";
 
 export const subscribeHandlers = async () => {
@@ -58,5 +59,6 @@ export const subscribeHandlers = async () => {
     startSubscribe(governancePayloadSubmittedHandler),
     startSubscribe(governanceConfigUpdatedHandler),
     startSubscribe(governanceProposerUpdatedHandler),
+    startSubscribe(governanceUriResolvedHandler),
   ]);
 };

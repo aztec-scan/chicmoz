@@ -3776,7 +3776,7 @@
 
 /* Proposal table columns */
 .gov-proposal-cols {
-  grid-template-columns: 80px 1.5fr 80px 100px 90px 1fr 90px 70px;
+  grid-template-columns: 64px minmax(220px, 1.5fr) 80px 100px 90px 90px 90px 80px;
 }
 .gov-proposal-cols .pid {
   font-family: var(--mono);
@@ -3798,10 +3798,28 @@
   font-weight: 600;
   letter-spacing: 0.04em;
 }
+.gov-proposal-cols .title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gov-proposal-cols .forum-link,
+.gov-proposal-cols .github-pr,
+.gov-proposal-cols .vote-cell,
+.gov-proposal-cols .right {
+  min-width: 0;
+}
+.gov-proposal-cols .vote-cell {
+  justify-self: end;
+  text-align: right;
+}
 .vote-bar-wrap {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
+  min-width: 70px;
   position: relative;
 }
 .vote-bar {

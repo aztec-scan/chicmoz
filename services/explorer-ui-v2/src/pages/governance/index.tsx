@@ -53,6 +53,9 @@ const fmtBigInt = (v: bigint | string | number | null | undefined): string => {
   return fmtNum(n);
 };
 
+const getProposalTitle = (proposal: { title?: string | null; uri?: string | null }): string =>
+  proposal.title ?? proposal.uri ?? "Untitled proposal";
+
 export const GovernancePage: FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("proposals");
   const [stateFilter, setStateFilter] = useState<ProposalFilter>("all");
@@ -263,14 +266,24 @@ export const GovernancePage: FC = () => {
               const total = BigInt(p.summedYea) + BigInt(p.summedNay);
               const yeaPct = total > 0n ? Number((BigInt(p.summedYea) * 100n) / total) : 0;
               return (
-                <Link
+                <div
                   key={p.proposalId}
-                  to="/governance/proposal/$payloadAddress"
-                  params={{ payloadAddress: p.payloadAddress }}
                   className="trow gov-proposal-cols"
                 >
-                  <span className="pid">#{p.proposalId}</span>
-                  <span className="title">{p.title || "—"}</span>
+                  <Link
+                    to="/governance/proposal/$payloadAddress"
+                    params={{ payloadAddress: p.payloadAddress }}
+                    className="pid"
+                  >
+                    #{p.proposalId}
+                  </Link>
+                  <Link
+                    to="/governance/proposal/$payloadAddress"
+                    params={{ payloadAddress: p.payloadAddress }}
+                    className="title"
+                  >
+                    {getProposalTitle(p)}
+                  </Link>
                   <span className="forum-link">
                     {p.forum_link ? (
                       <a href={p.forum_link} target="_blank" rel="noopener noreferrer" className="external-link">
@@ -282,8 +295,8 @@ export const GovernancePage: FC = () => {
                   </span>
                   <span className="github-pr">
                     {p.github_pr ? (
-                      <a href={p.github_pr} target="_blank" rel="noopener noreferrer" className="external-link">
-                        Link
+                      <a href={p.github_pr.url} target="_blank" rel="noopener noreferrer" className="external-link">
+                        #{p.github_pr.number}
                       </a>
                     ) : (
                       "—"
@@ -303,7 +316,7 @@ export const GovernancePage: FC = () => {
                   </span>
                   <span className="right">{fmtBigInt(p.summedNay)}</span>
                   <span className="right age">{ageStr(p.createdAt?.getTime?.() ?? 0)}</span>
-                </Link>
+                </div>
               );
             })}
             {proposalPage.paged.length === 0 && (

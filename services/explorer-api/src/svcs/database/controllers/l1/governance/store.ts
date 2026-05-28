@@ -55,6 +55,21 @@ export const storeGovernanceProposed = async (
     });
 };
 
+export const updateGovernanceProposalUri = async ({
+  proposalId,
+  uri,
+  metadata,
+}: {
+  proposalId: string;
+  uri: string;
+  metadata: Record<string, unknown> | null;
+}) => {
+  return await db()
+    .update(l1GovernanceProposalsTable)
+    .set({ uri, metadata })
+    .where(eq(l1GovernanceProposalsTable.proposalId, proposalId));
+};
+
 export const storeGovernanceVoteCast = async (
   event: ChicmozL1GovernanceVoteCast,
 ) => {

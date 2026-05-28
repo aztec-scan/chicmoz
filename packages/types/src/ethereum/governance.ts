@@ -149,6 +149,22 @@ export type ProposalState = (typeof PROPOSAL_STATES)[number];
 
 export const proposalStateSchema = z.enum(PROPOSAL_STATES);
 
+export const governanceGithubPrSchema = z.object({
+  org: z.string(),
+  repo: z.string(),
+  number: z.coerce.number().int().positive(),
+  title: z.string(),
+  merged: z.boolean(),
+  url: z.string().url(),
+});
+
+export const governanceProposalMetadataSchema = z.object({
+  title: z.string().nullable().optional(),
+  github_pr: governanceGithubPrSchema.nullable().optional(),
+  forum_link: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+});
+
 // ── Governance API Response Schemas (database rows) ──────────────────────────
 
 /** A governance proposal as stored in the DB and returned by the API. */
@@ -170,10 +186,10 @@ export const chicmozL1GovernanceProposalSchema = z.object({
   droppedAt: z.coerce.date().nullable().optional(),
   configuration: z.record(z.unknown()).nullable().optional(),
   uri: z.string().nullable().optional(),
-  metadata: z.unknown().nullable().optional(),
+  metadata: governanceProposalMetadataSchema.nullable().optional(),
   title: z.string().nullable().optional(),
   forum_link: z.string().nullable().optional(),
-  github_pr: z.string().nullable().optional(),
+  github_pr: governanceGithubPrSchema.nullable().optional(),
   l1BlockNumber: z.coerce.bigint(),
   l1BlockHash: z.string(),
   l1BlockTimestamp: z.coerce.date(),

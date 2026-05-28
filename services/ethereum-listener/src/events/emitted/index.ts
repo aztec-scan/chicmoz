@@ -1,4 +1,7 @@
 import {
+  type L1GovernanceUriResolvedEvent,
+} from "@chicmoz-pkg/message-registry";
+import {
   ChicmozL1GenericContractEvent,
   ChicmozL1L2BlockProposed,
   ChicmozL1L2ProofVerified,
@@ -155,4 +158,10 @@ export const governanceProposerUpdated = async (
     ...event,
     l1BlockNumber: event.l1BlockNumber.toString() as unknown as bigint,
   });
+};
+
+export const governanceUriResolved = async (
+  event: L1GovernanceUriResolvedEvent,
+) => {
+  await publishMessage("L1_GOVERNANCE_URI_RESOLVED_EVENT", event);
 };

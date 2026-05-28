@@ -58,7 +58,10 @@ const readOriginalPayload = async (address: Address) =>
     functionName: "getOriginalPayload",
   });
 
-const resolvePayloadUri = async (proposalAddress: Address, blockNumber: bigint) => {
+export const resolvePayloadUri = async (
+  proposalAddress: Address,
+  blockNumber: bigint,
+) => {
   try {
     return await readPayloadUri(proposalAddress, blockNumber);
   } catch (atBlockError) {

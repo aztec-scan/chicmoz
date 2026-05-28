@@ -44,6 +44,16 @@ const fetchGitHubPR = async (
   return { title: data.title, body: data.body, merged: data.merged ?? false };
 };
 
+const extractForumLink = (body: string | null): string | null => {
+  if (!body) {
+    return null;
+  }
+  const match = body.match(
+    /https?:\/\/(?:forum\.aztec\.network|gov\.aztec\.network|[^\s)\]]*discourse[^\s)\]]*)[^\s)\]]*/i,
+  );
+  return match?.[0] ?? null;
+};
+
 const fetchIpfsContent = async (
   uri: string,
 ): Promise<string | null> => {
@@ -121,7 +131,7 @@ export const resolvePayloadMetadata = async (
           merged: pr.merged,
           url: uri,
         },
-        forum_link: null,
+        forum_link: extractForumLink(pr.body),
         description: pr.body?.slice(0, 500) ?? null,
       };
     } catch (e) {

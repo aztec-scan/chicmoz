@@ -2,6 +2,7 @@ import { EventHandler } from "@chicmoz-pkg/message-bus";
 import {
   generateL1TopicName,
   getConsumerGroupId,
+  type L1GovernanceUriResolvedEvent,
 } from "@chicmoz-pkg/message-registry";
 import {
   ChicmozL1GovernanceSignalCast,
@@ -301,4 +302,44 @@ export const governanceProposerUpdatedHandler: EventHandler = {
     "L1_GOVERNANCE_PROPOSER_UPDATED_EVENT",
   ),
   cb: onGovernanceProposerUpdated as (arg0: unknown) => Promise<void>,
+};
+
+// ── URI backfill ─────────────────────────────────────────────────────────────
+
+const onGovernanceUriResolved = async (
+  event: L1GovernanceUriResolvedEvent,
+) => {
+  logger.info(
+    `Governance URI resolved proposalId: ${event.proposalId} hasUri: ${event.uri !== null}`,
+  );
+
+  if (event.uri === null) {
+    if (event.error) {
+      logger.warn(
+        `Governance URI backfill failed proposalId: ${event.proposalId} error: ${event.error}`,
+      );
+    }
+    return;
+  }
+
+  const metadata = await resolvePayloadMetadata(event.uri);
+  await store.updateGovernanceProposalUri({
+    proposalId: event.proposalId,
+    uri: event.uri,
+    metadata,
+  });
+};
+
+export const governanceUriResolvedHandler: EventHandler = {
+  groupId: getConsumerGroupId({
+    serviceName: SERVICE_NAME,
+    networkId: L2_NETWORK_ID,
+    handlerName: "governanceUriResolvedHandler",
+  }),
+  topic: generateL1TopicName(
+    L2_NETWORK_ID,
+    getL1NetworkId(L2_NETWORK_ID),
+    "L1_GOVERNANCE_URI_RESOLVED_EVENT",
+  ),
+  cb: onGovernanceUriResolved as (arg0: unknown) => Promise<void>,
 };

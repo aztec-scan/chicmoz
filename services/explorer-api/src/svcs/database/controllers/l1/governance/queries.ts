@@ -1,4 +1,4 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc, gte, isNull } from "drizzle-orm";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import type { ProposalState } from "@chicmoz-pkg/types";
 import {
@@ -63,6 +63,32 @@ export const getProposalById = async (proposalId: string) => {
 
   const row = results[0];
   return row ? flattenProposalMetadata(row) : null;
+};
+
+export const getProposalsMissingUri = async ({
+  limit,
+  lookbackDays,
+}: {
+  limit: number;
+  lookbackDays: number;
+}) => {
+  const createdAfter = Date.now() - lookbackDays * 24 * 60 * 60 * 1000;
+
+  return await db()
+    .select({
+      proposalId: l1GovernanceProposalsTable.proposalId,
+      proposalAddress: l1GovernanceProposalsTable.payloadAddress,
+      l1BlockNumber: l1GovernanceProposalsTable.l1BlockNumber,
+    })
+    .from(l1GovernanceProposalsTable)
+    .where(
+      and(
+        isNull(l1GovernanceProposalsTable.uri),
+        gte(l1GovernanceProposalsTable.createdAt, createdAfter),
+      ),
+    )
+    .orderBy(asc(l1GovernanceProposalsTable.createdAt))
+    .limit(limit);
 };
 
 export const getProposalVotes = async (
