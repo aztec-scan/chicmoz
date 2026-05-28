@@ -1,4 +1,5 @@
 import {
+  ChicmozL1FeeJuicePortalDeposit,
   ChicmozL1GenericContractEvent,
   ChicmozL1L2BlockProposed,
   ChicmozL1L2ProofVerified,
@@ -55,4 +56,15 @@ export const stakingAssetInfo = async (event: StakingAssetInfoEvent) => {
     "STAKING_ASSET_INFO_EVENT" as Parameters<typeof publishMessage>[0],
     event,
   );
+};
+
+export const feeJuicePortalDeposit = async (
+  deposit: ChicmozL1FeeJuicePortalDeposit,
+) => {
+  await publishMessage("L1_FEE_JUICE_PORTAL_DEPOSIT_EVENT", {
+    ...deposit,
+    amount: deposit.amount.toString() as unknown as bigint,
+    index: deposit.index.toString() as unknown as bigint,
+    l1BlockNumber: deposit.l1BlockNumber.toString() as unknown as bigint,
+  });
 };

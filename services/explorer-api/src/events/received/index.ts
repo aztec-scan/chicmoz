@@ -4,6 +4,7 @@ import { chainInfoHandler } from "./on-chain-info.js";
 import { compileSourceResultHandler } from "./on-compile-source-result.js";
 import { contractInstanceBalanceHandler } from "./on-contract-instance-balance.js";
 import { droppedTxHandler } from "./on-dropped-txs.js";
+import { l1FeeJuicePortalDepositHandler } from "./on-l1-fee-juice-portal-deposit.js";
 import { l1L2ValidatorHandler } from "./on-l1-l2-validator.js";
 import {
   l1GenericContractEventHandler,
@@ -37,5 +38,6 @@ export const subscribeHandlers = async () => {
     startSubscribe(l1L2ProofVerifiedHandler),
     startSubscribe(l1GenericContractEventHandler),
     startSubscribe(stakingAssetInfoHandler),
+    startSubscribe(l1FeeJuicePortalDepositHandler),
   ]);
 };

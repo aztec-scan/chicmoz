@@ -18,5 +18,5 @@ export const GENERIC_EVENT_ALLOWLIST = {
   registry: ["CanonicalRollupUpdated"],
   inbox: [],
   outbox: [],
-  feeJuicePortal: [],
+  feeJuicePortal: ["DepositToAztecPublic", "FeesDistributed"],
 } satisfies Record<keyof AztecContracts, string[]>;

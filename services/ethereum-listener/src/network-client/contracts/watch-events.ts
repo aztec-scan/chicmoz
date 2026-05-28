@@ -2,6 +2,7 @@ import { type Log } from "viem";
 import { logger } from "../../logger.js";
 import { controllers as dbControllers } from "../../svcs/database/index.js";
 import {
+  depositToAztecPublicEventCallbacks,
   genericOnError,
   genericOnLogs,
   l2BlockProposedEventCallbacks,
@@ -94,6 +95,38 @@ export const watchRollupL2ProofVerified = async ({
   });
 };
 
+export const watchFeeJuicePortalDeposits = async ({
+  contracts,
+  latestHeight,
+}: {
+  contracts: AztecContracts;
+  latestHeight: bigint;
+}): Promise<UnwatchCallback> => {
+  const { fromBlock, updateHeight, storeHeight } =
+    await dbControllers.inMemoryHeightTracker({
+      contractName: "feeJuicePortal",
+      contractAddress: contracts.feeJuicePortal.address,
+      eventName: "DepositToAztecPublic",
+      isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+      latestHeight,
+    });
+  const callbacks = depositToAztecPublicEventCallbacks({
+    isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  });
+  return contracts.feeJuicePortal.watchEvent.DepositToAztecPublic(
+    emptyFilterArgs,
+    {
+      fromBlock,
+      onError: callbacks.onError,
+      onLogs: (logs) => {
+        void callbacks.onLogs(logs).catch(callbacks.onError);
+      },
+    },
+  );
+};
+
 export const watchAllContractsEvents = async ({
   contracts,
   latestHeight,
@@ -128,6 +161,10 @@ export const watchAllContractsEvents = async ({
     contracts,
     latestHeight,
   });
+  const unwatchFeeJuicePortalDeposits = await watchFeeJuicePortalDeposits({
+    contracts,
+    latestHeight,
+  });
 
   return () => {
     logger.info(`Unwatching generic events`);
@@ -136,6 +173,8 @@ export const watchAllContractsEvents = async ({
     unwatchRollupL2BlockProposed();
     logger.info(`Unwatching rollup L2ProofVerified events`);
     unwatchRollupL2ProofVerified();
+    logger.info(`Unwatching feeJuicePortal DepositToAztecPublic events`);
+    unwatchFeeJuicePortalDeposits();
   };
 };
 

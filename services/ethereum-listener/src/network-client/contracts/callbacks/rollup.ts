@@ -1,4 +1,5 @@
 import {
+  chicmozL1FeeJuicePortalDepositSchema,
   chicmozL1L2BlockProposedSchema,
   chicmozL1L2ProofVerifiedSchema,
   chicmozL1L2ValidatorSchema,
@@ -8,7 +9,7 @@ import { emit } from "../../../events/index.js";
 import { logger } from "../../../logger.js";
 import { getBlockTimestamp, getPublicHttpClient } from "../../client/index.js";
 import { getL1Contracts } from "../index.js";
-import { RollupContract } from "../utils.js";
+import { RollupContract, FeeJuicePortalContract } from "../utils.js";
 import { asyncForEach } from "./index.js";
 
 // TODO: Move to a more appropriate location
@@ -71,6 +72,14 @@ type SlashedEventParameters = {
   onLogs: (logs: SlashedGetEventsResult) => Promise<void>;
 };
 
+type DepositToAztecPublicGetEventsResult = Awaited<
+  ReturnType<FeeJuicePortalContract["getEvents"]["DepositToAztecPublic"]>
+>;
+
+type DepositToAztecPublicEventParameters = {
+  onLogs: (logs: DepositToAztecPublicGetEventsResult) => Promise<void>;
+};
+
 type OnLogsWrapper<
   T extends
     | L2BlockProposedEventParameters
@@ -78,7 +87,8 @@ type OnLogsWrapper<
     | DepositEventParameters
     | WithdrawInitiatedEventParameters
     | WithdrawFinalisedEventParameters
-    | SlashedEventParameters,
+    | SlashedEventParameters
+    | DepositToAztecPublicEventParameters,
 > = (args: OnLogsCallbackWrapperArgs) => T["onLogs"];
 
 const l2BlockProposedOnLogs: OnLogsWrapper<L2BlockProposedEventParameters> =
@@ -245,6 +255,47 @@ const getValidatorStateAndEmitUpdates = async ({
   );
 };
 
+const depositToAztecPublicOnLogs: OnLogsWrapper<DepositToAztecPublicEventParameters> =
+  (wrapperArgs) => async (logs) => {
+    try {
+      await asyncForEach(logs, async (log) => {
+        const { to, amount, secretHash, key, index } = log.args;
+        if (
+          to === undefined ||
+          amount === undefined ||
+          secretHash === undefined ||
+          key === undefined ||
+          index === undefined
+        ) {
+          throw new Error(
+            `DepositToAztecPublic: missing args in log ${log.transactionHash}:${log.logIndex}`,
+          );
+        }
+        await emit.feeJuicePortalDeposit(
+          chicmozL1FeeJuicePortalDepositSchema.parse({
+            l1ContractAddress: log.address,
+            l1BlockNumber: log.blockNumber,
+            l1BlockHash: log.blockHash,
+            l1TransactionHash: log.transactionHash,
+            l1LogIndex: log.logIndex,
+            isFinalized: wrapperArgs.isFinalized,
+            l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
+            to,
+            amount,
+            secretHash,
+            key,
+            index,
+          }),
+        );
+        wrapperArgs.updateHeight(log.blockNumber);
+      });
+      await wrapperArgs.storeHeight();
+    } catch (e) {
+      logger.error(`🧃 FeeJuicePortal depositToAztecPublic: ${(e as Error).stack}`);
+      throw e;
+    }
+  };
+
 export const l2BlockProposedEventCallbacks = (
   args: OnLogsCallbackWrapperArgs,
 ) => ({
@@ -277,4 +328,11 @@ export const withdrawFinalisedEventCallbacks = (
 export const slashedEventCallbacks = (args: OnLogsCallbackWrapperArgs) => ({
   onError: onError("⚔ Slashed error"),
   onLogs: slashedOnLogs(args),
+});
+
+export const depositToAztecPublicEventCallbacks = (
+  args: OnLogsCallbackWrapperArgs,
+) => ({
+  onError: onError("🧃 DepositToAztecPublic error"),
+  onLogs: depositToAztecPublicOnLogs(args),
 });

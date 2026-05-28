@@ -1,5 +1,6 @@
 import {
   ChicmozChainInfo,
+  ChicmozL1FeeJuicePortalDeposit,
   ChicmozL1GenericContractEvent,
   ChicmozL1L2BlockProposed,
   ChicmozL1L2ProofVerified,
@@ -45,6 +46,7 @@ export type L1_MESSAGES = {
   L1_L2_PROOF_VERIFIED_EVENT: ChicmozL1L2ProofVerified;
   L1_GENERIC_CONTRACT_EVENT: ChicmozL1GenericContractEvent;
   STAKING_ASSET_INFO_EVENT: StakingAssetInfoEvent;
+  L1_FEE_JUICE_PORTAL_DEPOSIT_EVENT: ChicmozL1FeeJuicePortalDeposit;
 };
 
 export type L1Payload = L1_MESSAGES[keyof L1_MESSAGES];
