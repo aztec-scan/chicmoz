@@ -1,6 +1,6 @@
 {
-  "id": "34cd7cab-4bdc-4051-ac5f-b6c15be63e73",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "cf93a0de-e746-423f-af1b-f9396a5065c6",
+  "prevId": "04483ec8-95a2-4392-824a-2656758f008a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -95,6 +95,40 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.contract_instance_balance": {
+      "name": "contract_instance_balance",
+      "schema": "",
+      "columns": {
+        "contract_address": {
+          "name": "contract_address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance": {
+          "name": "balance",
+          "type": "numeric(77, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "contract_instance_balance_pk": {
+          "name": "contract_instance_balance_pk",
+          "columns": ["contract_address", "timestamp"]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "public.dropped_tx": {
       "name": "dropped_tx",
       "schema": "",
@@ -105,8 +139,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "created_as_pending_at": {
+          "name": "created_as_pending_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -452,12 +486,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "num_txs": {
-          "name": "num_txs",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
         "blobs_hash": {
           "name": "blobs_hash",
           "type": "bytea",
@@ -635,6 +663,21 @@
           "columns": [
             {
               "expression": "header_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "global_variables_version_idx": {
+          "name": "global_variables_version_idx",
+          "columns": [
+            {
+              "expression": "version",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1221,6 +1264,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "version": {
+          "name": "version",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
         "orphan_timestamp": {
           "name": "orphan_timestamp",
           "type": "timestamp",
@@ -1240,6 +1289,42 @@
           "columns": [
             {
               "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "l2block_version_idx": {
+          "name": "l2block_version_idx",
+          "columns": [
+            {
+              "expression": "version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "l2block_height_version_idx": {
+          "name": "l2block_height_version_idx",
+          "columns": [
+            {
+              "expression": "height",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "version",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1346,6 +1431,12 @@
         },
         "contract_type": {
           "name": "contract_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_version": {
+          "name": "contract_version",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -1656,8 +1747,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "height": {
-          "name": "height",
+        "timestamp": {
+          "name": "timestamp",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -1901,12 +1992,17 @@
           "primaryKey": true,
           "notNull": true
         },
+        "fee_payer": {
+          "name": "fee_payer",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "birth_timestamp": {
           "name": "birth_timestamp",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -2024,6 +2120,50 @@
       },
       "uniqueConstraints": {}
     },
+    "public.l1_l2_validator_rollup_address": {
+      "name": "l1_l2_validator_rollup_address",
+      "schema": "",
+      "columns": {
+        "attester_address": {
+          "name": "attester_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rollup_address": {
+          "name": "rollup_address",
+          "type": "varchar(42)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "l1_l2_validator_rollup_address_attester_address_l1_l2_validator_attester_fk": {
+          "name": "l1_l2_validator_rollup_address_attester_address_l1_l2_validator_attester_fk",
+          "tableFrom": "l1_l2_validator_rollup_address",
+          "tableTo": "l1_l2_validator",
+          "columnsFrom": ["attester_address"],
+          "columnsTo": ["attester"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "l1_l2_validator_rollup_address_attester_address_timestamp_pk": {
+          "name": "l1_l2_validator_rollup_address_attester_address_timestamp_pk",
+          "columns": ["attester_address", "timestamp"]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "public.l1_l2_validator_stake": {
       "name": "l1_l2_validator_stake",
       "schema": "",
@@ -2120,12 +2260,6 @@
           "name": "attester",
           "type": "varchar(42)",
           "primaryKey": true,
-          "notNull": true
-        },
-        "rollup_address": {
-          "name": "rollup_address",
-          "type": "varchar(42)",
-          "primaryKey": false,
           "notNull": true
         },
         "first_seen_at": {
@@ -2248,9 +2382,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "rpc_node_id": {
-          "name": "rpc_node_id",
-          "type": "uuid",
+        "rpc_node_name": {
+          "name": "rpc_node_name",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -2302,12 +2436,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "l2_rpc_node_error_rpc_node_id_l2_rpc_node_id_fk": {
-          "name": "l2_rpc_node_error_rpc_node_id_l2_rpc_node_id_fk",
+        "l2_rpc_node_error_rpc_node_name_l2_rpc_node_name_fk": {
+          "name": "l2_rpc_node_error_rpc_node_name_l2_rpc_node_name_fk",
           "tableFrom": "l2_rpc_node_error",
           "tableTo": "l2_rpc_node",
-          "columnsFrom": ["rpc_node_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": ["rpc_node_name"],
+          "columnsTo": ["name"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2319,12 +2453,11 @@
       "name": "l2_rpc_node",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
+        "name": {
+          "name": "name",
+          "type": "varchar",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "rpc_url": {
           "name": "rpc_url",
@@ -2368,9 +2501,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "rpc_node_id": {
-          "name": "rpc_node_id",
-          "type": "uuid",
+        "rpc_node_name": {
+          "name": "rpc_node_name",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -2408,12 +2541,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "l2_sequencer_rpc_node_id_l2_rpc_node_id_fk": {
-          "name": "l2_sequencer_rpc_node_id_l2_rpc_node_id_fk",
+        "l2_sequencer_rpc_node_name_l2_rpc_node_name_fk": {
+          "name": "l2_sequencer_rpc_node_name_l2_rpc_node_name_fk",
           "tableFrom": "l2_sequencer",
           "tableTo": "l2_rpc_node",
-          "columnsFrom": ["rpc_node_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": ["rpc_node_name"],
+          "columnsTo": ["name"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2490,6 +2623,52 @@
           "columns": ["l2_block_hash", "status", "l2_block_number"]
         }
       },
+      "uniqueConstraints": {}
+    },
+    "public.tx_public_call_request": {
+      "name": "tx_public_call_request",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "msg_sender": {
+          "name": "msg_sender",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contract_address": {
+          "name": "contract_address",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_static_call": {
+          "name": "is_static_call",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calldata_hash": {
+          "name": "calldata_hash",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     }
   },
