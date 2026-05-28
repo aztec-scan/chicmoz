@@ -3,9 +3,9 @@ kind: Config
 metadata:
   name: chicmoz-prod-testnet
 requires:
-  - path: ./common/skaffold.manifests.yaml
-  - path: ./aztec-listener/skaffold.testnet.yaml
-  - path: ./ethereum-listener/skaffold.testnet.yaml
-  - path: ./explorer-api/skaffold.testnet.yaml
-  - path: ./explorer-ui/skaffold.testnet.yaml
-  - path: ./websocket-event-publisher/skaffold.testnet.yaml
+  - path: k8s/production/common/skaffold.manifests.yaml
+  - path: k8s/production/aztec-listener/skaffold.testnet.yaml
+  - path: k8s/production/ethereum-listener/skaffold.testnet.yaml
+  - path: k8s/production/explorer-api/skaffold.testnet.yaml
+  - path: k8s/production/explorer-ui-v2/skaffold.testnet.yaml
+  - path: k8s/production/websocket-event-publisher/skaffold.testnet.yaml

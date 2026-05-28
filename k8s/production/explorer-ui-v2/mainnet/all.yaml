@@ -5,7 +5,7 @@ metadata:
     app: explorer-ui-v2
     app.kubernetes.io/name: explorer-ui-v2
     app.kubernetes.io/part-of: chicmoz-prod
-  name: explorer-ui-v2-devnet
+  name: explorer-ui-v2-mainnet
   namespace: chicmoz-prod
 spec:
   ports:
@@ -15,7 +15,7 @@ spec:
       targetPort: http
   selector:
     app: explorer-ui-v2
-    network: devnet
+    network: mainnet
   type: ClusterIP
 ---
 apiVersion: apps/v1
@@ -25,22 +25,22 @@ metadata:
     app: explorer-ui-v2
     app.kubernetes.io/name: explorer-ui-v2
     app.kubernetes.io/part-of: chicmoz-prod
-  name: explorer-ui-v2-devnet
+  name: explorer-ui-v2-mainnet
   namespace: chicmoz-prod
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: explorer-ui-v2
-      network: devnet
+      network: mainnet
   template:
     metadata:
       labels:
         app: explorer-ui-v2
-        network: devnet
+        network: mainnet
     spec:
       containers:
-        - image: registry.digitalocean.com/aztlan-containers/explorer-ui-v2:devnet-latest
+        - image: registry.digitalocean.com/aztlan-containers/explorer-ui-v2:mainnet-latest
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
@@ -75,19 +75,24 @@ metadata:
   labels:
     app.kubernetes.io/name: explorer-ui-v2
     app.kubernetes.io/part-of: chicmoz-prod
-  name: explorer-ui-v2-devnet
+  name: explorer-ui-v2-mainnet
   namespace: chicmoz-prod
 spec:
   hostnames:
-    - devnet.aztecscan.xyz
+    - aztecscan.xyz
+    - mainnet.aztecscan.xyz
   parentRefs:
     - name: aztecscan-gateway
-      sectionName: ui-devnet-http
+      sectionName: ui-primary-http
     - name: aztecscan-gateway
-      sectionName: ui-devnet-https
+      sectionName: ui-primary-https
+    - name: aztecscan-gateway
+      sectionName: ui-mainnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: ui-mainnet-primary-https
   rules:
     - backendRefs:
-        - name: explorer-ui-v2-devnet
+        - name: explorer-ui-v2-mainnet
           port: 80
       matches:
         - path:

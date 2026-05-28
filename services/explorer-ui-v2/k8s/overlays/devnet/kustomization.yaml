@@ -11,3 +11,29 @@ resources:
 images:
   - name: registry.digitalocean.com/aztlan-containers/explorer-ui-v2
     newTag: devnet-latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: explorer-ui-v2
+      spec:
+        selector:
+          matchLabels:
+            app: explorer-ui-v2
+            network: devnet
+        template:
+          metadata:
+            labels:
+              app: explorer-ui-v2
+              network: devnet
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: explorer-ui-v2
+      spec:
+        selector:
+          app: explorer-ui-v2
+          network: devnet
