@@ -10,6 +10,8 @@ import {
   voteCastEventCallbacks,
   proposalExecutedEventCallbacks,
   proposalDroppedEventCallbacks,
+  configurationUpdatedEventCallbacks,
+  governanceProposerUpdatedEventCallbacks,
   signalCastEventCallbacks,
   payloadSubmittableEventCallbacks,
   payloadSubmittedEventCallbacks,
@@ -169,6 +171,21 @@ export const watchAllContractsEvents = async ({
       latestHeight,
       callbacksFactory: proposalDroppedEventCallbacks,
     });
+  const unwatchGovernanceConfigurationUpdated =
+    await watchGovernanceStructuredEvent({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ConfigurationUpdated",
+      latestHeight,
+      callbacksFactory: configurationUpdatedEventCallbacks,
+    });
+  const unwatchGovernanceProposerUpdated = await watchGovernanceStructuredEvent({
+    contract: contracts.governance,
+    contractName: "governance",
+    eventName: "GovernanceProposerUpdated",
+    latestHeight,
+    callbacksFactory: governanceProposerUpdatedEventCallbacks,
+  });
 
   // GovernanceProposer structured event watchers
   const unwatchSignalCast = await watchGovernanceProposerStructuredEvent({
@@ -210,6 +227,10 @@ export const watchAllContractsEvents = async ({
     unwatchGovernanceProposalExecuted();
     logger.info(`Unwatching governance ProposalDropped events`);
     unwatchGovernanceProposalDropped();
+    logger.info(`Unwatching governance ConfigurationUpdated events`);
+    unwatchGovernanceConfigurationUpdated();
+    logger.info(`Unwatching governance GovernanceProposerUpdated events`);
+    unwatchGovernanceProposerUpdated();
     logger.info(`Unwatching governanceProposer SignalCast events`);
     unwatchSignalCast();
     logger.info(`Unwatching governanceProposer PayloadSubmittable events`);

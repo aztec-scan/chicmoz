@@ -16,12 +16,16 @@ import {
   voteCastEventCallbacks,
   proposalExecutedEventCallbacks,
   proposalDroppedEventCallbacks,
+  configurationUpdatedEventCallbacks,
+  governanceProposerUpdatedEventCallbacks,
   signalCastEventCallbacks,
   payloadSubmittableEventCallbacks,
   payloadSubmittedEventCallbacks,
 } from "./callbacks/governance.js";
 import {
   GENERIC_EVENT_ALLOWLIST,
+  STRUCTURED_GOVERNANCE_EVENT_NAMES,
+  STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES,
   STRUCTURED_ROLLUP_EVENT_NAMES,
 } from "./event-allowlist.js";
 import {
@@ -131,7 +135,9 @@ const getAllGenericContractEventLogs = async ({
     const eventNames = GENERIC_EVENT_ALLOWLIST[name].filter(
       (eventName) =>
         abiEventNames.has(eventName) &&
-        !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName),
+        !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName) &&
+        !STRUCTURED_GOVERNANCE_EVENT_NAMES.has(eventName) &&
+        !STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES.has(eventName),
     );
 
     pollers.push(
@@ -618,6 +624,20 @@ export const getAllContractsEvents = async ({
       eventName: "ProposalDropped",
       latestHeight,
       callbacksFactory: proposalDroppedEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ConfigurationUpdated",
+      latestHeight,
+      callbacksFactory: configurationUpdatedEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "GovernanceProposerUpdated",
+      latestHeight,
+      callbacksFactory: governanceProposerUpdatedEventCallbacks,
     }),
   ]);
 

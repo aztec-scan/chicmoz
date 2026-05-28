@@ -10,6 +10,8 @@ export const STRUCTURED_GOVERNANCE_EVENT_NAMES = new Set([
   "VoteCast",
   "ProposalExecuted",
   "ProposalDropped",
+  "ConfigurationUpdated",
+  "GovernanceProposerUpdated",
 ]);
 
 export const STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES = new Set([
@@ -32,9 +34,6 @@ export const GENERIC_EVENT_ALLOWLIST = {
   inbox: [],
   outbox: [],
   feeJuicePortal: [],
-  governance: [
-    "GovernanceProposerUpdated",
-    "ConfigurationUpdated",
-  ],
+  governance: [],
   governanceProposer: [],
 } satisfies Record<keyof AztecContracts, string[]>;

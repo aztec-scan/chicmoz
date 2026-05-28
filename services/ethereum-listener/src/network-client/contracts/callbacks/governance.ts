@@ -1,9 +1,11 @@
 import {
   type ProposalState,
+  chicmozL1GovernanceConfigUpdatedSchema,
   chicmozL1GovernancePayloadSubmittableSchema,
   chicmozL1GovernancePayloadSubmittedSchema,
   chicmozL1GovernanceProposalDroppedSchema,
   chicmozL1GovernanceProposalExecutedSchema,
+  chicmozL1GovernanceProposerUpdatedSchema,
   chicmozL1GovernanceProposedSchema,
   chicmozL1GovernanceSignalCastSchema,
   chicmozL1GovernanceVoteCastSchema,
@@ -71,6 +73,12 @@ type ProposalSnapshot = {
     minimumVotes: bigint;
   };
 };
+
+type GovernanceConfiguration = Awaited<
+  ReturnType<
+    import("../utils.js").GovernanceContract["read"]["getConfiguration"]
+  >
+>;
 
 const stateFromIndex = (state: number): ProposalState => {
   const proposalState = PROPOSAL_STATE_BY_INDEX[state];
@@ -161,6 +169,46 @@ const readProposalSnapshot = async (
     },
   };
 };
+
+const readGovernanceConfiguration = async (
+  governanceAddress: Address,
+  blockNumber: bigint,
+): Promise<GovernanceConfiguration> => {
+  try {
+    return await getPublicHttpClient().readContract({
+      address: governanceAddress,
+      abi: GovernanceAbi,
+      functionName: "getConfiguration",
+      blockNumber,
+    });
+  } catch (atBlockError) {
+    const configuration = await getPublicHttpClient().readContract({
+      address: governanceAddress,
+      abi: GovernanceAbi,
+      functionName: "getConfiguration",
+    });
+    logger.warn(
+      `Fetched governance configuration for ${governanceAddress} at latest block after block ${blockNumber} read failed: ${formatError(atBlockError)}`,
+    );
+    return configuration;
+  }
+};
+
+const governanceConfigurationForEvent = (
+  configuration: GovernanceConfiguration,
+) => ({
+  proposeConfig: {
+    lockDelay: configuration.proposeConfig.lockDelay,
+    lockAmount: configuration.proposeConfig.lockAmount,
+  },
+  votingDelay: configuration.votingDelay,
+  votingDuration: configuration.votingDuration,
+  executionDelay: configuration.executionDelay,
+  gracePeriod: configuration.gracePeriod,
+  quorum: configuration.quorum,
+  requiredYeaMargin: configuration.requiredYeaMargin,
+  minimumVotes: configuration.minimumVotes,
+});
 
 const requireProposalId = (proposalId: bigint | undefined, eventName: string) => {
   if (proposalId === undefined) {
@@ -445,6 +493,86 @@ export const proposalDroppedEventCallbacks = (
   onLogs: proposalDroppedOnLogs(args),
 });
 
+// ── ConfigurationUpdated ─────────────────────────────────────────────────────
+
+type ConfigurationUpdatedGetEventsResult = Awaited<
+  ReturnType<
+    import("../utils.js").GovernanceContract["getEvents"]["ConfigurationUpdated"]
+  >
+>;
+
+const configurationUpdatedOnLogs =
+  (wrapperArgs: OnLogsCallbackWrapperArgs) =>
+  async (logs: ConfigurationUpdatedGetEventsResult) => {
+    await asyncForEach(logs, async (log) => {
+      const configuration = await readGovernanceConfiguration(
+        log.address,
+        log.blockNumber,
+      );
+      await emit.governanceConfigUpdated(
+        chicmozL1GovernanceConfigUpdatedSchema.parse({
+          configuration: governanceConfigurationForEvent(configuration),
+          l1BlockNumber: log.blockNumber,
+          l1BlockHash: log.blockHash,
+          l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
+          l1TransactionHash: log.transactionHash,
+          l1LogIndex: log.logIndex,
+          isFinalized: wrapperArgs.isFinalized,
+        }),
+      );
+      wrapperArgs.updateHeight(log.blockNumber);
+    });
+    await wrapperArgs.storeHeight();
+  };
+
+export const configurationUpdatedEventCallbacks = (
+  args: OnLogsCallbackWrapperArgs,
+) => ({
+  onError: onError("Governance ConfigurationUpdated error"),
+  onLogs: configurationUpdatedOnLogs(args),
+});
+
+// ── GovernanceProposerUpdated ────────────────────────────────────────────────
+
+type GovernanceProposerUpdatedGetEventsResult = Awaited<
+  ReturnType<
+    import("../utils.js").GovernanceContract["getEvents"]["GovernanceProposerUpdated"]
+  >
+>;
+
+const governanceProposerUpdatedOnLogs =
+  (wrapperArgs: OnLogsCallbackWrapperArgs) =>
+  async (logs: GovernanceProposerUpdatedGetEventsResult) => {
+    await asyncForEach(logs, async (log) => {
+      if (log.args.governanceProposer === undefined) {
+        throw new Error(
+          "GovernanceProposerUpdated event: governanceProposer is undefined",
+        );
+      }
+
+      await emit.governanceProposerUpdated(
+        chicmozL1GovernanceProposerUpdatedSchema.parse({
+          governanceProposerAddress: log.args.governanceProposer,
+          l1BlockNumber: log.blockNumber,
+          l1BlockHash: log.blockHash,
+          l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
+          l1TransactionHash: log.transactionHash,
+          l1LogIndex: log.logIndex,
+          isFinalized: wrapperArgs.isFinalized,
+        }),
+      );
+      wrapperArgs.updateHeight(log.blockNumber);
+    });
+    await wrapperArgs.storeHeight();
+  };
+
+export const governanceProposerUpdatedEventCallbacks = (
+  args: OnLogsCallbackWrapperArgs,
+) => ({
+  onError: onError("Governance GovernanceProposerUpdated error"),
+  onLogs: governanceProposerUpdatedOnLogs(args),
+});
+
 // ── GovernanceProposer (signaling) callbacks ────────────────────────────────
 
 type SignalCastGetEventsResult = Awaited<
@@ -551,7 +679,3 @@ export const payloadSubmittedEventCallbacks = (
   onError: onError("GovernanceProposer PayloadSubmitted error"),
   onLogs: payloadSubmittedOnLogs(args),
 });
-
-// ── Governance configuration / proposer history (generic) ────────────────────
-// These are handled by the generic event allowlist + genericOnLogs in callbacks/index.ts
-// No structured callbacks needed — they flow through L1_GENERIC_CONTRACT_EVENT.

@@ -45,6 +45,21 @@ const governanceConfigurationForMessage = (
         ]),
       ) as unknown as ChicmozL1GovernanceProposed["configuration"];
 
+const stringifyBigInts = (value: unknown): unknown => {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => stringifyBigInts(item));
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, stringifyBigInts(entry)]),
+    );
+  }
+  return value;
+};
+
 export const l1Validator = async (validators: ChicmozL1L2Validator[]) => {
   const objsToSend = validators.map((validator) => ({
     ...validator,
@@ -181,6 +196,10 @@ export const governanceConfigUpdated = async (
 ) => {
   await publishMessage("L1_GOVERNANCE_CONFIG_UPDATED_EVENT", {
     ...event,
+    configuration: stringifyBigInts(event.configuration) as Record<
+      string,
+      unknown
+    >,
     l1BlockNumber: event.l1BlockNumber.toString() as unknown as bigint,
   });
 };
