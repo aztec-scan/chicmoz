@@ -69,6 +69,16 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L1_CONTRACT_EVENTS,
   ...controller.openapi_GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
 
+  ...controller.openapi_GET_L1_GOVERNANCE_PROPOSALS,
+  ...controller.openapi_GET_L1_GOVERNANCE_PROPOSAL,
+  ...controller.openapi_GET_L1_GOVERNANCE_PROPOSAL_VOTES,
+  ...controller.openapi_GET_L1_GOVERNANCE_PROPOSAL_SIGNALS,
+  ...controller.openapi_GET_L1_GOVERNANCE_SIGNALS,
+  ...controller.openapi_GET_L1_GOVERNANCE_SIGNALS_BY_ROUND,
+  ...controller.openapi_GET_L1_GOVERNANCE_SIGNALS_BY_PAYLOAD,
+  ...controller.openapi_GET_L1_GOVERNANCE_CONFIGURATIONS,
+  ...controller.openapi_GET_L1_GOVERNANCE_PROPOSER_HISTORY,
+
   ...controller.openapi_GET_CHAIN_INFO,
   ...controller.openapi_GET_L2_TIPS,
   ...controller.openapi_GET_ROLLUP_VERSIONS,
@@ -302,6 +312,35 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
   );
   router.get(paths.l1ContractEvents, controller.GET_L1_CONTRACT_EVENTS);
+
+  // Governance routes
+  router.get(paths.governanceProposals, controller.GET_L1_GOVERNANCE_PROPOSALS);
+  router.get(paths.governanceProposal, controller.GET_L1_GOVERNANCE_PROPOSAL);
+  router.get(
+    paths.governanceProposalVotes,
+    controller.GET_L1_GOVERNANCE_PROPOSAL_VOTES,
+  );
+  router.get(
+    paths.governanceProposalSignals,
+    controller.GET_L1_GOVERNANCE_PROPOSAL_SIGNALS,
+  );
+  router.get(paths.governanceSignals, controller.GET_L1_GOVERNANCE_SIGNALS);
+  router.get(
+    paths.governanceSignalsByRound,
+    controller.GET_L1_GOVERNANCE_SIGNALS_BY_ROUND,
+  );
+  router.get(
+    paths.governanceSignalsByPayload,
+    controller.GET_L1_GOVERNANCE_SIGNALS_BY_PAYLOAD,
+  );
+  router.get(
+    paths.governanceConfigurations,
+    controller.GET_L1_GOVERNANCE_CONFIGURATIONS,
+  );
+  router.get(
+    paths.governanceProposerHistory,
+    controller.GET_L1_GOVERNANCE_PROPOSER_HISTORY,
+  );
 
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);
   router.get(paths.l2Tips, controller.GET_L2_TIPS);

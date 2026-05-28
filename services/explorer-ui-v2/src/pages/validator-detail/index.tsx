@@ -16,7 +16,7 @@ import {
 import {
   ageStr,
   fmtNum,
-  formatFees,
+  formatStake,
   getStakingAssetSymbol,
   toIsoUtc,
   truncateHashString,
@@ -88,7 +88,7 @@ export const ValidatorDetailPage: FC = () => {
         <div className="meta-row">
           <StatusPill status={status} />
           <span className="meta-line">
-            staked {formatFees(validator.stake, stakingAssetDecimals, 2)} ·
+            staked {formatStake(validator.stake, stakingAssetDecimals, 2)} ·
             first seen {ageStr(validator.firstSeenAt)}
           </span>
         </div>
@@ -98,7 +98,7 @@ export const ValidatorDetailPage: FC = () => {
         <div className="sc">
           <div className="lbl">Current stake</div>
           <div className="val">
-            {formatFees(validator.stake, stakingAssetDecimals, 2)}
+            {formatStake(validator.stake, stakingAssetDecimals, 2)}
             <TokenEtherscanLink
               symbol={stakingAssetSymbol}
               address={stakingAssetAddress}
@@ -151,7 +151,7 @@ export const ValidatorDetailPage: FC = () => {
             <AddressEtherscanLink address={validator.rollupAddress} />
           </DetailField>
           <DetailField label="Stake" width="wide">
-            {formatFees(validator.stake, stakingAssetDecimals, 4)}{" "}
+            {formatStake(validator.stake, stakingAssetDecimals, 4)}{" "}
             <TokenEtherscanLink
               symbol={stakingAssetSymbol}
               address={stakingAssetAddress}

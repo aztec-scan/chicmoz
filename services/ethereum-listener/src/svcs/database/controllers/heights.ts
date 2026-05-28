@@ -132,7 +132,7 @@ export const getHeights = async ({
   contractName,
   contractAddress,
   eventName,
-  latestHeight,
+  latestHeight: _latestHeight,
 }: {
   contractName: string;
   contractAddress: string;
@@ -153,7 +153,10 @@ export const getHeights = async ({
   if (!res.length) {
     const earliestBlockNumber = await getEarliestRollupBlockNumber();
     return {
-      latestPendingHeight: latestHeight ?? earliestBlockNumber,
+      // New watchers start from genesis to backfill historical events.
+      // On first run this may take time, but it ensures no events are missed
+      // when new event types or contracts are added.
+      latestPendingHeight: earliestBlockNumber,
       latestFinalizedHeight: earliestBlockNumber,
     };
   }

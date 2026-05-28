@@ -86,6 +86,18 @@ export const aztecExplorer = {
   getTableTxEffects: "/l2/ui/tx-effects-for-table",
   getTableTxEffectsByHeight: (height: bigint) =>
     `/l2/ui/tx-effects-for-table/${height}`,
+
+  // Governance
+  getGovernanceProposals: "/l1/governance/proposals",
+  getGovernanceProposal: (proposalId: string) =>
+    `/l1/governance/proposals/${proposalId}`,
+  getGovernanceProposalVotes: (proposalId: string) =>
+    `/l1/governance/proposals/${proposalId}/votes`,
+  getGovernanceProposalSignals: (proposalId: string) =>
+    `/l1/governance/proposals/${proposalId}/signals`,
+  getGovernanceSignals: "/l1/governance/signals",
+  getGovernanceConfigurations: "/l1/governance/configurations",
+  getGovernanceProposerHistory: "/l1/governance/proposer-history",
 };
 
 export const APP_NAME = "Aztec-Scan";

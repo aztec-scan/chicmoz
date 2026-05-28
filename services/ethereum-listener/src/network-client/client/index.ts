@@ -195,17 +195,28 @@ const hardcodedRollupGenesisBlocks = (
         return 8125387n;
       case "0xf6d0d42ace06829becb78c74f49879528fc632c1":
         return 10391387n;
+      default:
+        return 8125387n; // NOTE: probably it will never be a lower block than this on sepolia
     }
   } else if (
-    networkId === "DEVNET" &&
-    rollupAddress.toLowerCase() === "0xcd1a7be18501092f3ba8d80ce5629501ba178de0"
+    networkId === "DEVNET"
   ) {
-    return 10286799n;
+    switch (rollupAddress.toLowerCase()) {
+      case "0xcd1a7be18501092f3ba8d80ce5629501ba178de0":
+        return 10286799n;
+      default:
+        return 10286799n; // NOTE: probably it will never be a lower block than this on foundry
+    }
   } else if (
-    networkId === "MAINNET" &&
-    rollupAddress.toLowerCase() === "0xae2001f7e21d5ecabf6234e9fdd1e76f50f74962"
+    networkId === "MAINNET"
   ) {
-    return 24586322n;
+    switch (rollupAddress.toLowerCase()) {
+      case "0xae2001f7e21d5ecabf6234e9fdd1e76f50f74962":
+        return 24586322n;
+      default:
+        return 24586322n; // NOTE: probably it will never be a lower block than this on mainnet
+    }
   }
+  // Fallback for unknown networks
   return 0n;
 };

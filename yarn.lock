@@ -2084,6 +2084,7 @@ __metadata:
     "@types/pg": "npm:8.11.8"
     "@typescript-eslint/eslint-plugin": "npm:6.11.0"
     "@typescript-eslint/parser": "npm:6.11.0"
+    bottleneck: "npm:2.19.5"
     drizzle-kit: "npm:0.24.2"
     drizzle-orm: "npm:0.33.0"
     eslint: "npm:8.53.0"
