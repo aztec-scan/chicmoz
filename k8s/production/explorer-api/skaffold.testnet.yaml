@@ -1,5 +1,7 @@
 apiVersion: skaffold/v4beta6
 kind: Config
+metadata:
+  name: explorer-api-testnet
 requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
@@ -17,9 +19,4 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./testnet/postgres-config.yaml
-    - ./testnet/service.yaml
-    - ./testnet/httproute.yaml
-    - ./testnet/http-filter.yaml
-    - ./testnet/securitypolicy.yaml
-    - ./testnet/deployment.yaml
+    - ./testnet/*.yaml

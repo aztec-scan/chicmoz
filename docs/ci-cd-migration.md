@@ -97,8 +97,8 @@ services/<service>/
 
 The `HTTPRoute` resource is **entirely network-specific** — every field differs per network:
 
-- `parentRefs.sectionName` — the gateway listener (e.g. `ui-v2-testnet-http` vs `ui-v2-mainnet-http`)
-- `hostnames` — the public hostname (e.g. `v2.testnet.aztecscan.xyz` vs `v2.aztecscan.xyz`)
+- `parentRefs.sectionName` — the gateway listener (e.g. `ui-testnet-primary-http` vs `ui-primary-http`)
+- `hostnames` — the public hostname (e.g. `testnet.aztecscan.xyz` vs `aztecscan.xyz`)
 - `backendRefs.name` — the service name including network suffix (e.g. `explorer-ui-v2-testnet`)
 
 There is no meaningful "base" for an httproute. Putting it in the base would require overriding every field via patches, which is more complex than just writing a plain file per overlay.
@@ -355,11 +355,11 @@ The flat per-network manifests under `k8s/production/<service>/` are superseded 
 | `services/explorer-ui-v2/k8s/base/deployment.yaml`                | Generic deployment — no namespace, no image tag |
 | `services/explorer-ui-v2/k8s/base/service.yaml`                   | ClusterIP service                               |
 | `services/explorer-ui-v2/k8s/overlays/testnet/kustomization.yaml` | Testnet: sets namespace + pins image tag        |
-| `services/explorer-ui-v2/k8s/overlays/testnet/httproute.yaml`     | Testnet HTTPRoute — `v2.testnet.aztecscan.xyz`  |
+| `services/explorer-ui-v2/k8s/overlays/testnet/httproute.yaml`     | Testnet HTTPRoute — `testnet.aztecscan.xyz`     |
 | `services/explorer-ui-v2/k8s/overlays/mainnet/kustomization.yaml` | Mainnet: sets namespace + pins image tag        |
-| `services/explorer-ui-v2/k8s/overlays/mainnet/httproute.yaml`     | Mainnet HTTPRoute — `v2.aztecscan.xyz`          |
+| `services/explorer-ui-v2/k8s/overlays/mainnet/httproute.yaml`     | Mainnet HTTPRoute — `aztecscan.xyz`             |
 | `services/explorer-ui-v2/k8s/overlays/devnet/kustomization.yaml`  | Devnet: sets namespace + pins image tag         |
-| `services/explorer-ui-v2/k8s/overlays/devnet/httproute.yaml`      | Devnet HTTPRoute — `v2.devnet.aztecscan.xyz`    |
+| `services/explorer-ui-v2/k8s/overlays/devnet/httproute.yaml`      | Devnet HTTPRoute — `devnet.aztecscan.xyz`       |
 | `.github/workflows/explorer-ui-v2.yml`                            | Single workflow — all networks, branch-derived  |
 | `k8s/local/explorer-ui-v2/skaffold.testnet.yaml`                  | Local dev — Skaffold unchanged                  |
 

@@ -1,12 +1,12 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: aztec-listener-testnet
+  name: aztec-listener-devnet
 requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
-    - image: registry.digitalocean.com/aztlan-containers/aztec-listener-testnet
+    - image: registry.digitalocean.com/aztlan-containers/aztec-listener-devnet
       context: ../../../services/aztec-listener
       docker:
         dockerfile: Dockerfile
@@ -19,4 +19,4 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./testnet/*.yaml
+    - ./devnet/*.yaml

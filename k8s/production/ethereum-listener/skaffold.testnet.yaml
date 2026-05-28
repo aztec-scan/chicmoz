@@ -1,5 +1,7 @@
 apiVersion: skaffold/v4beta6
 kind: Config
+metadata:
+  name: ethereum-listener-testnet
 requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
@@ -17,5 +19,4 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./testnet/postgres-config.yaml
-    - ./testnet/deployment.yaml
+    - ./testnet/*.yaml

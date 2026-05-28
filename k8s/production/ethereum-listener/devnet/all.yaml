@@ -1,0 +1,83 @@
+apiVersion: v1
+data:
+  POSTGRES_DB_NAME: ethereum_listener_devnet
+kind: ConfigMap
+metadata:
+  name: postgres-config-ethereum-listener-devnet
+  namespace: chicmoz-prod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ethereum-listener
+    app.kubernetes.io/name: ethereum-listener
+    app.kubernetes.io/part-of: chicmoz-prod
+  name: ethereum-listener-devnet
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ethereum-listener
+  template:
+    metadata:
+      labels:
+        app: ethereum-listener
+    spec:
+      containers:
+        - env:
+            - name: INSTANCE_NAME
+              value: ethereum-listener-devnet
+            - name: L2_NETWORK_ID
+              value: DEVNET
+            - name: ETHEREUM_HTTP_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  key: DEVNET_AZTEC_L1_HTTP
+                  name: ethereum-listener-devnet
+            - name: ETHEREUM_WS_RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  key: DEVNET_AZTEC_L1_WS
+                  name: ethereum-listener-devnet
+            - name: ETHEREUM_ALCHEMY_HTTP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: ETHEREUM_HTTP_ALCHEMY_SEPOLIA_URL
+                  name: ethereum-listener-devnet
+            - name: NODE_ENV
+              value: production
+            - name: LISTENER_DISABLED
+              value: "false"
+            - name: LISTEN_FOR_BLOCKS
+              value: "true"
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-devnet
+          image: registry.digitalocean.com/aztlan-containers/ethereum-listener-devnet:latest
+          imagePullPolicy: Always
+          name: ethereum-listener
+          resources:
+            limits:
+              cpu: 500m
+              memory: 300Mi
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - command:
+            - yarn
+            - run
+            - migrate
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-ethereum-listener-devnet
+          image: registry.digitalocean.com/aztlan-containers/ethereum-listener-devnet:latest
+          name: run-migrations
