@@ -32,7 +32,6 @@ spec:
   selector:
     matchLabels:
       app: explorer-ui-v2
-      network: mainnet
   template:
     metadata:
       labels:
