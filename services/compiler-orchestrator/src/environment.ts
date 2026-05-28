@@ -7,8 +7,11 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
 
 export const COMPILER_IMAGE = z
   .string()
-  .default("contract-compiler:4.2.0-aztecnr-rc.2")
+  .default("contract-compiler:4.0.3")
   .parse(process.env.COMPILER_IMAGE);
+
+// COMPILER_IMAGE is the image repository/base reference. The orchestrator
+// replaces or appends the tag dynamically from the Nargo.toml aztec dependency.
 
 export const K8S_NAMESPACE = z
   .string()

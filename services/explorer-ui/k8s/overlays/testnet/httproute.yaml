@@ -17,7 +17,7 @@ spec:
   rules:
     - backendRefs:
         - name: explorer-ui-testnet # hardcoded — nameSuffix does NOT transform backendRefs
-          port: 8
+          port: 80
       matches:
         - path:
             type: PathPrefix
