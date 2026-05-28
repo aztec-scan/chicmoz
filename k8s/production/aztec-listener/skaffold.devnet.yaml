@@ -1,13 +1,13 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: websocket-event-publisher-devnet
+  name: aztec-listener-devnet
 requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
-    - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-devnet
-      context: ../../../services/websocket-event-publisher
+    - image: registry.digitalocean.com/aztlan-containers/aztec-listener-devnet
+      context: ../../../services/aztec-listener
       docker:
         dockerfile: Dockerfile
       requires:

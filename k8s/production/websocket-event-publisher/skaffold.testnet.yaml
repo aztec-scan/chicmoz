@@ -1,12 +1,12 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: websocket-event-publisher-devnet
+  name: websocket-event-publisher-testnet
 requires:
   - path: ../common/skaffold.chicmoz-base-image.yaml
 build:
   artifacts:
-    - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-devnet
+    - image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet
       context: ../../../services/websocket-event-publisher
       docker:
         dockerfile: Dockerfile
@@ -19,4 +19,4 @@ deploy:
       apply: ["--force"]
 manifests:
   rawYaml:
-    - ./devnet/*.yaml
+    - ./testnet/*.yaml

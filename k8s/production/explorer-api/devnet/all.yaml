@@ -1,0 +1,200 @@
+apiVersion: v1
+data:
+  POSTGRES_DB_NAME: explorer_api_devnet
+kind: ConfigMap
+metadata:
+  name: postgres-config-explorer-api-devnet
+  namespace: chicmoz-prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: explorer-api
+    app.kubernetes.io/part-of: chicmoz-prod
+  name: explorer-api-devnet
+  namespace: chicmoz-prod
+spec:
+  ports:
+    - name: http-app
+      port: 80
+      protocol: TCP
+      targetPort: http-app-port
+  selector:
+    app: explorer-api
+    network: devnet
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-api
+    app.kubernetes.io/name: explorer-api
+    app.kubernetes.io/part-of: chicmoz-prod
+  name: explorer-api-devnet
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-api
+      network: devnet
+  template:
+    metadata:
+      labels:
+        app: explorer-api
+        network: devnet
+    spec:
+      containers:
+        - env:
+            - name: INSTANCE_NAME
+              value: devnet_explorer-api
+            - name: L2_NETWORK_ID
+              value: DEVNET
+            - name: REDIS_HOST
+              value: redis-cache
+            - name: NODE_ENV
+              value: production
+            - name: PUBLIC_API_KEY
+              value: temporary-api-key
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-devnet
+          image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet:latest
+          imagePullPolicy: Always
+          name: explorer-api
+          ports:
+            - containerPort: 80
+              name: http-app-port
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /open-api-specification
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+      initContainers:
+        - command:
+            - yarn
+            - run
+            - migrate
+          env:
+            - name: INSTANCE_NAME
+              value: devnet_explorer-api
+            - name: NODE_ENV
+              value: production
+            - name: TOTAL_DB_RESET
+              value: "false"
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-explorer-api-devnet
+          image: registry.digitalocean.com/aztlan-containers/explorer-api-devnet:latest
+          name: run-migrations
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: HTTPRouteFilter
+metadata:
+  name: explorer-api-rewrite-devnet
+  namespace: chicmoz-prod
+spec:
+  urlRewrite:
+    path:
+      replaceRegexMatch:
+        pattern: ^/v1/[^/]+/(.*)$
+        substitution: /\1
+      type: ReplaceRegexMatch
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: explorer-api-security-devnet
+  namespace: chicmoz-prod
+spec:
+  cors:
+    allowCredentials: true
+    allowHeaders:
+      - DNT
+      - Keep-Alive
+      - User-Agent
+      - X-Requested-With
+      - If-Modified-Since
+      - Cache-Control
+      - Content-Type
+      - Range
+      - Authorization
+      - access-control-allow-credentials
+      - X-Api-Key
+    allowMethods:
+      - GET
+      - PUT
+      - POST
+      - DELETE
+      - PATCH
+      - OPTIONS
+    allowOrigins:
+      - https://docs.aztecscan.xyz
+      - https://devnet.aztecscan.xyz
+    exposeHeaders:
+      - x-api-key
+    maxAge: 24h
+  extAuth:
+    failOpen: false
+    http:
+      backendRefs:
+        - name: auth-service
+          namespace: chicmoz-prod
+          port: 80
+      headersToBackend:
+        - x-forwarded-for
+        - x-forwarded-proto
+        - x-forwarded-host
+        - x-forwarded-uri
+        - x-envoy-original-path
+        - x-request-id
+        - :authority
+        - :scheme
+        - :path
+      path: /_external-auth-envoy
+    timeout: 5s
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: explorer-api-devnet
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: explorer-api-devnet
+  namespace: chicmoz-prod
+spec:
+  hostnames:
+    - api.devnet.aztecscan.xyz
+  parentRefs:
+    - name: aztecscan-gateway
+      sectionName: api-devnet-http
+    - name: aztecscan-gateway
+      sectionName: api-devnet-https
+  rules:
+    - backendRefs:
+        - name: explorer-api-devnet
+          port: 80
+      filters:
+        - extensionRef:
+            group: gateway.envoyproxy.io
+            kind: HTTPRouteFilter
+            name: explorer-api-rewrite-devnet
+          type: ExtensionRef
+      matches:
+        - path:
+            type: RegularExpression
+            value: /v1/([^/]+)/(.*)
