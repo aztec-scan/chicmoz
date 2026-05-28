@@ -260,7 +260,7 @@ export const GovernancePage: FC = () => {
         {isLoading ? (
           <div className="empty-state">loading…</div>
         ) : activeTab === "proposals" ? (
-          <div>
+          <div key="proposals">
             <div className="table-head gov-proposal-cols">
               <div>ID</div>
               <div>Title</div>
@@ -272,11 +272,9 @@ export const GovernancePage: FC = () => {
               <div className="right">Age</div>
             </div>
             {proposalPage.paged.map((p) => {
-              const total = BigInt(p.summedYea) + BigInt(p.summedNay);
-              const yeaPct = total > 0n ? Number((BigInt(p.summedYea) * 100n) / total) : 0;
               return (
                 <div
-                  key={p.proposalId}
+                  key={`proposal-${p.proposalId}`}
                   className="trow gov-proposal-cols"
                 >
                   <Link
@@ -316,10 +314,6 @@ export const GovernancePage: FC = () => {
                   </span>
                   <span className="right vote-cell">
                     <span className="vote-bar-wrap">
-                      <span
-                        className="vote-bar yea"
-                        style={{ width: `${yeaPct}%` }}
-                      />
                       <span className="vote-label">
                         {formatStake(p.summedYea, stakingAssetDecimals, 2)}
                       </span>
@@ -339,7 +333,7 @@ export const GovernancePage: FC = () => {
             )}
           </div>
         ) : activeTab === "signals" ? (
-          <div>
+          <div key="signals">
             <div className="table-head gov-signal-cols">
               <div>Round</div>
               <div>Payload</div>
@@ -350,7 +344,7 @@ export const GovernancePage: FC = () => {
             {signalPage.paged.map((s) => {
               const key = `${s.payloadAddress}-${s.round}-${s.l1LogIndex}`;
               return (
-                <div key={key} className="trow gov-signal-cols">
+                <div key={`signal-${key}`} className="trow gov-signal-cols">
                   <span className="round">#{fmtNum(s.round)}</span>
                   <span className="payload">
                     <ProposalAddressLink
@@ -376,7 +370,7 @@ export const GovernancePage: FC = () => {
             )}
           </div>
         ) : activeTab === "configurations" ? (
-          <div>
+          <div key="configurations">
             <div className="table-head gov-config-cols">
               <div>Updated</div>
               <div>L1 Block</div>
@@ -385,7 +379,7 @@ export const GovernancePage: FC = () => {
             {configPage.paged.map((c) => {
               const preview = JSON.stringify(c.configuration).slice(0, 120);
               return (
-                <div key={c.id} className="trow gov-config-cols">
+                <div key={`configuration-${c.id}`} className="trow gov-config-cols">
                   <span className="updated">{ageStr(c.updatedAt?.getTime?.() ?? 0)}</span>
                   <span className="l1-block">{fmtNum(c.l1BlockNumber)}</span>
                   <span className="config-preview">
@@ -401,7 +395,7 @@ export const GovernancePage: FC = () => {
             )}
           </div>
         ) : (
-          <div>
+          <div key="proposer-history">
             <div className="table-head gov-proposer-cols">
               <div>Proposer</div>
               <div>Updated</div>
@@ -409,7 +403,7 @@ export const GovernancePage: FC = () => {
             </div>
             {proposerPage.paged.map((h) => {
               return (
-                <div key={h.id} className="trow gov-proposer-cols">
+                <div key={`proposer-history-${h.id}`} className="trow gov-proposer-cols">
                   <span className="proposer">
                     {truncateHashString(h.governanceProposerAddress, 6, 4)}
                   </span>

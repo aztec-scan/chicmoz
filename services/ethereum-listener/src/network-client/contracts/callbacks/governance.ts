@@ -194,6 +194,20 @@ const readOriginalPayload = async (address: Address) =>
     functionName: "getOriginalPayload",
   });
 
+const resolveOriginalPayload = async (proposalAddress: Address) => {
+  try {
+    const originalPayload = await readOriginalPayload(proposalAddress);
+    return originalPayload.toLowerCase() === proposalAddress.toLowerCase()
+      ? null
+      : originalPayload;
+  } catch (error) {
+    logger.info(
+      `Could not resolve original payload for ${proposalAddress}: ${formatError(error)}`,
+    );
+    return null;
+  }
+};
+
 export const resolvePayloadUri = async (
   proposalAddress: Address,
   blockNumber: bigint,
@@ -250,7 +264,12 @@ const proposedOnLogs =
       }
 
       const proposalId = requireProposalId(log.args.proposalId, "Proposed");
-      const [uri, snapshot, governanceProposerAddress] = await Promise.all([
+      const [
+        uri,
+        snapshot,
+        governanceProposerAddress,
+        originalPayloadAddress,
+      ] = await Promise.all([
         resolvePayloadUri(log.args.proposal, log.blockNumber),
         readProposalSnapshot(log.address, proposalId),
         getPublicHttpClient().readContract({
@@ -258,12 +277,14 @@ const proposedOnLogs =
           abi: GovernanceAbi,
           functionName: "governanceProposer",
         }),
+        resolveOriginalPayload(log.args.proposal),
       ]);
 
       await emit.governanceProposed(
         chicmozL1GovernanceProposedSchema.parse({
           proposalId,
           proposalAddress: log.args.proposal,
+          originalPayloadAddress,
           proposer: snapshot.proposer,
           governanceProposerAddress,
           state: snapshot.state,

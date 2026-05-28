@@ -130,71 +130,92 @@ export const getFeeJuiceSymbol = (symbol?: string): string => symbol ?? "AZTEC";
 export const getStakingAssetSymbol = (symbol?: string): string =>
   symbol ?? "STK";
 
-export const formatFees = (
+const trimTrailingZeros = (value: string): string =>
+  value.replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
+
+const toFixedWithoutRounding = (value: number, fractionDigits: number): string => {
+  if (fractionDigits === 0) {
+    return Math.trunc(value).toString();
+  }
+  const scale = 10 ** fractionDigits;
+  return (Math.trunc(value * scale) / scale).toFixed(fractionDigits);
+};
+
+const expandExponential = (value: string): string => {
+  if (!value.includes("e")) {
+    return value;
+  }
+  const [coefficient = "", exponent = "0"] = value.split("e");
+  const exp = Number(exponent);
+  const [whole = "", fraction = ""] = coefficient.replace("-", "").split(".");
+  const sign = coefficient.startsWith("-") ? "-" : "";
+  if (exp >= 0) {
+    const digits = `${whole}${fraction.padEnd(exp, "0")}`;
+    const decimalIndex = whole.length + exp;
+    return `${sign}${digits.slice(0, decimalIndex)}${digits.length > decimalIndex ? `.${digits.slice(decimalIndex)}` : ""}`;
+  }
+  return `${sign}0.${"0".repeat(Math.max(0, Math.abs(exp) - whole.length))}${whole}${fraction}`;
+};
+
+const formatFourSignificant = (value: number): string => {
+  if (value === 0) {
+    return "0";
+  }
+  const significantDigits = 4;
+  const magnitude = Math.floor(Math.log10(Math.abs(value)));
+  const fractionDigits = significantDigits - magnitude - 1;
+  if (fractionDigits >= 0) {
+    return expandExponential(
+      toFixedWithoutRounding(value, fractionDigits),
+    );
+  }
+  const scale = 10 ** Math.abs(fractionDigits);
+  return (Math.trunc(value / scale) * scale).toFixed(0);
+};
+
+const formatCompactPositive = (value: number): string => {
+  if (value >= 1_000_000) {
+    return `${trimTrailingZeros(toFixedWithoutRounding(value / 1_000_000, 2))}M`;
+  }
+  if (value >= 1_000) {
+    return `${trimTrailingZeros(toFixedWithoutRounding(value / 1_000, 2))}k`;
+  }
+  return formatFourSignificant(value);
+};
+
+const formatTokenAmount = (
   value: bigint | string | number | null | undefined,
-  decimals = 18,
-  precision = 4,
-  withSeparators = true,
+  decimals: number,
 ): string => {
   if (value === null || value === undefined) {
     return "—";
   }
   try {
-    const big = typeof value === "bigint" ? value : BigInt(value);
-    if (big === 0n) {
-      return "0";
+    const asNumber = parseBigIntAsDecimal(value, decimals);
+    if (!Number.isFinite(asNumber)) {
+      return "—";
     }
-    const scale = 10n ** BigInt(decimals);
-    const whole = big / scale;
-    const fraction = big % scale;
-    const fractionStr = fraction
-      .toString()
-      .padStart(decimals, "0")
-      .slice(0, precision);
-    const wholeStr = withSeparators
-      ? whole.toLocaleString("en-US")
-      : whole.toString();
-    if (decimals === 0 || precision === 0) {
-      return wholeStr;
-    }
-    return `${wholeStr}.${fractionStr}`;
+    return asNumber < 0
+      ? `-${formatFourSignificant(Math.abs(asNumber))}`
+      : formatCompactPositive(asNumber);
   } catch {
     return "—";
   }
 };
 
+export const formatFees = (
+  value: bigint | string | number | null | undefined,
+  decimals = 18,
+  _precision = 4,
+  _withSeparators = true,
+): string => formatTokenAmount(value, decimals);
+
 export const formatStake = (
   value: bigint | string | number | null | undefined,
   decimals = 18,
-  precision = 4,
-  withSeparators = true,
-): string => {
-  if (value === null || value === undefined) {
-    return "—";
-  }
-  try {
-    const big = typeof value === "bigint" ? value : BigInt(value);
-    if (big === 0n) {
-      return "0";
-    }
-    const scale = 10n ** BigInt(decimals);
-    const whole = big / scale;
-    const fraction = big % scale;
-    const fractionStr = fraction
-      .toString()
-      .padStart(decimals, "0")
-      .slice(0, precision);
-    const wholeStr = withSeparators
-      ? whole.toLocaleString("en-US")
-      : whole.toString();
-    if (decimals === 0 || precision === 0) {
-      return wholeStr;
-    }
-    return `${wholeStr}.${fractionStr}`;
-  } catch {
-    return "—";
-  }
-};
+  _precision = 4,
+  _withSeparators = true,
+): string => formatTokenAmount(value, decimals);
 
 export const toHex = (value: unknown): string => {
   if (value === null || value === undefined) {

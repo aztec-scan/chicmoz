@@ -74,6 +74,7 @@ export const storeGovernanceProposed = async (
     .values({
       proposalId: event.proposalId.toString(),
       payloadAddress: event.proposalAddress,
+      originalPayloadAddress: event.originalPayloadAddress ?? null,
       proposer: event.proposer ?? null,
       governanceProposerAddress: event.governanceProposerAddress ?? null,
       state: event.state ?? "Pending",
@@ -100,6 +101,9 @@ export const storeGovernanceProposed = async (
       target: [l1GovernanceProposalsTable.proposalId],
       set: {
         payloadAddress: event.proposalAddress,
+        originalPayloadAddress:
+          event.originalPayloadAddress ??
+          sql`${l1GovernanceProposalsTable.originalPayloadAddress}`,
         proposer: event.proposer ?? null,
         governanceProposerAddress: event.governanceProposerAddress ?? null,
         state: event.state ?? "Pending",

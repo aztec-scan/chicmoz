@@ -25,6 +25,7 @@ export const l1GovernanceProposalsTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     proposalId: varchar("proposal_id", { length: 78 }).notNull(),
     payloadAddress: generateEthAddressColumn("payload_address").notNull(),
+    originalPayloadAddress: generateEthAddressColumn("original_payload_address"),
     proposer: generateEthAddressColumn("proposer"),
     governanceProposerAddress: generateEthAddressColumn(
       "governance_proposer_address",
@@ -62,6 +63,9 @@ export const l1GovernanceProposalsTable = pgTable(
     payloadAddressIdx: index("l1_gov_proposals_payload_address_idx").on(
       table.payloadAddress,
     ),
+    originalPayloadAddressIdx: index(
+      "l1_gov_proposals_original_payload_address_idx",
+    ).on(table.originalPayloadAddress),
   }),
 );
 

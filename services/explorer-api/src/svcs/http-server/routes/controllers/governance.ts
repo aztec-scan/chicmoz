@@ -179,6 +179,7 @@ export const GET_L1_GOVERNANCE_PROPOSAL_SIGNALS = asyncHandler(
     }
     const signals = await queries.getProposalSignals(
       proposal.payloadAddress,
+      proposal.originalPayloadAddress,
       parsed.query,
     );
     res.status(200).json(safeJson(signals));

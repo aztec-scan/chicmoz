@@ -1,4 +1,4 @@
-import { eq, desc, and, asc, gte, isNull } from "drizzle-orm";
+import { eq, desc, and, asc, gte, isNull, or } from "drizzle-orm";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import type { ProposalState } from "@chicmoz-pkg/types";
 import {
@@ -120,17 +120,24 @@ export const getProposalVotes = async (
 
 export const getProposalSignals = async (
   payloadAddress: string,
+  originalPayloadAddress?: string | null,
   params?: {
     offset?: number;
     limit?: number;
   },
 ) => {
   const { offset = 0, limit = 50 } = params ?? {};
+  const addressFilter = originalPayloadAddress
+    ? or(
+        eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress),
+        eq(l1GovernanceSignalsTable.payloadAddress, originalPayloadAddress),
+      )
+    : eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress);
 
   return await db()
     .select()
     .from(l1GovernanceSignalsTable)
-    .where(eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress))
+    .where(addressFilter)
     .orderBy(desc(l1GovernanceSignalsTable.l1BlockNumber))
     .limit(limit)
     .offset(offset);

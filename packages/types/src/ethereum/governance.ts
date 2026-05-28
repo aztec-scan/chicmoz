@@ -39,6 +39,7 @@ export const governanceProposalConfigurationSchema = z.object({
 export const chicmozL1GovernanceProposedSchema = z.object({
   proposalId: z.coerce.bigint(),
   proposalAddress: ethAddressSchema,
+  originalPayloadAddress: ethAddressSchema.nullable().optional(),
   proposer: ethAddressSchema.nullable().optional(),
   governanceProposerAddress: ethAddressSchema.nullable().optional(),
   state: proposalStateSchema.optional(),
@@ -220,6 +221,7 @@ export const chicmozL1GovernanceProposalSchema = z.object({
   id: z.string().uuid().optional(),
   proposalId: z.string(),
   payloadAddress: ethAddressSchema,
+  originalPayloadAddress: ethAddressSchema.nullable().optional(),
   proposer: ethAddressSchema.nullable(),
   governanceProposerAddress: ethAddressSchema.nullable(),
   state: proposalStateSchema,
