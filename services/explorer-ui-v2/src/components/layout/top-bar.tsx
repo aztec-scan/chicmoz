@@ -26,6 +26,7 @@ export type TopBarActive =
   | "validators"
   | "ecosystem"
   | "l1events"
+  | "governance"
   | "staking"
   | "health";
 
@@ -61,6 +62,12 @@ const MORE_NAV_ITEMS: NavItem[] = [
     key: "l1events",
     label: "L1 Contract Events",
     to: "/l1/contract-events",
+    group: "aztec",
+  },
+  {
+    key: "governance",
+    label: "Governance",
+    to: "/governance",
     group: "aztec",
   },
   { key: "staking", label: "Staking", to: "/staking", group: "dev" },

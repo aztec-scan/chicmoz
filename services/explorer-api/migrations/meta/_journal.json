@@ -190,6 +190,13 @@
       "when": 1779494400000,
       "tag": "0026_drop_l2_block_finalization_status",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1779960000000,
+      "tag": "0027_l1_governance",
+      "breakpoints": true
     }
   ]
 }

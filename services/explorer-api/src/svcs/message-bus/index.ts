@@ -6,9 +6,12 @@ import {
 } from "@chicmoz-pkg/message-bus";
 import {
   ChicmozMessageBusPayload,
+  L1_MESSAGES,
   L2_MESSAGES,
+  generateL1TopicName,
   generateL2TopicName,
 } from "@chicmoz-pkg/message-registry";
+import { getL1NetworkId } from "@chicmoz-pkg/types";
 import {
   INSTANCE_NAME,
   type MicroserviceBaseSvc,
@@ -21,6 +24,19 @@ export const publishMessage = async (
   message: ChicmozMessageBusPayload
 ) => {
   const topic = generateL2TopicName(L2_NETWORK_ID, eventType);
+  logger.info(`Publishing message to topic ${topic}`);
+  await pub(topic, message);
+};
+
+export const publishL1Message = async (
+  eventType: keyof L1_MESSAGES,
+  message: ChicmozMessageBusPayload
+) => {
+  const topic = generateL1TopicName(
+    L2_NETWORK_ID,
+    getL1NetworkId(L2_NETWORK_ID),
+    eventType
+  );
   logger.info(`Publishing message to topic ${topic}`);
   await pub(topic, message);
 };

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: aztec-listener-mainnet-label
+  name: aztec-listener-mainnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aztec-listener-mainnet-label
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: aztec-listener-mainnet-label
+    spec:
+      initContainers:
+        - name: run-migrations
+          image: aztec-listener:latest
+          command: ["yarn", run, "migrate"]
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener-mainnet
+          env:
+            - name: TOTAL_DB_RESET
+              value: "false"
+      containers:
+        - image: aztec-listener:latest
+          resources:
+            limits:
+              memory: 2500Mi
+              cpu: 1000m
+          name: aztec-listener
+          envFrom:
+            - configMapRef:
+                name: postgres-config-global
+            - configMapRef:
+                name: postgres-config-aztec-listener-mainnet
+          env:
+            - name: INSTANCE_NAME
+              value: "mainnet_aztec-listener"
+            - name: BLOCK_POLL_INTERVAL_MS
+              value: "5000"
+            - name: L2_NETWORK_ID
+              value: "MAINNET"
+            - name: AZTEC_LISTEN_FOR_BLOCKS
+              value: "true"
+            - name: AZTEC_LISTEN_FOR_PENDING_TXS
+              value: "true"
+            - name: AZTEC_ENABLE_FULL_SWEEP_CATCHUP
+              value: "false"
+            - name: AZTEC_RPC_URLS
+              valueFrom:
+                secretKeyRef:
+                  name: global
+                  key: AZTEC_RPC_NODES_MAINNET
+status: {}

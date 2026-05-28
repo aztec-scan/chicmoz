@@ -49,3 +49,20 @@ export const GENERIC_EVENT_DEDUP_MAX_ENTRIES = parseInt(
   process.env.GENERIC_EVENT_DEDUP_MAX_ENTRIES ?? "20000",
   10,
 );
+
+export const L1_GOVERNANCE_URI_REQUEST_MAX_AGE_MS = parseInt(
+  process.env.L1_GOVERNANCE_URI_REQUEST_MAX_AGE_MS ?? String(60 * 60 * 1000),
+  10,
+);
+export const L1_GOVERNANCE_URI_REQUEST_MAX_PROPOSALS = parseInt(
+  process.env.L1_GOVERNANCE_URI_REQUEST_MAX_PROPOSALS ?? "25",
+  10,
+);
+export const L1_GOVERNANCE_URI_REQUEST_QUEUE_MIN_TIME_MS = parseInt(
+  process.env.L1_GOVERNANCE_URI_REQUEST_QUEUE_MIN_TIME_MS ?? "250",
+  10,
+);
+export const L1_GOVERNANCE_URI_REQUEST_QUEUE_HIGH_WATER = parseInt(
+  process.env.L1_GOVERNANCE_URI_REQUEST_QUEUE_HIGH_WATER ?? "10",
+  10,
+);

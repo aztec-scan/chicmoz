@@ -12,6 +12,8 @@ import { emit } from "../index.js";
 import { logger } from "../../logger.js";
 import { storeL1ContractAddresses } from "../../svcs/database/controllers/index.js";
 import { ensureStarted } from "../../svcs/events-watcher/index.js";
+export { governanceUriRequestHandler } from "./on-governance-uri-request.js";
+
 const groupId = `${SERVICE_NAME}-${L2_NETWORK_ID}`;
 
 const erc20MetadataAbi = [

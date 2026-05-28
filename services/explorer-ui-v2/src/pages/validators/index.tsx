@@ -18,6 +18,7 @@ import { useSortableTable } from "~/hooks/use-sortable-table";
 import {
   ageStr,
   fmtNum,
+  formatStake,
   getStakingAssetSymbol,
   parseBigIntAsDecimal,
 } from "~/lib/utils";
@@ -92,9 +93,28 @@ export const ValidatorsPage: FC = () => {
 
   const toStake = (v: { stake: bigint | string | number }) =>
     parseBigIntAsDecimal(v.stake, stakingAssetDecimals);
+  const toRawStake = (value: bigint | string | number): bigint => BigInt(value);
   // Stake aggregates are computed server-side on /totals so we don't need to
   // load every validator to render the strip. Fall back to the client-side
   // reduce only if the API hasn't populated them yet (older response cache).
+  const totalStakeRaw =
+    totals?.totalStake !== undefined
+      ? toRawStake(totals.totalStake)
+      : (validators ?? []).reduce((s, v) => s + toRawStake(v.stake), 0n);
+  const validatingStakeRaw =
+    totals?.validatingStake !== undefined
+      ? toRawStake(totals.validatingStake)
+      : (validators ?? [])
+          .filter((v) => validatorStatusToDisplay(v.status) === "validating")
+          .reduce((s, v) => s + toRawStake(v.stake), 0n);
+  const maxStakeRaw =
+    totals?.maxStake !== undefined
+      ? toRawStake(totals.maxStake)
+      : (validators ?? []).reduce(
+          (m, v) => (toRawStake(v.stake) > m ? toRawStake(v.stake) : m),
+          0n,
+        );
+  const avgStakeRaw = total ? totalStakeRaw / BigInt(total) : 0n;
   const totalStake =
     totals?.totalStake !== undefined
       ? parseBigIntAsDecimal(totals.totalStake, stakingAssetDecimals)
@@ -112,7 +132,6 @@ export const ValidatorsPage: FC = () => {
           (m, v) => (toStake(v) > m ? toStake(v) : m),
           0,
         );
-  const avgStake = total ? totalStake / total : 0;
 
   return (
     <Shell active="validators">
@@ -147,19 +166,21 @@ export const ValidatorsPage: FC = () => {
         <div className="sc">
           <div className="lbl">Total stake</div>
           <div className="val">
-            {fmtNum(Math.round(totalStake))}
+            {formatStake(totalStakeRaw, stakingAssetDecimals, 1)}
             <TokenEtherscanLink
               symbol={stakingAssetSymbol}
               address={stakingAssetAddress}
               className="u"
             />
           </div>
-          <div className="sub">max {fmtNum(Math.round(maxStake))}</div>
+          <div className="sub">
+            max {formatStake(maxStakeRaw, stakingAssetDecimals, 1)}
+          </div>
         </div>
         <div className="sc">
           <div className="lbl">Validating stake</div>
           <div className="val">
-            {fmtNum(Math.round(validatingStake))}
+            {formatStake(validatingStakeRaw, stakingAssetDecimals, 1)}
             <TokenEtherscanLink
               symbol={stakingAssetSymbol}
               address={stakingAssetAddress}
@@ -175,7 +196,7 @@ export const ValidatorsPage: FC = () => {
         <div className="sc">
           <div className="lbl">Avg stake</div>
           <div className="val">
-            {avgStake.toFixed(1)}
+            {formatStake(avgStakeRaw, stakingAssetDecimals, 1)}
             <TokenEtherscanLink
               symbol={stakingAssetSymbol}
               address={stakingAssetAddress}
@@ -320,7 +341,7 @@ export const ValidatorsPage: FC = () => {
                     />
                   </span>
                   <span className="v">
-                    {toStake(v).toFixed(1)}
+                    {formatStake(v.stake, stakingAssetDecimals, 1)}
                     <TokenEtherscanLink
                       symbol={stakingAssetSymbol}
                       address={stakingAssetAddress}
