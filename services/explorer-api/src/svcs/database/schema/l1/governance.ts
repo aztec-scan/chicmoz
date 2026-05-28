@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   jsonb,
+  numeric,
   pgTable,
   uniqueIndex,
   uuid,
@@ -12,6 +13,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { generateEthAddressColumn, generateTimestampColumn } from "../utils.js";
 import type { ProposalState } from "@chicmoz-pkg/types";
+
+const generateGovernanceUint256Column = (name: string) =>
+  numeric(name, { precision: 78, scale: 0 });
 
 // ── l1_governance_proposals ──────────────────────────────────────────────────
 
@@ -26,13 +30,16 @@ export const l1GovernanceProposalsTable = pgTable(
       "governance_proposer_address",
     ),
     state: varchar("state").notNull().default("Pending").$type<ProposalState>(),
+    cachedState: varchar("cached_state").default("Pending").$type<ProposalState>(),
     createdAt: generateTimestampColumn("created_at").notNull(),
     pendingThrough: generateTimestampColumn("pending_through"),
     activeThrough: generateTimestampColumn("active_through"),
     queuedThrough: generateTimestampColumn("queued_through"),
     executableThrough: generateTimestampColumn("executable_through"),
-    summedYea: bigint("summed_yea", { mode: "bigint" }).notNull(),
-    summedNay: bigint("summed_nay", { mode: "bigint" }).notNull(),
+    summedYea: generateGovernanceUint256Column("summed_yea").notNull(),
+    summedNay: generateGovernanceUint256Column("summed_nay").notNull(),
+    snapshotTotalPower: generateGovernanceUint256Column("snapshot_total_power"),
+    votesNeeded: generateGovernanceUint256Column("votes_needed"),
     executedAt: generateTimestampColumn("executed_at"),
     droppedAt: generateTimestampColumn("dropped_at"),
     configuration: jsonb("configuration"),
@@ -67,7 +74,7 @@ export const l1GovernanceVotesTable = pgTable(
     proposalId: varchar("proposal_id", { length: 78 }).notNull(),
     voter: generateEthAddressColumn("voter").notNull(),
     support: boolean("support").notNull(),
-    amount: bigint("amount", { mode: "bigint" }).notNull(),
+    amount: generateGovernanceUint256Column("amount").notNull(),
     l1BlockNumber: bigint("l1_block_number", { mode: "bigint" }).notNull(),
     l1BlockHash: varchar("l1_block_hash").notNull(),
     l1BlockTimestamp: generateTimestampColumn("l1_block_timestamp").notNull(),

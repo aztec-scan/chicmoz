@@ -17,13 +17,16 @@ const flattenProposalMetadata = <T extends { metadata: unknown }>(row: T): T & {
   title: string | null;
   forum_link: string | null;
   github_pr: unknown;
+  votesCast: bigint;
 } => {
   const meta = (row.metadata as Record<string, unknown> | null) ?? {};
+  const voteRow = row as T & { summedYea: bigint | string; summedNay: bigint | string };
   return {
     ...row,
     title: (meta?.title as string | undefined) ?? null,
     forum_link: (meta?.forum_link as string | undefined) ?? null,
     github_pr: (meta?.github_pr as Record<string, unknown> | null) ?? null,
+    votesCast: BigInt(voteRow.summedYea) + BigInt(voteRow.summedNay),
   };
 };
 

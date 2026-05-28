@@ -163,6 +163,39 @@ export const formatFees = (
   }
 };
 
+export const formatStake = (
+  value: bigint | string | number | null | undefined,
+  decimals = 18,
+  precision = 4,
+  withSeparators = true,
+): string => {
+  if (value === null || value === undefined) {
+    return "—";
+  }
+  try {
+    const big = typeof value === "bigint" ? value : BigInt(value);
+    if (big === 0n) {
+      return "0";
+    }
+    const scale = 10n ** BigInt(decimals);
+    const whole = big / scale;
+    const fraction = big % scale;
+    const fractionStr = fraction
+      .toString()
+      .padStart(decimals, "0")
+      .slice(0, precision);
+    const wholeStr = withSeparators
+      ? whole.toLocaleString("en-US")
+      : whole.toString();
+    if (decimals === 0 || precision === 0) {
+      return wholeStr;
+    }
+    return `${wholeStr}.${fractionStr}`;
+  } catch {
+    return "—";
+  }
+};
+
 export const toHex = (value: unknown): string => {
   if (value === null || value === undefined) {
     return "";

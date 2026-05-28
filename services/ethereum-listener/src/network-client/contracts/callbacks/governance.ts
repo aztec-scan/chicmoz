@@ -1,4 +1,5 @@
 import {
+  type ProposalState,
   chicmozL1GovernancePayloadSubmittableSchema,
   chicmozL1GovernancePayloadSubmittedSchema,
   chicmozL1GovernanceProposalDroppedSchema,
@@ -7,6 +8,7 @@ import {
   chicmozL1GovernanceSignalCastSchema,
   chicmozL1GovernanceVoteCastSchema,
 } from "@chicmoz-pkg/types";
+import { GovernanceAbi } from "@aztec/l1-artifacts";
 import { type Address } from "viem";
 import { getBlockTimestamp, getPublicHttpClient } from "../../client/index.js";
 import { emit } from "../../../events/index.js";
@@ -32,6 +34,140 @@ const proposerPayloadAbi = [
     stateMutability: "view",
   },
 ] as const;
+
+const WAD = 10n ** 18n;
+
+const PROPOSAL_STATE_BY_INDEX: ProposalState[] = [
+  "Pending",
+  "Active",
+  "Queued",
+  "Executable",
+  "Rejected",
+  "Executed",
+  "Droppable",
+  "Dropped",
+  "Expired",
+];
+
+type ProposalSnapshot = {
+  proposer: Address;
+  state: ProposalState;
+  cachedState: ProposalState;
+  pendingThrough: number;
+  activeThrough: number;
+  queuedThrough: number;
+  executableThrough: number;
+  summedYea: bigint;
+  summedNay: bigint;
+  snapshotTotalPower: bigint | null;
+  votesNeeded: bigint | null;
+  configuration: {
+    votingDelay: bigint;
+    votingDuration: bigint;
+    executionDelay: bigint;
+    gracePeriod: bigint;
+    quorum: bigint;
+    requiredYeaMargin: bigint;
+    minimumVotes: bigint;
+  };
+};
+
+const stateFromIndex = (state: number): ProposalState => {
+  const proposalState = PROPOSAL_STATE_BY_INDEX[state];
+  if (proposalState === undefined) {
+    throw new Error(`Unknown governance proposal state index: ${state}`);
+  }
+  return proposalState;
+};
+
+const ceilDiv = (a: bigint, b: bigint) => (a + b - 1n) / b;
+
+const toMillis = (timestampSeconds: bigint) => Number(timestampSeconds * 1000n);
+
+const getVotesNeeded = (totalPower: bigint | null, quorum: bigint) => {
+  if (totalPower === null) {
+    return null;
+  }
+  return ceilDiv(totalPower * quorum, WAD);
+};
+
+const readSnapshotTotalPower = async (
+  governanceAddress: Address,
+  pendingThroughSeconds: bigint,
+) => {
+  try {
+    return await getPublicHttpClient().readContract({
+      address: governanceAddress,
+      abi: GovernanceAbi,
+      functionName: "totalPowerAt",
+      args: [pendingThroughSeconds],
+    });
+  } catch (error) {
+    logger.info(
+      `Could not read governance totalPowerAt(${pendingThroughSeconds}) for ${governanceAddress}: ${formatError(error)}`,
+    );
+    return null;
+  }
+};
+
+const readProposalSnapshot = async (
+  governanceAddress: Address,
+  proposalId: bigint,
+): Promise<ProposalSnapshot> => {
+  const [proposal, state] = await Promise.all([
+    getPublicHttpClient().readContract({
+      address: governanceAddress,
+      abi: GovernanceAbi,
+      functionName: "getProposal",
+      args: [proposalId],
+    }),
+    getPublicHttpClient().readContract({
+      address: governanceAddress,
+      abi: GovernanceAbi,
+      functionName: "getProposalState",
+      args: [proposalId],
+    }),
+  ]);
+
+  const pendingThroughSeconds = proposal.creation + proposal.config.votingDelay;
+  const activeThroughSeconds = pendingThroughSeconds + proposal.config.votingDuration;
+  const queuedThroughSeconds = activeThroughSeconds + proposal.config.executionDelay;
+  const executableThroughSeconds = queuedThroughSeconds + proposal.config.gracePeriod;
+  const snapshotTotalPower = await readSnapshotTotalPower(
+    governanceAddress,
+    pendingThroughSeconds,
+  );
+
+  return {
+    proposer: proposal.proposer,
+    state: stateFromIndex(Number(state)),
+    cachedState: stateFromIndex(Number(proposal.cachedState)),
+    pendingThrough: toMillis(pendingThroughSeconds),
+    activeThrough: toMillis(activeThroughSeconds),
+    queuedThrough: toMillis(queuedThroughSeconds),
+    executableThrough: toMillis(executableThroughSeconds),
+    summedYea: proposal.summedBallot.yea,
+    summedNay: proposal.summedBallot.nay,
+    snapshotTotalPower,
+    votesNeeded: getVotesNeeded(snapshotTotalPower, proposal.config.quorum),
+    configuration: {
+      votingDelay: proposal.config.votingDelay,
+      votingDuration: proposal.config.votingDuration,
+      executionDelay: proposal.config.executionDelay,
+      gracePeriod: proposal.config.gracePeriod,
+      quorum: proposal.config.quorum,
+      requiredYeaMargin: proposal.config.requiredYeaMargin,
+      minimumVotes: proposal.config.minimumVotes,
+    },
+  };
+};
+
+const requireProposalId = (proposalId: bigint | undefined, eventName: string) => {
+  if (proposalId === undefined) {
+    throw new Error(`${eventName} event: proposalId is undefined`);
+  }
+  return proposalId;
+};
 
 const onError = (name: string) => (e: Error) => {
   logger.error(`${name}: ${e.stack}`);
@@ -113,12 +249,34 @@ const proposedOnLogs =
         throw new Error("Proposed event: proposal address is undefined");
       }
 
-      const uri = await resolvePayloadUri(log.args.proposal, log.blockNumber);
+      const proposalId = requireProposalId(log.args.proposalId, "Proposed");
+      const [uri, snapshot, governanceProposerAddress] = await Promise.all([
+        resolvePayloadUri(log.args.proposal, log.blockNumber),
+        readProposalSnapshot(log.address, proposalId),
+        getPublicHttpClient().readContract({
+          address: log.address,
+          abi: GovernanceAbi,
+          functionName: "governanceProposer",
+        }),
+      ]);
 
       await emit.governanceProposed(
         chicmozL1GovernanceProposedSchema.parse({
-          proposalId: log.args.proposalId,
+          proposalId,
           proposalAddress: log.args.proposal,
+          proposer: snapshot.proposer,
+          governanceProposerAddress,
+          state: snapshot.state,
+          cachedState: snapshot.cachedState,
+          pendingThrough: snapshot.pendingThrough,
+          activeThrough: snapshot.activeThrough,
+          queuedThrough: snapshot.queuedThrough,
+          executableThrough: snapshot.executableThrough,
+          summedYea: snapshot.summedYea,
+          summedNay: snapshot.summedNay,
+          snapshotTotalPower: snapshot.snapshotTotalPower,
+          votesNeeded: snapshot.votesNeeded,
+          configuration: snapshot.configuration,
           uri: uri ?? null,
           l1BlockNumber: log.blockNumber,
           l1BlockHash: log.blockHash,
@@ -148,12 +306,20 @@ const voteCastOnLogs =
   (wrapperArgs: OnLogsCallbackWrapperArgs) =>
   async (logs: VoteCastGetEventsResult) => {
     await asyncForEach(logs, async (log) => {
+      const proposalId = requireProposalId(log.args.proposalId, "VoteCast");
+      const snapshot = await readProposalSnapshot(log.address, proposalId);
       await emit.governanceVoteCast(
         chicmozL1GovernanceVoteCastSchema.parse({
-          proposalId: log.args.proposalId,
+          proposalId,
           voter: log.args.voter,
           support: log.args.support,
           amount: log.args.amount,
+          state: snapshot.state,
+          cachedState: snapshot.cachedState,
+          summedYea: snapshot.summedYea,
+          summedNay: snapshot.summedNay,
+          snapshotTotalPower: snapshot.snapshotTotalPower,
+          votesNeeded: snapshot.votesNeeded,
           l1BlockNumber: log.blockNumber,
           l1BlockHash: log.blockHash,
           l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
@@ -184,9 +350,17 @@ const proposalExecutedOnLogs =
   (wrapperArgs: OnLogsCallbackWrapperArgs) =>
   async (logs: ProposalExecutedGetEventsResult) => {
     await asyncForEach(logs, async (log) => {
+      const proposalId = requireProposalId(log.args.proposalId, "ProposalExecuted");
+      const snapshot = await readProposalSnapshot(log.address, proposalId);
       await emit.governanceProposalExecuted(
         chicmozL1GovernanceProposalExecutedSchema.parse({
-          proposalId: log.args.proposalId,
+          proposalId,
+          state: snapshot.state,
+          cachedState: snapshot.cachedState,
+          summedYea: snapshot.summedYea,
+          summedNay: snapshot.summedNay,
+          snapshotTotalPower: snapshot.snapshotTotalPower,
+          votesNeeded: snapshot.votesNeeded,
           l1BlockNumber: log.blockNumber,
           l1BlockHash: log.blockHash,
           l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
@@ -219,9 +393,17 @@ const proposalDroppedOnLogs =
   (wrapperArgs: OnLogsCallbackWrapperArgs) =>
   async (logs: ProposalDroppedGetEventsResult) => {
     await asyncForEach(logs, async (log) => {
+      const proposalId = requireProposalId(log.args.proposalId, "ProposalDropped");
+      const snapshot = await readProposalSnapshot(log.address, proposalId);
       await emit.governanceProposalDropped(
         chicmozL1GovernanceProposalDroppedSchema.parse({
-          proposalId: log.args.proposalId,
+          proposalId,
+          state: snapshot.state,
+          cachedState: snapshot.cachedState,
+          summedYea: snapshot.summedYea,
+          summedNay: snapshot.summedNay,
+          snapshotTotalPower: snapshot.snapshotTotalPower,
+          votesNeeded: snapshot.votesNeeded,
           l1BlockNumber: log.blockNumber,
           l1BlockHash: log.blockHash,
           l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),

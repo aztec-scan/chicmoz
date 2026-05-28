@@ -20,6 +20,42 @@ import type {
   ChicmozL1GovernanceProposerUpdated,
 } from "@chicmoz-pkg/types";
 
+const toNumericString = (value: bigint | string | number | null | undefined) =>
+  value === null || value === undefined ? null : value.toString();
+
+const toTimestamp = (value: number | null | undefined) =>
+  value === null || value === undefined ? null : new Date(value).getTime();
+
+const serializeConfiguration = (configuration: Record<string, unknown> | null) => {
+  if (!configuration) {
+    return null;
+  }
+  return Object.fromEntries(
+    Object.entries(configuration).map(([key, value]) => [
+      key,
+      typeof value === "bigint" ? value.toString() : value,
+    ]),
+  );
+};
+
+const requireL1LogPosition = (
+  event: Pick<
+    ChicmozL1GovernanceVoteCast,
+    "l1TransactionHash" | "l1LogIndex" | "proposalId"
+  >,
+) => {
+  if (event.l1TransactionHash === undefined || event.l1TransactionHash === null) {
+    throw new Error(`Missing l1TransactionHash for vote ${event.proposalId}`);
+  }
+  if (event.l1LogIndex === undefined || event.l1LogIndex === null) {
+    throw new Error(`Missing l1LogIndex for vote ${event.proposalId}`);
+  }
+  return {
+    l1TransactionHash: event.l1TransactionHash,
+    l1LogIndex: event.l1LogIndex,
+  };
+};
+
 export const storeGovernanceProposed = async (
   event: ChicmozL1GovernanceProposed,
   metadata: Record<string, unknown> | null,
@@ -29,19 +65,29 @@ export const storeGovernanceProposed = async (
     throw new Error("Missing l1BlockTimestamp");
   }
   const createdAt = new Date(event.l1BlockTimestamp).getTime();
+  const proposalConfiguration = serializeConfiguration(
+    (event.configuration as Record<string, unknown> | null | undefined) ?? configuration,
+  );
 
   return await db()
     .insert(l1GovernanceProposalsTable)
     .values({
       proposalId: event.proposalId.toString(),
       payloadAddress: event.proposalAddress,
-      proposer: null, // Will be resolved later if needed
-      governanceProposerAddress: null,
-      state: "Pending",
+      proposer: event.proposer ?? null,
+      governanceProposerAddress: event.governanceProposerAddress ?? null,
+      state: event.state ?? "Pending",
+      cachedState: event.cachedState ?? "Pending",
       createdAt,
-      summedYea: 0n,
-      summedNay: 0n,
-      configuration,
+      pendingThrough: toTimestamp(event.pendingThrough),
+      activeThrough: toTimestamp(event.activeThrough),
+      queuedThrough: toTimestamp(event.queuedThrough),
+      executableThrough: toTimestamp(event.executableThrough),
+      summedYea: toNumericString(event.summedYea ?? 0n) ?? "0",
+      summedNay: toNumericString(event.summedNay ?? 0n) ?? "0",
+      snapshotTotalPower: toNumericString(event.snapshotTotalPower),
+      votesNeeded: toNumericString(event.votesNeeded),
+      configuration: proposalConfiguration,
       uri: event.uri,
       metadata,
       l1BlockNumber: event.l1BlockNumber,
@@ -50,8 +96,32 @@ export const storeGovernanceProposed = async (
       l1TransactionHash: event.l1TransactionHash ?? null,
       isFinalized: event.isFinalized,
     })
-    .onConflictDoNothing({
+    .onConflictDoUpdate({
       target: [l1GovernanceProposalsTable.proposalId],
+      set: {
+        payloadAddress: event.proposalAddress,
+        proposer: event.proposer ?? null,
+        governanceProposerAddress: event.governanceProposerAddress ?? null,
+        state: event.state ?? "Pending",
+        cachedState: event.cachedState ?? "Pending",
+        pendingThrough: toTimestamp(event.pendingThrough),
+        activeThrough: toTimestamp(event.activeThrough),
+        queuedThrough: toTimestamp(event.queuedThrough),
+        executableThrough: toTimestamp(event.executableThrough),
+        summedYea: toNumericString(event.summedYea ?? 0n) ?? "0",
+        summedNay: toNumericString(event.summedNay ?? 0n) ?? "0",
+        snapshotTotalPower: toNumericString(event.snapshotTotalPower),
+        votesNeeded: toNumericString(event.votesNeeded),
+        configuration:
+          proposalConfiguration ?? sql`${l1GovernanceProposalsTable.configuration}`,
+        uri: event.uri ?? sql`${l1GovernanceProposalsTable.uri}`,
+        metadata: metadata ?? sql`${l1GovernanceProposalsTable.metadata}`,
+        l1BlockNumber: event.l1BlockNumber,
+        l1BlockHash: event.l1BlockHash,
+        l1BlockTimestamp: event.l1BlockTimestamp,
+        l1TransactionHash: event.l1TransactionHash ?? null,
+        isFinalized: event.isFinalized,
+      },
     });
 };
 
@@ -76,6 +146,7 @@ export const storeGovernanceVoteCast = async (
   if (!event.l1BlockTimestamp) {
     throw new Error("Missing l1BlockTimestamp");
   }
+  const { l1TransactionHash, l1LogIndex } = requireL1LogPosition(event);
 
   // Insert vote
   await db()
@@ -84,12 +155,12 @@ export const storeGovernanceVoteCast = async (
       proposalId: event.proposalId.toString(),
       voter: event.voter,
       support: event.support,
-      amount: event.amount,
+      amount: event.amount.toString(),
       l1BlockNumber: event.l1BlockNumber,
       l1BlockHash: event.l1BlockHash,
       l1BlockTimestamp: event.l1BlockTimestamp,
-      l1TransactionHash: event.l1TransactionHash ?? "",
-      l1LogIndex: event.l1LogIndex ?? 0,
+      l1TransactionHash,
+      l1LogIndex,
       isFinalized: event.isFinalized,
     })
     .onConflictDoNothing({
@@ -100,26 +171,38 @@ export const storeGovernanceVoteCast = async (
       ],
     });
 
-  // Update proposal summed votes using SQL expression for bigint arithmetic
+  // Prefer the post-vote on-chain proposal snapshot over event-derived addition.
+  // This keeps the DB correct across duplicate finalized/non-finalized logs and
+  // avoids relying on PostgreSQL bigint, which cannot store Aztec governance power.
   const proposalIdStr = event.proposalId.toString();
-  if (event.support) {
+  if (event.summedYea !== undefined && event.summedNay !== undefined) {
     await db()
       .update(l1GovernanceProposalsTable)
       .set({
-        summedYea: sql`${l1GovernanceProposalsTable.summedYea} + ${event.amount}`,
+        state: event.state ?? "Active",
+        cachedState: event.cachedState ?? "Pending",
+        summedYea: event.summedYea.toString(),
+        summedNay: event.summedNay.toString(),
+        snapshotTotalPower: toNumericString(event.snapshotTotalPower),
+        votesNeeded: toNumericString(event.votesNeeded),
       })
       .where(
         eq(l1GovernanceProposalsTable.proposalId, proposalIdStr),
       );
+  } else if (event.support) {
+    await db()
+      .update(l1GovernanceProposalsTable)
+      .set({
+        summedYea: sql`${l1GovernanceProposalsTable.summedYea} + ${event.amount.toString()}`,
+      })
+      .where(eq(l1GovernanceProposalsTable.proposalId, proposalIdStr));
   } else {
     await db()
       .update(l1GovernanceProposalsTable)
       .set({
-        summedNay: sql`${l1GovernanceProposalsTable.summedNay} + ${event.amount}`,
+        summedNay: sql`${l1GovernanceProposalsTable.summedNay} + ${event.amount.toString()}`,
       })
-      .where(
-        eq(l1GovernanceProposalsTable.proposalId, proposalIdStr),
-      );
+      .where(eq(l1GovernanceProposalsTable.proposalId, proposalIdStr));
   }
 };
 
@@ -130,10 +213,22 @@ export const storeGovernanceProposalExecuted = async (
     throw new Error("Missing l1BlockTimestamp");
   }
 
+  const proposalSnapshotUpdate =
+    event.summedYea !== undefined && event.summedNay !== undefined
+      ? {
+          summedYea: event.summedYea.toString(),
+          summedNay: event.summedNay.toString(),
+          snapshotTotalPower: toNumericString(event.snapshotTotalPower),
+          votesNeeded: toNumericString(event.votesNeeded),
+        }
+      : {};
+
   await db()
     .update(l1GovernanceProposalsTable)
     .set({
       state: "Executed",
+      cachedState: event.cachedState ?? "Executed",
+      ...proposalSnapshotUpdate,
       executedAt: new Date(event.l1BlockTimestamp).getTime(),
     })
     .where(
@@ -151,10 +246,22 @@ export const storeGovernanceProposalDropped = async (
     throw new Error("Missing l1BlockTimestamp");
   }
 
+  const proposalSnapshotUpdate =
+    event.summedYea !== undefined && event.summedNay !== undefined
+      ? {
+          summedYea: event.summedYea.toString(),
+          summedNay: event.summedNay.toString(),
+          snapshotTotalPower: toNumericString(event.snapshotTotalPower),
+          votesNeeded: toNumericString(event.votesNeeded),
+        }
+      : {};
+
   await db()
     .update(l1GovernanceProposalsTable)
     .set({
       state: "Dropped",
+      cachedState: event.cachedState ?? "Dropped",
+      ...proposalSnapshotUpdate,
       droppedAt: new Date(event.l1BlockTimestamp).getTime(),
     })
     .where(

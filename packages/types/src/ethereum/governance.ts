@@ -1,12 +1,57 @@
 import { z } from "zod";
 import { frTimestampSchema } from "../aztec/utils.js";
-import { ethAddressSchema } from "../index.js";
+
+const ethAddressSchema = z
+  .string()
+  .length(42)
+  .regex(/^0x[0-9a-fA-F]+$/);
+
+// ── Governance Proposal States ───────────────────────────────────────────────
+
+/** Valid lifecycle states for a governance proposal. */
+export const PROPOSAL_STATES = [
+  "Pending",
+  "Active",
+  "Queued",
+  "Executable",
+  "Rejected",
+  "Executed",
+  "Droppable",
+  "Dropped",
+  "Expired",
+] as const;
+export type ProposalState = (typeof PROPOSAL_STATES)[number];
+
+export const proposalStateSchema = z.enum(PROPOSAL_STATES);
+
+export const governanceProposalConfigurationSchema = z.object({
+  votingDelay: z.coerce.bigint(),
+  votingDuration: z.coerce.bigint(),
+  executionDelay: z.coerce.bigint(),
+  gracePeriod: z.coerce.bigint(),
+  quorum: z.coerce.bigint(),
+  requiredYeaMargin: z.coerce.bigint(),
+  minimumVotes: z.coerce.bigint(),
+});
 
 // ── Governance Proposal Events ──────────────────────────────────────────────
 
 export const chicmozL1GovernanceProposedSchema = z.object({
   proposalId: z.coerce.bigint(),
   proposalAddress: ethAddressSchema,
+  proposer: ethAddressSchema.nullable().optional(),
+  governanceProposerAddress: ethAddressSchema.nullable().optional(),
+  state: proposalStateSchema.optional(),
+  cachedState: proposalStateSchema.optional(),
+  pendingThrough: frTimestampSchema.optional().nullable(),
+  activeThrough: frTimestampSchema.optional().nullable(),
+  queuedThrough: frTimestampSchema.optional().nullable(),
+  executableThrough: frTimestampSchema.optional().nullable(),
+  summedYea: z.coerce.bigint().optional(),
+  summedNay: z.coerce.bigint().optional(),
+  snapshotTotalPower: z.coerce.bigint().optional().nullable(),
+  votesNeeded: z.coerce.bigint().optional().nullable(),
+  configuration: governanceProposalConfigurationSchema.nullable().optional(),
   uri: z.string().nullable(),
   l1BlockNumber: z.coerce.bigint(),
   l1BlockHash: z.string().startsWith("0x"),
@@ -24,6 +69,12 @@ export const chicmozL1GovernanceVoteCastSchema = z.object({
   voter: ethAddressSchema,
   support: z.boolean(),
   amount: z.coerce.bigint(),
+  state: proposalStateSchema.optional(),
+  cachedState: proposalStateSchema.optional(),
+  summedYea: z.coerce.bigint().optional(),
+  summedNay: z.coerce.bigint().optional(),
+  snapshotTotalPower: z.coerce.bigint().optional().nullable(),
+  votesNeeded: z.coerce.bigint().optional().nullable(),
   l1BlockNumber: z.coerce.bigint(),
   l1BlockHash: z.string().startsWith("0x"),
   l1BlockTimestamp: frTimestampSchema.optional().nullable(),
@@ -37,6 +88,12 @@ export type ChicmozL1GovernanceVoteCast = z.infer<
 
 export const chicmozL1GovernanceProposalExecutedSchema = z.object({
   proposalId: z.coerce.bigint(),
+  state: proposalStateSchema.optional(),
+  cachedState: proposalStateSchema.optional(),
+  summedYea: z.coerce.bigint().optional(),
+  summedNay: z.coerce.bigint().optional(),
+  snapshotTotalPower: z.coerce.bigint().optional().nullable(),
+  votesNeeded: z.coerce.bigint().optional().nullable(),
   l1BlockNumber: z.coerce.bigint(),
   l1BlockHash: z.string().startsWith("0x"),
   l1BlockTimestamp: frTimestampSchema.optional().nullable(),
@@ -50,6 +107,12 @@ export type ChicmozL1GovernanceProposalExecuted = z.infer<
 
 export const chicmozL1GovernanceProposalDroppedSchema = z.object({
   proposalId: z.coerce.bigint(),
+  state: proposalStateSchema.optional(),
+  cachedState: proposalStateSchema.optional(),
+  summedYea: z.coerce.bigint().optional(),
+  summedNay: z.coerce.bigint().optional(),
+  snapshotTotalPower: z.coerce.bigint().optional().nullable(),
+  votesNeeded: z.coerce.bigint().optional().nullable(),
   l1BlockNumber: z.coerce.bigint(),
   l1BlockHash: z.string().startsWith("0x"),
   l1BlockTimestamp: frTimestampSchema.optional().nullable(),
@@ -134,21 +197,6 @@ export type ChicmozL1GovernanceProposerUpdated = z.infer<
   typeof chicmozL1GovernanceProposerUpdatedSchema
 >;
 
-// ── Governance Proposal States ───────────────────────────────────────────────
-
-/** Valid lifecycle states for a governance proposal (as stored in the DB). */
-export const PROPOSAL_STATES = [
-  "Pending",
-  "Active",
-  "Queued",
-  "Executable",
-  "Executed",
-  "Dropped",
-] as const;
-export type ProposalState = (typeof PROPOSAL_STATES)[number];
-
-export const proposalStateSchema = z.enum(PROPOSAL_STATES);
-
 export const governanceGithubPrSchema = z.object({
   org: z.string(),
   repo: z.string(),
@@ -175,6 +223,7 @@ export const chicmozL1GovernanceProposalSchema = z.object({
   proposer: ethAddressSchema.nullable(),
   governanceProposerAddress: ethAddressSchema.nullable(),
   state: proposalStateSchema,
+  cachedState: proposalStateSchema.nullable().optional(),
   createdAt: z.coerce.date(),
   pendingThrough: z.coerce.date().nullable().optional(),
   activeThrough: z.coerce.date().nullable().optional(),
@@ -182,9 +231,12 @@ export const chicmozL1GovernanceProposalSchema = z.object({
   executableThrough: z.coerce.date().nullable().optional(),
   summedYea: z.coerce.bigint(),
   summedNay: z.coerce.bigint(),
+  votesCast: z.coerce.bigint().optional(),
+  snapshotTotalPower: z.coerce.bigint().nullable().optional(),
+  votesNeeded: z.coerce.bigint().nullable().optional(),
   executedAt: z.coerce.date().nullable().optional(),
   droppedAt: z.coerce.date().nullable().optional(),
-  configuration: z.record(z.unknown()).nullable().optional(),
+  configuration: governanceProposalConfigurationSchema.nullable().optional(),
   uri: z.string().nullable().optional(),
   metadata: governanceProposalMetadataSchema.nullable().optional(),
   title: z.string().nullable().optional(),

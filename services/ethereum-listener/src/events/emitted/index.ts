@@ -28,6 +28,23 @@ type StakingAssetInfoEvent = {
   };
 };
 
+const bigintString = (value: bigint | null | undefined) =>
+  value === null || value === undefined
+    ? undefined
+    : (value.toString() as unknown as bigint);
+
+const governanceConfigurationForMessage = (
+  configuration: ChicmozL1GovernanceProposed["configuration"],
+) =>
+  configuration === null || configuration === undefined
+    ? configuration
+    : Object.fromEntries(
+        Object.entries(configuration).map(([key, value]) => [
+          key,
+          value.toString(),
+        ]),
+      ) as unknown as ChicmozL1GovernanceProposed["configuration"];
+
 export const l1Validator = async (validators: ChicmozL1L2Validator[]) => {
   const objsToSend = validators.map((validator) => ({
     ...validator,
@@ -107,6 +124,11 @@ export const governanceProposed = async (
   await publishMessage("L1_GOVERNANCE_PROPOSED_EVENT", {
     ...event,
     proposalId: event.proposalId.toString() as unknown as bigint,
+    summedYea: bigintString(event.summedYea),
+    summedNay: bigintString(event.summedNay),
+    snapshotTotalPower: bigintString(event.snapshotTotalPower),
+    votesNeeded: bigintString(event.votesNeeded),
+    configuration: governanceConfigurationForMessage(event.configuration),
     l1BlockNumber: event.l1BlockNumber.toString() as unknown as bigint,
   });
 };
@@ -118,6 +140,10 @@ export const governanceVoteCast = async (
     ...event,
     proposalId: event.proposalId.toString() as unknown as bigint,
     amount: event.amount.toString() as unknown as bigint,
+    summedYea: bigintString(event.summedYea),
+    summedNay: bigintString(event.summedNay),
+    snapshotTotalPower: bigintString(event.snapshotTotalPower),
+    votesNeeded: bigintString(event.votesNeeded),
     l1BlockNumber: event.l1BlockNumber.toString() as unknown as bigint,
   });
 };
@@ -128,6 +154,10 @@ export const governanceProposalExecuted = async (
   await publishMessage("L1_GOVERNANCE_PROPOSAL_EXECUTED_EVENT", {
     ...event,
     proposalId: event.proposalId.toString() as unknown as bigint,
+    summedYea: bigintString(event.summedYea),
+    summedNay: bigintString(event.summedNay),
+    snapshotTotalPower: bigintString(event.snapshotTotalPower),
+    votesNeeded: bigintString(event.votesNeeded),
     l1BlockNumber: event.l1BlockNumber.toString() as unknown as bigint,
   });
 };
@@ -138,6 +168,10 @@ export const governanceProposalDropped = async (
   await publishMessage("L1_GOVERNANCE_PROPOSAL_DROPPED_EVENT", {
     ...event,
     proposalId: event.proposalId.toString() as unknown as bigint,
+    summedYea: bigintString(event.summedYea),
+    summedNay: bigintString(event.summedNay),
+    snapshotTotalPower: bigintString(event.snapshotTotalPower),
+    votesNeeded: bigintString(event.votesNeeded),
     l1BlockNumber: event.l1BlockNumber.toString() as unknown as bigint,
   });
 };

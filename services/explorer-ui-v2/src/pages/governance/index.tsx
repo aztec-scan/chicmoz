@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { DashtecAddressLink, Pagination, ProposalAddressLink } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
+  useChainInfo,
   useGovernanceConfigurations,
   useGovernanceProposals,
   useGovernanceProposerHistory,
@@ -10,7 +11,14 @@ import {
 } from "~/hooks/api";
 import { usePaginated } from "~/hooks/use-paginated";
 import { PROPOSAL_STATES, type ProposalState } from "@chicmoz-pkg/types";
-import { ageStr, fmtNum, formatDuration, truncateHashString } from "~/lib/utils";
+import {
+  ageStr,
+  fmtNum,
+  formatDuration,
+  formatStake,
+  getStakingAssetSymbol,
+  truncateHashString,
+} from "~/lib/utils";
 
 const PAGE_SIZE = 20;
 
@@ -47,12 +55,6 @@ const stateColor = (state: string): string => {
   }
 };
 
-const fmtBigInt = (v: bigint | string | number | null | undefined): string => {
-  if (v === null || v === undefined) { return "—"; }
-  const n = typeof v === "bigint" ? v : BigInt(v);
-  return fmtNum(n);
-};
-
 const getProposalTitle = (proposal: { title?: string | null; uri?: string | null }): string =>
   proposal.title ?? proposal.uri ?? "Untitled proposal";
 
@@ -66,6 +68,11 @@ export const GovernancePage: FC = () => {
   const { data: signals, isLoading: signalsLoading } = useGovernanceSignals({ limit: 100 });
   const { data: configurations, isLoading: configsLoading } = useGovernanceConfigurations({ limit: 100 });
   const { data: proposerHistory, isLoading: proposerLoading } = useGovernanceProposerHistory({ limit: 100 });
+  const { data: chainInfo } = useChainInfo();
+  const stakingAssetDecimals = chainInfo?.stakingAssetDecimals ?? 18;
+  const stakingAssetSymbol = getStakingAssetSymbol(
+    chainInfo?.stakingAssetSymbol,
+  );
 
   // ── Proposal stats ──────────────────────────────────────────────────
   const proposalStats = useMemo(() => {
@@ -194,8 +201,10 @@ export const GovernancePage: FC = () => {
         </div>
         <div className="sc">
           <div className="lbl">Average Nay</div>
-          <div className="val">{fmtBigInt(proposalStats.avgNay)}</div>
-          <div className="sub">votes against governance recommendation</div>
+          <div className="val">
+            {formatStake(proposalStats.avgNay, stakingAssetDecimals, 2)}
+          </div>
+          <div className="sub">{stakingAssetSymbol} against governance recommendation</div>
         </div>
       </div>
 
@@ -258,8 +267,8 @@ export const GovernancePage: FC = () => {
               <div>Forum</div>
               <div>GitHub PR</div>
               <div>State</div>
-              <div className="right">Yea</div>
-              <div className="right">Nay</div>
+              <div className="right">Yea ({stakingAssetSymbol})</div>
+              <div className="right">Nay ({stakingAssetSymbol})</div>
               <div className="right">Age</div>
             </div>
             {proposalPage.paged.map((p) => {
@@ -311,10 +320,14 @@ export const GovernancePage: FC = () => {
                         className="vote-bar yea"
                         style={{ width: `${yeaPct}%` }}
                       />
-                      <span className="vote-label">{fmtBigInt(p.summedYea)}</span>
+                      <span className="vote-label">
+                        {formatStake(p.summedYea, stakingAssetDecimals, 2)}
+                      </span>
                     </span>
                   </span>
-                  <span className="right">{fmtBigInt(p.summedNay)}</span>
+                  <span className="right">
+                    {formatStake(p.summedNay, stakingAssetDecimals, 2)}
+                  </span>
                   <span className="right age">{ageStr(p.createdAt?.getTime?.() ?? 0)}</span>
                 </div>
               );

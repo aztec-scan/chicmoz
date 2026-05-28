@@ -3809,6 +3809,7 @@
 .gov-proposal-cols .vote-cell,
 .gov-proposal-cols .right {
   min-width: 0;
+  text-align: right;
 }
 .gov-proposal-cols .vote-cell {
   justify-self: end;
