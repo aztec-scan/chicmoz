@@ -64,7 +64,10 @@ export const chicmozL2ContractInstanceDeployerMetadataSchema = z.object({
   appUrl: z.string(),
   repoUrl: z.string(),
   uploadedAt: z.coerce.date(),
-  reviewedAt: z.coerce.date().optional(),
+  reviewedAt: z.preprocess(
+    (val) => (val === null ? undefined : val),
+    z.coerce.date().optional(),
+  ),
   contractType: z
     .lazy(
       () =>

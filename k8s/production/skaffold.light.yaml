@@ -1,0 +1,8 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: chicmoz-prod-mainnet
+requires:
+  - path: k8s/production/common/skaffold.manifests.yaml
+  - path: k8s/production/gateways/skaffold.mainnet.yaml
+  - path: k8s/production/explorer-ui-v2/skaffold.mainnet.yaml

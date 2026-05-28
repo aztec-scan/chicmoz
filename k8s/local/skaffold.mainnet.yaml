@@ -1,0 +1,15 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: mainnet
+requires:
+  # - path: ./common/skaffold.gateway-crds.yaml
+  # - path: ./common/skaffold.infra.yaml
+  # - path: ./gateways/skaffold.mainnet.yaml
+  # - path: ./monitoring/skaffold.l2-tips-canary.mainnet.yaml
+  # - path: ./explorer-ui/skaffold.mainnet.yaml
+  - path: ./ethereum-listener/skaffold.mainnet.yaml
+  - path: ./explorer-api/skaffold.mainnet.yaml
+  - path: ./auth/skaffold.yaml
+  - path: ./websocket-event-publisher/skaffold.mainnet.yaml
+  - path: ./aztec-listener/skaffold.mainnet.yaml

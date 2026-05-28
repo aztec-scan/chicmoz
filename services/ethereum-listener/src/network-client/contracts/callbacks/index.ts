@@ -6,6 +6,7 @@ import { logger } from "../../../logger.js";
 import { getBlockTimestamp } from "../../client/index.js";
 
 export * from "./rollup.js";
+export * from "./governance.js";
 
 export const asyncForEach = async <T>(
   array: T[],

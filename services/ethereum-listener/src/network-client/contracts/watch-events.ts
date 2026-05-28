@@ -6,10 +6,21 @@ import {
   genericOnLogs,
   l2BlockProposedEventCallbacks,
   l2ProofVerifiedEventCallbacks,
+  proposedEventCallbacks,
+  voteCastEventCallbacks,
+  proposalExecutedEventCallbacks,
+  proposalDroppedEventCallbacks,
+  configurationUpdatedEventCallbacks,
+  governanceProposerUpdatedEventCallbacks,
+  signalCastEventCallbacks,
+  payloadSubmittableEventCallbacks,
+  payloadSubmittedEventCallbacks,
 } from "./callbacks/index.js";
 import {
   GENERIC_EVENT_ALLOWLIST,
   STRUCTURED_ROLLUP_EVENT_NAMES,
+  STRUCTURED_GOVERNANCE_EVENT_NAMES,
+  STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES,
 } from "./event-allowlist.js";
 import {
   type AztecContract,
@@ -129,6 +140,78 @@ export const watchAllContractsEvents = async ({
     latestHeight,
   });
 
+  // Governance structured event watchers
+  const unwatchGovernanceProposed = await watchGovernanceStructuredEvent({
+    contract: contracts.governance,
+    contractName: "governance",
+    eventName: "Proposed",
+    latestHeight,
+    callbacksFactory: proposedEventCallbacks,
+  });
+  const unwatchGovernanceVoteCast = await watchGovernanceStructuredEvent({
+    contract: contracts.governance,
+    contractName: "governance",
+    eventName: "VoteCast",
+    latestHeight,
+    callbacksFactory: voteCastEventCallbacks,
+  });
+  const unwatchGovernanceProposalExecuted =
+    await watchGovernanceStructuredEvent({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ProposalExecuted",
+      latestHeight,
+      callbacksFactory: proposalExecutedEventCallbacks,
+    });
+  const unwatchGovernanceProposalDropped =
+    await watchGovernanceStructuredEvent({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ProposalDropped",
+      latestHeight,
+      callbacksFactory: proposalDroppedEventCallbacks,
+    });
+  const unwatchGovernanceConfigurationUpdated =
+    await watchGovernanceStructuredEvent({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ConfigurationUpdated",
+      latestHeight,
+      callbacksFactory: configurationUpdatedEventCallbacks,
+    });
+  const unwatchGovernanceProposerUpdated = await watchGovernanceStructuredEvent({
+    contract: contracts.governance,
+    contractName: "governance",
+    eventName: "GovernanceProposerUpdated",
+    latestHeight,
+    callbacksFactory: governanceProposerUpdatedEventCallbacks,
+  });
+
+  // GovernanceProposer structured event watchers
+  const unwatchSignalCast = await watchGovernanceProposerStructuredEvent({
+    contract: contracts.governanceProposer,
+    contractName: "governanceProposer",
+    eventName: "SignalCast",
+    latestHeight,
+    callbacksFactory: signalCastEventCallbacks,
+  });
+  const unwatchPayloadSubmittable =
+    await watchGovernanceProposerStructuredEvent({
+      contract: contracts.governanceProposer,
+      contractName: "governanceProposer",
+      eventName: "PayloadSubmittable",
+      latestHeight,
+      callbacksFactory: payloadSubmittableEventCallbacks,
+    });
+  const unwatchPayloadSubmitted =
+    await watchGovernanceProposerStructuredEvent({
+      contract: contracts.governanceProposer,
+      contractName: "governanceProposer",
+      eventName: "PayloadSubmitted",
+      latestHeight,
+      callbacksFactory: payloadSubmittedEventCallbacks,
+    });
+
   return () => {
     logger.info(`Unwatching generic events`);
     genericUnwatches.forEach((unwatch) => unwatch());
@@ -136,6 +219,24 @@ export const watchAllContractsEvents = async ({
     unwatchRollupL2BlockProposed();
     logger.info(`Unwatching rollup L2ProofVerified events`);
     unwatchRollupL2ProofVerified();
+    logger.info(`Unwatching governance Proposed events`);
+    unwatchGovernanceProposed();
+    logger.info(`Unwatching governance VoteCast events`);
+    unwatchGovernanceVoteCast();
+    logger.info(`Unwatching governance ProposalExecuted events`);
+    unwatchGovernanceProposalExecuted();
+    logger.info(`Unwatching governance ProposalDropped events`);
+    unwatchGovernanceProposalDropped();
+    logger.info(`Unwatching governance ConfigurationUpdated events`);
+    unwatchGovernanceConfigurationUpdated();
+    logger.info(`Unwatching governance GovernanceProposerUpdated events`);
+    unwatchGovernanceProposerUpdated();
+    logger.info(`Unwatching governanceProposer SignalCast events`);
+    unwatchSignalCast();
+    logger.info(`Unwatching governanceProposer PayloadSubmittable events`);
+    unwatchPayloadSubmittable();
+    logger.info(`Unwatching governanceProposer PayloadSubmitted events`);
+    unwatchPayloadSubmitted();
   };
 };
 
@@ -156,7 +257,9 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
   const eventNames = GENERIC_EVENT_ALLOWLIST[name].filter(
     (eventName) =>
       abiEventNames.has(eventName) &&
-      !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName),
+      !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName) &&
+      !STRUCTURED_GOVERNANCE_EVENT_NAMES.has(eventName) &&
+      !STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES.has(eventName),
   );
 
   if (!eventNames.length) {
@@ -197,4 +300,101 @@ export const watchContractEventsGeneric = async <T extends AztecContract>({
   );
 
   return () => unwatches.forEach((unwatch) => unwatch());
+};
+
+// ── Governance structured event watcher ──────────────────────────────────────
+
+type GovernanceCallbacksFactory<TLogs> = (
+  args: {
+    isFinalized: boolean;
+    updateHeight: (height: bigint) => void;
+    storeHeight: () => Promise<void>;
+  },
+) => {
+  onError: (e: Error) => void;
+  onLogs: (logs: TLogs) => Promise<void>;
+};
+
+export const watchGovernanceStructuredEvent = async <TLogs>({
+  contract,
+  contractName,
+  eventName,
+  latestHeight,
+  callbacksFactory,
+}: {
+  contract: import("./utils.js").GovernanceContract;
+  contractName: "governance";
+  eventName: string;
+  latestHeight: bigint;
+  callbacksFactory: GovernanceCallbacksFactory<TLogs>;
+}): Promise<UnwatchCallback> => {
+  const { fromBlock, updateHeight, storeHeight } =
+    await dbControllers.inMemoryHeightTracker({
+      contractName,
+      contractAddress: contract.address,
+      eventName,
+      isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+      latestHeight,
+    });
+  const callbacks = callbacksFactory({
+    isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  });
+  const watchEvents = contract.watchEvent as unknown as Record<
+    string,
+    WatchEventFunction
+  >;
+  return watchEvents[eventName](
+    {},
+    {
+      fromBlock,
+      onError: callbacks.onError,
+      onLogs: (logs) => {
+        void callbacks.onLogs(logs as unknown as TLogs).catch(callbacks.onError);
+      },
+    },
+  );
+};
+
+export const watchGovernanceProposerStructuredEvent = async <TLogs>({
+  contract,
+  contractName,
+  eventName,
+  latestHeight,
+  callbacksFactory,
+}: {
+  contract: import("./utils.js").GovernanceProposerContract;
+  contractName: "governanceProposer";
+  eventName: string;
+  latestHeight: bigint;
+  callbacksFactory: GovernanceCallbacksFactory<TLogs>;
+}): Promise<UnwatchCallback> => {
+  const { fromBlock, updateHeight, storeHeight } =
+    await dbControllers.inMemoryHeightTracker({
+      contractName,
+      contractAddress: contract.address,
+      eventName,
+      isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+      latestHeight,
+    });
+  const callbacks = callbacksFactory({
+    isFinalized: WATCH_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  });
+  const watchEvents = contract.watchEvent as unknown as Record<
+    string,
+    WatchEventFunction
+  >;
+  return watchEvents[eventName](
+    {},
+    {
+      fromBlock,
+      onError: callbacks.onError,
+      onLogs: (logs) => {
+        void callbacks.onLogs(logs as unknown as TLogs).catch(callbacks.onError);
+      },
+    },
+  );
 };
