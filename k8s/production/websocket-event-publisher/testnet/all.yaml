@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: websocket-event-publisher
+    app.kubernetes.io/part-of: chicmoz-prod
+  name: websocket-event-publisher-testnet
+  namespace: chicmoz-prod
+spec:
+  ports:
+    - name: websocket
+      port: 80
+      protocol: TCP
+      targetPort: websocket-port
+  selector:
+    app: websocket-event-publisher
+    network: testnet
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: websocket-event-publisher
+    app.kubernetes.io/name: websocket-event-publisher
+    app.kubernetes.io/part-of: chicmoz-prod
+  name: websocket-event-publisher-testnet
+  namespace: chicmoz-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-event-publisher
+      network: testnet
+  template:
+    metadata:
+      labels:
+        app: websocket-event-publisher
+        network: testnet
+    spec:
+      containers:
+        - env:
+            - name: INSTANCE_NAME
+              value: testnet_websocket-event-publisher
+            - name: L2_NETWORK_ID
+              value: TESTNET
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: production
+          image: registry.digitalocean.com/aztlan-containers/websocket-event-publisher-testnet:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          name: websocket-event-publisher
+          ports:
+            - containerPort: 3000
+              name: websocket-port
+              protocol: TCP
+            - containerPort: 3001
+              name: health-port
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            limits:
+              cpu: 500m
+              memory: 300Mi
+      imagePullSecrets:
+        - name: registry-aztlan-containers
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  labels:
+    app.kubernetes.io/name: websocket-event-publisher
+    app.kubernetes.io/part-of: chicmoz-prod
+  name: websocket-event-publisher-testnet
+  namespace: chicmoz-prod
+spec:
+  hostnames:
+    - ws.testnet.aztecscan.xyz
+  parentRefs:
+    - name: aztecscan-gateway
+      sectionName: ws-testnet-http
+    - name: aztecscan-gateway
+      sectionName: ws-testnet-https
+    - name: aztecscan-gateway
+      sectionName: ws-testnet-primary-http
+    - name: aztecscan-gateway
+      sectionName: ws-testnet-primary-https
+  rules:
+    - backendRefs:
+        - name: websocket-event-publisher-testnet
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
