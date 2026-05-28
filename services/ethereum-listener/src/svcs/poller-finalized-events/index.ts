@@ -70,9 +70,13 @@ const runCatchup = async (): Promise<boolean> => {
         return diff < DEFAULT_BLOCK_CHUNK_SIZE;
       });
     } catch (e) {
-      if (e instanceof Error && e.message === "L1 contracts not initialized") {
+      const errMsg = e instanceof Error ? e.message : "";
+      if (
+        errMsg === "L1 contracts not initialized" ||
+        errMsg === "Database is not initialized"
+      ) {
         logger.info(
-          "🐻 waiting for contracts to be initialized during catchup...",
+          `🐻 waiting for dependencies during catchup (${errMsg})...`,
         );
         await new Promise((resolve) => setTimeout(resolve, 5000));
       } else {

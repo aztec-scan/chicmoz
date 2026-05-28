@@ -3,6 +3,7 @@ export * from "./chain-info";
 export * from "./contract";
 export * from "./dropped-tx";
 export * from "./fee-recipient";
+export * from "./governance";
 export * from "./l1-contract-event";
 export * from "./l1-l2-validator";
 export * from "./search";

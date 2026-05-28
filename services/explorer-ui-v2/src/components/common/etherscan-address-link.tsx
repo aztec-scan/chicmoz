@@ -44,8 +44,10 @@ export const EtherscanAddressLink: FC<Props> = ({
       title={title}
       aria-label={title}
     >
-      <span>{content}</span>
-      {showExternalLinkIcon ? <ExternalLink size={12} aria-hidden /> : null}
+      <span className="inline-flex items-center gap-0.5 whitespace-nowrap">
+        {content}
+        {showExternalLinkIcon ? <ExternalLink size={12} aria-hidden /> : null}
+      </span>
     </a>
   );
 };

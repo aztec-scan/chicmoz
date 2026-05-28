@@ -12,10 +12,28 @@ import {
   withdrawInitiatedEventCallbacks,
 } from "./callbacks/rollup.js";
 import {
+  proposedEventCallbacks,
+  voteCastEventCallbacks,
+  proposalExecutedEventCallbacks,
+  proposalDroppedEventCallbacks,
+  configurationUpdatedEventCallbacks,
+  governanceProposerUpdatedEventCallbacks,
+  signalCastEventCallbacks,
+  payloadSubmittableEventCallbacks,
+  payloadSubmittedEventCallbacks,
+} from "./callbacks/governance.js";
+import {
   GENERIC_EVENT_ALLOWLIST,
+  STRUCTURED_GOVERNANCE_EVENT_NAMES,
+  STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES,
   STRUCTURED_ROLLUP_EVENT_NAMES,
 } from "./event-allowlist.js";
-import { type AztecContract, type AztecContracts } from "./utils.js";
+import {
+  type AztecContract,
+  type AztecContracts,
+  type GovernanceContract,
+  type GovernanceProposerContract,
+} from "./utils.js";
 
 const GET_EVENTS_DEFAULT_IS_FINALIZED = true;
 export const DEFAULT_BLOCK_CHUNK_SIZE = 500n;
@@ -117,7 +135,9 @@ const getAllGenericContractEventLogs = async ({
     const eventNames = GENERIC_EVENT_ALLOWLIST[name].filter(
       (eventName) =>
         abiEventNames.has(eventName) &&
-        !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName),
+        !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName) &&
+        !STRUCTURED_GOVERNANCE_EVENT_NAMES.has(eventName) &&
+        !STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES.has(eventName),
     );
 
     pollers.push(
@@ -409,6 +429,122 @@ const getSlashedLogs = async ({
   return latestHeight - getMemoryHeight();
 };
 
+// ── Governance structured event fetchers ─────────────────────────────────────
+
+type GovernanceCallbacksFactory = (
+  args: {
+    isFinalized: boolean;
+    updateHeight: (height: bigint) => void;
+    storeHeight: () => Promise<void>;
+  },
+) => {
+  onError: (e: Error) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLogs: (logs: any) => Promise<void>;
+};
+
+type GovernanceGetEventsFn = (
+  args: Record<string, unknown>,
+  options: { fromBlock: bigint; toBlock: bigint | "finalized" },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) => Promise<any>;
+
+const getGovernanceStructuredEventLogs = async ({
+  contract,
+  contractName,
+  eventName,
+  latestHeight,
+  callbacksFactory,
+}: {
+  contract: GovernanceContract;
+  contractName: string;
+  eventName: string;
+  latestHeight: bigint;
+  callbacksFactory: GovernanceCallbacksFactory;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName,
+    contractAddress: contract.address,
+    eventName,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock > latestHeight) {
+    logger.info(`Governance ${eventName} logs up to date`);
+    return 0n;
+  }
+
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, "finalized");
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
+  const callbacks = callbacksFactory({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  });
+  const getEvents = contract.getEvents as unknown as Record<
+    string,
+    GovernanceGetEventsFn
+  >;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const logs = await getEvents[eventName]({}, { fromBlock, toBlock: actualToBlock });
+  await callbacks.onLogs(logs);
+  return latestHeight - getMemoryHeight();
+};
+
+const getGovernanceProposerStructuredEventLogs = async ({
+  contract,
+  contractName,
+  eventName,
+  latestHeight,
+  callbacksFactory,
+}: {
+  contract: GovernanceProposerContract;
+  contractName: string;
+  eventName: string;
+  latestHeight: bigint;
+  callbacksFactory: GovernanceCallbacksFactory;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName,
+    contractAddress: contract.address,
+    eventName,
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock > latestHeight) {
+    logger.info(`GovernanceProposer ${eventName} logs up to date`);
+    return 0n;
+  }
+
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, "finalized");
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
+  const callbacks = callbacksFactory({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  });
+  const getEvents = contract.getEvents as unknown as Record<
+    string,
+    GovernanceGetEventsFn
+  >;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const logs = await getEvents[eventName]({}, { fromBlock, toBlock: actualToBlock });
+  await callbacks.onLogs(logs);
+  return latestHeight - getMemoryHeight();
+};
+
 export const getAllContractsEvents = async ({
   contracts,
   toBlock,
@@ -458,9 +594,86 @@ export const getAllContractsEvents = async ({
     //  latestHeight,
     //}),
   ]);
+
+  // Governance structured events (chunked catchup instead of single massive watchEvent sweep)
+  const governancePollResults: bigint[] = await Promise.all([
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "Proposed",
+      latestHeight,
+      callbacksFactory: proposedEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "VoteCast",
+      latestHeight,
+      callbacksFactory: voteCastEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ProposalExecuted",
+      latestHeight,
+      callbacksFactory: proposalExecutedEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ProposalDropped",
+      latestHeight,
+      callbacksFactory: proposalDroppedEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "ConfigurationUpdated",
+      latestHeight,
+      callbacksFactory: configurationUpdatedEventCallbacks,
+    }),
+    getGovernanceStructuredEventLogs({
+      contract: contracts.governance,
+      contractName: "governance",
+      eventName: "GovernanceProposerUpdated",
+      latestHeight,
+      callbacksFactory: governanceProposerUpdatedEventCallbacks,
+    }),
+  ]);
+
+  // GovernanceProposer structured events
+  const governanceProposerPollResults: bigint[] = await Promise.all([
+    getGovernanceProposerStructuredEventLogs({
+      contract: contracts.governanceProposer,
+      contractName: "governanceProposer",
+      eventName: "SignalCast",
+      latestHeight,
+      callbacksFactory: signalCastEventCallbacks,
+    }),
+    getGovernanceProposerStructuredEventLogs({
+      contract: contracts.governanceProposer,
+      contractName: "governanceProposer",
+      eventName: "PayloadSubmittable",
+      latestHeight,
+      callbacksFactory: payloadSubmittableEventCallbacks,
+    }),
+    getGovernanceProposerStructuredEventLogs({
+      contract: contracts.governanceProposer,
+      contractName: "governanceProposer",
+      eventName: "PayloadSubmitted",
+      latestHeight,
+      callbacksFactory: payloadSubmittedEventCallbacks,
+    }),
+  ]);
+
   const genericPollResults = await getAllGenericContractEventLogs({
     contracts,
     latestHeight,
   });
-  return [...rollupPollResults, ...genericPollResults];
+  return [
+    ...rollupPollResults,
+    ...governancePollResults,
+    ...governanceProposerPollResults,
+    ...genericPollResults,
+  ];
 };

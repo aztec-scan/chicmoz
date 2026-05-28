@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-ui-mainnet-label
+  name: explorer-ui-mainnet-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-ui-mainnet-label
+  template:
+    metadata:
+      labels:
+        app: explorer-ui-mainnet-label
+    spec:
+      containers:
+        - image: explorer-ui-mainnet:latest
+          name: explorer-ui-mainnet
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
