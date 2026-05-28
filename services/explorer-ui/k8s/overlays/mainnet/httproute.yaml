@@ -17,8 +17,8 @@ spec:
     - name: aztecscan-gateway
       sectionName: ui-v1-mainnet-https
   hostnames:
-    - v1.aztecscan.xyz
-    - v1.mainnet.aztecscan.xyz
+    - aztecscan.xyz
+    - mainnet.aztecscan.xyz
   rules:
     - backendRefs:
         - name: explorer-ui-mainnet # hardcoded — nameSuffix does NOT transform backendRefs

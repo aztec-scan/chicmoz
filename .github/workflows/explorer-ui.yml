@@ -149,7 +149,7 @@ jobs:
           build-args: |
             NODE_ENV=production
             VITE_L2_NETWORK_ID=${{ steps.build-args.outputs.l2_network_id }}
-            VITE_CHICMOZ_ALL_UI_URLS=Mainnet|https://aztecscan.xyz,Testnet|https://v1.testnet.aztecscan.xyz,Devnet|https://devnet.aztecscan.xyz
+            VITE_CHICMOZ_ALL_UI_URLS=Mainnet|https://aztecscan.xyz,Testnet|https://testnet.aztecscan.xyz,Devnet|https://devnet.aztecscan.xyz
             VITE_API_URL=${{ steps.build-args.outputs.api_url }}
             VITE_API_KEY=temporary-api-key
             VITE_WS_URL=${{ steps.build-args.outputs.ws_url }}

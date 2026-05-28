@@ -1,0 +1,11 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: chicmoz-prod-devnet
+requires:
+  - path: k8s/production/common/skaffold.manifests.yaml
+  - path: k8s/production/aztec-listener/skaffold.devnet.yaml
+  - path: k8s/production/ethereum-listener/skaffold.devnet.yaml
+  - path: k8s/production/explorer-api/skaffold.devnet.yaml
+  - path: k8s/production/explorer-ui-v2/skaffold.devnet.yaml
+  - path: k8s/production/websocket-event-publisher/skaffold.devnet.yaml
