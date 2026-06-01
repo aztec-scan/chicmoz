@@ -92,6 +92,10 @@ export const queryKeyGenerator = {
     pageSize,
   ],
   l1ContractEvents: ["l1ContractEvents"],
+  l1FeeJuicePortalDepositsByAddress: (address: string) => [
+    "l1FeeJuicePortalDeposits",
+    address,
+  ],
   amountContractClassInstances: (classId: string) => [
     "amountOfInstances",
     classId,

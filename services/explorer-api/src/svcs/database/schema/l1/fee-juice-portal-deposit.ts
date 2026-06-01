@@ -25,6 +25,8 @@ export const l1FeeJuicePortalDepositTable = pgTable(
     l1TransactionHash: varchar("l1_transaction_hash"),
     l1LogIndex: bigint("l1_log_index", { mode: "number" }),
     isFinalized: boolean("is_finalized").notNull().default(false),
+    /** L1 address of the depositor (msg.sender on the portal tx). Nullable for historical rows. */
+    l1Sender: varchar("l1_sender"),
     // DepositToAztecPublic fields
     /** L2 recipient (bytes32 / Fr as hex). */
     to: varchar("to").notNull(),

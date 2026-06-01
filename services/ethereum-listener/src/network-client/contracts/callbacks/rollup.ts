@@ -271,6 +271,23 @@ const depositToAztecPublicOnLogs: OnLogsWrapper<DepositToAztecPublicEventParamet
             `DepositToAztecPublic: missing args in log ${log.transactionHash}:${log.logIndex}`,
           );
         }
+        const l1BlockTimestamp = await getBlockTimestamp(log.blockNumber);
+
+        // Fetch the L1 transaction to get msg.sender (the depositor).
+        let l1Sender: string | null = null;
+        if (log.transactionHash) {
+          try {
+            const tx = await getPublicHttpClient().getTransaction({
+              hash: log.transactionHash,
+            });
+            l1Sender = tx.from;
+          } catch (e) {
+            logger.warn(
+              `DepositToAztecPublic: could not fetch tx sender for ${log.transactionHash}: ${(e as Error).message}`,
+            );
+          }
+        }
+
         await emit.feeJuicePortalDeposit(
           chicmozL1FeeJuicePortalDepositSchema.parse({
             l1ContractAddress: log.address,
@@ -279,7 +296,8 @@ const depositToAztecPublicOnLogs: OnLogsWrapper<DepositToAztecPublicEventParamet
             l1TransactionHash: log.transactionHash,
             l1LogIndex: log.logIndex,
             isFinalized: wrapperArgs.isFinalized,
-            l1BlockTimestamp: await getBlockTimestamp(log.blockNumber),
+            l1BlockTimestamp,
+            l1Sender,
             to,
             amount,
             secretHash,

@@ -1,12 +1,14 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { type FC, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import {
   DetailEmptyState,
   DetailField,
+  EtherscanAddressLink,
   HashCell,
   L2AddressLink,
   StatusPill,
   TokenEtherscanLink,
+  TxEtherscanLink,
 } from "~/components/common";
 import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
@@ -18,6 +20,7 @@ import {
   useChainInfo,
   useL2ToL1MsgsByContract,
   usePublicCallRequestsByContract,
+  useL1FeeJuicePortalDepositsByAddress,
 } from "~/hooks/api";
 import {
   ageStr,
@@ -28,6 +31,10 @@ import {
 
 type Tab = "balance" | "history" | "calls" | "l2l1";
 
+type TimelineEntry =
+  | { kind: "snapshot"; ts: number; balance: bigint; sourceTxHash?: string; feeRecipient?: string; spent: bigint | null }
+  | { kind: "deposit"; ts: number; amount: bigint; l1TxHash?: string | null; l1Sender?: string | null; secretHash: string; isFinalized: boolean };
+
 export const ContractInstancePage: FC = () => {
   const { address = "" } = useParams({ strict: false });
   const { data: instance, isLoading } = useContractInstance(address);
@@ -36,6 +43,7 @@ export const ContractInstancePage: FC = () => {
   const { data: chainInfo } = useChainInfo();
   const { data: publicCalls } = usePublicCallRequestsByContract(address);
   const { data: l2ToL1Msgs } = useL2ToL1MsgsByContract(address);
+  const { data: deposits } = useL1FeeJuicePortalDepositsByAddress(address);
 
   const [tab, setTab] = useState<Tab>("balance");
 
@@ -92,6 +100,28 @@ export const ContractInstancePage: FC = () => {
   const delta = latest && prev24 ? latest.balance - prev24.balance : 0n;
   const deltaAbs = delta < 0n ? -delta : delta;
   const deltaValue = formatFees(deltaAbs, feeJuiceDecimals);
+
+  // Merged Fee Juice timeline: balance snapshots + L1 deposits, newest first
+  const timeline = useMemo((): TimelineEntry[] => {
+    const entries: TimelineEntry[] = [];
+    const reversed = (history ?? []).slice().reverse();
+    for (let i = 0; i < reversed.length; i++) {
+      const h = reversed[i];
+      const spent = i < reversed.length - 1 ? reversed[i + 1].balance - h.balance : null;
+      entries.push({ kind: "snapshot", ts: h.timestamp, balance: h.balance, sourceTxHash: h.sourceTxHash, feeRecipient: h.feeRecipient, spent });
+    }
+    for (const d of deposits ?? []) {
+      const ts = d.l1BlockTimestamp ? Number(d.l1BlockTimestamp) : 0;
+      entries.push({ kind: "deposit", ts, amount: d.amount, l1TxHash: d.l1TransactionHash, l1Sender: d.l1Sender, secretHash: d.secretHash, isFinalized: d.isFinalized });
+    }
+    entries.sort((a, b) => {
+      if (a.ts === 0 && b.ts === 0) return 0;
+      if (a.ts === 0) return 1;
+      if (b.ts === 0) return -1;
+      return b.ts - a.ts;
+    });
+    return entries;
+  }, [history, deposits]);
 
   return (
     <Shell active="contracts">
@@ -318,7 +348,7 @@ export const ContractInstancePage: FC = () => {
             onClick={() => setTab("history")}
           >
             Balance history
-            <span className="c">{history?.length ?? 0}</span>
+            <span className="c">{timeline.length}</span>
           </button>
           <button
             className={tab === "calls" ? "on" : ""}
@@ -380,49 +410,109 @@ export const ContractInstancePage: FC = () => {
           <>
             <div className="hist-head">
               <div>Balance ({feeJuiceSymbol})</div>
-              <div>Tx</div>
+              <div>Spent / received</div>
+              <div>Tx / ref</div>
               <div className="right">Timestamp</div>
-              <div className="right">Age</div>
             </div>
-            {(history ?? [])
-              .slice()
-              .reverse()
-              .map((h, i) => (
-                <div key={i} className="hist-row">
-                  <span
-                    className="num"
-                    style={{ textAlign: "left", color: "var(--ink-1)" }}
-                  >
-                    {formatFees(h.balance, feeJuiceDecimals)}
-                    <TokenEtherscanLink
-                      symbol={feeJuiceSymbol}
-                      address={feeJuiceAddress}
-                      className="u"
-                    />
+            {timeline.map((entry, i) => {
+              if (entry.kind === "deposit") {
+                // Only show finalized deposits — pending ones are noise until confirmed
+                if (!entry.isFinalized) return null;
+                return (
+                  <div key={`dep-${i}`} className="hist-row">
+                    <span className="num" style={{ textAlign: "left", color: "var(--ink-3)" }}>
+                      {"— "}
+                      <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
+                    </span>
+                    <span>
+                      <span style={{ color: "var(--green)", fontWeight: 500 }}>
+                        +{formatFees(entry.amount, feeJuiceDecimals)}
+                      </span>
+                      <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L1 deposit</span>
+                    </span>
+                    <span className="hash">
+                      {entry.l1TxHash ? (
+                        <TxEtherscanLink
+                          txHash={entry.l1TxHash}
+                          content={truncateHashString(entry.l1TxHash, 8, 6)}
+                          title={`secret hash: ${entry.secretHash}`}
+                        />
+                      ) : (
+                        <span style={{ color: "var(--ink-3)" }}>—</span>
+                      )}
+                      {entry.l1Sender && (
+                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                          {"from "}
+                          <EtherscanAddressLink
+                            endpoint={`/address/${entry.l1Sender}`}
+                            content={truncateHashString(entry.l1Sender, 6, 4)}
+                            title={entry.l1Sender}
+                            showExternalLinkIcon={false}
+                          />
+                        </span>
+                      )}
+                    </span>
+                    <span className="age">
+                      {entry.ts ? (
+                        <span title={ageStr(entry.ts)}>
+                          {new Date(entry.ts).toISOString().replace("T", " ").slice(0, 19)}
+                        </span>
+                      ) : (
+                        <span style={{ color: "var(--ink-3)" }}>—</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              }
+              return (
+                <div key={`snap-${i}`} className="hist-row">
+                  <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
+                    {formatFees(entry.balance, feeJuiceDecimals)}
+                    {" "}
+                    <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
+                  </span>
+                  <span className="num" style={{ textAlign: "left" }}>
+                    {entry.spent === null || entry.spent === 0n ? (
+                      <span style={{ color: "var(--ink-3)" }}>—</span>
+                    ) : entry.spent > 0n ? (
+                      <span>
+                        <span style={{ color: "var(--red)" }}>−{formatFees(entry.spent, feeJuiceDecimals)}</span>
+                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L2 fee paid</span>
+                      </span>
+                    ) : (
+                      <span>
+                        <span style={{ color: "var(--green)" }}>+{formatFees(-entry.spent, feeJuiceDecimals)}</span>
+                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L2 top-up</span>
+                      </span>
+                    )}
                   </span>
                   <span className="hash">
-                    {h.sourceTxHash ? (
-                      <Link
-                        to="/tx-effects/$hash"
-                        params={{ hash: h.sourceTxHash }}
-                      >
-                        {truncateHashString(h.sourceTxHash, 8, 6)}
+                    {entry.sourceTxHash ? (
+                      <Link to="/tx-effects/$hash" params={{ hash: entry.sourceTxHash }}>
+                        {truncateHashString(entry.sourceTxHash, 8, 6)}
                       </Link>
                     ) : (
                       <span style={{ color: "var(--ink-3)" }}>—</span>
                     )}
+                    {entry.feeRecipient && (
+                      <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                        {"fee → "}
+                        <Link to="/address/$address" params={{ address: entry.feeRecipient }}>
+                          {truncateHashString(entry.feeRecipient, 6, 4)}
+                        </Link>
+                      </span>
+                    )}
                   </span>
-                  <span className="num">
-                    {new Date(h.timestamp)
-                      .toISOString()
-                      .slice(0, 19)
-                      .replace("T", " ")}
+                  <span className="age">
+                    <span title={ageStr(entry.ts)}>
+                      {new Date(entry.ts).toISOString().replace("T", " ").slice(0, 19)}
+                    </span>
                   </span>
-                  <span className="age">{ageStr(h.timestamp)}</span>
                 </div>
-              ))}
-            {(!history || history.length === 0) && (
-              <div className="empty-state">no balance history</div>
+              );
+            })}
+            {timeline.length === 0 && (
+              <div className="empty-state">no fee juice history</div>
             )}
           </>
         )}

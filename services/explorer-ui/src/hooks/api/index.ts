@@ -2,6 +2,8 @@ export * from "./block";
 export * from "./chain-info";
 export * from "./contract";
 export * from "./dropped-tx";
+export * from "./l1/contract-events";
+export * from "./l1/fee-juice-portal-deposits";
 export * from "./search";
 export * from "./rpc-node";
 export * from "./stats";

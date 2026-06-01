@@ -148,6 +148,7 @@ export const handleProvenTransactions = async (block: L2Block) => {
           balance: balance.toBigInt().toString(),
           timestamp: new Date().getTime(),
           sourceTxHash,
+          feeRecipient: block.header.globalVariables.feeRecipient.toString(),
         });
         logger.info(`💰 Snapshotted balance for ${addr}`);
       }),

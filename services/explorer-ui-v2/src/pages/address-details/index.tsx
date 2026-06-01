@@ -2,14 +2,16 @@ import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
-import { Pagination, TokenEtherscanLink } from "~/components/common";
+import { EtherscanAddressLink, Pagination, TokenEtherscanLink, TxEtherscanLink } from "~/components/common";
 import {
   usePublicCallRequestsBySender,
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
   useChainInfo,
+  useL1FeeJuicePortalDepositsByAddress,
 } from "~/hooks/api";
 import {
+  ageStr,
   fmtNum,
   formatFees,
   getFeeJuiceSymbol,
@@ -19,6 +21,10 @@ import {
 type Tab = "calls" | "balance";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 25;
+
+type TimelineEntry =
+  | { kind: "snapshot"; ts: number; balance: bigint; sourceTxHash?: string; feeRecipient?: string; spent: bigint | null }
+  | { kind: "deposit"; ts: number; amount: bigint; l1TxHash?: string | null; l1Sender?: string | null; secretHash: string; isFinalized: boolean };
 
 export const AddressDetailsPage: FC = () => {
   const { address = "" } = useParams({ strict: false });
@@ -31,6 +37,7 @@ export const AddressDetailsPage: FC = () => {
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
   const { data: chainInfo } = useChainInfo();
+  const { data: deposits } = useL1FeeJuicePortalDepositsByAddress(address);
 
   const [tab, setTab] = useState<Tab>("calls");
   const [page, setPage] = useState(0);
@@ -77,39 +84,50 @@ export const AddressDetailsPage: FC = () => {
           : `-${deltaValue} · ${deltaLabel}`
       : "no history yet";
 
-  // Per-row spent delta (newest first). Index 0 in reversed = latest snapshot.
-  // spent[i] = history[n-1-i].balance - history[n-2-i].balance
-  // oldest row (last in reversed) has no prior → 0n
-  const reversedHistory = useMemo(() => {
-    if (!history) {
-      return [];
+  // Build merged timeline: balance snapshots (newest-first) + L1 deposits, sorted by timestamp desc.
+  const timeline = useMemo((): TimelineEntry[] => {
+    const entries: TimelineEntry[] = [];
+
+    // Snapshot entries with per-row spent delta
+    const reversed = (history ?? []).slice().reverse();
+    for (let i = 0; i < reversed.length; i++) {
+      const h = reversed[i];
+      let spent: bigint | null = null;
+      if (i < reversed.length - 1) {
+        // spent = prev snapshot balance - this snapshot balance
+        // positive = fees paid, negative = top-up
+        spent = reversed[i + 1].balance - h.balance;
+      }
+      entries.push({ kind: "snapshot", ts: h.timestamp, balance: h.balance, sourceTxHash: h.sourceTxHash, feeRecipient: h.feeRecipient, spent });
     }
-    return history.slice().reverse();
-  }, [history]);
 
-  const spentPerRow = useMemo(() => {
-    // reversedHistory[0] = newest, reversedHistory[last] = oldest
-    // spent for row i = reversedHistory[i+1].balance - reversedHistory[i].balance
-    // (how much balance dropped going from i+1 to i, i.e. previous snapshot to this one)
-    return reversedHistory.map((_, i) => {
-      if (i === reversedHistory.length - 1) {
-        return 0n;
-      } // oldest row, no prior baseline
-      const prev = reversedHistory[i + 1].balance;
-      const curr = reversedHistory[i].balance;
-      return prev - curr; // positive = fees paid, negative = top-up
+    // Deposit entries
+    for (const d of deposits ?? []) {
+      const ts = d.l1BlockTimestamp ? Number(d.l1BlockTimestamp) : 0;
+      entries.push({
+        kind: "deposit",
+        ts,
+        amount: d.amount,
+        l1TxHash: d.l1TransactionHash,
+        l1Sender: d.l1Sender,
+        secretHash: d.secretHash,
+        isFinalized: d.isFinalized,
+      });
+    }
+
+    // Sort newest first; deposits with ts=0 go to the end
+    entries.sort((a, b) => {
+      if (a.ts === 0 && b.ts === 0) return 0;
+      if (a.ts === 0) return 1;
+      if (b.ts === 0) return -1;
+      return b.ts - a.ts;
     });
-  }, [reversedHistory]);
 
-  const totalPages = Math.max(1, Math.ceil(reversedHistory.length / PAGE_SIZE));
-  const pagedHistory = reversedHistory.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE,
-  );
-  const pagedSpent = spentPerRow.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE,
-  );
+    return entries;
+  }, [history, deposits]);
+
+  const totalPages = Math.max(1, Math.ceil(timeline.length / PAGE_SIZE));
+  const pagedTimeline = timeline.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const stats = useMemo(() => {
     const calls = publicCallRequests ?? [];
@@ -187,7 +205,7 @@ export const AddressDetailsPage: FC = () => {
             onClick={() => handleTabChange("balance")}
           >
             Fee Juice
-            <span className="c">{history?.length ?? 0}</span>
+            <span className="c">{timeline.length}</span>
           </button>
         </div>
 
@@ -206,74 +224,126 @@ export const AddressDetailsPage: FC = () => {
           </>
         )}
 
-        {/* Tab: Fee Juice balance history */}
+        {/* Tab: Fee Juice timeline — balance updates + L1 deposits merged */}
         {tab === "balance" && (
           <>
             <div className="hist-head">
               <div>Balance ({feeJuiceSymbol})</div>
-              <div>Spent</div>
-              <div>Tx</div>
+              <div>Spent / received</div>
+              <div>Tx / ref</div>
               <div className="right">Timestamp</div>
-              <div className="right">Age</div>
             </div>
-            {pagedHistory.length > 0 ? (
+            {pagedTimeline.length > 0 ? (
               <>
-                {pagedHistory.map((h, i) => {
-                  const spent = pagedSpent[i];
-                  const isOldest =
-                    page * PAGE_SIZE + i === reversedHistory.length - 1;
-                  let spentEl: React.ReactNode;
-                  if (isOldest || spent === 0n) {
-                    spentEl = <span style={{ color: "var(--ink-3)" }}>—</span>;
+                {pagedTimeline.map((entry, i) => {
+                  if (entry.kind === "deposit") {
+                    // Only show finalized deposits — pending ones are noise until confirmed
+                    if (!entry.isFinalized) return null;
+                    return (
+                      <div key={`dep-${i}`} className="hist-row">
+                        {/* Balance col — no resulting balance available for deposits */}
+                        <span className="num" style={{ textAlign: "left", color: "var(--ink-3)" }}>
+                          {"— "}
+                          <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
+                        </span>
+                        {/* Spent / received */}
+                        <span>
+                          <span style={{ color: "var(--green)", fontWeight: 500 }}>
+                            +{formatFees(entry.amount, feeJuiceDecimals)}
+                          </span>
+                          <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L1 deposit</span>
+                        </span>
+                        {/* Ref — L1 tx + sender */}
+                        <span className="hash">
+                          {entry.l1TxHash ? (
+                            <TxEtherscanLink
+                              txHash={entry.l1TxHash}
+                              content={truncateHashString(entry.l1TxHash, 8, 6)}
+                              title={`secret hash: ${entry.secretHash}`}
+                            />
+                          ) : (
+                            <span style={{ color: "var(--ink-3)" }}>—</span>
+                          )}
+                          {entry.l1Sender && (
+                            <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                              {"from "}
+                              <EtherscanAddressLink
+                                endpoint={`/address/${entry.l1Sender}`}
+                                content={truncateHashString(entry.l1Sender, 6, 4)}
+                                title={entry.l1Sender}
+                                showExternalLinkIcon={false}
+                              />
+                            </span>
+                          )}
+                        </span>
+                        {/* Timestamp */}
+                        <span className="age">
+                          {entry.ts ? (
+                            <span title={ageStr(entry.ts)}>
+                              {new Date(entry.ts).toISOString().replace("T", " ").slice(0, 19)}
+                            </span>
+                          ) : (
+                            <span style={{ color: "var(--ink-3)" }}>—</span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  // Fee payment / balance update row
+                  const { balance: bal, sourceTxHash, feeRecipient, spent, ts } = entry;
+                  let changeEl: React.ReactNode;
+                  if (spent === null || spent === 0n) {
+                    changeEl = <span style={{ color: "var(--ink-3)" }}>—</span>;
                   } else if (spent > 0n) {
-                    // fees paid — balance went down
-                    spentEl = (
-                      <span style={{ color: "var(--red)" }}>
-                        -{formatFees(spent, feeJuiceDecimals)}
+                    changeEl = (
+                      <span>
+                        <span style={{ color: "var(--red)" }}>−{formatFees(spent, feeJuiceDecimals)}</span>
+                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L2 fee paid</span>
                       </span>
                     );
                   } else {
-                    // top-up — balance went up
-                    spentEl = (
-                      <span style={{ color: "var(--green)" }}>
-                        +{formatFees(-spent, feeJuiceDecimals)}
+                    changeEl = (
+                      <span>
+                        <span style={{ color: "var(--green)" }}>+{formatFees(-spent, feeJuiceDecimals)}</span>
+                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L2 top-up</span>
                       </span>
                     );
                   }
 
                   return (
-                    <div key={i} className="hist-row">
-                      <span
-                        className="num"
-                        style={{ textAlign: "left", color: "var(--ink-1)" }}
-                      >
-                        {formatFees(h.balance, feeJuiceDecimals)}
-                        <TokenEtherscanLink
-                          symbol={feeJuiceSymbol}
-                          address={feeJuiceAddress}
-                          className="u"
-                        />
+                    <div key={`snap-${i}`} className="hist-row">
+                      {/* Balance */}
+                      <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
+                        {formatFees(bal, feeJuiceDecimals)}
+                        {" "}
+                        <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
                       </span>
-                      <span className="num" style={{ textAlign: "left" }}>
-                        {spentEl}
-                      </span>
+                      {/* Spent / received */}
+                      <span className="num" style={{ textAlign: "left" }}>{changeEl}</span>
+                      {/* Tx ref */}
                       <span className="hash">
-                        {h.sourceTxHash ? (
-                          <Link
-                            to="/tx-effects/$hash"
-                            params={{ hash: h.sourceTxHash }}
-                          >
-                            {truncateHashString(h.sourceTxHash, 8, 6)}
+                        {sourceTxHash ? (
+                          <Link to="/tx-effects/$hash" params={{ hash: sourceTxHash }}>
+                            {truncateHashString(sourceTxHash, 8, 6)}
                           </Link>
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>
                         )}
+                        {feeRecipient && (
+                          <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                            {"fee → "}
+                            <Link to="/address/$address" params={{ address: feeRecipient }}>
+                              {truncateHashString(feeRecipient, 6, 4)}
+                            </Link>
+                          </span>
+                        )}
                       </span>
-                      <span className="num">
-                        {new Date(h.timestamp)
-                          .toISOString()
-                          .slice(0, 19)
-                          .replace("T", " ")}
+                      {/* Timestamp */}
+                      <span className="age" style={{ textAlign: "right" }}>
+                        <span title={ageStr(ts)}>
+                          {new Date(ts).toISOString().replace("T", " ").slice(0, 19)}
+                        </span>
                       </span>
                     </div>
                   );
@@ -285,7 +355,7 @@ export const AddressDetailsPage: FC = () => {
                 />
               </>
             ) : (
-              <div className="empty-state">no fee juice balance history</div>
+              <div className="empty-state">no fee juice history</div>
             )}
           </>
         )}

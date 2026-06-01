@@ -63,6 +63,8 @@ export const chicmozL1FeeJuicePortalDepositSchema = z.object({
   l1TransactionHash: z.string().startsWith("0x").optional().nullable(),
   l1LogIndex: z.coerce.number().int().nonnegative().optional().nullable(),
   isFinalized: z.boolean().default(false),
+  /** L1 address that called depositToAztecPublic (msg.sender on the portal tx). */
+  l1Sender: z.string().startsWith("0x").optional().nullable(),
   // Event-specific fields
   /** L2 recipient address (bytes32 / Fr). */
   to: z.string().startsWith("0x"),

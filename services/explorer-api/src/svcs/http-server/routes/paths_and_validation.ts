@@ -102,6 +102,7 @@ export const paths = {
   l1l2ValidatorHistory: "/l1/l2-validators/:attesterAddress/history",
   l1ContractEvents: "/l1/contract-events",
   l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
+  l1FeeJuicePortalDepositsByAddress: `/l1/fee-juice-portal-deposits/:${address}`,
 
   chainInfo: "/l2/info",
   l2Tips: "/l2/tips",
@@ -329,6 +330,12 @@ export const getL1L2ValidatorsPaginatedSchema = z.object({
 export const getRpcNodeSchema = z.object({
   params: z.object({
     rpcNodeName: chicmozL2RpcNodeSchema.shape.rpcNodeName,
+  }),
+});
+
+export const getFeeJuicePortalDepositsByAddressSchema = z.object({
+  params: z.object({
+    [address]: hexStringSchema,
   }),
 });
 

@@ -21,6 +21,7 @@ export const store = async (deposit: ChicmozL1FeeJuicePortalDeposit) => {
       l1TransactionHash: deposit.l1TransactionHash,
       l1LogIndex,
       isFinalized: deposit.isFinalized,
+      l1Sender: deposit.l1Sender ?? null,
       to: deposit.to,
       amount: deposit.amount,
       secretHash: deposit.secretHash,

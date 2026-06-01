@@ -9,6 +9,7 @@ export const contractInstanceBalance = pgTable(
     balance: generateUint256Column("balance").notNull(),
     timestamp: generateTimestampColumn("timestamp").notNull(),
     sourceTxHash: varchar("source_tx_hash"),
+    feeRecipient: generateAztecAddressColumn("fee_recipient"),
   },
   (t) => ({
     pk: primaryKey({

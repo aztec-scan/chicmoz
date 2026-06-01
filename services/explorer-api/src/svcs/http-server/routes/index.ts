@@ -68,6 +68,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
 
   ...controller.openapi_GET_L1_CONTRACT_EVENTS,
   ...controller.openapi_GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
+  ...controller.openapi_GET_L1_FEE_JUICE_PORTAL_DEPOSITS_BY_ADDRESS,
 
   ...controller.openapi_GET_CHAIN_INFO,
   ...controller.openapi_GET_L2_TIPS,
@@ -302,6 +303,10 @@ export const init = ({ router }: { router: Router }) => {
     controller.GET_L1_CONTRACT_EVENTS_HOURLY_COUNTS,
   );
   router.get(paths.l1ContractEvents, controller.GET_L1_CONTRACT_EVENTS);
+  router.get(
+    paths.l1FeeJuicePortalDepositsByAddress,
+    controller.GET_L1_FEE_JUICE_PORTAL_DEPOSITS_BY_ADDRESS,
+  );
 
   router.get(paths.chainInfo, controller.GET_CHAIN_INFO);
   router.get(paths.l2Tips, controller.GET_L2_TIPS);

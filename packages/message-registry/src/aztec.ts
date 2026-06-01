@@ -33,6 +33,8 @@ export type ContractInstanceBalanceEvent = {
   // Hash of the L2 tx whose execution caused the balance change. Optional
   // for backwards compatibility with subscribers that haven't been updated.
   sourceTxHash?: string;
+  // L2 address that received the fee for the block containing this balance change.
+  feeRecipient?: string;
 };
 
 export type CatchupBlockEvent = NewBlockEvent & {
