@@ -332,7 +332,7 @@ export const AddressDetailsPage: FC = () => {
                         )}
                         {feeRecipient && (
                           <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
-                            {"fee → "}
+                            {"to "}
                             <Link to="/address/$address" params={{ address: feeRecipient }}>
                               {truncateHashString(feeRecipient, 6, 4)}
                             </Link>

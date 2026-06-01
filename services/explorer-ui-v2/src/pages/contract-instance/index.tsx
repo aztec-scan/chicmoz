@@ -496,7 +496,7 @@ export const ContractInstancePage: FC = () => {
                     )}
                     {entry.feeRecipient && (
                       <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
-                        {"fee → "}
+                        {"to "}
                         <Link to="/address/$address" params={{ address: entry.feeRecipient }}>
                           {truncateHashString(entry.feeRecipient, 6, 4)}
                         </Link>
