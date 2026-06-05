@@ -13,3 +13,4 @@ export * from "./proposal-address-link";
 export * from "./skeleton";
 export * from "./status-pill";
 export * from "./token-etherscan-link";
+export * from "./verification-pill-link";

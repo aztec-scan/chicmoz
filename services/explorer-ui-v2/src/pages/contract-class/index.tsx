@@ -1,9 +1,10 @@
+import { getContractClassVerificationStatus } from "@chicmoz-pkg/types";
 import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import {
   DetailEmptyState,
   DetailField,
-  StatusPill,
+  VerificationPillLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
@@ -67,7 +68,7 @@ export const ContractClassPage: FC = () => {
     );
   }
 
-  const verified = !!classData.sourceCodeUrl;
+  const verificationStatus = getContractClassVerificationStatus(classData);
   const name =
     classData.artifactContractName ??
     classData.standardContractType ??
@@ -92,7 +93,14 @@ export const ContractClassPage: FC = () => {
         </h1>
         <div className="subhash">{classId}</div>
         <div className="meta-row">
-          <StatusPill status={verified ? "verified" : "unverified"} />
+          <VerificationPillLink
+            kind="artifact"
+            verified={verificationStatus.artifactVerified}
+          />
+          <VerificationPillLink
+            kind="source"
+            verified={verificationStatus.sourceVerified}
+          />
         </div>
       </div>
 
@@ -180,7 +188,12 @@ export const ContractClassPage: FC = () => {
           </button>
         </div>
 
-        {tab === "source" && <SourceTab source={source} verified={verified} />}
+        {tab === "source" && (
+          <SourceTab
+            source={source}
+            verified={verificationStatus.sourceVerified}
+          />
+        )}
         {tab === "private" && (
           <FunctionsTab
             kind="priv"
