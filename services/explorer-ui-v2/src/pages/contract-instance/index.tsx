@@ -1,3 +1,4 @@
+import { getContractInstanceVerificationStatus } from "@chicmoz-pkg/types";
 import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import {
@@ -5,8 +6,8 @@ import {
   DetailField,
   HashCell,
   L2AddressLink,
-  StatusPill,
   TokenEtherscanLink,
+  VerificationPillLink,
 } from "~/components/common";
 import { L2ToL1MsgsTable } from "~/components/data/l2-to-l1-msgs-table";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
@@ -64,7 +65,7 @@ export const ContractInstancePage: FC = () => {
     );
   }
 
-  const verified = !!instance.verifiedDeploymentArguments;
+  const verificationStatus = getContractInstanceVerificationStatus(instance);
   const className =
     instance.artifactContractName ??
     instance.standardContractType ??
@@ -121,12 +122,22 @@ export const ContractInstancePage: FC = () => {
         </h1>
         <div className="subhash">{instance.address}</div>
         <div className="meta-row">
-          <Link to="/ecosystem" hash="verified-deployment">
-            <StatusPill
-              status={verified ? "verified" : "unverified"}
-              label={verified ? "deployment verified" : "deployment unverified"}
-            />
-          </Link>
+          <VerificationPillLink
+            kind="artifact"
+            verified={verificationStatus.artifactVerified}
+          />
+          <VerificationPillLink
+            kind="source"
+            verified={verificationStatus.sourceVerified}
+          />
+          <VerificationPillLink
+            kind="deployment"
+            verified={verificationStatus.deploymentVerified}
+          />
+          <VerificationPillLink
+            kind="aztecScanNotes"
+            verified={verificationStatus.aztecScanNotesListed}
+          />
           <span className="meta-line">
             class{" "}
             <Link
