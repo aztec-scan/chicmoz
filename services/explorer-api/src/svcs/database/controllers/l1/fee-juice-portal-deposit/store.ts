@@ -23,10 +23,10 @@ export const store = async (deposit: ChicmozL1FeeJuicePortalDeposit) => {
       isFinalized: deposit.isFinalized,
       l1Sender: deposit.l1Sender ?? null,
       to: deposit.to,
-      amount: deposit.amount,
+      amount: deposit.amount.toString(),
       secretHash: deposit.secretHash,
       key: deposit.key,
-      index: deposit.index,
+      index: deposit.index.toString(),
     })
     .onConflictDoNothing({
       target: [

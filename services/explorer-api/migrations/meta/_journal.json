@@ -197,6 +197,27 @@
       "when": 1748476800000,
       "tag": "0027_l1_fee_juice_portal_deposit",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1779580800000,
+      "tag": "0028_l1_fee_juice_portal_deposit_sender",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1779667200000,
+      "tag": "0029_contract_instance_balance_fee_recipient",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1779753600000,
+      "tag": "0030_l1_fee_juice_portal_deposit_uint256",
+      "breakpoints": true
     }
   ]
 }

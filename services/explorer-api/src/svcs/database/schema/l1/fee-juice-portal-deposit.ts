@@ -6,12 +6,15 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { generateTimestampColumn } from "../utils.js";
+import {
+  generateTimestampColumn,
+  generateUint256Column,
+} from "../utils.js";
 
 /**
  * Stores each L1→L2 fee juice deposit (FeeJuicePortal.DepositToAztecPublic events).
  * `to` is the L2 recipient as a bytes32/Fr hex string.
- * `amount` is the fee juice amount in wei (uint256, stored as bigint).
+ * `amount` is the fee juice amount in wei (uint256, stored as numeric(77, 0)).
  */
 export const l1FeeJuicePortalDepositTable = pgTable(
   "l1_fee_juice_portal_deposit",
@@ -30,13 +33,13 @@ export const l1FeeJuicePortalDepositTable = pgTable(
     // DepositToAztecPublic fields
     /** L2 recipient (bytes32 / Fr as hex). */
     to: varchar("to").notNull(),
-    /** Fee juice amount in wei. */
-    amount: bigint("amount", { mode: "bigint" }).notNull(),
+    /** Fee juice amount in wei (uint256). */
+    amount: generateUint256Column("amount").notNull(),
     secretHash: varchar("secret_hash").notNull(),
     /** Inbox message key (bytes32). */
     key: varchar("key").notNull(),
-    /** Inbox leaf index. */
-    index: bigint("index", { mode: "bigint" }).notNull(),
+    /** Inbox leaf index (uint256). */
+    index: generateUint256Column("index").notNull(),
   },
   (table) => ({
     l1FeeJuiceDepositLogUnique: uniqueIndex(
