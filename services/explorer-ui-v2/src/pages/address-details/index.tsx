@@ -237,8 +237,6 @@ export const AddressDetailsPage: FC = () => {
               <>
                 {pagedTimeline.map((entry, i) => {
                   if (entry.kind === "deposit") {
-                    // Only show finalized deposits — pending ones are noise until confirmed
-                    if (!entry.isFinalized) return null;
                     return (
                       <div key={`dep-${i}`} className="hist-row">
                         {/* Balance col — no resulting balance available for deposits */}
@@ -330,7 +328,7 @@ export const AddressDetailsPage: FC = () => {
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>
                         )}
-                        {feeRecipient && (
+                        {feeRecipient && spent !== null && spent > 0n && (
                           <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
                             {"to "}
                             <Link to="/address/$address" params={{ address: feeRecipient }}>

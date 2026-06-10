@@ -416,8 +416,6 @@ export const ContractInstancePage: FC = () => {
             </div>
             {timeline.map((entry, i) => {
               if (entry.kind === "deposit") {
-                // Only show finalized deposits — pending ones are noise until confirmed
-                if (!entry.isFinalized) return null;
                 return (
                   <div key={`dep-${i}`} className="hist-row">
                     <span className="num" style={{ textAlign: "left", color: "var(--ink-3)" }}>
@@ -494,7 +492,7 @@ export const ContractInstancePage: FC = () => {
                     ) : (
                       <span style={{ color: "var(--ink-3)" }}>—</span>
                     )}
-                    {entry.feeRecipient && (
+                    {entry.feeRecipient && entry.spent !== null && entry.spent > 0n && (
                       <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
                         {"to "}
                         <Link to="/address/$address" params={{ address: entry.feeRecipient }}>
