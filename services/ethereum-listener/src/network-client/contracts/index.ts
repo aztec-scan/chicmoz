@@ -1,5 +1,7 @@
 import {
   FeeJuicePortalAbi,
+  GovernanceAbi,
+  GovernanceProposerAbi,
   InboxAbi,
   OutboxAbi,
   RegistryAbi,
@@ -30,12 +32,34 @@ export const getL1Contracts = async ({
   const dbContracts = await dbControllers.getL1Contracts();
   const publicClient =
     transport === "ws" ? getPublicWsClient() : getPublicHttpClient();
+
+  // Resolve governance address from registry, then governanceProposer from governance
+  const rollupContract = getTypedContract(
+    RollupAbi,
+    dbContracts.rollupAddress as `0x${string}`,
+    publicClient,
+  );
+  const registryContract = getTypedContract(
+    RegistryAbi,
+    dbContracts.registryAddress as `0x${string}`,
+    publicClient,
+  );
+  const governanceAddress = await registryContract.read.getGovernance();
+  const governanceContract = getTypedContract(
+    GovernanceAbi,
+    governanceAddress,
+    publicClient,
+  );
+  const governanceProposerAddress =
+    await governanceContract.read.governanceProposer();
+  const governanceProposerContract = getTypedContract(
+    GovernanceProposerAbi,
+    governanceProposerAddress,
+    publicClient,
+  );
+
   return {
-    rollup: getTypedContract(
-      RollupAbi,
-      dbContracts.rollupAddress as `0x${string}`,
-      publicClient,
-    ),
+    rollup: rollupContract,
     registry: getTypedContract(
       RegistryAbi,
       dbContracts.registryAddress as `0x${string}`,
@@ -56,6 +80,8 @@ export const getL1Contracts = async ({
       dbContracts.feeJuicePortalAddress as `0x${string}`,
       publicClient,
     ),
+    governance: governanceContract,
+    governanceProposer: governanceProposerContract,
   };
 };
 

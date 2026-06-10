@@ -5,6 +5,21 @@ export const STRUCTURED_ROLLUP_EVENT_NAMES = new Set([
   "L2ProofVerified",
 ]);
 
+export const STRUCTURED_GOVERNANCE_EVENT_NAMES = new Set([
+  "Proposed",
+  "VoteCast",
+  "ProposalExecuted",
+  "ProposalDropped",
+  "ConfigurationUpdated",
+  "GovernanceProposerUpdated",
+]);
+
+export const STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES = new Set([
+  "SignalCast",
+  "PayloadSubmittable",
+  "PayloadSubmitted",
+]);
+
 export const GENERIC_EVENT_ALLOWLIST = {
   rollup: [
     "CheckpointInvalidated",
@@ -19,4 +34,6 @@ export const GENERIC_EVENT_ALLOWLIST = {
   inbox: [],
   outbox: [],
   feeJuicePortal: ["DepositToAztecPublic", "FeesDistributed"],
+  governance: [],
+  governanceProposer: [],
 } satisfies Record<keyof AztecContracts, string[]>;

@@ -23,7 +23,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 25;
 
 type TimelineEntry =
-  | { kind: "snapshot"; ts: number; balance: bigint; sourceTxHash?: string; feeRecipient?: string; spent: bigint | null }
+  | { kind: "snapshot"; ts: number; balance: bigint; sourceTxHash?: string; feeRecipient?: string | null; spent: bigint | null }
   | { kind: "deposit"; ts: number; amount: bigint; l1TxHash?: string | null; l1Sender?: string | null; secretHash: string; isFinalized: boolean };
 
 export const AddressDetailsPage: FC = () => {

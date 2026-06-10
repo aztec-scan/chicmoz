@@ -5,6 +5,7 @@ export * from "./fee-recipient.js";
 export * from "./special.js";
 export * from "./ui.js";
 export * from "./general.js";
+export * from "./verification-status.js";
 export {
   frDecimalStringSchema,
   frSmallIntSchema,

@@ -194,29 +194,36 @@
     {
       "idx": 27,
       "version": "7",
-      "when": 1748476800000,
-      "tag": "0027_l1_fee_juice_portal_deposit",
+      "when": 1779960000000,
+      "tag": "0027_l1_governance",
       "breakpoints": true
     },
     {
       "idx": 28,
       "version": "7",
-      "when": 1779580800000,
-      "tag": "0028_l1_fee_juice_portal_deposit_sender",
+      "when": 1779960000001,
+      "tag": "0028_l1_fee_juice_portal_deposit",
       "breakpoints": true
     },
     {
       "idx": 29,
       "version": "7",
-      "when": 1779667200000,
-      "tag": "0029_contract_instance_balance_fee_recipient",
+      "when": 1779960000002,
+      "tag": "0029_l1_fee_juice_portal_deposit_sender",
       "breakpoints": true
     },
     {
       "idx": 30,
       "version": "7",
-      "when": 1779753600000,
-      "tag": "0030_l1_fee_juice_portal_deposit_uint256",
+      "when": 1779960000003,
+      "tag": "0030_contract_instance_balance_fee_recipient",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1779960000004,
+      "tag": "0031_l1_fee_juice_portal_deposit_uint256",
       "breakpoints": true
     }
   ]

@@ -54,6 +54,28 @@ export const L2_BLOCK_RECONCILIATION_TIP_REPAIR_WINDOW = z.coerce
   .default(5)
   .parse(process.env.L2_BLOCK_RECONCILIATION_TIP_REPAIR_WINDOW);
 
+export const L1_GOVERNANCE_URI_RECONCILIATION_ENABLED = z.coerce
+  .boolean()
+  .default(true)
+  .parse(process.env.L1_GOVERNANCE_URI_RECONCILIATION_ENABLED);
+export const L1_GOVERNANCE_URI_RECONCILIATION_INTERVAL_MS = z.coerce
+  .number()
+  .positive()
+  .default(300_000)
+  .parse(process.env.L1_GOVERNANCE_URI_RECONCILIATION_INTERVAL_MS);
+export const L1_GOVERNANCE_URI_RECONCILIATION_MAX_PROPOSALS = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(25)
+  .parse(process.env.L1_GOVERNANCE_URI_RECONCILIATION_MAX_PROPOSALS);
+export const L1_GOVERNANCE_URI_RECONCILIATION_LOOKBACK_DAYS = z.coerce
+  .number()
+  .int()
+  .positive()
+  .default(30)
+  .parse(process.env.L1_GOVERNANCE_URI_RECONCILIATION_LOOKBACK_DAYS);
+
 export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
   process.env.L2_NETWORK_ID,
 );

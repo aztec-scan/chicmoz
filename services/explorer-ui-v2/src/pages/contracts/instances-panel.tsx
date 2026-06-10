@@ -1,4 +1,7 @@
-import { type ChicmozL2ContractInstanceDeluxe } from "@chicmoz-pkg/types";
+import {
+  getContractInstanceVerificationStatus,
+  type ChicmozL2ContractInstanceDeluxe,
+} from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { Pagination } from "~/components/common";
@@ -68,7 +71,8 @@ export const InstancesPanel: FC<Props> = ({
         <div className="right">Class id</div>
       </div>
       {list.map((inst) => {
-        const verified = !!inst.verifiedDeploymentArguments;
+        const verified =
+          getContractInstanceVerificationStatus(inst).deploymentVerified;
         const protocol = !!inst.standardContractType;
         const name =
           inst.artifactContractName ?? inst.standardContractType ?? "Instance";

@@ -9,6 +9,7 @@ import {
   contractStandardSchema,
   ethAddressSchema,
   hexStringSchema,
+  proposalStateSchema,
   uiBlockStatusFilterSchema,
 } from "@chicmoz-pkg/types";
 import { frSchema } from "@chicmoz-pkg/types/build/aztec/utils.js";
@@ -103,6 +104,17 @@ export const paths = {
   l1ContractEvents: "/l1/contract-events",
   l1ContractEventsHourlyCounts: "/l1/contract-events/hourly-counts",
   l1FeeJuicePortalDepositsByAddress: `/l1/fee-juice-portal-deposits/:${address}`,
+
+  // Governance
+  governanceProposals: "/l1/governance/proposals",
+  governanceProposal: "/l1/governance/proposals/:proposalId",
+  governanceProposalVotes: "/l1/governance/proposals/:proposalId/votes",
+  governanceProposalSignals: "/l1/governance/proposals/:proposalId/signals",
+  governanceSignals: "/l1/governance/signals",
+  governanceSignalsByRound: "/l1/governance/signals/round/:round",
+  governanceSignalsByPayload: "/l1/governance/signals/payload/:payloadAddress",
+  governanceConfigurations: "/l1/governance/configurations",
+  governanceProposerHistory: "/l1/governance/proposer-history",
 
   chainInfo: "/l2/info",
   l2Tips: "/l2/tips",
@@ -371,5 +383,80 @@ export const getContractClassSourceSchema = z.object({
   params: z.object({
     [contractClassId]: hexStringSchema,
     [version]: z.coerce.number().nonnegative(),
+  }),
+});
+
+// ── Governance validation schemas ────────────────────────────────────────────
+
+export const getGovernanceProposalsSchema = z.object({
+  query: z.object({
+    state: proposalStateSchema.optional(),
+    from: z.coerce.number().optional(),
+    to: z.coerce.number().optional(),
+    offset: z.coerce.number().nonnegative().optional().default(0),
+    limit: z.coerce.number().min(1).max(100).optional().default(20),
+  }),
+});
+
+export const getGovernanceProposalSchema = z.object({
+  params: z.object({
+    proposalId: z.string(),
+  }),
+});
+
+export const getGovernanceProposalVotesSchema = z.object({
+  params: z.object({
+    proposalId: z.string(),
+  }),
+  query: z.object({
+    support: z.coerce.boolean().optional(),
+    offset: z.coerce.number().nonnegative().optional().default(0),
+    limit: z.coerce.number().min(1).max(100).optional().default(50),
+  }),
+});
+
+export const getGovernanceProposalSignalsSchema = z.object({
+  params: z.object({
+    proposalId: z.string(),
+  }),
+  query: z.object({
+    offset: z.coerce.number().nonnegative().optional().default(0),
+    limit: z.coerce.number().min(1).max(100).optional().default(50),
+  }),
+});
+
+export const getGovernanceSignalsSchema = z.object({
+  query: z.object({
+    payloadAddress: ethAddressSchema.optional(),
+    round: z.coerce.bigint().optional(),
+    signaler: ethAddressSchema.optional(),
+    offset: z.coerce.number().nonnegative().optional().default(0),
+    limit: z.coerce.number().min(1).max(100).optional().default(50),
+  }),
+});
+
+export const getGovernanceSignalsByRoundSchema = z.object({
+  params: z.object({
+    round: z.coerce.bigint(),
+  }),
+});
+
+export const getGovernanceSignalsByPayloadSchema = z.object({
+  params: z.object({
+    payloadAddress: ethAddressSchema,
+  }),
+});
+
+export const getGovernanceConfigurationsSchema = z.object({
+  query: z.object({
+    offset: z.coerce.number().nonnegative().optional().default(0),
+    limit: z.coerce.number().min(1).max(100).optional().default(20),
+  }),
+});
+
+export const getGovernanceProposerHistorySchema = z.object({
+  query: z.object({
+    offset: z.coerce.number().nonnegative().optional().default(0),
+    limit: z.coerce.number().min(1).max(100).optional().default(20),
   }),
 });

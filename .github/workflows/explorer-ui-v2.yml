@@ -7,6 +7,7 @@ on:
       - production
       - production-devnet
     paths:
+      - ".github/workflows/explorer-ui-v2.yml"
       - "services/explorer-ui-v2/**"
   workflow_dispatch:
     inputs:
@@ -211,6 +212,12 @@ jobs:
       - name: Ensure DigitalOcean registry credentials exist in cluster
         run: |
           doctl registries kubernetes-manifest aztlan-containers --namespace chicmoz-prod | kubectl apply -f -
+
+      - name: Remove stale legacy Explorer UI resources
+        run: |
+          kubectl delete httproute explorer-ui-${{ needs.set-up.outputs.network }} -n chicmoz-prod --ignore-not-found=true
+          kubectl delete service explorer-ui-${{ needs.set-up.outputs.network }} -n chicmoz-prod --ignore-not-found=true
+          kubectl delete deployment explorer-ui-${{ needs.set-up.outputs.network }} -n chicmoz-prod --ignore-not-found=true
 
       - name: Apply manifests
         run: kubectl apply -k services/explorer-ui-v2/k8s/overlays/${{ needs.set-up.outputs.network }}/
