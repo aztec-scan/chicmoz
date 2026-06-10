@@ -99,7 +99,7 @@ export const chicmozContractInstanceBalanceSchema = z.object({
   // because older history entries (pre-migration) won't carry it.
   sourceTxHash: hexStringSchema.optional(),
   // L2 address that received the fee for the block containing this balance change.
-  feeRecipient: aztecAddressSchema.optional(),
+  feeRecipient: aztecAddressSchema.nullish(),
 });
 
 export type ChicmozContractInstanceBalance = z.infer<
