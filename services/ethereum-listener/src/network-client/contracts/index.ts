@@ -53,7 +53,7 @@ export const getL1Contracts = async ({
     ),
     feeJuicePortal: getTypedContract(
       FeeJuicePortalAbi,
-      dbContracts.feeJuiceAddress as `0x${string}`,
+      dbContracts.feeJuicePortalAddress as `0x${string}`,
       publicClient,
     ),
   };
