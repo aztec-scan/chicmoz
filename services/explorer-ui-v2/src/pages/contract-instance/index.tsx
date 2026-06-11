@@ -87,11 +87,18 @@ export const ContractInstancePage: FC = () => {
 
     const reversed = (history ?? []).slice().reverse();
 
-    // Assign each deposit to the earliest (newest) snapshot that happened after it.
+    // Assign each deposit to the earliest (newest) snapshot that:
+    //   1. happened after the deposit timestamp, AND
+    //   2. shows a balance increase (spent < 0).
     const snapshotDeposits = new Map<number, L1DepositRef[]>();
     for (const d of sortedDeposits) {
       for (let i = 0; i < reversed.length; i++) {
         if (reversed[i].timestamp >= d.ts) {
+          // Only attach to snapshots where the balance increased.
+          const isIncrease =
+            i === reversed.length - 1 // oldest snapshot: always attach
+            || reversed[i + 1].balance < reversed[i].balance;
+          if (!isIncrease) {continue;} // skip fee-payment / no-change rows
           const existing = snapshotDeposits.get(i);
           if (existing) {
             existing.push({ amount: d.amount, l1TxHash: d.l1TxHash, l1Sender: d.l1Sender, secretHash: d.secretHash });
