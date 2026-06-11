@@ -28,6 +28,7 @@ export const getLatestContractInstanceBalance = async (
     ...result[0],
     sourceTxHash: result[0].sourceTxHash ?? undefined,
     feeRecipient: result[0].feeRecipient ?? undefined,
+    blockNumber: result[0].blockNumber ?? undefined,
   });
 };
 
@@ -82,6 +83,7 @@ export const getContractInstanceBalanceHistory = async (
       ...row,
       sourceTxHash: row.sourceTxHash ?? undefined,
       feeRecipient: row.feeRecipient ?? undefined,
+      blockNumber: row.blockNumber ?? undefined,
     }),
   );
 };
