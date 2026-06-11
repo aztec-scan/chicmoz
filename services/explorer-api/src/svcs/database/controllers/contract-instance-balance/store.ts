@@ -6,7 +6,13 @@ import { contractInstanceBalance } from "../../schema/contract-instance-balance/
 export const storeContractInstanceBalance = async (
   data: ContractInstanceBalanceEvent,
 ): Promise<void> => {
-  await db().insert(contractInstanceBalance).values(data).onConflictDoNothing();
+  await db()
+    .insert(contractInstanceBalance)
+    .values({
+      ...data,
+      blockNumber: data.blockNumber ? BigInt(data.blockNumber) : undefined,
+    })
+    .onConflictDoNothing();
 
   logger.info(
     `💰 Stored contract instance balance for ${data.contractAddress}: ${data.balance}`,

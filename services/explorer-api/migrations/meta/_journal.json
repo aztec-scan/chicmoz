@@ -225,6 +225,13 @@
       "when": 1779960000004,
       "tag": "0031_l1_fee_juice_portal_deposit_uint256",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1779960000005,
+      "tag": "0032_contract_instance_balance_block_number",
+      "breakpoints": true
     }
   ]
 }

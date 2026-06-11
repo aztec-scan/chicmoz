@@ -35,6 +35,8 @@ export type ContractInstanceBalanceEvent = {
   sourceTxHash?: string;
   // L2 address that received the fee for the block containing this balance change.
   feeRecipient?: string;
+  // L2 block number at which this balance was snapshotted.
+  blockNumber?: string;
 };
 
 export type CatchupBlockEvent = NewBlockEvent & {
