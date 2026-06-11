@@ -30,25 +30,15 @@ import {
   truncateHashString,
 } from "~/lib/utils";
 
-type Tab = "balance" | "history" | "calls" | "l2l1";
-
-type L1DepositRef = {
-  amount: bigint;
-  l1TxHash?: string | null;
-  l1Sender?: string | null;
-  secretHash: string;
-};
+type Tab = "balance" | "history" | "calls" | "l2l1" | "deposits";
 
 type TimelineEntry = {
-  kind: "snapshot";
   ts: number;
   balance: bigint;
   sourceTxHash?: string;
   feeRecipient?: string | null;
   spent: bigint | null;
   blockNumber?: bigint;
-  /** L1 deposits whose timestamp falls between the previous snapshot and this one. */
-  deposits: L1DepositRef[];
 };
 
 export const ContractInstancePage: FC = () => {
@@ -71,64 +61,24 @@ export const ContractInstancePage: FC = () => {
       ? "—"
       : formatFees(balance?.balance ?? 0n, feeJuiceDecimals);
 
-  // Build snapshot timeline (newest-first) with L1 deposits merged into matching rows.
+  // Build pure balance-snapshot timeline (newest-first).
   const timeline = useMemo((): TimelineEntry[] => {
-    // Sort deposits by L1 timestamp ascending. Skip deposits without a timestamp.
-    const sortedDeposits = (deposits ?? [])
-      .filter((d) => d.l1BlockTimestamp != null)
-      .map((d) => ({
-        amount: d.amount,
-        l1TxHash: d.l1TransactionHash,
-        l1Sender: d.l1Sender,
-        secretHash: d.secretHash,
-        ts: Number(d.l1BlockTimestamp),
-      }))
-      .sort((a, b) => a.ts - b.ts);
-
     const reversed = (history ?? []).slice().reverse();
-
-    // Assign each deposit to the earliest (newest) snapshot that:
-    //   1. happened after the deposit timestamp, AND
-    //   2. shows a balance increase (spent < 0).
-    const snapshotDeposits = new Map<number, L1DepositRef[]>();
-    for (const d of sortedDeposits) {
-      for (let i = 0; i < reversed.length; i++) {
-        if (reversed[i].timestamp >= d.ts) {
-          // Only attach to snapshots where the balance increased.
-          const isIncrease =
-            i === reversed.length - 1 // oldest snapshot: always attach
-            || reversed[i + 1].balance < reversed[i].balance;
-          if (!isIncrease) {continue;} // skip fee-payment / no-change rows
-          const existing = snapshotDeposits.get(i);
-          if (existing) {
-            existing.push({ amount: d.amount, l1TxHash: d.l1TxHash, l1Sender: d.l1Sender, secretHash: d.secretHash });
-          } else {
-            snapshotDeposits.set(i, [{ amount: d.amount, l1TxHash: d.l1TxHash, l1Sender: d.l1Sender, secretHash: d.secretHash }]);
-          }
-          break;
-        }
-      }
-    }
-
     const entries: TimelineEntry[] = [];
     for (let i = 0; i < reversed.length; i++) {
       const h = reversed[i];
       const spent = i < reversed.length - 1 ? reversed[i + 1].balance - h.balance : null;
-
       entries.push({
-        kind: "snapshot",
         ts: h.timestamp,
         balance: h.balance,
         sourceTxHash: h.sourceTxHash,
         feeRecipient: h.feeRecipient,
         spent,
         blockNumber: h.blockNumber,
-        deposits: snapshotDeposits.get(i) ?? [],
       });
     }
-
     return entries;
-  }, [history, deposits]);
+  }, [history]);
 
   const stubCrumbs = [
     { label: "aztec-scan", to: "/" },
@@ -427,6 +377,13 @@ export const ContractInstancePage: FC = () => {
             L2 → L1 msgs
             <span className="c">{l2ToL1Msgs?.length ?? 0}</span>
           </button>
+          <button
+            className={tab === "deposits" ? "on" : ""}
+            onClick={() => setTab("deposits")}
+          >
+            L1 deposits
+            <span className="c">{deposits?.length ?? 0}</span>
+          </button>
         </div>
         {tab === "balance" && (
           <div className="balance-block">
@@ -478,7 +435,7 @@ export const ContractInstancePage: FC = () => {
               <div className="right">Timestamp</div>
             </div>
             {timeline.map((entry, i) => {
-              const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber, deposits: entryDeposits } = entry;
+              const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber } = entry;
 
               let changeEl: React.ReactNode;
               if (spent === null || spent === 0n) {
@@ -491,26 +448,22 @@ export const ContractInstancePage: FC = () => {
                   </span>
                 );
               } else {
-                const label = entryDeposits.length > 0 ? "L1 deposit" : "L2 top-up";
                 changeEl = (
                   <span>
                     <span style={{ color: "var(--green)" }}>+{formatFees(-spent, feeJuiceDecimals)}</span>
-                    <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>{label}</span>
+                    <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>received</span>
                   </span>
                 );
               }
 
               return (
                 <div key={`snap-${i}`} className="hist-row">
-                  {/* Balance */}
                   <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
                     {formatFees(bal, feeJuiceDecimals)}
                     {" "}
                     <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
                   </span>
-                  {/* Spent / received */}
                   <span className="num" style={{ textAlign: "left" }}>{changeEl}</span>
-                  {/* Ref — block number + optional L1 deposit info or feeRecipient */}
                   <span className="hash">
                     {blockNumber !== undefined ? (
                       <Link to="/blocks/$blockNumber" params={{ blockNumber: blockNumber.toString() }}>
@@ -523,35 +476,6 @@ export const ContractInstancePage: FC = () => {
                     ) : (
                       <span style={{ color: "var(--ink-3)" }}>—</span>
                     )}
-                    {/* L1 deposits: show L1 tx + from for each matched deposit */}
-                    {entryDeposits.map((d, di) => (
-                      <span key={di} style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
-                        {d.l1TxHash ? (
-                          <>
-                            {"L1 "}
-                            <TxEtherscanLink
-                              txHash={d.l1TxHash}
-                              content={truncateHashString(d.l1TxHash, 8, 6)}
-                              title={`secret hash: ${d.secretHash}`}
-                            />
-                          </>
-                        ) : (
-                          "L1 deposit"
-                        )}
-                        {d.l1Sender && (
-                          <>
-                            {" from "}
-                            <EtherscanAddressLink
-                              endpoint={`/address/${d.l1Sender}`}
-                              content={truncateHashString(d.l1Sender, 6, 4)}
-                              title={d.l1Sender}
-                              showExternalLinkIcon={false}
-                            />
-                          </>
-                        )}
-                      </span>
-                    ))}
-                    {/* Fee payment: show feeRecipient as subline */}
                     {feeRecipient && spent !== null && spent > 0n && (
                       <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
                         {"to "}
@@ -561,7 +485,6 @@ export const ContractInstancePage: FC = () => {
                       </span>
                     )}
                   </span>
-                  {/* Timestamp */}
                   <span className="age" style={{ textAlign: "right" }}>
                     <span title={ageStr(ts)}>
                       {new Date(ts).toISOString().replace("T", " ").slice(0, 19)}
@@ -581,6 +504,64 @@ export const ContractInstancePage: FC = () => {
             data={l2ToL1Msgs}
             emptyMessage="no L2 → L1 messages from this contract"
           />
+        )}
+        {tab === "deposits" && (
+          <>
+            {!(deposits?.length) ? (
+              <div className="empty-state">no L1 deposits</div>
+            ) : (
+              <>
+                <div className="hist-head">
+                  <div className="right">Amount ({feeJuiceSymbol})</div>
+                  <div>L1 tx</div>
+                  <div>From</div>
+                  <div className="right">Timestamp</div>
+                </div>
+                {deposits.map((d, i) => {
+                  const ts = d.l1BlockTimestamp ? Number(d.l1BlockTimestamp) : 0;
+                  return (
+                    <div key={`dep-${i}`} className="hist-row">
+                      <span className="num" style={{ textAlign: "right", color: "var(--green)" }}>
+                        +{formatFees(d.amount, feeJuiceDecimals)}
+                      </span>
+                      <span className="hash">
+                        {d.l1TransactionHash ? (
+                          <TxEtherscanLink
+                            txHash={d.l1TransactionHash}
+                            content={truncateHashString(d.l1TransactionHash, 8, 6)}
+                            title={`secret hash: ${d.secretHash}`}
+                          />
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                      <span className="hash">
+                        {d.l1Sender ? (
+                          <EtherscanAddressLink
+                            endpoint={`/address/${d.l1Sender}`}
+                            content={truncateHashString(d.l1Sender, 6, 4)}
+                            title={d.l1Sender}
+                            showExternalLinkIcon={false}
+                          />
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                      <span className="age" style={{ textAlign: "right" }}>
+                        {ts ? (
+                          <span title={ageStr(ts)}>
+                            {new Date(ts).toISOString().replace("T", " ").slice(0, 19)}
+                          </span>
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </>
         )}
       </div>
     </Shell>
