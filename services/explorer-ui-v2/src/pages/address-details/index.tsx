@@ -37,8 +37,8 @@ type TimelineEntry = {
   feeRecipient?: string | null;
   spent: bigint | null;
   blockNumber?: bigint;
-  /** Populated when this snapshot's balance increase matches an L1 deposit. */
-  deposit: L1DepositRef | null;
+  /** L1 deposits whose timestamp falls between the previous snapshot and this one. */
+  deposits: L1DepositRef[];
 };
 
 export const AddressDetailsPage: FC = () => {
@@ -99,39 +99,44 @@ export const AddressDetailsPage: FC = () => {
           : `-${deltaValue} · ${deltaLabel}`
       : "no history yet";
 
-  // Build snapshot timeline (newest-first) with L1 deposits merged into matching balance-increase rows.
+  // Build snapshot timeline (newest-first) with L1 deposits merged into matching rows.
   const timeline = useMemo((): TimelineEntry[] => {
-    // Index deposits by amount so we can match them to balance increases.
-    const depositByAmount = new Map<string, L1DepositRef>();
-    for (const d of deposits ?? []) {
-      const key = d.amount.toString();
-      // Keep the earliest deposit for a given amount (closest to L2 arrival).
-      if (!depositByAmount.has(key)) {
-        depositByAmount.set(key, {
-          amount: d.amount,
-          l1TxHash: d.l1TransactionHash,
-          l1Sender: d.l1Sender,
-          secretHash: d.secretHash,
-        });
+    // Sort deposits by L1 timestamp ascending. Skip deposits without a timestamp.
+    const sortedDeposits = (deposits ?? [])
+      .filter((d) => d.l1BlockTimestamp != null)
+      .map((d) => ({
+        amount: d.amount,
+        l1TxHash: d.l1TransactionHash,
+        l1Sender: d.l1Sender,
+        secretHash: d.secretHash,
+        ts: Number(d.l1BlockTimestamp),
+      }))
+      .sort((a, b) => a.ts - b.ts);
+
+    const reversed = (history ?? []).slice().reverse();
+
+    // Assign each deposit to the earliest (newest) snapshot that happened after it.
+    const snapshotDeposits = new Map<number, L1DepositRef[]>();
+    for (const d of sortedDeposits) {
+      for (let i = 0; i < reversed.length; i++) {
+        if (reversed[i].timestamp >= d.ts) {
+          const existing = snapshotDeposits.get(i);
+          if (existing) {
+            existing.push({ amount: d.amount, l1TxHash: d.l1TxHash, l1Sender: d.l1Sender, secretHash: d.secretHash });
+          } else {
+            snapshotDeposits.set(i, [{ amount: d.amount, l1TxHash: d.l1TxHash, l1Sender: d.l1Sender, secretHash: d.secretHash }]);
+          }
+          break;
+        }
       }
     }
 
     const entries: TimelineEntry[] = [];
-    const reversed = (history ?? []).slice().reverse();
-
     for (let i = 0; i < reversed.length; i++) {
       const h = reversed[i];
       let spent: bigint | null = null;
       if (i < reversed.length - 1) {
-        // spent = prev snapshot balance minus this snapshot balance.
-        // positive = fees paid, negative = balance increase.
         spent = reversed[i + 1].balance - h.balance;
-      }
-
-      // If balance increased, try to match an L1 deposit of the same amount.
-      let deposit: L1DepositRef | null = null;
-      if (spent !== null && spent < 0n) {
-        deposit = depositByAmount.get((-spent).toString()) ?? null;
       }
 
       entries.push({
@@ -142,7 +147,7 @@ export const AddressDetailsPage: FC = () => {
         feeRecipient: h.feeRecipient,
         spent,
         blockNumber: h.blockNumber,
-        deposit,
+        deposits: snapshotDeposits.get(i) ?? [],
       });
     }
 
@@ -259,7 +264,7 @@ export const AddressDetailsPage: FC = () => {
             {pagedTimeline.length > 0 ? (
               <>
                 {pagedTimeline.map((entry, i) => {
-                  const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber, deposit } = entry;
+                  const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber, deposits: entryDeposits } = entry;
 
                   let changeEl: React.ReactNode;
                   if (spent === null || spent === 0n) {
@@ -272,7 +277,7 @@ export const AddressDetailsPage: FC = () => {
                       </span>
                     );
                   } else {
-                    const label = deposit ? "L1 deposit" : "L2 top-up";
+                    const label = entryDeposits.length > 0 ? "L1 deposit" : "L2 top-up";
                     changeEl = (
                       <span>
                         <span style={{ color: "var(--green)" }}>+{formatFees(-spent, feeJuiceDecimals)}</span>
@@ -304,34 +309,34 @@ export const AddressDetailsPage: FC = () => {
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>
                         )}
-                        {/* L1 deposit: show L1 tx + from as subline */}
-                        {deposit && (
-                          <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
-                            {deposit.l1TxHash ? (
+                        {/* L1 deposits: show L1 tx + from for each matched deposit */}
+                        {entryDeposits.map((d, di) => (
+                          <span key={di} style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                            {d.l1TxHash ? (
                               <>
                                 {"L1 "}
                                 <TxEtherscanLink
-                                  txHash={deposit.l1TxHash}
-                                  content={truncateHashString(deposit.l1TxHash, 8, 6)}
-                                  title={`secret hash: ${deposit.secretHash}`}
+                                  txHash={d.l1TxHash}
+                                  content={truncateHashString(d.l1TxHash, 8, 6)}
+                                  title={`secret hash: ${d.secretHash}`}
                                 />
                               </>
                             ) : (
                               "L1 deposit"
                             )}
-                            {deposit.l1Sender && (
+                            {d.l1Sender && (
                               <>
                                 {" from "}
                                 <EtherscanAddressLink
-                                  endpoint={`/address/${deposit.l1Sender}`}
-                                  content={truncateHashString(deposit.l1Sender, 6, 4)}
-                                  title={deposit.l1Sender}
+                                  endpoint={`/address/${d.l1Sender}`}
+                                  content={truncateHashString(d.l1Sender, 6, 4)}
+                                  title={d.l1Sender}
                                   showExternalLinkIcon={false}
                                 />
                               </>
                             )}
                           </span>
-                        )}
+                        ))}
                         {/* Fee payment: show feeRecipient as subline */}
                         {feeRecipient && spent !== null && spent > 0n && (
                           <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
