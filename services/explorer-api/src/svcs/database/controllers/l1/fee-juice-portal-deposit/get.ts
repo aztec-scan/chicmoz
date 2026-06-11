@@ -3,7 +3,7 @@ import {
   type ChicmozL1FeeJuicePortalDeposit,
   chicmozL1FeeJuicePortalDepositSchema,
 } from "@chicmoz-pkg/types";
-import { desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 import { l1FeeJuicePortalDepositTable } from "../../../schema/l1/fee-juice-portal-deposit.js";
 
@@ -19,7 +19,7 @@ export async function getByL2Address(
   const res = await db()
     .select(getTableColumns(l1FeeJuicePortalDepositTable))
     .from(l1FeeJuicePortalDepositTable)
-    .where(eq(l1FeeJuicePortalDepositTable.to, l2Address))
+    .where(and(eq(l1FeeJuicePortalDepositTable.to, l2Address), eq(l1FeeJuicePortalDepositTable.isFinalized, true)))
     .orderBy(desc(l1FeeJuicePortalDepositTable.l1BlockNumber))
     .limit(LIMIT);
   return z.array(chicmozL1FeeJuicePortalDepositSchema).parse(res);
@@ -32,6 +32,7 @@ export async function getAll(): Promise<ChicmozL1FeeJuicePortalDeposit[]> {
   const res = await db()
     .select(getTableColumns(l1FeeJuicePortalDepositTable))
     .from(l1FeeJuicePortalDepositTable)
+    .where(eq(l1FeeJuicePortalDepositTable.isFinalized, true))
     .orderBy(desc(l1FeeJuicePortalDepositTable.l1BlockNumber))
     .limit(LIMIT);
   return z.array(chicmozL1FeeJuicePortalDepositSchema).parse(res);
