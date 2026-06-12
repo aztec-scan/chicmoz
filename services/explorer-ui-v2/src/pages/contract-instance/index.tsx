@@ -58,7 +58,7 @@ export const ContractInstancePage: FC = () => {
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const balanceValue =
     balance === undefined
-      ? "—"
+      ? null
       : formatFees(balance?.balance ?? 0n, feeJuiceDecimals);
 
   // Build pure balance-snapshot timeline (newest-first).
@@ -184,7 +184,9 @@ export const ContractInstancePage: FC = () => {
             v{instance.version}
           </span>
           <span className="meta-line">
-            fee balance {balanceValue}
+            fee balance {balanceValue ?? (
+              <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+            )}
             <TokenEtherscanLink
               symbol={feeJuiceSymbol}
               address={feeJuiceAddress}
@@ -388,7 +390,9 @@ export const ContractInstancePage: FC = () => {
         {tab === "balance" && (
           <div className="balance-block">
             <div className="balance-big">
-              {balanceValue}
+              {balanceValue ?? (
+                <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+              )}
               <TokenEtherscanLink
                 symbol={feeJuiceSymbol}
                 address={feeJuiceAddress}
@@ -465,7 +469,7 @@ export const ContractInstancePage: FC = () => {
                         {blockNumber.toString()}
                       </Link>
                     ) : (
-                      <span style={{ color: "var(--ink-3)" }}>—</span>
+                      <span style={{ color: "var(--ink-3)" }} title="Block number not yet available">?</span>
                     )}
                   </span>
                   <span className="num" style={{ textAlign: "left" }}>
