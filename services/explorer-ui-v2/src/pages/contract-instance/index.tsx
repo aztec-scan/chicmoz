@@ -58,7 +58,7 @@ export const ContractInstancePage: FC = () => {
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const balanceValue =
     balance === undefined
-      ? "—"
+      ? null
       : formatFees(balance?.balance ?? 0n, feeJuiceDecimals);
 
   // Build pure balance-snapshot timeline (newest-first).
@@ -184,7 +184,9 @@ export const ContractInstancePage: FC = () => {
             v{instance.version}
           </span>
           <span className="meta-line">
-            fee balance {balanceValue}
+            fee balance {balanceValue ?? (
+              <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+            )}
             <TokenEtherscanLink
               symbol={feeJuiceSymbol}
               address={feeJuiceAddress}
@@ -388,7 +390,9 @@ export const ContractInstancePage: FC = () => {
         {tab === "balance" && (
           <div className="balance-block">
             <div className="balance-big">
-              {balanceValue}
+              {balanceValue ?? (
+                <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+              )}
               <TokenEtherscanLink
                 symbol={feeJuiceSymbol}
                 address={feeJuiceAddress}
@@ -430,12 +434,13 @@ export const ContractInstancePage: FC = () => {
           <>
             <div className="hist-head">
               <div>Block</div>
-              <div>Difference</div>
-              <div>Ref</div>
+              <div>Balance</div>
+              <div>Paid/Received</div>
+              <div>Tx</div>
               <div className="right">Timestamp</div>
             </div>
             {timeline.map((entry, i) => {
-              const { sourceTxHash, feeRecipient, spent, ts, blockNumber } = entry;
+              const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber } = entry;
 
               let changeEl: React.ReactNode;
               if (spent === null || spent === 0n) {
@@ -464,8 +469,16 @@ export const ContractInstancePage: FC = () => {
                         {blockNumber.toString()}
                       </Link>
                     ) : (
-                      <span style={{ color: "var(--ink-3)" }}>—</span>
+                      <span style={{ color: "var(--ink-3)" }} title="Block number not yet available">?</span>
                     )}
+                  </span>
+                  <span className="num" style={{ textAlign: "left" }}>
+                    {formatFees(bal, feeJuiceDecimals)}{" "}
+                    <TokenEtherscanLink
+                      symbol={feeJuiceSymbol}
+                      address={feeJuiceAddress}
+                      className="u"
+                    />
                   </span>
                   <span className="num" style={{ textAlign: "left" }}>{changeEl}</span>
                   <span className="hash">
@@ -518,7 +531,7 @@ export const ContractInstancePage: FC = () => {
               <div className="empty-state">no L1 deposits</div>
             ) : (
               <>
-                <div className="hist-head">
+                <div className="hist-head hist-head-4col">
                   <div className="right">Amount ({feeJuiceSymbol})</div>
                   <div>L1 tx</div>
                   <div>From</div>
@@ -527,7 +540,7 @@ export const ContractInstancePage: FC = () => {
                 {deposits.map((d, i) => {
                   const ts = d.l1BlockTimestamp ? Number(d.l1BlockTimestamp) : 0;
                   return (
-                    <div key={`dep-${i}`} className="hist-row">
+                    <div key={`dep-${i}`} className="hist-row hist-row-4col">
                       <span className="num" style={{ textAlign: "left", color: "var(--green)" }}>
                         +{formatFees(d.amount, feeJuiceDecimals)}
                       </span>
