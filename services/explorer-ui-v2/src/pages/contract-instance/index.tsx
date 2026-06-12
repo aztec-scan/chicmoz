@@ -429,13 +429,13 @@ export const ContractInstancePage: FC = () => {
         {tab === "history" && (
           <>
             <div className="hist-head">
-              <div>Balance ({feeJuiceSymbol})</div>
-              <div>Spent / received</div>
+              <div>Block</div>
+              <div>Difference</div>
               <div>Ref</div>
               <div className="right">Timestamp</div>
             </div>
             {timeline.map((entry, i) => {
-              const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber } = entry;
+              const { feeRecipient, spent, ts, blockNumber } = entry;
 
               let changeEl: React.ReactNode;
               if (spent === null || spent === 0n) {
@@ -458,31 +458,26 @@ export const ContractInstancePage: FC = () => {
 
               return (
                 <div key={`snap-${i}`} className="hist-row">
-                  <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
-                    {formatFees(bal, feeJuiceDecimals)}
-                    {" "}
-                    <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
-                  </span>
-                  <span className="num" style={{ textAlign: "left" }}>{changeEl}</span>
-                  <span className="hash">
+                  <span className="num" style={{ textAlign: "left" }}>
                     {blockNumber !== undefined ? (
                       <Link to="/blocks/$blockNumber" params={{ blockNumber: blockNumber.toString() }}>
-                        Block {blockNumber.toString()}
-                      </Link>
-                    ) : sourceTxHash ? (
-                      <Link to="/tx-effects/$hash" params={{ hash: sourceTxHash }}>
-                        {truncateHashString(sourceTxHash, 8, 6)}
+                        {blockNumber.toString()}
                       </Link>
                     ) : (
                       <span style={{ color: "var(--ink-3)" }}>—</span>
                     )}
-                    {feeRecipient && spent !== null && spent > 0n && (
-                      <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                  </span>
+                  <span className="num" style={{ textAlign: "left" }}>{changeEl}</span>
+                  <span className="hash">
+                    {feeRecipient && spent !== null && spent > 0n ? (
+                      <span>
                         {"to "}
                         <Link to="/address/$address" params={{ address: feeRecipient }}>
                           {truncateHashString(feeRecipient, 6, 4)}
                         </Link>
                       </span>
+                    ) : (
+                      <span style={{ color: "var(--ink-3)" }}>—</span>
                     )}
                   </span>
                   <span className="age" style={{ textAlign: "right" }}>
