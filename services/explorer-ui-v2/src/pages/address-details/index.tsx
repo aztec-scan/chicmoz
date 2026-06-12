@@ -59,7 +59,7 @@ export const AddressDetailsPage: FC = () => {
   const balanceValue =
     balance?.balance !== undefined && balance.balance !== null
       ? formatFees(balance.balance, feeJuiceDecimals)
-      : "—";
+      : null;
 
   // Delta summary for the stats strip tile (24h change)
   const latest = history?.[history.length - 1];
@@ -156,7 +156,9 @@ export const AddressDetailsPage: FC = () => {
         <div className="sc">
           <div className="lbl">Fee Juice balance</div>
           <div className="val">
-            {balanceValue}
+            {balanceValue ?? (
+              <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+            )}
             {balance?.balance !== undefined && (
               <TokenEtherscanLink
                 symbol={feeJuiceSymbol}
@@ -229,14 +231,16 @@ export const AddressDetailsPage: FC = () => {
           <>
             <div className="hist-head">
               <div>Block</div>
-              <div>Difference</div>
-              <div>Ref</div>
+              <div>Balance</div>
+              <div>Paid/Received</div>
+              <div>Tx</div>
               <div className="right">Timestamp</div>
             </div>
             {pagedTimeline.length > 0 ? (
               <>
                 {pagedTimeline.map((entry, i) => {
                   const {
+                    balance: bal,
                     sourceTxHash,
                     feeRecipient,
                     spent,
@@ -296,8 +300,16 @@ export const AddressDetailsPage: FC = () => {
                             {blockNumber.toString()}
                           </Link>
                         ) : (
-                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                          <span style={{ color: "var(--ink-3)" }} title="Block number not yet available">?</span>
                         )}
+                      </span>
+                      <span className="num" style={{ textAlign: "left" }}>
+                        {formatFees(bal, feeJuiceDecimals)}{" "}
+                        <TokenEtherscanLink
+                          symbol={feeJuiceSymbol}
+                          address={feeJuiceAddress}
+                          className="u"
+                        />
                       </span>
                       <span className="num" style={{ textAlign: "left" }}>
                         {changeEl}
@@ -362,7 +374,7 @@ export const AddressDetailsPage: FC = () => {
               <div className="empty-state">no L1 deposits</div>
             ) : (
               <>
-                <div className="hist-head">
+                <div className="hist-head hist-head-4col">
                   <div className="left">Amount ({feeJuiceSymbol})</div>
                   <div>L1 tx</div>
                   <div>From</div>
@@ -373,7 +385,7 @@ export const AddressDetailsPage: FC = () => {
                     ? Number(d.l1BlockTimestamp)
                     : 0;
                   return (
-                    <div key={`dep-${i}`} className="hist-row">
+                    <div key={`dep-${i}`} className="hist-row hist-row-4col">
                       <span
                         className="num"
                         style={{ textAlign: "left", color: "var(--green)" }}
