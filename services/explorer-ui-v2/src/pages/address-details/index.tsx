@@ -287,7 +287,7 @@ export const AddressDetailsPage: FC = () => {
 
                   return (
                     <div key={`snap-${i}`} className="hist-row">
-                      <span className="num" style={{ textAlign: "left" }}>
+                      <span className="hash" style={{ textAlign: "left" }}>
                         {blockNumber !== undefined ? (
                           <Link
                             to="/blocks/$blockNumber"
