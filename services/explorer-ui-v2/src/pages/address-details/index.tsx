@@ -2,7 +2,12 @@ import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
-import { EtherscanAddressLink, Pagination, TokenEtherscanLink, TxEtherscanLink } from "~/components/common";
+import {
+  EtherscanAddressLink,
+  Pagination,
+  TokenEtherscanLink,
+  TxEtherscanLink,
+} from "~/components/common";
 import {
   usePublicCallRequestsBySender,
   useContractInstanceBalance,
@@ -112,7 +117,10 @@ export const AddressDetailsPage: FC = () => {
   }, [history]);
 
   const totalPages = Math.max(1, Math.ceil(timeline.length / PAGE_SIZE));
-  const pagedTimeline = timeline.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pagedTimeline = timeline.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE,
+  );
 
   const stats = useMemo(() => {
     const calls = publicCallRequests ?? [];
@@ -228,7 +236,14 @@ export const AddressDetailsPage: FC = () => {
             {pagedTimeline.length > 0 ? (
               <>
                 {pagedTimeline.map((entry, i) => {
-                  const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber } = entry;
+                  const {
+                    balance: bal,
+                    sourceTxHash,
+                    feeRecipient,
+                    spent,
+                    ts,
+                    blockNumber,
+                  } = entry;
 
                   let changeEl: React.ReactNode;
                   if (spent === null || spent === 0n) {
@@ -236,43 +251,89 @@ export const AddressDetailsPage: FC = () => {
                   } else if (spent > 0n) {
                     changeEl = (
                       <span>
-                        <span style={{ color: "var(--red)" }}>−{formatFees(spent, feeJuiceDecimals)}</span>
-                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>L2 fee paid</span>
+                        <span style={{ color: "var(--red)" }}>
+                          −{formatFees(spent, feeJuiceDecimals)}
+                        </span>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.75em",
+                            color: "var(--ink-3)",
+                            marginTop: 2,
+                          }}
+                        >
+                          L2 fee paid
+                        </span>
                       </span>
                     );
                   } else {
                     changeEl = (
                       <span>
-                        <span style={{ color: "var(--green)" }}>+{formatFees(-spent, feeJuiceDecimals)}</span>
-                        <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>received</span>
+                        <span style={{ color: "var(--green)" }}>
+                          +{formatFees(-spent, feeJuiceDecimals)}
+                        </span>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.75em",
+                            color: "var(--ink-3)",
+                            marginTop: 2,
+                          }}
+                        >
+                          received
+                        </span>
                       </span>
                     );
                   }
 
                   return (
                     <div key={`snap-${i}`} className="hist-row">
-                      <span className="num" style={{ textAlign: "left", color: "var(--ink-1)" }}>
-                        {formatFees(bal, feeJuiceDecimals)}
-                        {" "}
-                        <TokenEtherscanLink symbol={feeJuiceSymbol} address={feeJuiceAddress} className="u" />
+                      <span
+                        className="num"
+                        style={{ textAlign: "left", color: "var(--ink-1)" }}
+                      >
+                        {formatFees(bal, feeJuiceDecimals)}{" "}
+                        <TokenEtherscanLink
+                          symbol={feeJuiceSymbol}
+                          address={feeJuiceAddress}
+                          className="u"
+                        />
                       </span>
-                      <span className="num" style={{ textAlign: "left" }}>{changeEl}</span>
+                      <span className="num" style={{ textAlign: "left" }}>
+                        {changeEl}
+                      </span>
                       <span className="hash">
                         {blockNumber !== undefined ? (
-                          <Link to="/blocks/$blockNumber" params={{ blockNumber: blockNumber.toString() }}>
+                          <Link
+                            to="/blocks/$blockNumber"
+                            params={{ blockNumber: blockNumber.toString() }}
+                          >
                             Block {blockNumber.toString()}
                           </Link>
                         ) : sourceTxHash ? (
-                          <Link to="/tx-effects/$hash" params={{ hash: sourceTxHash }}>
+                          <Link
+                            to="/tx-effects/$hash"
+                            params={{ hash: sourceTxHash }}
+                          >
                             {truncateHashString(sourceTxHash, 8, 6)}
                           </Link>
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>
                         )}
                         {feeRecipient && spent !== null && spent > 0n && (
-                          <span style={{ display: "block", fontSize: "0.75em", color: "var(--ink-3)", marginTop: 2 }}>
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: "0.75em",
+                              color: "var(--ink-3)",
+                              marginTop: 2,
+                            }}
+                          >
                             {"to "}
-                            <Link to="/address/$address" params={{ address: feeRecipient }}>
+                            <Link
+                              to="/address/$address"
+                              params={{ address: feeRecipient }}
+                            >
                               {truncateHashString(feeRecipient, 6, 4)}
                             </Link>
                           </span>
@@ -280,7 +341,10 @@ export const AddressDetailsPage: FC = () => {
                       </span>
                       <span className="age" style={{ textAlign: "right" }}>
                         <span title={ageStr(ts)}>
-                          {new Date(ts).toISOString().replace("T", " ").slice(0, 19)}
+                          {new Date(ts)
+                            .toISOString()
+                            .replace("T", " ")
+                            .slice(0, 19)}
                         </span>
                       </span>
                     </div>
@@ -301,28 +365,37 @@ export const AddressDetailsPage: FC = () => {
         {/* Tab: L1 deposits */}
         {tab === "deposits" && (
           <>
-            {!(deposits?.length) ? (
+            {!deposits?.length ? (
               <div className="empty-state">no L1 deposits</div>
             ) : (
               <>
                 <div className="hist-head">
-                  <div className="right">Amount ({feeJuiceSymbol})</div>
+                  <div className="left">Amount ({feeJuiceSymbol})</div>
                   <div>L1 tx</div>
                   <div>From</div>
                   <div className="right">Timestamp</div>
                 </div>
                 {deposits.map((d, i) => {
-                  const ts = d.l1BlockTimestamp ? Number(d.l1BlockTimestamp) : 0;
+                  const ts = d.l1BlockTimestamp
+                    ? Number(d.l1BlockTimestamp)
+                    : 0;
                   return (
                     <div key={`dep-${i}`} className="hist-row">
-                      <span className="num" style={{ textAlign: "right", color: "var(--green)" }}>
+                      <span
+                        className="num"
+                        style={{ textAlign: "left", color: "var(--green)" }}
+                      >
                         +{formatFees(d.amount, feeJuiceDecimals)}
                       </span>
                       <span className="hash">
                         {d.l1TransactionHash ? (
                           <TxEtherscanLink
                             txHash={d.l1TransactionHash}
-                            content={truncateHashString(d.l1TransactionHash, 8, 6)}
+                            content={truncateHashString(
+                              d.l1TransactionHash,
+                              8,
+                              6,
+                            )}
                             title={`secret hash: ${d.secretHash}`}
                           />
                         ) : (
@@ -344,7 +417,10 @@ export const AddressDetailsPage: FC = () => {
                       <span className="age" style={{ textAlign: "right" }}>
                         {ts ? (
                           <span title={ageStr(ts)}>
-                            {new Date(ts).toISOString().replace("T", " ").slice(0, 19)}
+                            {new Date(ts)
+                              .toISOString()
+                              .replace("T", " ")
+                              .slice(0, 19)}
                           </span>
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>

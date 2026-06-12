@@ -521,7 +521,7 @@ export const ContractInstancePage: FC = () => {
                   const ts = d.l1BlockTimestamp ? Number(d.l1BlockTimestamp) : 0;
                   return (
                     <div key={`dep-${i}`} className="hist-row">
-                      <span className="num" style={{ textAlign: "right", color: "var(--green)" }}>
+                      <span className="num" style={{ textAlign: "left", color: "var(--green)" }}>
                         +{formatFees(d.amount, feeJuiceDecimals)}
                       </span>
                       <span className="hash">
