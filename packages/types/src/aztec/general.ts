@@ -98,6 +98,10 @@ export const chicmozContractInstanceBalanceSchema = z.object({
   // Hash of the L2 tx whose execution caused this balance change. Optional
   // because older history entries (pre-migration) won't carry it.
   sourceTxHash: hexStringSchema.optional(),
+  // L2 address that received the fee for the block containing this balance change.
+  feeRecipient: aztecAddressSchema.nullish(),
+  // L2 block number at which this balance was snapshotted.
+  blockNumber: z.coerce.bigint().optional(),
 });
 
 export type ChicmozContractInstanceBalance = z.infer<

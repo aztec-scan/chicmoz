@@ -20,6 +20,10 @@ export const STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES = new Set([
   "PayloadSubmitted",
 ]);
 
+export const STRUCTURED_FEE_JUICE_PORTAL_EVENT_NAMES = new Set([
+  "DepositToAztecPublic",
+]);
+
 export const GENERIC_EVENT_ALLOWLIST = {
   rollup: [
     "CheckpointInvalidated",
@@ -33,7 +37,7 @@ export const GENERIC_EVENT_ALLOWLIST = {
   registry: ["CanonicalRollupUpdated"],
   inbox: [],
   outbox: [],
-  feeJuicePortal: [],
+  feeJuicePortal: ["DepositToAztecPublic", "FeesDistributed"],
   governance: [],
   governanceProposer: [],
 } satisfies Record<keyof AztecContracts, string[]>;

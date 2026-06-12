@@ -5,6 +5,7 @@ export * from "./dropped-tx";
 export * from "./fee-recipient";
 export * from "./governance";
 export * from "./l1-contract-event";
+export * from "./l1-fee-juice-portal-deposit";
 export * from "./l1-l2-validator";
 export * from "./search";
 export * from "./rpc-node";

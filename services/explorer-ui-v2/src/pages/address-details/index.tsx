@@ -2,23 +2,39 @@ import { Link, useParams } from "@tanstack/react-router";
 import { type FC, useMemo, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import { PublicCallRequestsTable } from "~/components/data/public-call-requests-table";
-import { Pagination, TokenEtherscanLink } from "~/components/common";
+import {
+  EtherscanAddressLink,
+  Pagination,
+  TokenEtherscanLink,
+  TxEtherscanLink,
+} from "~/components/common";
 import {
   usePublicCallRequestsBySender,
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
   useChainInfo,
+  useL1FeeJuicePortalDepositsByAddress,
 } from "~/hooks/api";
 import {
+  ageStr,
   fmtNum,
   formatFees,
   getFeeJuiceSymbol,
   truncateHashString,
 } from "~/lib/utils";
 
-type Tab = "calls" | "balance";
+type Tab = "calls" | "balance" | "deposits";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 25;
+
+type TimelineEntry = {
+  ts: number;
+  balance: bigint;
+  sourceTxHash?: string;
+  feeRecipient?: string | null;
+  spent: bigint | null;
+  blockNumber?: bigint;
+};
 
 export const AddressDetailsPage: FC = () => {
   const { address = "" } = useParams({ strict: false });
@@ -31,6 +47,7 @@ export const AddressDetailsPage: FC = () => {
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
   const { data: chainInfo } = useChainInfo();
+  const { data: deposits } = useL1FeeJuicePortalDepositsByAddress(address);
 
   const [tab, setTab] = useState<Tab>("calls");
   const [page, setPage] = useState(0);
@@ -77,36 +94,30 @@ export const AddressDetailsPage: FC = () => {
           : `-${deltaValue} · ${deltaLabel}`
       : "no history yet";
 
-  // Per-row spent delta (newest first). Index 0 in reversed = latest snapshot.
-  // spent[i] = history[n-1-i].balance - history[n-2-i].balance
-  // oldest row (last in reversed) has no prior → 0n
-  const reversedHistory = useMemo(() => {
-    if (!history) {
-      return [];
+  // Build pure balance-snapshot timeline (newest-first).
+  const timeline = useMemo((): TimelineEntry[] => {
+    const reversed = (history ?? []).slice().reverse();
+    const entries: TimelineEntry[] = [];
+    for (let i = 0; i < reversed.length; i++) {
+      const h = reversed[i];
+      let spent: bigint | null = null;
+      if (i < reversed.length - 1) {
+        spent = reversed[i + 1].balance - h.balance;
+      }
+      entries.push({
+        ts: h.timestamp,
+        balance: h.balance,
+        sourceTxHash: h.sourceTxHash,
+        feeRecipient: h.feeRecipient,
+        spent,
+        blockNumber: h.blockNumber,
+      });
     }
-    return history.slice().reverse();
+    return entries;
   }, [history]);
 
-  const spentPerRow = useMemo(() => {
-    // reversedHistory[0] = newest, reversedHistory[last] = oldest
-    // spent for row i = reversedHistory[i+1].balance - reversedHistory[i].balance
-    // (how much balance dropped going from i+1 to i, i.e. previous snapshot to this one)
-    return reversedHistory.map((_, i) => {
-      if (i === reversedHistory.length - 1) {
-        return 0n;
-      } // oldest row, no prior baseline
-      const prev = reversedHistory[i + 1].balance;
-      const curr = reversedHistory[i].balance;
-      return prev - curr; // positive = fees paid, negative = top-up
-    });
-  }, [reversedHistory]);
-
-  const totalPages = Math.max(1, Math.ceil(reversedHistory.length / PAGE_SIZE));
-  const pagedHistory = reversedHistory.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE,
-  );
-  const pagedSpent = spentPerRow.slice(
+  const totalPages = Math.max(1, Math.ceil(timeline.length / PAGE_SIZE));
+  const pagedTimeline = timeline.slice(
     page * PAGE_SIZE,
     (page + 1) * PAGE_SIZE,
   );
@@ -187,7 +198,14 @@ export const AddressDetailsPage: FC = () => {
             onClick={() => handleTabChange("balance")}
           >
             Fee Juice
-            <span className="c">{history?.length ?? 0}</span>
+            <span className="c">{timeline.length}</span>
+          </button>
+          <button
+            className={tab === "deposits" ? "on" : ""}
+            onClick={() => handleTabChange("deposits")}
+          >
+            L1 deposits
+            <span className="c">{deposits?.length ?? 0}</span>
           </button>
         </div>
 
@@ -206,74 +224,121 @@ export const AddressDetailsPage: FC = () => {
           </>
         )}
 
-        {/* Tab: Fee Juice balance history */}
+        {/* Tab: Fee Juice — balance history */}
         {tab === "balance" && (
           <>
             <div className="hist-head">
-              <div>Balance ({feeJuiceSymbol})</div>
-              <div>Spent</div>
-              <div>Tx</div>
+              <div>Block</div>
+              <div>Difference</div>
+              <div>Ref</div>
               <div className="right">Timestamp</div>
-              <div className="right">Age</div>
             </div>
-            {pagedHistory.length > 0 ? (
+            {pagedTimeline.length > 0 ? (
               <>
-                {pagedHistory.map((h, i) => {
-                  const spent = pagedSpent[i];
-                  const isOldest =
-                    page * PAGE_SIZE + i === reversedHistory.length - 1;
-                  let spentEl: React.ReactNode;
-                  if (isOldest || spent === 0n) {
-                    spentEl = <span style={{ color: "var(--ink-3)" }}>—</span>;
+                {pagedTimeline.map((entry, i) => {
+                  const {
+                    sourceTxHash,
+                    feeRecipient,
+                    spent,
+                    ts,
+                    blockNumber,
+                  } = entry;
+
+                  let changeEl: React.ReactNode;
+                  if (spent === null || spent === 0n) {
+                    changeEl = <span style={{ color: "var(--ink-3)" }}>—</span>;
                   } else if (spent > 0n) {
-                    // fees paid — balance went down
-                    spentEl = (
-                      <span style={{ color: "var(--red)" }}>
-                        -{formatFees(spent, feeJuiceDecimals)}
+                    changeEl = (
+                      <span>
+                        <span style={{ color: "var(--red)" }}>
+                          −{formatFees(spent, feeJuiceDecimals)}
+                        </span>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.75em",
+                            color: "var(--ink-3)",
+                            marginTop: 2,
+                          }}
+                        >
+                          L2 fee paid
+                        </span>
                       </span>
                     );
                   } else {
-                    // top-up — balance went up
-                    spentEl = (
-                      <span style={{ color: "var(--green)" }}>
-                        +{formatFees(-spent, feeJuiceDecimals)}
+                    changeEl = (
+                      <span>
+                        <span style={{ color: "var(--green)" }}>
+                          +{formatFees(-spent, feeJuiceDecimals)}
+                        </span>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.75em",
+                            color: "var(--ink-3)",
+                            marginTop: 2,
+                          }}
+                        >
+                          received
+                        </span>
                       </span>
                     );
                   }
 
                   return (
-                    <div key={i} className="hist-row">
-                      <span
-                        className="num"
-                        style={{ textAlign: "left", color: "var(--ink-1)" }}
-                      >
-                        {formatFees(h.balance, feeJuiceDecimals)}
-                        <TokenEtherscanLink
-                          symbol={feeJuiceSymbol}
-                          address={feeJuiceAddress}
-                          className="u"
-                        />
-                      </span>
-                      <span className="num" style={{ textAlign: "left" }}>
-                        {spentEl}
-                      </span>
-                      <span className="hash">
-                        {h.sourceTxHash ? (
+                    <div key={`snap-${i}`} className="hist-row">
+                      <span className="hash" style={{ textAlign: "left" }}>
+                        {blockNumber !== undefined ? (
                           <Link
-                            to="/tx-effects/$hash"
-                            params={{ hash: h.sourceTxHash }}
+                            to="/blocks/$blockNumber"
+                            params={{ blockNumber: blockNumber.toString() }}
                           >
-                            {truncateHashString(h.sourceTxHash, 8, 6)}
+                            {blockNumber.toString()}
                           </Link>
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>
                         )}
                       </span>
-                      <span className="num">
-                        {new Date(h.timestamp)
-                          .toISOString()
-                          .slice(0, 19)
-                          .replace("T", " ")}
+                      <span className="num" style={{ textAlign: "left" }}>
+                        {changeEl}
+                      </span>
+                      <span className="hash">
+                        {sourceTxHash ? (
+                          <Link
+                            to="/tx-effects/$hash"
+                            params={{ hash: sourceTxHash }}
+                          >
+                            {truncateHashString(sourceTxHash, 8, 6)}
+                          </Link>
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                        {feeRecipient && spent !== null && spent > 0n && (
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: "0.75em",
+                              color: "var(--ink-3)",
+                              marginTop: 2,
+                            }}
+                          >
+                            {"to "}
+                            <Link
+                              to="/address/$address"
+                              params={{ address: feeRecipient }}
+                            >
+                              {truncateHashString(feeRecipient, 6, 4)}
+                            </Link>
+                          </span>
+                        )}
+                      </span>
+                      <span className="age" style={{ textAlign: "right" }}>
+                        <span title={ageStr(ts)}>
+                          {new Date(ts)
+                            .toISOString()
+                            .replace("T", " ")
+                            .slice(0, 19)}
+                        </span>
                       </span>
                     </div>
                   );
@@ -285,7 +350,78 @@ export const AddressDetailsPage: FC = () => {
                 />
               </>
             ) : (
-              <div className="empty-state">no fee juice balance history</div>
+              <div className="empty-state">no fee juice history</div>
+            )}
+          </>
+        )}
+
+        {/* Tab: L1 deposits */}
+        {tab === "deposits" && (
+          <>
+            {!deposits?.length ? (
+              <div className="empty-state">no L1 deposits</div>
+            ) : (
+              <>
+                <div className="hist-head">
+                  <div className="left">Amount ({feeJuiceSymbol})</div>
+                  <div>L1 tx</div>
+                  <div>From</div>
+                  <div className="right">Timestamp</div>
+                </div>
+                {deposits.map((d, i) => {
+                  const ts = d.l1BlockTimestamp
+                    ? Number(d.l1BlockTimestamp)
+                    : 0;
+                  return (
+                    <div key={`dep-${i}`} className="hist-row">
+                      <span
+                        className="num"
+                        style={{ textAlign: "left", color: "var(--green)" }}
+                      >
+                        +{formatFees(d.amount, feeJuiceDecimals)}
+                      </span>
+                      <span className="hash">
+                        {d.l1TransactionHash ? (
+                          <TxEtherscanLink
+                            txHash={d.l1TransactionHash}
+                            content={truncateHashString(
+                              d.l1TransactionHash,
+                              8,
+                              6,
+                            )}
+                            title={`secret hash: ${d.secretHash}`}
+                          />
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                      <span className="hash">
+                        {d.l1Sender ? (
+                          <EtherscanAddressLink
+                            endpoint={`/address/${d.l1Sender}`}
+                            content={truncateHashString(d.l1Sender, 6, 4)}
+                            title={d.l1Sender}
+                          />
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                      <span className="age" style={{ textAlign: "right" }}>
+                        {ts ? (
+                          <span title={ageStr(ts)}>
+                            {new Date(ts)
+                              .toISOString()
+                              .replace("T", " ")
+                              .slice(0, 19)}
+                          </span>
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </>
             )}
           </>
         )}

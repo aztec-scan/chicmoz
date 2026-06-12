@@ -12,6 +12,7 @@ export const tabIds = [
   "contractClassArtifactExplorer",
   "publicCallRequests",
   "l2ToL1Msgs",
+  "feeJuiceDeposits",
 ] as const;
 
 export const tabIdSchema = z.enum(tabIds);
@@ -32,6 +33,7 @@ export const verifiedDeploymentTabs: Tab[] = [
   { id: "contractClassArtifactExplorer", label: "Artifact Explorer" },
   { id: "publicCallRequests", label: "Public Call Requests" },
   { id: "l2ToL1Msgs", label: "L2→L1 Messages" },
+  { id: "feeJuiceDeposits", label: "L1 Fee Juice Deposits" },
 ];
 
 export interface VerifiedDeploymentData {
