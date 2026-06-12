@@ -237,6 +237,7 @@ export const AddressDetailsPage: FC = () => {
               <>
                 {pagedTimeline.map((entry, i) => {
                   const {
+                    sourceTxHash,
                     feeRecipient,
                     spent,
                     ts,
@@ -302,8 +303,25 @@ export const AddressDetailsPage: FC = () => {
                         {changeEl}
                       </span>
                       <span className="hash">
-                        {feeRecipient && spent !== null && spent > 0n ? (
-                          <span>
+                        {sourceTxHash ? (
+                          <Link
+                            to="/tx-effects/$hash"
+                            params={{ hash: sourceTxHash }}
+                          >
+                            {truncateHashString(sourceTxHash, 8, 6)}
+                          </Link>
+                        ) : (
+                          <span style={{ color: "var(--ink-3)" }}>—</span>
+                        )}
+                        {feeRecipient && spent !== null && spent > 0n && (
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: "0.75em",
+                              color: "var(--ink-3)",
+                              marginTop: 2,
+                            }}
+                          >
                             {"to "}
                             <Link
                               to="/address/$address"
@@ -312,8 +330,6 @@ export const AddressDetailsPage: FC = () => {
                               {truncateHashString(feeRecipient, 6, 4)}
                             </Link>
                           </span>
-                        ) : (
-                          <span style={{ color: "var(--ink-3)" }}>—</span>
                         )}
                       </span>
                       <span className="age" style={{ textAlign: "right" }}>
