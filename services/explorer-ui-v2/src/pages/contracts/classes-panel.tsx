@@ -1,4 +1,7 @@
-import { type ChicmozL2ContractClassRegisteredEvent } from "@chicmoz-pkg/types";
+import {
+  getContractClassVerificationStatus,
+  type ChicmozL2ContractClassRegisteredEvent,
+} from "@chicmoz-pkg/types";
 import { Link } from "@tanstack/react-router";
 import { type FC } from "react";
 import { Pagination } from "~/components/common";
@@ -69,7 +72,7 @@ export const ClassesPanel: FC<Props> = ({
         <div className="right">Size</div>
       </div>
       {list.map((c) => {
-        const verified = !!c.sourceCodeUrl;
+        const verified = getContractClassVerificationStatus(c).sourceVerified;
         const protocol = !!c.standardContractType;
         const name =
           c.artifactContractName ?? c.standardContractType ?? "Class";

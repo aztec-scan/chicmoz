@@ -1,9 +1,11 @@
+import { getContractClassVerificationStatus } from "@chicmoz-pkg/types";
 import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { type FC, useState } from "react";
 import {
   DetailEmptyState,
   DetailField,
-  StatusPill,
+  HashCell,
+  VerificationPillLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
@@ -67,7 +69,7 @@ export const ContractClassPage: FC = () => {
     );
   }
 
-  const verified = !!classData.sourceCodeUrl;
+  const verificationStatus = getContractClassVerificationStatus(classData);
   const name =
     classData.artifactContractName ??
     classData.standardContractType ??
@@ -92,7 +94,14 @@ export const ContractClassPage: FC = () => {
         </h1>
         <div className="subhash">{classId}</div>
         <div className="meta-row">
-          <StatusPill status={verified ? "verified" : "unverified"} />
+          <VerificationPillLink
+            kind="artifact"
+            verified={verificationStatus.artifactVerified}
+          />
+          <VerificationPillLink
+            kind="source"
+            verified={verificationStatus.sourceVerified}
+          />
         </div>
       </div>
 
@@ -116,10 +125,17 @@ export const ContractClassPage: FC = () => {
           <DetailField label="Private fns root" width="extra-wide">
             {classData.privateFunctionsRoot}
           </DetailField>
-          <DetailField label="Block registered" width="extra-wide">
-            {classData.blockHash
-              ? `hash ${truncateHashString(classData.blockHash, 14, 12)}`
-              : "—"}
+          <DetailField label="Registered block" width="extra-wide">
+            {classData.blockHash ? (
+              <Link
+                to="/blocks/$blockNumber"
+                params={{ blockNumber: classData.blockHash }}
+              >
+                <HashCell value={classData.blockHash} />
+              </Link>
+            ) : (
+              "—"
+            )}
           </DetailField>
           <DetailField label="Standard" width="extra-wide">
             {classData.standardContractType ? (
@@ -180,7 +196,12 @@ export const ContractClassPage: FC = () => {
           </button>
         </div>
 
-        {tab === "source" && <SourceTab source={source} verified={verified} />}
+        {tab === "source" && (
+          <SourceTab
+            source={source}
+            verified={verificationStatus.sourceVerified}
+          />
+        )}
         {tab === "private" && (
           <FunctionsTab
             kind="priv"

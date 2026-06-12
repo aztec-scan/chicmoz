@@ -3776,7 +3776,10 @@
 
 /* Proposal table columns */
 .gov-proposal-cols {
-  grid-template-columns: 64px minmax(220px, 1.5fr) 80px 100px 90px 90px 90px 80px;
+  grid-template-columns: 64px minmax(
+      220px,
+      1.5fr
+    ) 80px 100px 90px 90px 90px 80px;
 }
 .gov-proposal-cols .pid {
   font-family: var(--mono);
