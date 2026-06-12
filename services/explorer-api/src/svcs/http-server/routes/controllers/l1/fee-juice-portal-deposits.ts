@@ -14,6 +14,7 @@ const feeJuiceDepositSchema = {
     l1TransactionHash: { type: "string" },
     l1LogIndex: { type: "number" },
     isFinalized: { type: "boolean" },
+    l1Sender: { type: "string", description: "L1 address of the depositor (msg.sender on portal tx)" },
     to: { type: "string", description: "L2 recipient address (bytes32/Fr hex)" },
     amount: { type: "string", description: "Fee juice amount in wei (bigint as string)" },
     secretHash: { type: "string" },
