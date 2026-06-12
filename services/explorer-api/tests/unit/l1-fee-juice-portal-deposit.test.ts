@@ -84,8 +84,8 @@ describe("fee-juice-portal-deposit store", () => {
     expect(mocks.onConflictDoNothing).toHaveBeenCalledOnce();
     expect(mocks.state.insertValues[0]).toMatchObject({
       to: baseDeposit.to,
-      amount: baseDeposit.amount,
-      index: baseDeposit.index,
+      amount: baseDeposit.amount.toString(),
+      index: baseDeposit.index.toString(),
       isFinalized: false,
     });
   });
