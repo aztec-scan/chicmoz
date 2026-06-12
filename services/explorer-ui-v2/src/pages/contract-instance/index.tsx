@@ -548,7 +548,6 @@ export const ContractInstancePage: FC = () => {
                             endpoint={`/address/${d.l1Sender}`}
                             content={truncateHashString(d.l1Sender, 6, 4)}
                             title={d.l1Sender}
-                            showExternalLinkIcon={false}
                           />
                         ) : (
                           <span style={{ color: "var(--ink-3)" }}>—</span>
