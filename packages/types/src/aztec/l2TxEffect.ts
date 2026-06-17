@@ -33,6 +33,12 @@ export const publicCallRequestSchema = z.object({
     .string()
     .nullish()
     .transform((v) => v ?? undefined),
+  // Transaction birth timestamp (ms epoch). Joined from tx_effect at query time.
+  // Absent when the tx is still pending (not yet in a block).
+  timestamp: z
+    .number()
+    .nullish()
+    .transform((v) => v ?? undefined),
 });
 
 // L2-to-L1 message emitted by a pending transaction (plaintext, available pre-execution).
