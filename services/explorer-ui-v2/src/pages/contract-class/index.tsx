@@ -4,6 +4,7 @@ import { type FC, useState } from "react";
 import {
   DetailEmptyState,
   DetailField,
+  HashCell,
   VerificationPillLink,
 } from "~/components/common";
 import { ConsoleHead, Shell } from "~/components/layout";
@@ -124,10 +125,17 @@ export const ContractClassPage: FC = () => {
           <DetailField label="Private fns root" width="extra-wide">
             {classData.privateFunctionsRoot}
           </DetailField>
-          <DetailField label="Block registered" width="extra-wide">
-            {classData.blockHash
-              ? `hash ${truncateHashString(classData.blockHash, 14, 12)}`
-              : "—"}
+          <DetailField label="Registered block" width="extra-wide">
+            {classData.blockHash ? (
+              <Link
+                to="/blocks/$blockNumber"
+                params={{ blockNumber: classData.blockHash }}
+              >
+                <HashCell value={classData.blockHash} />
+              </Link>
+            ) : (
+              "—"
+            )}
           </DetailField>
           <DetailField label="Standard" width="extra-wide">
             {classData.standardContractType ? (

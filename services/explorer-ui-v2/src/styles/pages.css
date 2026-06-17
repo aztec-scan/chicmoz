@@ -1355,7 +1355,7 @@
 
 .hist-head {
   display: grid;
-  grid-template-columns: 1.2fr 140px 160px 100px;
+  grid-template-columns: 100px 1fr 140px 160px 100px;
   gap: 12px;
   padding: 10px 18px;
   border-bottom: 1px solid var(--line);
@@ -1368,13 +1368,19 @@
 }
 .hist-row {
   display: grid;
-  grid-template-columns: 1.2fr 140px 160px 100px;
+  grid-template-columns: 100px 1fr 140px 160px 100px;
   gap: 12px;
   padding: 11px 18px;
   border-bottom: 1px solid var(--line-soft);
   font-family: var(--mono);
   font-size: 12px;
   color: var(--ink-1);
+}
+.hist-head-4col {
+  grid-template-columns: 1fr 160px 160px 100px;
+}
+.hist-row-4col {
+  grid-template-columns: 1fr 160px 160px 100px;
 }
 .hist-row .hash a {
   color: var(--purple);
@@ -3653,10 +3659,18 @@
  * PUBLIC CALL REQUESTS table + L2->L1 messages table
  * ==================================================================== */
 .pcr-cols {
-  grid-template-columns: 1fr 1fr 140px 180px 110px 60px;
+  grid-template-columns: 1fr 1fr 140px 180px 110px 60px 110px;
 }
 .pcr-cols-narrow {
-  grid-template-columns: 1fr 140px 180px 110px 60px;
+  grid-template-columns: 1fr 140px 180px 110px 60px 110px;
+}
+
+/* Hide the ? in column headers until hover */
+.header-tip-q {
+  opacity: 0;
+}
+.header-tip:hover .header-tip-q {
+  opacity: 1;
 }
 
 .l2l1-cols {
@@ -3776,10 +3790,9 @@
 
 /* Proposal table columns */
 .gov-proposal-cols {
-  grid-template-columns: 64px minmax(
-      220px,
-      1.5fr
-    ) 80px 100px 90px 90px 90px 80px;
+  grid-template-columns:
+    64px minmax(220px, 1.5fr)
+    80px 100px 90px 90px 90px 80px;
 }
 .gov-proposal-cols .pid {
   font-family: var(--mono);

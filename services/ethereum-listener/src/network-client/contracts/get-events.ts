@@ -5,6 +5,7 @@ import { getPublicHttpClient } from "../client/index.js";
 import { genericOnLogs, type onLogsLogs } from "./callbacks/index.js";
 import {
   depositEventCallbacks,
+  depositToAztecPublicEventCallbacks,
   l2BlockProposedEventCallbacks,
   l2ProofVerifiedEventCallbacks,
   slashedEventCallbacks,
@@ -24,6 +25,7 @@ import {
 } from "./callbacks/governance.js";
 import {
   GENERIC_EVENT_ALLOWLIST,
+  STRUCTURED_FEE_JUICE_PORTAL_EVENT_NAMES,
   STRUCTURED_GOVERNANCE_EVENT_NAMES,
   STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES,
   STRUCTURED_ROLLUP_EVENT_NAMES,
@@ -137,7 +139,8 @@ const getAllGenericContractEventLogs = async ({
         abiEventNames.has(eventName) &&
         !STRUCTURED_ROLLUP_EVENT_NAMES.has(eventName) &&
         !STRUCTURED_GOVERNANCE_EVENT_NAMES.has(eventName) &&
-        !STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES.has(eventName),
+        !STRUCTURED_GOVERNANCE_PROPOSER_EVENT_NAMES.has(eventName) &&
+        !STRUCTURED_FEE_JUICE_PORTAL_EVENT_NAMES.has(eventName),
     );
 
     pollers.push(
@@ -242,6 +245,51 @@ const getRollupL2ProofVerifiedLogs = async ({
     updateHeight,
     storeHeight,
   }).onLogs(rollupL2ProofVerifiedLogs);
+  return latestHeight - getMemoryHeight();
+};
+
+const getFeeJuicePortalDepositLogs = async ({
+  client,
+  contracts,
+  toBlock,
+  latestHeight,
+}: {
+  client: PublicClient;
+  contracts: AztecContracts;
+  toBlock: "finalized";
+  latestHeight: bigint;
+}) => {
+  const {
+    fromBlock,
+    updateHeight,
+    storeHeight,
+    getMemoryHeight,
+    setOverrideStoreHeight,
+  } = await dbControllers.inMemoryHeightTracker({
+    contractName: "feeJuicePortal",
+    contractAddress: contracts.feeJuicePortal.address,
+    eventName: "DepositToAztecPublic",
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    latestHeight,
+  });
+  if (fromBlock > latestHeight) {
+    logger.info("FeeJuicePortal DepositToAztecPublic logs up to date");
+    return 0n;
+  }
+  const actualToBlock = getActualToBlock(fromBlock, latestHeight, toBlock);
+  setOverrideStoreHeight(getStoreHeightForRange(actualToBlock, latestHeight));
+  const feeJuicePortalDepositLogs = await client.getContractEvents({
+    fromBlock,
+    toBlock: actualToBlock,
+    eventName: "DepositToAztecPublic",
+    address: contracts.feeJuicePortal.address,
+    abi: contracts.feeJuicePortal.abi,
+  });
+  await depositToAztecPublicEventCallbacks({
+    isFinalized: GET_EVENTS_DEFAULT_IS_FINALIZED,
+    updateHeight,
+    storeHeight,
+  }).onLogs(feeJuicePortalDepositLogs);
   return latestHeight - getMemoryHeight();
 };
 
@@ -666,6 +714,16 @@ export const getAllContractsEvents = async ({
     }),
   ]);
 
+  // FeeJuicePortal structured events (chunked HTTP backfill mirrors the WS watcher)
+  const feeJuicePortalPollResults: bigint[] = await Promise.all([
+    getFeeJuicePortalDepositLogs({
+      client,
+      contracts,
+      toBlock,
+      latestHeight,
+    }),
+  ]);
+
   const genericPollResults = await getAllGenericContractEventLogs({
     contracts,
     latestHeight,
@@ -674,6 +732,7 @@ export const getAllContractsEvents = async ({
     ...rollupPollResults,
     ...governancePollResults,
     ...governanceProposerPollResults,
+    ...feeJuicePortalPollResults,
     ...genericPollResults,
   ];
 };

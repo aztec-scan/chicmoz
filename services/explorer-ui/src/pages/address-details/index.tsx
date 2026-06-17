@@ -1,8 +1,9 @@
 import { useParams } from "@tanstack/react-router";
 import { type FC } from "react";
 import { DataTable } from "~/components/data-table";
+import { FeeJuicePortalDepositsColumns } from "~/components/fee-juice-portal-deposits/fee-juice-portal-deposits-columns";
 import { LoadingDetails } from "~/components/loading/loading-details";
-import { usePublicCallRequestsBySender } from "~/hooks/api";
+import { useFeeJuicePortalDepositsByAddress, usePublicCallRequestsBySender } from "~/hooks/api";
 import { BaseLayout } from "~/layout/base-layout";
 import { cn } from "~/lib/utils";
 import { AddressActivityColumns } from "./address-activity-columns";
@@ -26,6 +27,9 @@ export const AddressDetails: FC = () => {
     isLoading,
     error,
   } = usePublicCallRequestsBySender(address);
+
+  const { data: feeJuiceDeposits, isLoading: isLoadingDeposits } =
+    useFeeJuicePortalDepositsByAddress(address);
 
   if (!address) {
     return (
@@ -55,6 +59,7 @@ export const AddressDetails: FC = () => {
   ).size;
   const staticCallCount =
     publicCallRequests?.filter((r) => r.isStaticCall).length ?? 0;
+  const totalDeposits = feeJuiceDeposits?.length ?? 0;
 
   return (
     <BaseLayout>
@@ -67,10 +72,11 @@ export const AddressDetails: FC = () => {
           <p className="font-mono text-sm break-all text-gray-600">{address}</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Total Calls" value={totalCalls} />
           <StatCard label="Unique Contracts" value={uniqueContracts} />
           <StatCard label="Static Calls" value={staticCallCount} />
+          <StatCard label="L1 Fee Juice Deposits" value={totalDeposits} />
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-4">
@@ -82,6 +88,24 @@ export const AddressDetails: FC = () => {
             maxEntries={20}
           />
         </div>
+
+        {(isLoadingDeposits || totalDeposits > 0) && (
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h4 className="text-lg font-semibold mb-4">
+              L1→L2 Fee Juice Deposits
+            </h4>
+            {isLoadingDeposits ? (
+              <p className="text-gray-500 text-sm">Loading deposits…</p>
+            ) : (
+              <DataTable
+                columns={FeeJuicePortalDepositsColumns}
+                data={feeJuiceDeposits ?? []}
+                disableSizeSelector={false}
+                maxEntries={20}
+              />
+            )}
+          </div>
+        )}
       </div>
     </BaseLayout>
   );

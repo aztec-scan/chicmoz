@@ -168,6 +168,10 @@ export const queryKeyGenerator = {
   ],
 
   search: (query: string) => ["search", query],
+  l1FeeJuicePortalDepositsByAddress: (address: string) => [
+    "l1FeeJuicePortalDeposits",
+    address,
+  ],
 
   // Governance
   governanceProposals: (params?: {
