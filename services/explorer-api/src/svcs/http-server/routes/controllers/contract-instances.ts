@@ -483,6 +483,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         stringifiedArtifactJson: artifactString,
         instanceAddress: address,
         contractClassId: dbContractInstance.currentContractClassId,
+        immutablesHash: dbContractInstance.immutablesHash,
       });
     } catch (error) {
       logger.error(
@@ -503,6 +504,7 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
       address,
       salt,
       deployer,
+      immutablesHash: dbContractInstance.immutablesHash,
       publicKeysString,
       constructorArgs,
     });

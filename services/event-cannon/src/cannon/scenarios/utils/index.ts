@@ -120,10 +120,7 @@ export const getNewSchnorrAccount = async ({
   // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
   // but fails in devnet/testnet where it has no balance.
   const feePayer = getAccounts().alice.address;
-  const { receipt: deployReceipt } = await deployFunction.send({
-    from: feePayer,
-    wait: { returnReceipt: true },
-  });
+  const { receipt: deployReceipt } = await deployFunction.send({ from: feePayer });
   logger.info(
     `    Account deployed (${accountName}) block ${deployReceipt.blockNumber}`,
   );
@@ -155,9 +152,12 @@ const getNewContractClassId = async (
   if (!blockNumber) {
     return undefined;
   }
-  const block = await node.getBlock(blockNumber);
+  const block = await node.getBlock(blockNumber, { includeTransactions: true });
   if (!block) {
     throw new Error(`Block ${blockNumber} not found`);
+  }
+  if (!block.body) {
+    throw new Error(`Block ${blockNumber} response did not include transactions`);
   }
   const contractClassLogs = block.body.txEffects
     .flatMap((txEffect) => (txEffect ? [txEffect.contractClassLogs] : []))
@@ -201,22 +201,19 @@ export const deployContract = async <T extends Contract>({
   const feePayer = from ?? getAccounts().alice.address;
 
   logger.info(`📫 ${contractLoggingName} (Deploying contract)`);
-  const { receipt: deployResult } = await deployMethod.send({
-    from: feePayer,
-    wait: { returnReceipt: true },
-  });
+  const deployResult = await deployMethod.send({ from: feePayer });
 
   const { contract: deployedContract, instance } = deployResult;
   const addressString = deployedContract.address.toString();
   const newClassId = await getNewContractClassId(
     node,
-    deployResult.blockNumber,
+    deployResult.receipt.blockNumber,
   );
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
     : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
-    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.blockNumber} ${classIdString}`,
+    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.receipt.blockNumber} ${classIdString}`,
   );
   if (broadcastWithWallet) {
     await broadcastFunctions({

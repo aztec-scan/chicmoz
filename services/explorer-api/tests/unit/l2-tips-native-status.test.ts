@@ -83,13 +83,13 @@ const tips: ChicmozL2Tips = {
 const storedTips = {
   ...tips,
   observedAt: 123,
-  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "4.2.0" },
+  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "5.0.0-rc.1" },
 };
 
 const tipsEvent: L2TipsEvent = {
   tips,
   observedAt: 123,
-  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "4.2.0" },
+  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "5.0.0-rc.1" },
 };
 
 const l2TipsRow = {
@@ -114,7 +114,7 @@ const l2TipsRow = {
   finalizedCheckpointHash: tips.finalized.checkpoint.hash,
   observedAt: 123,
   aztecNodeName: "aztec-node-a",
-  aztecNodeVersion: "4.2.0",
+  aztecNodeVersion: "5.0.0-rc.1",
   degradedReason: null,
 };
 

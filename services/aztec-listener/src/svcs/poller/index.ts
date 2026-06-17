@@ -42,6 +42,9 @@ export const init = async () => {
       .protocolContractAddresses as unknown as NodeInfo["protocolContractAddresses"],
     enr: "",
     realProofs: false,
+    txsLimits: {
+      gas: { daGas: 0, l2Gas: 0 },
+    },
   };
 };
 

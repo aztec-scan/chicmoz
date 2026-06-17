@@ -41,6 +41,7 @@ export const l2ContractInstanceDeployed = pgTable(
       "original_contract_class_id",
     ).notNull(),
     initializationHash: generateFrColumn("initialization_hash").notNull(),
+    immutablesHash: generateFrColumn("immutables_hash").notNull(),
     deployer: generateAztecAddressColumn("deployer").notNull(),
     masterNullifierPublicKey: generateConcatFrPointColumn(
       "masterNullifierPublicKey",
