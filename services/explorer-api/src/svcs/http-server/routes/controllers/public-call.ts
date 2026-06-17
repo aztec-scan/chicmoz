@@ -22,6 +22,7 @@ const publicCallRequestSchema = {
     functionSelector: { type: "string", nullable: true },
     contractName: { type: "string", nullable: true },
     functionName: { type: "string", nullable: true },
+    timestamp: { type: "number", nullable: true },
   },
 };
 

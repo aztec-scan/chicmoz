@@ -3659,10 +3659,18 @@
  * PUBLIC CALL REQUESTS table + L2->L1 messages table
  * ==================================================================== */
 .pcr-cols {
-  grid-template-columns: 1fr 1fr 140px 180px 110px 60px;
+  grid-template-columns: 1fr 1fr 140px 180px 110px 60px 110px;
 }
 .pcr-cols-narrow {
-  grid-template-columns: 1fr 140px 180px 110px 60px;
+  grid-template-columns: 1fr 140px 180px 110px 60px 110px;
+}
+
+/* Hide the ? in column headers until hover */
+.header-tip-q {
+  opacity: 0;
+}
+.header-tip:hover .header-tip-q {
+  opacity: 1;
 }
 
 .l2l1-cols {
