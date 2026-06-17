@@ -19,6 +19,8 @@ import { logger } from "../../../logger.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateError } from "../utils.js";
 
+const AZTEC_CONTRACT_CLASS_VERSION = 1;
+
 const toLegacyConcatPoint = (value: { toString: () => string }) => {
   const hex = value.toString();
   return hex.length === 66 ? `0x${hex.slice(2)}${"0".repeat(64)}` : hex;
@@ -151,6 +153,10 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
         chicmozL2ContractInstanceDeployedEventSchema.parse({
           ...contractInstance,
           blockHash,
+          // Aztec v5 separates contract-instance version from contract-class
+          // version. This DB column is used to join against the contract class
+          // table, whose protocol version is currently fixed at 1.
+          version: AZTEC_CONTRACT_CLASS_VERSION,
           address: contractInstance.address.toString(),
           salt: contractInstance.salt.toString(),
           currentContractClassId:

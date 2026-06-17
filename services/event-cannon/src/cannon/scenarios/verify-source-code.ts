@@ -5,6 +5,7 @@ import artifactJson from "../../contract-projects/SimpleLogging/target/simple_lo
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getAccounts, getWallet } from "../pxe.js";
 import {
+  AZTEC_CONTRACT_CLASS_VERSION,
   deployContract,
   registerContractClassArtifact,
 } from "./utils/index.js";
@@ -91,7 +92,7 @@ export async function run() {
   });
 
   const contractClassId = contractInstance.currentContractClassId.toString();
-  const version = contractInstance.version;
+  const version = AZTEC_CONTRACT_CLASS_VERSION;
 
   // Step 2: Register the artifact first (so bytecode is available for comparison)
   logger.info("Step 2: Registering artifact for bytecode comparison...");

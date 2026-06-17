@@ -31,6 +31,8 @@ import { BlockNumber } from "@aztec/foundation/branded-types";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
+export const AZTEC_CONTRACT_CLASS_VERSION = 1;
+
 export const truncateHashString = (value: string) => {
   const startHash = value.substring(0, 6);
   const endHash = value.substring(value.length - 4, value.length);
@@ -292,12 +294,12 @@ export const registerContractClassArtifact = async (
   contractLoggingName: string,
   artifactObj: { default: NoirCompiledContract } | NoirCompiledContract,
   contractClassId: string,
-  version: number,
+  _instanceVersion: number,
 ) => {
   const url = generateVerifyArtifactUrl(
     EXPLORER_API_URL,
     contractClassId,
-    version,
+    AZTEC_CONTRACT_CLASS_VERSION,
   );
   const postData = JSON.stringify(generateVerifyArtifactPayload(artifactObj));
   await callExplorerApi({
@@ -312,12 +314,12 @@ export const registerContractClassArtifact = async (
 export const registerStandardContractArtifact = async (
   contractLoggingName: string,
   contractClassId: string,
-  version: number,
+  _instanceVersion: number,
   standardName: string,
   standardVersion: string,
   options?: { throwOnError?: boolean },
 ) => {
-  const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${version}/standard-artifact`;
+  const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${AZTEC_CONTRACT_CLASS_VERSION}/standard-artifact`;
   const postData = JSON.stringify({
     name: standardName,
     version: standardVersion,
