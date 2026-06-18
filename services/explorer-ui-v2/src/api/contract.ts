@@ -40,8 +40,22 @@ export type ContractClassSourceResponse = z.infer<
   typeof contractClassSourceResponseSchema
 >;
 
-export type ChicmozL2ContractInstanceWithAztecScanNotes = z.infer<
-  typeof contractInstancesWithAztecScanNotesSchema
+const contractInstanceFpcRelationshipsSchema = z.object({
+  feePayers: z.array(z.string()),
+  sponsoredAddresses: z.array(z.string()),
+});
+
+export type ContractInstanceFpcRelationships = z.infer<
+  typeof contractInstanceFpcRelationshipsSchema
+>;
+
+const contractInstanceFpcRelationshipsSchema = z.object({
+  feePayers: z.array(z.string()),
+  sponsoredAddresses: z.array(z.string()),
+});
+
+export type ContractInstanceFpcRelationships = z.infer<
+  typeof contractInstanceFpcRelationshipsSchema
 >;
 
 export const ContractL2API = {
@@ -148,6 +162,17 @@ export const ContractL2API = {
     );
     return validateResponse(
       chicmozContractInstanceBalanceSchema.array(),
+      response.data,
+    );
+  },
+  getContractInstanceFpcRelationships: async (
+    address: string,
+  ): Promise<ContractInstanceFpcRelationships> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstanceFpcRelationships(address),
+    );
+    return validateResponse(
+      contractInstanceFpcRelationshipsSchema,
       response.data,
     );
   },
