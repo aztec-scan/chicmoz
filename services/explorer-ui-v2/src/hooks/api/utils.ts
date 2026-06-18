@@ -127,6 +127,10 @@ export const queryKeyGenerator = {
     "contractInstanceBalanceHistory",
     address,
   ],
+  contractInstanceFpcRelationships: (address: string) => [
+    "contractInstanceFpcRelationships",
+    address,
+  ],
   latestContractInstances: ["latestContractInstances"],
   contractInstancesWithAztecScanNotes: ["contractInstancesWithAztecScanNotes"],
   paginatedContractInstances: (
