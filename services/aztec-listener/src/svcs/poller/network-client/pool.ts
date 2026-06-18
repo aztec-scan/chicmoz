@@ -25,14 +25,6 @@ type JsonRpcResponse = {
     code?: number;
     message?: string;
   };
-  result?: Record<string, unknown>;
-};
-
-const defaultTxsLimits = {
-  gas: {
-    daGas: 0,
-    l2Gas: 0,
-  },
 };
 
 const isSingleMethodNotFound = (response: unknown) => {
@@ -62,12 +54,6 @@ const rewriteAztecNamespaceToNode = (
     ) {
       return undefined;
     }
-    if (jsonRpcRequest.method === "aztec_getChainTips") {
-      return {
-        ...jsonRpcRequest,
-        method: "node_getL2Tips",
-      };
-    }
     return {
       ...jsonRpcRequest,
       method: jsonRpcRequest.method.replace(/^aztec_/, "node_"),
@@ -91,49 +77,6 @@ const rewriteAztecNamespaceToNode = (
   return rewriteSingleRequest(body);
 };
 
-const requestIsGetNodeInfo = (request: unknown) => {
-  const jsonRpcRequest = request as JsonRpcBody;
-  return (
-    jsonRpcRequest.method === "aztec_getNodeInfo" ||
-    jsonRpcRequest.method === "node_getNodeInfo"
-  );
-};
-
-const responseHasTxsLimits = (response: unknown) => {
-  const jsonRpcResponse = response as JsonRpcResponse;
-  return jsonRpcResponse.result?.txsLimits !== undefined;
-};
-
-const addMissingTxsLimits = (response: unknown) => {
-  const jsonRpcResponse = response as JsonRpcResponse;
-  if (!jsonRpcResponse.result || responseHasTxsLimits(response)) {
-    return response;
-  }
-
-  logger.warn(
-    "Aztec RPC getNodeInfo response did not include txsLimits; adding compatibility default",
-  );
-  return {
-    ...jsonRpcResponse,
-    result: {
-      ...jsonRpcResponse.result,
-      txsLimits: defaultTxsLimits,
-    },
-  };
-};
-
-const normalizeNodeInfoResponse = (body: unknown, response: unknown): unknown => {
-  if (Array.isArray(body) && Array.isArray(response)) {
-    const requests = body as unknown[];
-    const responses = response as unknown[];
-    return responses.map((item, index) =>
-      requestIsGetNodeInfo(requests[index]) ? addMissingTxsLimits(item) : item,
-    );
-  }
-
-  return requestIsGetNodeInfo(body) ? addMissingTxsLimits(response) : response;
-};
-
 const fetchWithV5NodeNamespaceFallback: typeof defaultFetch = async (
   host,
   body,
@@ -142,10 +85,7 @@ const fetchWithV5NodeNamespaceFallback: typeof defaultFetch = async (
 ) => {
   const response = await defaultFetch(host, body, extraHeaders, noRetry);
   if (!isMethodNotFound(response.response)) {
-    return {
-      ...response,
-      response: normalizeNodeInfoResponse(body, response.response),
-    };
+    return response;
   }
 
   const rewrittenBody = rewriteAztecNamespaceToNode(body);
@@ -156,19 +96,7 @@ const fetchWithV5NodeNamespaceFallback: typeof defaultFetch = async (
   logger.warn(
     "Aztec RPC node rejected aztec_* namespace; retrying request with node_* namespace",
   );
-  const rewrittenResponse = await defaultFetch(
-    host,
-    rewrittenBody,
-    extraHeaders,
-    noRetry,
-  );
-  return {
-    ...rewrittenResponse,
-    response: normalizeNodeInfoResponse(
-      rewrittenBody,
-      rewrittenResponse.response,
-    ),
-  };
+  return await defaultFetch(host, rewrittenBody, extraHeaders, noRetry);
 };
 
 const resetPools = () => {
