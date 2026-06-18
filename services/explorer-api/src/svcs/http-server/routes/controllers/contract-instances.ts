@@ -7,6 +7,7 @@ import {
   verifyInstanceDeploymentPayload,
   verifyInstanceDeploymentPayloadSchema,
 } from "@chicmoz-pkg/contract-verification";
+import { PublicKeys } from "@aztec/aztec.js/keys";
 import { setEntry } from "@chicmoz-pkg/redis-helper";
 import {
   NODE_ENV,
@@ -344,14 +345,32 @@ export const POST_L2_VERIFY_CONTRACT_INSTANCE_DEPLOYMENT = asyncHandler(
         JSON.parse(instanceData),
       );
 
-    const pubkeySplit = Object.values(dbContractInstance.publicKeys).map(
-      (key) => key.split("0x")[1],
-    );
-    const pubKeyString = "0x".concat(pubkeySplit.join(""));
+    if (publicKeysString) {
+      const dbPublicKeys = dbContractInstance.publicKeys;
+      const dbPublicKeysString = "0x".concat(
+        Object.values(dbPublicKeys)
+          .map((key) => key.split("0x")[1])
+          .join(""),
+      );
+      const uploadedPublicKeysMatchDb = publicKeysString === dbPublicKeysString;
+      const v5PublicKeysMatchDb = () => {
+        const uploadedPublicKeys = PublicKeys.fromString(publicKeysString);
+        return (
+          uploadedPublicKeys.npkMHash.toString() ===
+          dbPublicKeys.masterNullifierPublicKey.slice(0, 66) &&
+          uploadedPublicKeys.ivpkM.toString() ===
+            dbPublicKeys.masterIncomingViewingPublicKey &&
+          uploadedPublicKeys.ovpkMHash.toString() ===
+            dbPublicKeys.masterOutgoingViewingPublicKey.slice(0, 66) &&
+          uploadedPublicKeys.tpkMHash.toString() ===
+            dbPublicKeys.masterTaggingPublicKey.slice(0, 66)
+        );
+      };
 
-    if (publicKeysString && publicKeysString !== pubKeyString) {
-      res.status(400).send("Uploaded publicKeys do not match the DB");
-      return;
+      if (!uploadedPublicKeysMatchDb && !v5PublicKeysMatchDb()) {
+        res.status(400).send("Uploaded publicKeys do not match the DB");
+        return;
+      }
     }
 
     if (salt && salt !== dbContractInstance.salt) {
