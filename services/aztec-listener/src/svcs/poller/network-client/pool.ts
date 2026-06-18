@@ -27,12 +27,20 @@ type JsonRpcResponse = {
   };
 };
 
-const isMethodNotFound = (response: unknown) => {
+const isSingleMethodNotFound = (response: unknown) => {
   const jsonRpcResponse = response as JsonRpcResponse;
   return (
     jsonRpcResponse.error?.code === -32601 ||
     jsonRpcResponse.error?.message?.includes("Method not found") === true
   );
+};
+
+const isMethodNotFound = (response: unknown) => {
+  if (Array.isArray(response)) {
+    return response.some((item) => isSingleMethodNotFound(item));
+  }
+
+  return isSingleMethodNotFound(response);
 };
 
 const rewriteAztecNamespaceToNode = (
