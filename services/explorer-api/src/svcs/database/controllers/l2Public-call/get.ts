@@ -2,6 +2,7 @@ import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import { HexString, type PublicCallRequest } from "@chicmoz-pkg/types";
 import { desc, eq, inArray } from "drizzle-orm";
 import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
+import { txEffect } from "../../../database/schema/l2block/body.js";
 
 const selectColumns = {
   txHash: l2TxPublicCallRequest.txHash,
@@ -13,6 +14,7 @@ const selectColumns = {
   functionSelector: l2TxPublicCallRequest.functionSelector,
   contractName: l2TxPublicCallRequest.contractName,
   functionName: l2TxPublicCallRequest.functionName,
+  timestamp: txEffect.txBirthTimestamp,
 };
 
 export const getPublicCallRequestsByTxHash = async (
@@ -21,6 +23,7 @@ export const getPublicCallRequestsByTxHash = async (
   const res = await db()
     .select(selectColumns)
     .from(l2TxPublicCallRequest)
+    .leftJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
     .where(eq(l2TxPublicCallRequest.txHash, txHash));
 
   return res as PublicCallRequest[];
@@ -35,6 +38,7 @@ export const getPublicCallRequestsByTxHashes = async (
   const rows = await db()
     .select(selectColumns)
     .from(l2TxPublicCallRequest)
+    .leftJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
     .where(inArray(l2TxPublicCallRequest.txHash, txHashes));
 
   const result = new Map<HexString, PublicCallRequest[]>();
@@ -52,6 +56,7 @@ export const getPublicCallRequestsByContractAddress = async (
   const res = await db()
     .select(selectColumns)
     .from(l2TxPublicCallRequest)
+    .leftJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
     .where(eq(l2TxPublicCallRequest.contractAddress, contractAddress))
     .orderBy(desc(l2TxPublicCallRequest.txHash));
 
@@ -64,6 +69,7 @@ export const getPublicCallRequestsBySenderAddress = async (
   const res = await db()
     .select(selectColumns)
     .from(l2TxPublicCallRequest)
+    .leftJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
     .where(eq(l2TxPublicCallRequest.msgSender, msgSender))
     .orderBy(desc(l2TxPublicCallRequest.txHash));
 
