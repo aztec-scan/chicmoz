@@ -32,17 +32,20 @@ export const setup = async () => {
   const [aliceAccount, bobAccount, charlieAccount] =
     await getInitialTestAccountsData();
 
-  const alice = await wallet.createSchnorrAccount(
+  const alice = await wallet.createSchnorrInitializerlessAccount(
     aliceAccount.secret,
     aliceAccount.salt,
+    aliceAccount.signingKey,
   );
-  const bob = await wallet.createSchnorrAccount(
+  const bob = await wallet.createSchnorrInitializerlessAccount(
     bobAccount.secret,
     bobAccount.salt,
+    bobAccount.signingKey,
   );
-  const charlie = await wallet.createSchnorrAccount(
+  const charlie = await wallet.createSchnorrInitializerlessAccount(
     charlieAccount.secret,
     charlieAccount.salt,
+    charlieAccount.signingKey,
   );
 
   namedAccounts = {

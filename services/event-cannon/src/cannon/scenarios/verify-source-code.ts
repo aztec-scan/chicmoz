@@ -5,14 +5,17 @@ import artifactJson from "../../contract-projects/SimpleLogging/target/simple_lo
 import { logger } from "../../logger.js";
 import { getAztecNodeClient, getAccounts, getWallet } from "../pxe.js";
 import {
+  AZTEC_CONTRACT_CLASS_VERSION,
   deployContract,
   registerContractClassArtifact,
 } from "./utils/index.js";
 import { callExplorerApi, getExplorerApi } from "./utils/explorer-api.js";
-import { EXPLORER_API_URL } from "../../environment.js";
+import {
+  EXPLORER_API_URL,
+  SOURCE_VERIFICATION_GIT_REF,
+} from "../../environment.js";
 
 const GITHUB_URL = "https://github.com/aztec-scan/chicmoz";
-const GIT_REF = "main";
 const SUB_PATH = "services/event-cannon/src/contract-projects/SimpleLogging";
 const POLL_INTERVAL_MS = 10_000;
 const MAX_POLL_ATTEMPTS = 60; // 10 minutes max
@@ -91,7 +94,7 @@ export async function run() {
   });
 
   const contractClassId = contractInstance.currentContractClassId.toString();
-  const version = contractInstance.version;
+  const version = AZTEC_CONTRACT_CLASS_VERSION;
 
   // Step 2: Register the artifact first (so bytecode is available for comparison)
   logger.info("Step 2: Registering artifact for bytecode comparison...");
@@ -112,7 +115,7 @@ export async function run() {
   const verifyUrl = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${version}/verify-source`;
   const postData = JSON.stringify({
     githubUrl: GITHUB_URL,
-    gitRef: GIT_REF,
+    gitRef: SOURCE_VERIFICATION_GIT_REF,
     subPath: SUB_PATH,
   });
 

@@ -407,6 +407,7 @@ export const run = async () => {
     withdrawAmount,
     ethAccount,
     l2TxReceipt.blockNumber! as unknown as EpochNumber,
+    siblingPath.pathSize,
     l2ToL1MessageIndex,
     siblingPath as SiblingPath<number>,
   );

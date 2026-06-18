@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: explorer-ui-v2-sandbox-label
+  name: explorer-ui-v2-sandbox-deployment
+  namespace: chicmoz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: explorer-ui-v2-sandbox-label
+  template:
+    metadata:
+      labels:
+        app: explorer-ui-v2-sandbox-label
+    spec:
+      containers:
+        - image: explorer-ui-v2-sandbox:latest
+          name: explorer-ui-v2-sandbox
+          resources:
+            limits:
+              memory: 300Mi
+              cpu: 500m
+          ports:
+            - name: http-app-port
+              containerPort: 80
+              protocol: TCP
