@@ -143,9 +143,14 @@ export const handleProvenTransactions = async (block: L2Block) => {
           return;
         }
         const { addr, sourceTxHash, balance } = result;
+        const balanceBigInt = balance.toBigInt();
+        if (balanceBigInt === 0n) {
+          logger.debug(`⏭️ Skipping zero balance for ${addr}`);
+          return;
+        }
         await publishMessage("CONTRACT_INSTANCE_BALANCE_EVENT", {
           contractAddress: addr,
-          balance: balance.toBigInt().toString(),
+          balance: balanceBigInt.toString(),
           timestamp: new Date().getTime(),
           sourceTxHash,
           feeRecipient: block.header.globalVariables.feeRecipient.toString(),
