@@ -18,6 +18,7 @@ import {
   useContractInstance,
   useContractInstanceBalance,
   useContractInstanceBalanceHistory,
+  useContractInstanceFpcRelationships,
   useChainInfo,
   useL2ToL1MsgsByContract,
   usePublicCallRequestsByContract,
@@ -46,6 +47,7 @@ export const ContractInstancePage: FC = () => {
   const { data: instance, isLoading } = useContractInstance(address);
   const { data: balance } = useContractInstanceBalance(address);
   const { data: history } = useContractInstanceBalanceHistory(address);
+  const { data: fpcRelationships } = useContractInstanceFpcRelationships(address);
   const { data: chainInfo } = useChainInfo();
   const { data: publicCalls } = usePublicCallRequestsByContract(address);
   const { data: l2ToL1Msgs } = useL2ToL1MsgsByContract(address);
@@ -185,7 +187,26 @@ export const ContractInstancePage: FC = () => {
           </span>
           <span className="meta-line">
             fee balance {balanceValue ?? (
-              <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+              fpcRelationships && fpcRelationships.feePayers.length > 0 ? (
+                <span style={{ color: "var(--ink-3)" }}>
+                  via{" "}
+                  {fpcRelationships.feePayers.slice(0, 3).map((fpc, i) => (
+                    <span key={fpc}>
+                      {i > 0 && ", "}
+                      <Link
+                        to="/address/$address"
+                        params={{ address: fpc }}
+                        className="hash"
+                        style={{ fontSize: "0.85em" }}
+                      >
+                        {truncateHashString(fpc, 6, 4)}
+                      </Link>
+                    </span>
+                  ))}
+                </span>
+              ) : (
+                <span style={{ color: "var(--ink-3)", cursor: "help" }} title="This address does not hold any Fee Juice. Fees may be paid by a Fee Paying Contract (FPC).">?</span>
+              )
             )}
             <TokenEtherscanLink
               symbol={feeJuiceSymbol}
@@ -391,7 +412,30 @@ export const ContractInstancePage: FC = () => {
           <div className="balance-block">
             <div className="balance-big">
               {balanceValue ?? (
-                <span style={{ color: "var(--ink-3)", cursor: "help" }} title="If there is no balance it's because we did not manage to take a snapshot at that time">?</span>
+                fpcRelationships && fpcRelationships.feePayers.length > 0 ? (
+                  <span style={{ color: "var(--ink-3)", fontSize: "0.5em" }}>
+                    fees via{" "}
+                    {fpcRelationships.feePayers.slice(0, 3).map((fpc, i) => (
+                      <span key={fpc}>
+                        {i > 0 && ", "}
+                        <Link
+                          to="/address/$address"
+                          params={{ address: fpc }}
+                          className="hash"
+                        >
+                          {truncateHashString(fpc, 6, 4)}
+                        </Link>
+                      </span>
+                    ))}
+                    {fpcRelationships.feePayers.length > 3 && (
+                      <span style={{ color: "var(--ink-3)" }}>
+                        {" "}+{fpcRelationships.feePayers.length - 3} more
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span style={{ color: "var(--ink-3)", cursor: "help" }} title="This address does not hold any Fee Juice. Fees may be paid by a Fee Paying Contract (FPC).">?</span>
+                )
               )}
               <TokenEtherscanLink
                 symbol={feeJuiceSymbol}
@@ -407,6 +451,29 @@ export const ContractInstancePage: FC = () => {
                   : `-${deltaValue} · 24h`}{" "}
               · {history?.length ?? 0} snapshots
             </div>
+            {fpcRelationships && fpcRelationships.sponsoredAddresses.length > 0 && (
+              <div className="balance-sub" style={{ color: "var(--ink-2)" }}>
+                Pays fees for:{" "}
+                {fpcRelationships.sponsoredAddresses.slice(0, 5).map((addr, i) => (
+                  <span key={addr}>
+                    {i > 0 && ", "}
+                    <Link
+                      to="/address/$address"
+                      params={{ address: addr }}
+                      className="hash"
+                      style={{ fontSize: "0.85em" }}
+                    >
+                      {truncateHashString(addr, 6, 4)}
+                    </Link>
+                  </span>
+                ))}
+                {fpcRelationships.sponsoredAddresses.length > 5 && (
+                  <span style={{ color: "var(--ink-3)" }}>
+                    {" "}+{fpcRelationships.sponsoredAddresses.length - 5} more
+                  </span>
+                )}
+              </div>
+            )}
             {history && history.length > 1 && maxBal > 0 && (
               <>
                 <div className="spark">
