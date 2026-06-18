@@ -1,6 +1,19 @@
-import { eq, desc, and, asc, gte, isNull, or } from "drizzle-orm";
+import {
+  eq,
+  desc,
+  and,
+  asc,
+  gte,
+  isNull,
+  or,
+  getTableColumns,
+  inArray,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
 import type { ProposalState } from "@chicmoz-pkg/types";
+import { L2_NETWORK_ID } from "../../../../../environment.js";
 import {
   l1GovernanceProposalsTable,
   l1GovernanceVotesTable,
@@ -9,6 +22,8 @@ import {
   l1GovernanceConfigurationsTable,
   l1GovernanceProposerHistoryTable,
 } from "../../../schema/l1/governance.js";
+import { l1GenericContractEventTable } from "../../../schema/l1/generic-contract-event.js";
+import { getL2ChainInfo } from "../../l2/index.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -30,6 +45,126 @@ const flattenProposalMetadata = <T extends { metadata: unknown }>(row: T): T & {
   };
 };
 
+type CurrentGovernanceAddresses = {
+  governanceAddress: string;
+  governanceProposerAddress: string;
+};
+
+const getCurrentGovernanceAddresses = async (): Promise<CurrentGovernanceAddresses | null> => {
+  const chainInfo = await getL2ChainInfo(L2_NETWORK_ID);
+  if (!chainInfo) {
+    return null;
+  }
+
+  return {
+    governanceAddress:
+      chainInfo.l1ContractAddresses.governanceAddress.toLowerCase(),
+    governanceProposerAddress:
+      chainInfo.l1ContractAddresses.governanceProposerAddress.toLowerCase(),
+  };
+};
+
+const getCurrentGovernanceProposerAddress = async (): Promise<string | null> =>
+  (await getCurrentGovernanceAddresses())?.governanceProposerAddress ?? null;
+
+const getCurrentGovernancePayloadAddresses = async (): Promise<string[] | null> => {
+  const governanceProposerAddress = await getCurrentGovernanceProposerAddress();
+  if (!governanceProposerAddress) {
+    return null;
+  }
+
+  const rows = await db()
+    .select({
+      payloadAddress: l1GovernanceProposalsTable.payloadAddress,
+      originalPayloadAddress: l1GovernanceProposalsTable.originalPayloadAddress,
+    })
+    .from(l1GovernanceProposalsTable)
+    .where(
+      eq(
+        l1GovernanceProposalsTable.governanceProposerAddress,
+        governanceProposerAddress,
+      ),
+    );
+
+  return Array.from(
+    new Set(
+      rows.flatMap((row) =>
+        [row.payloadAddress, row.originalPayloadAddress].filter(
+          (address): address is string => address !== null,
+        ),
+      ),
+    ),
+  );
+};
+
+const getCurrentGovernanceStartBlock = async (): Promise<bigint | null> => {
+  const currentAddresses = await getCurrentGovernanceAddresses();
+  if (!currentAddresses) {
+    return null;
+  }
+
+  const [genericEventAnchor] = await db()
+    .select({
+      l1BlockNumber: sql<bigint>`min(${l1GenericContractEventTable.l1BlockNumber})`,
+    })
+    .from(l1GenericContractEventTable)
+    .where(
+      inArray(l1GenericContractEventTable.l1ContractAddress, [
+        currentAddresses.governanceAddress,
+        currentAddresses.governanceProposerAddress,
+      ]),
+    );
+
+  if (genericEventAnchor?.l1BlockNumber) {
+    return genericEventAnchor.l1BlockNumber;
+  }
+
+  const proposalAnchor = await db()
+    .select({ l1BlockNumber: l1GovernanceProposalsTable.l1BlockNumber })
+    .from(l1GovernanceProposalsTable)
+    .where(
+      eq(
+        l1GovernanceProposalsTable.governanceProposerAddress,
+        currentAddresses.governanceProposerAddress,
+      ),
+    )
+    .orderBy(asc(l1GovernanceProposalsTable.l1BlockNumber))
+    .limit(1);
+
+  const proposerHistoryAnchor = await db()
+    .select({ l1BlockNumber: l1GovernanceProposerHistoryTable.l1BlockNumber })
+    .from(l1GovernanceProposerHistoryTable)
+    .where(
+      eq(
+        l1GovernanceProposerHistoryTable.governanceProposerAddress,
+        currentAddresses.governanceProposerAddress,
+      ),
+    )
+    .orderBy(asc(l1GovernanceProposerHistoryTable.l1BlockNumber))
+    .limit(1);
+
+  const anchors = [
+    proposalAnchor[0]?.l1BlockNumber,
+    proposerHistoryAnchor[0]?.l1BlockNumber,
+  ].filter((l1BlockNumber): l1BlockNumber is bigint => l1BlockNumber !== undefined);
+
+  return anchors.length > 0
+    ? anchors.reduce((lowest, current) => (current < lowest ? current : lowest))
+    : null;
+};
+
+const getCurrentGovernanceSignalFilter = async (): Promise<SQL | null | undefined> => {
+  const payloadAddresses = await getCurrentGovernancePayloadAddresses();
+  if (payloadAddresses === null) {
+    return undefined;
+  }
+  if (payloadAddresses.length === 0) {
+    return null;
+  }
+
+  return inArray(l1GovernanceSignalsTable.payloadAddress, payloadAddresses);
+};
+
 // ── Proposals ────────────────────────────────────────────────────────────────
 
 export const getProposals = async (params?: {
@@ -40,8 +175,17 @@ export const getProposals = async (params?: {
   limit?: number;
 }) => {
   const { state, offset = 0, limit = 20 } = params ?? {};
+  const governanceProposerAddress = await getCurrentGovernanceProposerAddress();
 
-  const conditions = [];
+  const conditions: SQL[] = [];
+  if (governanceProposerAddress) {
+    conditions.push(
+      eq(
+        l1GovernanceProposalsTable.governanceProposerAddress,
+        governanceProposerAddress,
+      ),
+    );
+  }
   if (state) {
     conditions.push(eq(l1GovernanceProposalsTable.state, state));
   }
@@ -58,10 +202,21 @@ export const getProposals = async (params?: {
 };
 
 export const getProposalById = async (proposalId: string) => {
+  const governanceProposerAddress = await getCurrentGovernanceProposerAddress();
+  const conditions = [eq(l1GovernanceProposalsTable.proposalId, proposalId)];
+  if (governanceProposerAddress) {
+    conditions.push(
+      eq(
+        l1GovernanceProposalsTable.governanceProposerAddress,
+        governanceProposerAddress,
+      ),
+    );
+  }
+
   const results = await db()
     .select()
     .from(l1GovernanceProposalsTable)
-    .where(eq(l1GovernanceProposalsTable.proposalId, proposalId))
+    .where(and(...conditions))
     .limit(1);
 
   const row = results[0];
@@ -76,6 +231,20 @@ export const getProposalsMissingUri = async ({
   lookbackDays: number;
 }) => {
   const createdAfter = Date.now() - lookbackDays * 24 * 60 * 60 * 1000;
+  const governanceProposerAddress = await getCurrentGovernanceProposerAddress();
+  const conditions = [
+    isNull(l1GovernanceProposalsTable.uri),
+    gte(l1GovernanceProposalsTable.createdAt, createdAfter),
+  ];
+
+  if (governanceProposerAddress) {
+    conditions.push(
+      eq(
+        l1GovernanceProposalsTable.governanceProposerAddress,
+        governanceProposerAddress,
+      ),
+    );
+  }
 
   return await db()
     .select({
@@ -84,12 +253,7 @@ export const getProposalsMissingUri = async ({
       l1BlockNumber: l1GovernanceProposalsTable.l1BlockNumber,
     })
     .from(l1GovernanceProposalsTable)
-    .where(
-      and(
-        isNull(l1GovernanceProposalsTable.uri),
-        gte(l1GovernanceProposalsTable.createdAt, createdAfter),
-      ),
-    )
+    .where(and(...conditions))
     .orderBy(asc(l1GovernanceProposalsTable.createdAt))
     .limit(limit);
 };
@@ -103,16 +267,42 @@ export const getProposalVotes = async (
   },
 ) => {
   const { support, offset = 0, limit = 50 } = params ?? {};
+  const governanceProposerAddress = await getCurrentGovernanceProposerAddress();
 
   const conditions = [eq(l1GovernanceVotesTable.proposalId, proposalId)];
   if (support !== undefined) {
     conditions.push(eq(l1GovernanceVotesTable.support, support));
   }
 
+  if (!governanceProposerAddress) {
+    return await db()
+      .select()
+      .from(l1GovernanceVotesTable)
+      .where(and(...conditions))
+      .orderBy(desc(l1GovernanceVotesTable.l1BlockNumber))
+      .limit(limit)
+      .offset(offset);
+  }
+
   return await db()
-    .select()
+    .select(getTableColumns(l1GovernanceVotesTable))
     .from(l1GovernanceVotesTable)
-    .where(and(...conditions))
+    .innerJoin(
+      l1GovernanceProposalsTable,
+      eq(
+        l1GovernanceVotesTable.proposalId,
+        l1GovernanceProposalsTable.proposalId,
+      ),
+    )
+    .where(
+      and(
+        ...conditions,
+        eq(
+          l1GovernanceProposalsTable.governanceProposerAddress,
+          governanceProposerAddress,
+        ),
+      ),
+    )
     .orderBy(desc(l1GovernanceVotesTable.l1BlockNumber))
     .limit(limit)
     .offset(offset);
@@ -127,17 +317,25 @@ export const getProposalSignals = async (
   },
 ) => {
   const { offset = 0, limit = 50 } = params ?? {};
+  const currentSignalFilter = await getCurrentGovernanceSignalFilter();
+  if (currentSignalFilter === null) {
+    return [];
+  }
+
   const addressFilter = originalPayloadAddress
     ? or(
         eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress),
         eq(l1GovernanceSignalsTable.payloadAddress, originalPayloadAddress),
       )
     : eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress);
+  const whereFilter = currentSignalFilter
+    ? and(addressFilter, currentSignalFilter)
+    : addressFilter;
 
   return await db()
     .select()
     .from(l1GovernanceSignalsTable)
-    .where(addressFilter)
+    .where(whereFilter)
     .orderBy(desc(l1GovernanceSignalsTable.l1BlockNumber))
     .limit(limit)
     .offset(offset);
@@ -154,8 +352,15 @@ export const getSignals = async (params?: {
 }) => {
   const { payloadAddress, round, signaler, offset = 0, limit = 50 } =
     params ?? {};
+  const currentSignalFilter = await getCurrentGovernanceSignalFilter();
+  if (currentSignalFilter === null) {
+    return [];
+  }
 
-  const conditions = [];
+  const conditions: SQL[] = [];
+  if (currentSignalFilter) {
+    conditions.push(currentSignalFilter);
+  }
   if (payloadAddress) {
     conditions.push(
       eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress),
@@ -178,18 +383,34 @@ export const getSignals = async (params?: {
 };
 
 export const getSignalsByRound = async (round: bigint) => {
+  const currentSignalFilter = await getCurrentGovernanceSignalFilter();
+  if (currentSignalFilter === null) {
+    return [];
+  }
+  const roundFilter = eq(l1GovernanceSignalsTable.round, round);
+
   return await db()
     .select()
     .from(l1GovernanceSignalsTable)
-    .where(eq(l1GovernanceSignalsTable.round, round))
+    .where(
+      currentSignalFilter ? and(roundFilter, currentSignalFilter) : roundFilter,
+    )
     .orderBy(desc(l1GovernanceSignalsTable.l1BlockNumber));
 };
 
 export const getSignalsByPayload = async (payloadAddress: string) => {
+  const currentSignalFilter = await getCurrentGovernanceSignalFilter();
+  if (currentSignalFilter === null) {
+    return [];
+  }
+  const payloadFilter = eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress);
+
   return await db()
     .select()
     .from(l1GovernanceSignalsTable)
-    .where(eq(l1GovernanceSignalsTable.payloadAddress, payloadAddress))
+    .where(
+      currentSignalFilter ? and(payloadFilter, currentSignalFilter) : payloadFilter,
+    )
     .orderBy(desc(l1GovernanceSignalsTable.l1BlockNumber));
 };
 
@@ -230,10 +451,19 @@ export const getConfigurations = async (params?: {
   limit?: number;
 }) => {
   const { offset = 0, limit = 20 } = params ?? {};
+  const currentGovernanceStartBlock = await getCurrentGovernanceStartBlock();
 
   return await db()
     .select()
     .from(l1GovernanceConfigurationsTable)
+    .where(
+      currentGovernanceStartBlock
+        ? gte(
+            l1GovernanceConfigurationsTable.l1BlockNumber,
+            currentGovernanceStartBlock,
+          )
+        : undefined,
+    )
     .orderBy(desc(l1GovernanceConfigurationsTable.updatedAt))
     .limit(limit)
     .offset(offset);
@@ -246,10 +476,19 @@ export const getProposerHistory = async (params?: {
   limit?: number;
 }) => {
   const { offset = 0, limit = 20 } = params ?? {};
+  const governanceProposerAddress = await getCurrentGovernanceProposerAddress();
 
   return await db()
     .select()
     .from(l1GovernanceProposerHistoryTable)
+    .where(
+      governanceProposerAddress
+        ? eq(
+            l1GovernanceProposerHistoryTable.governanceProposerAddress,
+            governanceProposerAddress,
+          )
+        : undefined,
+    )
     .orderBy(desc(l1GovernanceProposerHistoryTable.updatedAt))
     .limit(limit)
     .offset(offset);
