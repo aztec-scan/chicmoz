@@ -8,16 +8,18 @@ export const generateVerifyInstancePayload = ({
   publicKeysString,
   deployer,
   salt,
+  immutablesHash,
   constructorArgs,
   artifactObj,
 }: {
   publicKeysString: string;
   deployer: string;
   salt: string;
+  immutablesHash?: string;
   constructorArgs: string[];
   artifactObj?: { default: NoirCompiledContract } | NoirCompiledContract;
 }): VerifyInstanceDeploymentPayload => {
-  if (publicKeysString.length !== 514) {
+  if (![450, 514].includes(publicKeysString.length)) {
     throw new Error(`Invalid publicKeys length: ${publicKeysString.length}`);
   }
   if (deployer.length !== 66) {
@@ -26,10 +28,14 @@ export const generateVerifyInstancePayload = ({
   if (salt.length !== 66) {
     throw new Error(`Invalid salt length: ${salt.length}`);
   }
+  if (immutablesHash && immutablesHash.length !== 66) {
+    throw new Error(`Invalid immutablesHash length: ${immutablesHash.length}`);
+  }
   return verifyInstanceDeploymentPayloadSchema.parse({
     publicKeysString,
     deployer,
     salt,
+    immutablesHash,
     constructorArgs,
     stringifiedArtifactJson: artifactObj
       ? JSON.stringify(

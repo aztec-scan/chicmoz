@@ -17,6 +17,8 @@ const publicKeyValues =
   "0x01498945581e0eb9f8427ad6021184c700ef091d570892c437d12c7d90364bbd170ae506787c5c43d6ca9255d571c10fa9ffa9d141666e290c347c5c9ab7e34400c044b05b6ca83b9c2dbae79cc1135155956a64e136819136e9947fe5e5866c1c1f0ca244c7cd46b682552bff8ae77dea40b966a71de076ec3b7678f2bdb1511b00316144359e9a3ec8e49c1cdb7eeb0cedd190dfd9dc90eea5115aa779e287080ffc74d7a8b0bccb88ac11f45874172f3847eb8b92654aaa58a3d2b8dc7833019c111f36ad3fc1d9b7a7a14344314d2864b94f030594cd67f753ef774a1efb2039907fe37f08d10739255141bb066c506a12f7d1e8dfec21abc58494705b6f";
 const instanceAddress =
   "0x02a8a8fd9e12fb24265a20109f42fa1afd51d7a1bc88dd163673e91ba38698c0";
+const immutablesHash =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 describe.skip("verify instance deployment", () => {
   let payload: VerifyInstanceDeploymentPayload;
@@ -48,6 +50,7 @@ describe.skip("verify instance deployment", () => {
           ),
           instanceAddress,
           contractClassId: contractClass.id.toString(),
+          immutablesHash,
         });
     } catch (error) {
       verifyInstanceDeploymentPayloadError = error as Error;
