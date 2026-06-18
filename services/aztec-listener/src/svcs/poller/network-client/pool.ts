@@ -62,6 +62,12 @@ const rewriteAztecNamespaceToNode = (
     ) {
       return undefined;
     }
+    if (jsonRpcRequest.method === "aztec_getChainTips") {
+      return {
+        ...jsonRpcRequest,
+        method: "node_getL2Tips",
+      };
+    }
     return {
       ...jsonRpcRequest,
       method: jsonRpcRequest.method.replace(/^aztec_/, "node_"),
