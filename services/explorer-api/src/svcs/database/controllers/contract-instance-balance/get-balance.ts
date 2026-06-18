@@ -16,7 +16,12 @@ export const getLatestContractInstanceBalance = async (
   const result = await db()
     .select()
     .from(contractInstanceBalance)
-    .where(eq(contractInstanceBalance.contractAddress, contractAddress))
+    .where(
+      and(
+        eq(contractInstanceBalance.contractAddress, contractAddress),
+        gt(contractInstanceBalance.balance, "0"),
+      ),
+    )
     .orderBy(desc(contractInstanceBalance.timestamp))
     .limit(1);
 
@@ -74,7 +79,12 @@ export const getContractInstanceBalanceHistory = async (
   const result = await db()
     .select()
     .from(contractInstanceBalance)
-    .where(eq(contractInstanceBalance.contractAddress, contractAddress))
+    .where(
+      and(
+        eq(contractInstanceBalance.contractAddress, contractAddress),
+        gt(contractInstanceBalance.balance, "0"),
+      ),
+    )
     .orderBy(contractInstanceBalance.timestamp)
     .limit(1000);
 
