@@ -150,7 +150,12 @@ export const AddressDetailsPage: FC = () => {
       />
 
       <div className="detail-header">
-        <div className="kicker">L2 address · account</div>
+        <div className="kicker">
+          L2 address · account
+          {fpcRelationships && fpcRelationships.sponsoredAddresses.length > 0 && (
+            <span className="tag-chip tag-chip-fpc" style={{ marginLeft: 8 }}>FPC</span>
+          )}
+        </div>
         <h1 className="hash-sized">{address}</h1>
       </div>
 
