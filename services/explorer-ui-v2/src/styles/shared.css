@@ -903,6 +903,10 @@
   color: var(--purple);
   border-color: rgba(120, 90, 200, 0.4);
 }
+.tag-chip-fpc {
+  color: #4ea5d9;
+  border-color: rgba(78, 165, 217, 0.4);
+}
 
 /* ===== pagination ===== */
 .pagination {

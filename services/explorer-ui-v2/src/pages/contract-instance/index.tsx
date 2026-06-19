@@ -172,6 +172,9 @@ export const ContractInstancePage: FC = () => {
             kind="aztecScanNotes"
             verified={verificationStatus.aztecScanNotesListed}
           />
+          {fpcRelationships && fpcRelationships.sponsoredAddresses.length > 0 && (
+            <span className="tag-chip tag-chip-fpc">FPC</span>
+          )}
           <span className="meta-line">
             class{" "}
             <Link
