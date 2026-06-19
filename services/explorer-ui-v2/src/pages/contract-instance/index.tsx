@@ -59,9 +59,9 @@ export const ContractInstancePage: FC = () => {
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const balanceValue =
-    balance === undefined
+    balance == null || balance.balance == null
       ? null
-      : formatFees(balance?.balance ?? 0n, feeJuiceDecimals);
+      : formatFees(balance.balance, feeJuiceDecimals);
 
   // Build pure balance-snapshot timeline (newest-first).
   const timeline = useMemo((): TimelineEntry[] => {
