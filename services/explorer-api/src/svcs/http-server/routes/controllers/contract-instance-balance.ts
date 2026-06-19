@@ -85,11 +85,10 @@ export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
       params: { address },
     } = getContractInstanceBalanceSchema.parse(req);
 
-    const balanceData = await dbWrapper.get(
-      ["l2", "contract-instance", address, "balance"],
-      () => getLatestContractInstanceBalance(address),
-    );
-    res.status(200).json(JSON.parse(balanceData));
+    // Bypass dbWrapper.get() — a null balance is a valid response
+    // (address genuinely has no FeeJuice, e.g. FPC-backed).
+    const balance = await getLatestContractInstanceBalance(address);
+    res.status(200).json(balance);
   },
 );
 
