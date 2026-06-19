@@ -77,6 +77,7 @@ export const paths = {
   contractInstance: `/l2/contract-instances/:${address}`,
   contractInstanceBalance: `/l2/contract-instances/:${address}/balance`,
   contractInstanceBalanceHistory: `/l2/contract-instances/:${address}/balance/history`,
+  contractInstanceFpcRelationships: `/l2/contract-instances/:${address}/fpc-relationships`,
   contractInstancesWithBalance: "/l2/contract-instances/with-balance",
   contractInstances: "/l2/contract-instances",
 
@@ -352,6 +353,10 @@ export const getFeeJuicePortalDepositsByAddressSchema = z.object({
 });
 
 export const getContractInstanceBalanceSchema = z.object({
+  params: getContractInstanceSchema.shape.params,
+});
+
+export const getContractInstanceFpcRelationshipsSchema = z.object({
   params: getContractInstanceSchema.shape.params,
 });
 

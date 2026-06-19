@@ -9,6 +9,7 @@ import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import {
   type ChicmozL2ContractInstanceWithAztecScanNotes,
   type ContractClassSourceResponse,
+  type ContractInstanceFpcRelationships,
   ContractL2API,
 } from "~/api";
 import {
@@ -167,6 +168,18 @@ export const useContractInstanceBalanceHistory = (
     enabled: !!address,
     retry: false,
     staleTime: 30_000,
+  });
+};
+
+export const useContractInstanceFpcRelationships = (
+  address: string,
+): UseQueryResult<ContractInstanceFpcRelationships, Error> => {
+  return useQuery<ContractInstanceFpcRelationships, Error>({
+    queryKey: queryKeyGenerator.contractInstanceFpcRelationships(address),
+    queryFn: () => ContractL2API.getContractInstanceFpcRelationships(address),
+    enabled: !!address,
+    retry: false,
+    staleTime: 60_000,
   });
 };
 
