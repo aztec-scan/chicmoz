@@ -1,4 +1,5 @@
 import asyncHandler from "express-async-handler";
+import { jsonStringify } from "@chicmoz-pkg/types";
 import { OpenAPIObject } from "openapi3-ts/oas31";
 import {
   getLatestContractInstanceBalance,
@@ -87,8 +88,10 @@ export const GET_L2_CONTRACT_INSTANCE_BALANCE = asyncHandler(
 
     // Bypass dbWrapper.get() — a null balance is a valid response
     // (address genuinely has no FeeJuice, e.g. FPC-backed).
+    // Use jsonStringify because the balance object contains BigInts that
+    // JSON.stringify cannot serialise.
     const balance = await getLatestContractInstanceBalance(address);
-    res.status(200).json(balance);
+    res.status(200).json(balance === null ? null : JSON.parse(jsonStringify(balance)));
   },
 );
 
