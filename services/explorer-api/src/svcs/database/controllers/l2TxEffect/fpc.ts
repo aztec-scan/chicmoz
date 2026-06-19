@@ -5,7 +5,9 @@ import { txEffect } from "../../../database/schema/l2block/index.js";
 /**
  * Find distinct Fee Paying Contract (FPC) addresses that have paid fees for
  * transactions initiated by the given address.
- * An FPC is identified by feePayer !== initiator and feePaymentMethod === "fpc".
+ * An FPC is identified by feePayer !== initiator (someone else paid the fee).
+ * The feePaymentMethod column may be NULL for historical data, so we rely
+ * solely on the address comparison.
  */
 export const getFeePayersForAddress = async (
   address: string,
@@ -17,7 +19,6 @@ export const getFeePayersForAddress = async (
       and(
         eq(txEffect.initiator, address),
         ne(txEffect.feePayer, address),
-        eq(txEffect.feePaymentMethod, "fpc"),
       ),
     );
 
@@ -28,7 +29,9 @@ export const getFeePayersForAddress = async (
 
 /**
  * Find distinct addresses that the given FPC has sponsored (paid fees for).
- * An FPC is identified by feePayer !== initiator and feePaymentMethod === "fpc".
+ * An FPC is identified by feePayer !== initiator (someone else paid the fee).
+ * The feePaymentMethod column may be NULL for historical data, so we rely
+ * solely on the address comparison.
  */
 export const getSponsoredAddressesForFpc = async (
   fpcAddress: string,
@@ -40,7 +43,6 @@ export const getSponsoredAddressesForFpc = async (
       and(
         eq(txEffect.feePayer, fpcAddress),
         ne(txEffect.initiator, fpcAddress),
-        eq(txEffect.feePaymentMethod, "fpc"),
       ),
     );
 
