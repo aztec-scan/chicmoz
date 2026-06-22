@@ -78,6 +78,7 @@ export const paths = {
   contractInstanceBalance: `/l2/contract-instances/:${address}/balance`,
   contractInstanceBalanceHistory: `/l2/contract-instances/:${address}/balance/history`,
   contractInstanceFpcRelationships: `/l2/contract-instances/:${address}/fpc-relationships`,
+  contractInstanceFpcTransactions: `/l2/contract-instances/:${address}/fpc-transactions`,
   contractInstancesWithBalance: "/l2/contract-instances/with-balance",
   contractInstances: "/l2/contract-instances",
 

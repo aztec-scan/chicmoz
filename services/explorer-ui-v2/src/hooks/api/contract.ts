@@ -10,6 +10,7 @@ import {
   type ChicmozL2ContractInstanceWithAztecScanNotes,
   type ContractClassSourceResponse,
   type ContractInstanceFpcRelationships,
+  type ContractInstanceFpcTransactions,
   ContractL2API,
 } from "~/api";
 import {
@@ -180,6 +181,18 @@ export const useContractInstanceFpcRelationships = (
     enabled: !!address,
     retry: false,
     staleTime: 60_000,
+  });
+};
+
+export const useContractInstanceFpcTransactions = (
+  address: string,
+): UseQueryResult<ContractInstanceFpcTransactions, Error> => {
+  return useQuery<ContractInstanceFpcTransactions, Error>({
+    queryKey: queryKeyGenerator.contractInstanceFpcTransactions(address),
+    queryFn: () => ContractL2API.getContractInstanceFpcTransactions(address),
+    enabled: !!address,
+    retry: false,
+    staleTime: 30_000,
   });
 };
 
