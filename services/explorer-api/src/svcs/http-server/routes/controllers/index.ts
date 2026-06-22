@@ -10,6 +10,7 @@ export * from "./contract-instances.js";
 export * from "./dropped-tx.js";
 export * from "./fee-recipients.js";
 export * from "./fpc-relationships.js";
+export * from "./fpc-transactions.js";
 export * from "./l2-tips.js";
 export * from "./l1/contract-events.js";
 export * from "./l1/fee-juice-portal-deposits.js";
