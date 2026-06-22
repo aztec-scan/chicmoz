@@ -3,7 +3,11 @@
  * update this file when a new incident is recorded.
  */
 
-export type IncidentStatus = "postmortem" | "resolved" | "ongoing" | "monitoring";
+export type IncidentStatus =
+  | "postmortem"
+  | "resolved"
+  | "ongoing"
+  | "monitoring";
 export type IncidentSeverity = "critical" | "major" | "minor";
 export type IncidentTimelineTag = "detect" | "mitig" | "resolve" | "";
 
@@ -25,6 +29,7 @@ export interface IncidentSection {
   body: string;
   hash?: string;
   hashHref?: string;
+  links?: { label: string; href: string }[];
 }
 
 export interface Incident {
@@ -44,6 +49,75 @@ export interface Incident {
 
 export const INCIDENTS: Incident[] = [
   {
+    id: "2026-06-20-postgres-ha-misconfiguration",
+    title: "Sequencer disruption · Postgres HA misconfiguration",
+    dateLabel: "Jun 20-22, 2026",
+    startedAt: "2026-06-20 21:30 CEST",
+    resolvedAt: "2026-06-22 12:11 CEST",
+    durationLabel: "1d 14h 41m",
+    status: "postmortem",
+    severity: "major",
+    tldr: "A Postgres HA misconfiguration broke HA writer availability and temporarily stopped our sequencers from posting attestations. We mitigated by disabling HA, keeping validation running through a reduced setup, then tightened access rules and added direct HA failure alerting. Two sequencers were affected for 2,000 AZTEC each.",
+    impact: [
+      { label: "Sequencers affected", value: "2", tone: "red" },
+      { label: "AZTEC slashed", value: "4,000", tone: "red" },
+    ],
+    timeline: [
+      {
+        t: "20-06 21:30",
+        tag: "detect",
+        label: "DETECT",
+        text: "Dashtec showed missed blocks while the Aztec node itself stayed synced; the HA writer path was failing and attestations could not be posted.",
+      },
+      {
+        t: "21-06 02:34",
+        tag: "mitig",
+        label: "MITIGATE",
+        text: "HA disabled and a reduced validator setup kept online while the misconfiguration was investigated and fixed.",
+      },
+      {
+        t: "21-06 21:10",
+        tag: "resolve",
+        label: "FIX",
+        text: "Postgres HA access rules hardened so etcd, Patroni REST, direct Postgres, and HAProxy access are only reachable by intended infrastructure.",
+      },
+      {
+        t: "22-06 12:11",
+        tag: "resolve",
+        label: "RESOLVE",
+        text: "HA monitoring and alerting expanded with direct coverage for no-primary, writer-backend, etcd quorum, and HAProxy failure modes.",
+      },
+    ],
+    sections: [
+      {
+        heading: "Observed issue",
+        body: "A Postgres HA misconfiguration left internal management ports more exposed than intended: etcd client/peer ports 2379/2380, Patroni REST API port 8008, and direct Postgres port 5432. This caused Patroni state to change unexpectedly, demoted the real primary, and broke HA writer availability.",
+      },
+      {
+        heading: "Impact",
+        body: "The Aztec nodes remained up and synced, so existing node-diff alerts did not fire, but they could not post transactions or attestations through the broken HA writer path. Two sequencer addresses were affected for 2,000 AZTEC each:",
+        links: [
+          {
+            label: "0x901933e29e4be91125965282b0a25c08efb3541a",
+            href: "https://dashtec.xyz/sequencers/0x901933e29e4be91125965282b0a25c08efb3541a",
+          },
+          {
+            label: "0x9b91b873e775884b00c6906d2e8af3b3a141fec0",
+            href: "https://dashtec.xyz/sequencers/0x9b91b873e775884b00c6906d2e8af3b3a141fec0",
+          },
+        ],
+      },
+      {
+        heading: "Fixes and counter measures",
+        body: "We hardened the Postgres HA firewall by removing legacy open rules, allowlisting internal HA management ports to HA nodes only, and preserving HAProxy access only for intended Aztec nodes. We also added native etcd and HAProxy metrics plus direct alerts for no-primary, no-active-writer, quorum, leader-change, and writer-error conditions.",
+      },
+      {
+        heading: "Next steps",
+        body: "We will keep HA management ports private by default, keep Postgres HA and etcd alerts routed directly, rotate affected credentials, and review payout/slash handling using the actual payout flow rather than a separate monitoring spreadsheet. We pledge to pay out the slashed amount to affected delegators once the token unlocks.",
+      },
+    ],
+  },
+  {
     id: "2025-01-03-sequencer-downtime",
     title: "Sequencer downtime · web3signer misconfiguration",
     dateLabel: "Jan 3-4, 2025",
@@ -52,8 +126,7 @@ export const INCIDENTS: Incident[] = [
     durationLabel: "32h 30m",
     status: "postmortem",
     severity: "major",
-    tldr:
-      "Our signing-service was down 3/1 12:30 to 4/1 21:00 which resulted in one attester-address being slashed 2,000 AZTEC. Administrative errors from our side — counter-measures have been taken and the attester will be re-paid once the token unlocks.",
+    tldr: "Our signing-service was down 3/1 12:30 to 4/1 21:00 which resulted in one attester-address being slashed 2,000 AZTEC. Administrative errors from our side — counter-measures have been taken and the attester will be re-paid once the token unlocks.",
     impact: [
       { label: "Attesters slashed", value: "1", tone: "red" },
       { label: "AZTEC slashed", value: "2,000", tone: "red" },
@@ -63,40 +136,34 @@ export const INCIDENTS: Incident[] = [
         t: "12:30",
         tag: "detect",
         label: "DETECT",
-        text:
-          "Web3signer + monitoring stack go offline due to server misconfig. Alerts silent.",
+        text: "Web3signer + monitoring stack go offline due to server misconfig. Alerts silent.",
       },
       {
         t: "04-01 21:00",
         tag: "resolve",
         label: "RESOLVE",
-        text:
-          "Attestations resume. Attester-key 0x8d28… confirmed slashed for 2,000 AZTEC.",
+        text: "Attestations resume. Attester-key 0x8d28… confirmed slashed for 2,000 AZTEC.",
       },
     ],
     sections: [
       {
         heading: "Observed issue",
-        body:
-          "Some of our core infrastructure running in the cloud, namely the web3signing service and our monitoring stack, went offline due to a misconfiguration in our servers. This resulted in nodes not being able to sign attestations and block proposals, and our monitoring stack also being impacted made it so warnings were not appropriately sent out.",
+        body: "Some of our core infrastructure running in the cloud, namely the web3signing service and our monitoring stack, went offline due to a misconfiguration in our servers. This resulted in nodes not being able to sign attestations and block proposals, and our monitoring stack also being impacted made it so warnings were not appropriately sent out.",
       },
       {
         heading: "Impact",
-        body:
-          "Besides the obvious fact of us losing trust from the people staking their AZTEC to us, and us not performing the duties as a sequencer in the network, we also had one of our attester-keys slashed:",
+        body: "Besides the obvious fact of us losing trust from the people staking their AZTEC to us, and us not performing the duties as a sequencer in the network, we also had one of our attester-keys slashed:",
         hash: "0x8d28ee3293d02a7be59b06549185e8a4835df5e5",
         hashHref:
           "https://dashtec.xyz/sequencers/0x8d28ee3293d02a7be59b06549185e8a4835df5e5",
       },
       {
         heading: "Fixes and counter measures",
-        body:
-          "On the bright side, our recent infrastructure changes made it extremely easy for us to add two new VPSes and set-up both monitoring and signing in no time.",
+        body: "On the bright side, our recent infrastructure changes made it extremely easy for us to add two new VPSes and set-up both monitoring and signing in no time.",
       },
       {
         heading: "Next steps",
-        body:
-          "As for the trust, we now pledge to pay back the slashed AZTEC to the address once tokens are unlocked. Going forward, we are working on setting up an external monitoring system in the near future — and looking into distributing our signing-service.",
+        body: "As for the trust, we now pledge to pay back the slashed AZTEC to the address once tokens are unlocked. Going forward, we are working on setting up an external monitoring system in the near future — and looking into distributing our signing-service.",
       },
     ],
   },

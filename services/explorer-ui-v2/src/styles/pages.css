@@ -2587,6 +2587,19 @@
 .detail-body p a:hover {
   text-decoration: underline;
 }
+.detail-body .section-links {
+  margin: 0 0 28px;
+  padding-left: 22px;
+}
+.detail-body .section-links li {
+  margin: 8px 0;
+}
+.detail-body .section-links a {
+  text-decoration: none;
+}
+.detail-body .section-links a:hover {
+  text-decoration: underline;
+}
 .detail-body code.hash {
   font-family: var(--mono);
   font-size: 12px;
