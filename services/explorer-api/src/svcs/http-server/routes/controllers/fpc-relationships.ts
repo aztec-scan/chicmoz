@@ -5,7 +5,6 @@ import {
   getSponsoredAddressesForFpc,
 } from "../../../database/controllers/l2TxEffect/index.js";
 import { getContractInstanceFpcRelationshipsSchema } from "../paths_and_validation.js";
-import { dbWrapper } from "./utils/index.js";
 
 export const openapi_GET_L2_CONTRACT_INSTANCE_FPC_RELATIONSHIPS: OpenAPIObject["paths"] =
   {
@@ -63,16 +62,11 @@ export const GET_L2_CONTRACT_INSTANCE_FPC_RELATIONSHIPS = asyncHandler(
       params: { address },
     } = getContractInstanceFpcRelationshipsSchema.parse(req);
 
-    const data = await dbWrapper.get(
-      ["l2", "contract-instance", address, "fpc-relationships"],
-      async () => {
-        const [feePayers, sponsoredAddresses] = await Promise.all([
-          getFeePayersForAddress(address),
-          getSponsoredAddressesForFpc(address),
-        ]);
-        return JSON.stringify({ feePayers, sponsoredAddresses });
-      },
-    );
-    res.status(200).json(JSON.parse(data));
+    // Bypass dbWrapper.get() — it double-stringifies the JSON response.
+    const [feePayers, sponsoredAddresses] = await Promise.all([
+      getFeePayersForAddress(address),
+      getSponsoredAddressesForFpc(address),
+    ]);
+    res.status(200).json({ feePayers, sponsoredAddresses });
   },
 );
