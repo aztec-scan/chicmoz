@@ -13,6 +13,7 @@ metadata:
     app: aztec-listener
     app.kubernetes.io/name: aztec-listener
     app.kubernetes.io/part-of: chicmoz-prod
+    network: devnet
   name: aztec-listener-devnet
   namespace: chicmoz-prod
 spec:
@@ -20,10 +21,12 @@ spec:
   selector:
     matchLabels:
       app: aztec-listener
+      network: devnet
   template:
     metadata:
       labels:
         app: aztec-listener
+        network: devnet
     spec:
       containers:
         - env:

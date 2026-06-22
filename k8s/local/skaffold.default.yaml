@@ -3,6 +3,6 @@ kind: Config
 metadata:
   name: default-chicmoz
 requires:
+  - path: ./common/skaffold.gateway-crds.yaml
   - path: ./skaffold.sandbox_no_ui.yaml
-  - path: ./explorer-ui/skaffold.sandbox.yaml
-  - path: ./gateways/skaffold.sandbox.yaml
+  - path: ./explorer-ui-v2/skaffold.sandbox.yaml

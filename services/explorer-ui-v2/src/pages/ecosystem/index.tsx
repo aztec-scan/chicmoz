@@ -89,12 +89,11 @@ export const EcosystemPage: FC = () => {
           </a>
         </div>
 
-        <details className="metadata-accord" open={shouldOpenMetadataDocs}>
+        <details className="commission-drop" open={shouldOpenMetadataDocs}>
           <summary>
             <span>Want to know more about Aztec Scan&apos;s contract metadata?</span>
-            <span className="chev">▾</span>
           </summary>
-          <div className="metadata-body">
+          <div className="commission-body">
             <p>
               There are five things that add metadata to contracts and contract
               classes: AztecScanNotes, verified contract class artifacts,
