@@ -113,7 +113,7 @@ export const INCIDENTS: Incident[] = [
       },
       {
         heading: "Next steps",
-        body: "We will keep HA management ports private by default, keep Postgres HA and etcd alerts routed directly, rotate affected credentials, and review payout/slash handling using the actual payout flow rather than a separate monitoring spreadsheet. We pledge to pay out the slashed amount to affected delegators once the token unlocks.",
+        body: "We will keep HA management ports private by default, keep Postgres HA and etcd alerts routed directly, rotate affected credentials, and review payout/slash handling using the actual payout flow rather than a separate monitoring spreadsheet. We pledge to pay out the slashed amount to affected delegators.",
       },
     ],
   },
