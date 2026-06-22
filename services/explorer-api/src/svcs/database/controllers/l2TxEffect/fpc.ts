@@ -1,6 +1,6 @@
 import { getDb as db } from "@chicmoz-pkg/postgres-helper";
-import { and, eq, ne, isNotNull } from "drizzle-orm";
-import { txEffect } from "../../../database/schema/l2block/index.js";
+import { and, eq, ne, isNotNull, desc } from "drizzle-orm";
+import { txEffect, body, l2Block } from "../../../database/schema/l2block/index.js";
 import { l2TxPublicCallRequest } from "../../../database/schema/l2public-call/index.js";
 
 /**
@@ -90,4 +90,147 @@ export const getSponsoredAddressesForFpc = async (
       seen.add(addr);
       return true;
     });
+};
+
+export type FpcTransactionEntry = {
+  txHash: string;
+  feePayer: string;
+  sponsoredAddress: string;
+  transactionFee: string;
+  blockHeight: bigint;
+  timestamp: number;
+};
+
+const FPC_TX_LIMIT = 50;
+
+/**
+ * Get transactions where this address paid fees for others (asFeePayer)
+ * or where others paid fees for this address (asSponsored).
+ * Checks both initiator and msgSender roles.
+ */
+export const getFpcTransactions = async (
+  address: string,
+): Promise<{ asFeePayer: FpcTransactionEntry[]; asSponsored: FpcTransactionEntry[] }> => {
+  // asFeePayer: feePayer = address, someone else is the beneficiary
+  const feePayerInitiatorRows = await db()
+    .select({
+      txHash: txEffect.txHash,
+      feePayer: txEffect.feePayer,
+      sponsoredAddress: txEffect.initiator,
+      transactionFee: txEffect.transactionFee,
+      blockHeight: l2Block.height,
+      timestamp: txEffect.txBirthTimestamp,
+    })
+    .from(txEffect)
+    .innerJoin(body, eq(txEffect.bodyId, body.id))
+    .innerJoin(l2Block, eq(body.blockHash, l2Block.hash))
+    .where(
+      and(
+        eq(txEffect.feePayer, address),
+        ne(txEffect.initiator, address),
+        isNotNull(txEffect.initiator),
+        isNotNull(txEffect.feePayer),
+      ),
+    )
+    .orderBy(desc(txEffect.txBirthTimestamp))
+    .limit(FPC_TX_LIMIT);
+
+  const feePayerMsgSenderRows = await db()
+    .select({
+      txHash: txEffect.txHash,
+      feePayer: txEffect.feePayer,
+      sponsoredAddress: l2TxPublicCallRequest.msgSender,
+      transactionFee: txEffect.transactionFee,
+      blockHeight: l2Block.height,
+      timestamp: txEffect.txBirthTimestamp,
+    })
+    .from(l2TxPublicCallRequest)
+    .innerJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
+    .innerJoin(body, eq(txEffect.bodyId, body.id))
+    .innerJoin(l2Block, eq(body.blockHash, l2Block.hash))
+    .where(
+      and(
+        eq(txEffect.feePayer, address),
+        ne(l2TxPublicCallRequest.msgSender, address),
+        isNotNull(l2TxPublicCallRequest.msgSender),
+        isNotNull(txEffect.feePayer),
+      ),
+    )
+    .orderBy(desc(txEffect.txBirthTimestamp))
+    .limit(FPC_TX_LIMIT);
+
+  // asSponsored: initiator or msgSender = address, someone else paid
+  const sponsoredInitiatorRows = await db()
+    .select({
+      txHash: txEffect.txHash,
+      feePayer: txEffect.feePayer,
+      sponsoredAddress: txEffect.initiator,
+      transactionFee: txEffect.transactionFee,
+      blockHeight: l2Block.height,
+      timestamp: txEffect.txBirthTimestamp,
+    })
+    .from(txEffect)
+    .innerJoin(body, eq(txEffect.bodyId, body.id))
+    .innerJoin(l2Block, eq(body.blockHash, l2Block.hash))
+    .where(
+      and(
+        eq(txEffect.initiator, address),
+        ne(txEffect.feePayer, address),
+        isNotNull(txEffect.feePayer),
+      ),
+    )
+    .orderBy(desc(txEffect.txBirthTimestamp))
+    .limit(FPC_TX_LIMIT);
+
+  const sponsoredMsgSenderRows = await db()
+    .select({
+      txHash: txEffect.txHash,
+      feePayer: txEffect.feePayer,
+      sponsoredAddress: l2TxPublicCallRequest.msgSender,
+      transactionFee: txEffect.transactionFee,
+      blockHeight: l2Block.height,
+      timestamp: txEffect.txBirthTimestamp,
+    })
+    .from(l2TxPublicCallRequest)
+    .innerJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
+    .innerJoin(body, eq(txEffect.bodyId, body.id))
+    .innerJoin(l2Block, eq(body.blockHash, l2Block.hash))
+    .where(
+      and(
+        eq(l2TxPublicCallRequest.msgSender, address),
+        ne(txEffect.feePayer, address),
+        isNotNull(txEffect.feePayer),
+      ),
+    )
+    .orderBy(desc(txEffect.txBirthTimestamp))
+    .limit(FPC_TX_LIMIT);
+
+  const dedup = (rows: typeof feePayerInitiatorRows): FpcTransactionEntry[] => {
+    const seen = new Set<string>();
+    return rows
+      .filter((r): r is typeof r & { feePayer: string; sponsoredAddress: string } =>
+        r.feePayer !== null && r.sponsoredAddress !== null,
+      )
+      .filter((r) => {
+        const key = `${r.txHash}:${r.sponsoredAddress}`;
+        if (seen.has(key)) {return false;}
+        seen.add(key);
+        return true;
+      })
+      .map((r) => ({
+        txHash: r.txHash,
+        feePayer: r.feePayer,
+        sponsoredAddress: r.sponsoredAddress,
+        transactionFee: r.transactionFee,
+        blockHeight: r.blockHeight,
+        timestamp: r.timestamp,
+      }));
+  };
+
+  return {
+    asFeePayer: dedup([...feePayerInitiatorRows, ...feePayerMsgSenderRows])
+      .slice(0, FPC_TX_LIMIT),
+    asSponsored: dedup([...sponsoredInitiatorRows, ...sponsoredMsgSenderRows])
+      .slice(0, FPC_TX_LIMIT),
+  };
 };

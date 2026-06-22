@@ -1,6 +1,11 @@
 import { type PublicCallRequest } from "@chicmoz-pkg/types";
 import { type FC } from "react";
 import { ContractInstanceLink, L2AddressLink } from "~/components/common";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { ageStr, toIsoUtc } from "~/lib/utils";
 
 const callTypeTone: Record<PublicCallRequest["callType"], string> = {
@@ -11,18 +16,18 @@ const callTypeTone: Record<PublicCallRequest["callType"], string> = {
 
 const callTypeTooltip: Record<PublicCallRequest["callType"], string> = {
   non_revertible:
-    "During execution this call was non-revertible — its state changes persist regardless of later call outcomes",
+    "Non-revertible — state changes persist even if later calls fail.",
   revertible:
-    "During execution this call was revertible — its state changes could have been rolled back if a later call failed",
+    "Revertible — state changes roll back if a later call fails.",
   teardown:
-    "Final cleanup phase — runs after main execution, used for fee refunds and teardown",
+    "Teardown — final cleanup phase after main execution, used for fee refunds.",
 };
 
 const CALL_TYPE_HEADER_TOOLTIP =
-  "Execution model of this public call, set at tx submission. Non-revertible calls persist even if later phases fail; revertible calls can be rolled back; teardown is final cleanup.";
+  "Execution model set at tx submission.\nNon-revertible: persists through failures.\nRevertible: rolls back on later failure.\nTeardown: cleanup & fee refunds.";
 
 const STATIC_HEADER_TOOLTIP =
-  "Whether this call is read-only. Static calls cannot modify state.";
+  "Whether this call modifies state.\nStatic calls are read-only and cannot write.";
 
 interface Props {
   data: PublicCallRequest[] | undefined;
@@ -58,25 +63,27 @@ export const PublicCallRequestsTable: FC<Props> = ({
         <div>
           <span className="header-tip">
             Call type{" "}
-            <span
-              className="header-tip-q"
-              style={{ color: "var(--ink-3)", cursor: "help" }}
-              title={CALL_TYPE_HEADER_TOOLTIP}
-            >
-              ?
-            </span>
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="header-tip-q" style={{ color: "var(--ink-3)", cursor: "help" }}>?</span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64 whitespace-pre-line">
+                <p>{CALL_TYPE_HEADER_TOOLTIP}</p>
+              </TooltipContent>
+            </Tooltip>
           </span>
         </div>
         <div className="right">
           <span className="header-tip">
             Static{" "}
-            <span
-              className="header-tip-q"
-              style={{ color: "var(--ink-3)", cursor: "help" }}
-              title={STATIC_HEADER_TOOLTIP}
-            >
-              ?
-            </span>
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="header-tip-q" style={{ color: "var(--ink-3)", cursor: "help" }}>?</span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64 whitespace-pre-line">
+                <p>{STATIC_HEADER_TOOLTIP}</p>
+              </TooltipContent>
+            </Tooltip>
           </span>
         </div>
         <div className="right">Timestamp</div>
@@ -96,31 +103,39 @@ export const PublicCallRequestsTable: FC<Props> = ({
           </span>
           <span style={{ color: "var(--ink-2)" }}>{fnLabel(r)}</span>
           <span>
-            <span
-              className={`tag-chip tag-chip-${callTypeTone[r.callType]}`}
-              title={callTypeTooltip[r.callType]}
-              style={{ cursor: "help" }}
-            >
-              {r.callType.replace(/_/g, " ")}
-            </span>
+            <Tooltip>
+              <TooltipTrigger>
+                <span
+                  className={`tag-chip tag-chip-${callTypeTone[r.callType]}`}
+                  style={{ cursor: "help" }}
+                >
+                  {r.callType.replace(/_/g, " ")}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64">
+                <p>{callTypeTooltip[r.callType]}</p>
+              </TooltipContent>
+            </Tooltip>
           </span>
           <span className="num">
             {r.isStaticCall ? (
-              <span
-                className="tag-chip tag-chip-purple"
-                title="Read-only call — does not modify state"
-                style={{ cursor: "help" }}
-              >
-                yes
-              </span>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="tag-chip tag-chip-purple" style={{ cursor: "help" }}>yes</span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-64">
+                  <p>Read-only call — does not modify state</p>
+                </TooltipContent>
+              </Tooltip>
             ) : (
-              <span
-                className="mute"
-                title="This call may modify state"
-                style={{ cursor: "help" }}
-              >
-                no
-              </span>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="mute" style={{ cursor: "help" }}>no</span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-64">
+                  <p>This call may modify state</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </span>
           <span className="age" style={{ textAlign: "right" }}>

@@ -53,6 +53,24 @@ export type ContractInstanceFpcRelationships = z.infer<
   typeof contractInstanceFpcRelationshipsSchema
 >;
 
+const fpcTransactionEntrySchema = z.object({
+  txHash: z.string(),
+  feePayer: z.string(),
+  sponsoredAddress: z.string(),
+  transactionFee: z.string(),
+  blockHeight: z.coerce.bigint(),
+  timestamp: z.number(),
+});
+
+const contractInstanceFpcTransactionsSchema = z.object({
+  asFeePayer: z.array(fpcTransactionEntrySchema),
+  asSponsored: z.array(fpcTransactionEntrySchema),
+});
+
+export type ContractInstanceFpcTransactions = z.infer<
+  typeof contractInstanceFpcTransactionsSchema
+>;
+
 export const ContractL2API = {
   getContractClass: async ({
     classId,
@@ -168,6 +186,17 @@ export const ContractL2API = {
     );
     return validateResponse(
       contractInstanceFpcRelationshipsSchema,
+      response.data,
+    );
+  },
+  getContractInstanceFpcTransactions: async (
+    address: string,
+  ): Promise<ContractInstanceFpcTransactions> => {
+    const response = await client.get(
+      aztecExplorer.getL2ContractInstanceFpcTransactions(address),
+    );
+    return validateResponse(
+      contractInstanceFpcTransactionsSchema,
       response.data,
     );
   },

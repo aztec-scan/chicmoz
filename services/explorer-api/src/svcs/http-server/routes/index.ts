@@ -56,6 +56,7 @@ export const openApiPaths: OpenAPIObject["paths"] = {
   ...controller.openapi_GET_L2_CONTRACT_INSTANCE_BALANCE,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCE_BALANCE_HISTORY,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCE_FPC_RELATIONSHIPS,
+  ...controller.openapi_GET_L2_CONTRACT_INSTANCE_FPC_TRANSACTIONS,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_WITH_BALANCE,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES,
   ...controller.openapi_GET_L2_CONTRACT_INSTANCES_WITH_AZTEC_SCAN_NOTES,
@@ -299,6 +300,10 @@ export const init = ({ router }: { router: Router }) => {
   router.get(
     paths.contractInstanceFpcRelationships,
     controller.GET_L2_CONTRACT_INSTANCE_FPC_RELATIONSHIPS,
+  );
+  router.get(
+    paths.contractInstanceFpcTransactions,
+    controller.GET_L2_CONTRACT_INSTANCE_FPC_TRANSACTIONS,
   );
   router.get(paths.contractInstances, controller.GET_L2_CONTRACT_INSTANCES);
 

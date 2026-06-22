@@ -131,6 +131,10 @@ export const queryKeyGenerator = {
     "contractInstanceFpcRelationships",
     address,
   ],
+  contractInstanceFpcTransactions: (address: string) => [
+    "contractInstanceFpcTransactions",
+    address,
+  ],
   latestContractInstances: ["latestContractInstances"],
   contractInstancesWithAztecScanNotes: ["contractInstancesWithAztecScanNotes"],
   paginatedContractInstances: (
