@@ -58,7 +58,7 @@ export const getPublicCallRequestsByContractAddress = async (
     .from(l2TxPublicCallRequest)
     .leftJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
     .where(eq(l2TxPublicCallRequest.contractAddress, contractAddress))
-    .orderBy(desc(l2TxPublicCallRequest.txHash));
+    .orderBy(desc(txEffect.txBirthTimestamp));
 
   return res as PublicCallRequest[];
 };
@@ -71,7 +71,7 @@ export const getPublicCallRequestsBySenderAddress = async (
     .from(l2TxPublicCallRequest)
     .leftJoin(txEffect, eq(l2TxPublicCallRequest.txHash, txEffect.txHash))
     .where(eq(l2TxPublicCallRequest.msgSender, msgSender))
-    .orderBy(desc(l2TxPublicCallRequest.txHash));
+    .orderBy(desc(txEffect.txBirthTimestamp));
 
   return res as PublicCallRequest[];
 };
