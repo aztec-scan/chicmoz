@@ -80,7 +80,6 @@ export const parseDeluxe = ({
     version: instance.version,
     salt: instance.salt,
     initializationHash: instance.initializationHash,
-    immutablesHash: instance.immutablesHash,
     deployer: instance.deployer,
     publicKeys: {
       masterNullifierPublicKey: instance.masterNullifierPublicKey,

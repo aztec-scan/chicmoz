@@ -34,7 +34,7 @@ spec:
             - name: K8S_NAMESPACE
               value: "chicmoz"
             - name: COMPILER_IMAGE
-              value: "contract-compiler:5.0.0-rc.1"
+              value: "contract-compiler:4.2.0"
             - name: MAX_CONCURRENT_JOBS
               value: "3"
             - name: JOB_TIMEOUT_SECONDS

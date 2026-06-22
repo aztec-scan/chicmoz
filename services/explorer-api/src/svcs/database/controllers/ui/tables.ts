@@ -99,11 +99,10 @@ export const getBlocksForUiTable = async ({
       ? isNotNull(l2Block.orphan_timestamp)
       : status
         ? statusFilterWhere(status, l2Tips)
-        : isNull(l2Block.orphan_timestamp);
+        : undefined;
 
-  // Initial query to get basic block information. Orphans are available through
-  // the explicit `status=orphaned` filter, but the default latest table should
-  // follow the canonical chain head.
+  // Initial query to get basic block information. Orphans are intentionally
+  // included when unfiltered so the UI can render an "orphaned" pill.
   const dbRes = await db()
     .select({
       height: getTableColumns(l2Block).height,

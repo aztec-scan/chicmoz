@@ -52,15 +52,11 @@ spec:
               value: "true"
             #TODO: https://github.com/aztec-scan/chicmoz/issues/375
             - name: SCENARIO_DEPLOY_AND_UPDATE
-              value: "false"
-            # Disabled for Aztec v5 local sandbox: no compatible
-            # @defi-wonderland/aztec-standards v5 package exists yet.
-            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY
-              value: "false"
-            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT
-              value: "false"
-            - name: SCENARIO_VERIFY_SOURCE_CODE
               value: "true"
-            - name: SCENARIO_EXPLORER_SHOWCASE
+            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_LEGACY
+              value: "true"
+            - name: SCENARIO_AZTEC_STANDARD_TOKEN_CONTRACT_CURRENT
+              value: "true"
+            - name: SCENARIO_VERIFY_SOURCE_CODE
               value: "true"
 status: {}

@@ -1,5 +1,4 @@
 import { AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
-import { defaultFetch } from "@aztec/foundation/json-rpc/client";
 import { AZTEC_RPC_URLS } from "../../../environment.js";
 import { onL2RpcNodeError } from "../../../events/emitted/index.js";
 import { logger } from "../../../logger.js";
@@ -14,90 +13,6 @@ let allNodes: RpcNode[] = [];
 let onlinePool: RpcNode[] = [];
 let offlinePool: RpcNode[] = [];
 let currentNodeIndex = 0;
-
-type JsonRpcBody = {
-  method?: unknown;
-  [key: string]: unknown;
-};
-
-type JsonRpcResponse = {
-  error?: {
-    code?: number;
-    message?: string;
-  };
-};
-
-const isSingleMethodNotFound = (response: unknown) => {
-  const jsonRpcResponse = response as JsonRpcResponse;
-  return (
-    jsonRpcResponse.error?.code === -32601 ||
-    jsonRpcResponse.error?.message?.includes("Method not found") === true
-  );
-};
-
-const isMethodNotFound = (response: unknown) => {
-  if (Array.isArray(response)) {
-    return response.some((item) => isSingleMethodNotFound(item));
-  }
-
-  return isSingleMethodNotFound(response);
-};
-
-const rewriteAztecNamespaceToNode = (
-  body: unknown,
-): JsonRpcBody | JsonRpcBody[] | undefined => {
-  const rewriteSingleRequest = (request: unknown): JsonRpcBody | undefined => {
-    const jsonRpcRequest = request as JsonRpcBody;
-    if (
-      typeof jsonRpcRequest.method !== "string" ||
-      !jsonRpcRequest.method.startsWith("aztec_")
-    ) {
-      return undefined;
-    }
-    return {
-      ...jsonRpcRequest,
-      method: jsonRpcRequest.method.replace(/^aztec_/, "node_"),
-    };
-  };
-
-  if (Array.isArray(body)) {
-    const rewrittenRequests = body.map((request) =>
-      rewriteSingleRequest(request),
-    );
-    if (
-      rewrittenRequests.some(
-        (request): request is undefined => request === undefined,
-      )
-    ) {
-      return undefined;
-    }
-    return rewrittenRequests as JsonRpcBody[];
-  }
-
-  return rewriteSingleRequest(body);
-};
-
-const fetchWithV5NodeNamespaceFallback: typeof defaultFetch = async (
-  host,
-  body,
-  extraHeaders,
-  noRetry,
-) => {
-  const response = await defaultFetch(host, body, extraHeaders, noRetry);
-  if (!isMethodNotFound(response.response)) {
-    return response;
-  }
-
-  const rewrittenBody = rewriteAztecNamespaceToNode(body);
-  if (!rewrittenBody) {
-    return response;
-  }
-
-  logger.warn(
-    "Aztec RPC node rejected aztec_* namespace; retrying request with node_* namespace",
-  );
-  return await defaultFetch(host, rewrittenBody, extraHeaders, noRetry);
-};
 
 const resetPools = () => {
   logger.info(
@@ -117,11 +32,7 @@ export const initPool = () => {
     return {
       name: node.name,
       url: node.url,
-      instance: createAztecNodeClient(
-        node.url,
-        {},
-        fetchWithV5NodeNamespaceFallback,
-      ),
+      instance: createAztecNodeClient(node.url),
     };
   });
   resetPools();

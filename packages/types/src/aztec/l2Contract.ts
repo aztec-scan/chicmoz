@@ -17,7 +17,6 @@ export const chicmozL2ContractInstanceDeployedEventSchema = z.object({
   currentContractClassId: frSchema,
   originalContractClassId: frSchema,
   initializationHash: frSchema,
-  immutablesHash: frSchema,
   deployer: aztecAddressSchema,
   aztecScanNotes: aztecScanNoteSchema.optional(),
   publicKeys: z.object({
@@ -50,7 +49,6 @@ export const chicmozL2ContractInstanceVerifiedDeploymentArgumentsSchema =
     address: aztecAddressSchema,
     salt: frSchema,
     deployer: aztecAddressSchema,
-    immutablesHash: frSchema.optional(),
     publicKeysString: z.string(),
     constructorArgs: z.string().array(),
   });

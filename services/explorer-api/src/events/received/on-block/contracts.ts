@@ -1,5 +1,8 @@
-import { L2Block } from "@aztec/aztec.js/block";
-import { ContractClassPublishedEvent } from "@aztec/protocol-contracts/class-registry";
+import {
+  ContractClassPublishedEvent,
+  PrivateFunctionBroadcastedEvent,
+  UtilityFunctionBroadcastedEvent,
+} from "@aztec/protocol-contracts/class-registry";
 import {
   ContractInstancePublishedEvent,
   ContractInstanceUpdatedEvent,
@@ -9,6 +12,8 @@ import {
   chicmozL2ContractInstanceDeployedEventSchema,
   ChicmozL2ContractInstanceUpdatedEvent,
   chicmozL2ContractInstanceUpdatedEventSchema,
+  chicmozL2PrivateFunctionBroadcastedEventSchema,
+  chicmozL2UtilityFunctionBroadcastedEventSchema,
   type ChicmozL2ContractClassRegisteredEvent,
   type ChicmozL2ContractInstanceDeployedEvent,
   type ChicmozL2PrivateFunctionBroadcastedEvent,
@@ -18,13 +23,7 @@ import { z } from "zod";
 import { logger } from "../../../logger.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateError } from "../utils.js";
-
-const AZTEC_CONTRACT_CLASS_VERSION = 1;
-
-const toLegacyConcatPoint = (value: { toString: () => string }) => {
-  const hex = value.toString();
-  return hex.length === 66 ? `0x${hex.slice(2)}${"0".repeat(64)}` : hex;
-};
+import { L2Block } from "@aztec/aztec.js/block";
 
 const parseObjs = <ParsedType, AztecType>(
   blockHash: string,
@@ -99,8 +98,17 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
     contractClassRegisteredEvents.map((e) => e.toContractClassPublic()),
   );
 
-  const privateFnEvents: unknown[] = [];
-  const utilityFnEvents: unknown[] = [];
+  const privateFnEvents = contractClassLogs
+    .filter((log) =>
+      PrivateFunctionBroadcastedEvent.isPrivateFunctionBroadcastedEvent(log),
+    )
+    .map((log) => PrivateFunctionBroadcastedEvent.fromLog(log));
+
+  const utilityFnEvents = contractClassLogs
+    .filter((log) =>
+      UtilityFunctionBroadcastedEvent.isUtilityFunctionBroadcastedEvent(log),
+    )
+    .map((log) => UtilityFunctionBroadcastedEvent.fromLog(log));
 
   if (contractClasses.length > 0) {
     logger.info(
@@ -153,10 +161,6 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
         chicmozL2ContractInstanceDeployedEventSchema.parse({
           ...contractInstance,
           blockHash,
-          // Aztec v5 separates contract-instance version from contract-class
-          // version. This DB column is used to join against the contract class
-          // table, whose protocol version is currently fixed at 1.
-          version: AZTEC_CONTRACT_CLASS_VERSION,
           address: contractInstance.address.toString(),
           salt: contractInstance.salt.toString(),
           currentContractClassId:
@@ -164,17 +168,16 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
           originalContractClassId:
             contractInstance.originalContractClassId.toString(),
           initializationHash: contractInstance.initializationHash.toString(),
-          immutablesHash: contractInstance.immutablesHash.toString(),
           deployer: contractInstance.deployer.toString(),
           publicKeys: {
             masterNullifierPublicKey:
-              toLegacyConcatPoint(contractInstance.publicKeys.npkMHash),
+              contractInstance.publicKeys.masterNullifierPublicKey.toString(),
             masterIncomingViewingPublicKey:
-              contractInstance.publicKeys.ivpkM.toString(),
+              contractInstance.publicKeys.masterIncomingViewingPublicKey.toString(),
             masterOutgoingViewingPublicKey:
-              toLegacyConcatPoint(contractInstance.publicKeys.ovpkMHash),
+              contractInstance.publicKeys.masterOutgoingViewingPublicKey.toString(),
             masterTaggingPublicKey:
-              toLegacyConcatPoint(contractInstance.publicKeys.tpkMHash),
+              contractInstance.publicKeys.masterTaggingPublicKey.toString(),
           },
         } as ChicmozL2ContractInstanceDeployedEvent),
     );
@@ -189,8 +192,52 @@ export const storeContracts = async (b: L2Block, blockHash: string) => {
         newContractClassId: contractInstance.newContractClassId.toString(),
       } as ChicmozL2ContractInstanceUpdatedEvent),
     );
-  const parsedPrivateFnEvents: ChicmozL2PrivateFunctionBroadcastedEvent[] = [];
-  const parsedUtilityFnEvents: ChicmozL2UtilityFunctionBroadcastedEvent[] = [];
+  const parsedPrivateFnEvents: ChicmozL2PrivateFunctionBroadcastedEvent[] =
+    parseObjs(blockHash, privateFnEvents, (privateFnEvent) =>
+      chicmozL2PrivateFunctionBroadcastedEventSchema.parse({
+        ...privateFnEvent,
+        blockHash,
+        contractClassId: privateFnEvent.contractClassId.toString(),
+        artifactMetadataHash: privateFnEvent.artifactMetadataHash.toString(),
+        utilityFunctionsTreeRoot:
+          privateFnEvent.utilityFunctionsTreeRoot.toString(),
+        privateFunctionTreeSiblingPath:
+          privateFnEvent.privateFunctionTreeSiblingPath.map((sibling) =>
+            sibling.toString(),
+          ),
+        artifactFunctionTreeSiblingPath:
+          privateFnEvent.artifactFunctionTreeSiblingPath.map((sibling) =>
+            sibling.toString(),
+          ),
+        privateFunction: {
+          ...privateFnEvent.privateFunction,
+          metadataHash: privateFnEvent.privateFunction.metadataHash.toString(),
+          vkHash: privateFnEvent.privateFunction.vkHash.toString(),
+        },
+      } as ChicmozL2PrivateFunctionBroadcastedEvent),
+    );
+  const parsedUtilityFnEvents: ChicmozL2UtilityFunctionBroadcastedEvent[] =
+    parseObjs(blockHash, utilityFnEvents, (utilityFnEvent) =>
+      chicmozL2UtilityFunctionBroadcastedEventSchema.parse({
+        ...utilityFnEvent,
+        blockHash,
+        artifactMetadataHash: utilityFnEvent.artifactMetadataHash.toString(),
+        artifactFunctionTreeSiblingPath:
+          utilityFnEvent.artifactFunctionTreeSiblingPath.map((sibling) =>
+            sibling.toString(),
+          ),
+        privateFunctionsArtifactTreeRoot:
+          utilityFnEvent.privateFunctionsArtifactTreeRoot.toString(),
+        contractClassId: utilityFnEvent.contractClassId.toString(),
+        utilityFunction: {
+          ...utilityFnEvent.utilityFunction,
+          selector: {
+            value: utilityFnEvent.utilityFunction.selector.value,
+          },
+          metadataHash: utilityFnEvent.utilityFunction.metadataHash.toString(),
+        },
+      } as ChicmozL2UtilityFunctionBroadcastedEvent),
+    );
 
   await storeObj(
     parsedContractClasses,

@@ -8,8 +8,6 @@ export const ETHEREUM_RPC_URL =
   process.env.ETHEREUM_RPC_URL ?? "http://eth.sandbox.chicmoz.localhost";
 export const EXPLORER_API_URL =
   process.env.EXPLORER_API_URL ?? "http://api.sandbox.chicmoz.localhost/v1";
-export const SOURCE_VERIFICATION_GIT_REF =
-  process.env.SOURCE_VERIFICATION_GIT_REF ?? "main";
 
 export const SCENARIO_DELAY = z.coerce
   .number()

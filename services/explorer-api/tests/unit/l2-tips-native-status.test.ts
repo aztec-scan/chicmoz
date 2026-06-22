@@ -8,9 +8,6 @@ const mocks = vi.hoisted(() => {
     insertValues: [] as unknown[],
     conflictUpdates: [] as unknown[],
   };
-  const getCurrentRollupVersionNumber = vi.fn<() => Promise<number | null>>(() =>
-    Promise.resolve(null),
-  );
 
   const limit = vi.fn(() => Promise.resolve(state.selectRows.shift() ?? []));
   const where = vi.fn(() => ({ limit }));
@@ -34,7 +31,6 @@ const mocks = vi.hoisted(() => {
     onConflictDoUpdate,
     select,
     state,
-    getCurrentRollupVersionNumber,
     values,
     warn: vi.fn(),
     where,
@@ -57,13 +53,6 @@ vi.mock("../../src/logger.js", () => ({
     warn: mocks.warn,
   },
 }));
-
-vi.mock(
-  "../../src/svcs/database/controllers/l2/chain-info/rollup-version-cache.js",
-  () => ({
-    getCurrentRollupVersionNumber: mocks.getCurrentRollupVersionNumber,
-  }),
-);
 
 const { deriveNativeStatus, upsertTips } = await import(
   "../../src/svcs/database/controllers/l2/tips.js"
@@ -94,13 +83,13 @@ const tips: ChicmozL2Tips = {
 const storedTips = {
   ...tips,
   observedAt: 123,
-  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "5.0.0-rc.1" },
+  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "4.2.0" },
 };
 
 const tipsEvent: L2TipsEvent = {
   tips,
   observedAt: 123,
-  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "5.0.0-rc.1" },
+  source: { rpcNodeName: "aztec-node-a", aztecNodeVersion: "4.2.0" },
 };
 
 const l2TipsRow = {
@@ -125,7 +114,7 @@ const l2TipsRow = {
   finalizedCheckpointHash: tips.finalized.checkpoint.hash,
   observedAt: 123,
   aztecNodeName: "aztec-node-a",
-  aztecNodeVersion: "5.0.0-rc.1",
+  aztecNodeVersion: "4.2.0",
   degradedReason: null,
 };
 
@@ -140,8 +129,6 @@ beforeEach(() => {
   mocks.limit.mockClear();
   mocks.values.mockClear();
   mocks.onConflictDoUpdate.mockClear();
-  mocks.getCurrentRollupVersionNumber.mockClear();
-  mocks.getCurrentRollupVersionNumber.mockResolvedValue(null);
 });
 
 describe("deriveNativeStatus", () => {
@@ -229,22 +216,6 @@ describe("upsertTips", () => {
     expect(mocks.state.insertValues[0]).toMatchObject({
       degradedReason: `finalized boundary block 40 hash mismatch: db=${hash(999)} tip=${hash(40)}`,
     });
-  });
-
-  it("uses the current rollup version when validating boundary blocks", async () => {
-    mocks.getCurrentRollupVersionNumber.mockResolvedValue(5);
-    mocks.state.selectRows = [
-      [{ hash: tips.finalized.block.hash }],
-      [{ hash: tips.proven.block.hash }],
-      [{ hash: tips.checkpointed.block.hash }],
-      [{ hash: tips.proposed.hash }],
-    ];
-
-    await upsertTips(tipsEvent);
-
-    expect(mocks.getCurrentRollupVersionNumber).toHaveBeenCalledOnce();
-    expect(mocks.where).toHaveBeenCalledTimes(4);
-    expect(mocks.state.insertValues[0]).toMatchObject({ degradedReason: null });
   });
 });
 

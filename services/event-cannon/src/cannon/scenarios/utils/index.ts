@@ -31,8 +31,6 @@ import { BlockNumber } from "@aztec/foundation/branded-types";
 import { Account } from "@aztec/aztec.js/account";
 import { TxReceipt } from "@aztec/aztec.js/tx";
 
-export const AZTEC_CONTRACT_CLASS_VERSION = 1;
-
 export const truncateHashString = (value: string) => {
   const startHash = value.substring(0, 6);
   const endHash = value.substring(value.length - 4, value.length);
@@ -122,7 +120,10 @@ export const getNewSchnorrAccount = async ({
   // In real networks the fee payer must be funded. `AztecAddress.ZERO` works in some local setups
   // but fails in devnet/testnet where it has no balance.
   const feePayer = getAccounts().alice.address;
-  const { receipt: deployReceipt } = await deployFunction.send({ from: feePayer });
+  const { receipt: deployReceipt } = await deployFunction.send({
+    from: feePayer,
+    wait: { returnReceipt: true },
+  });
   logger.info(
     `    Account deployed (${accountName}) block ${deployReceipt.blockNumber}`,
   );
@@ -154,12 +155,9 @@ const getNewContractClassId = async (
   if (!blockNumber) {
     return undefined;
   }
-  const block = await node.getBlock(blockNumber, { includeTransactions: true });
+  const block = await node.getBlock(blockNumber);
   if (!block) {
     throw new Error(`Block ${blockNumber} not found`);
-  }
-  if (!block.body) {
-    throw new Error(`Block ${blockNumber} response did not include transactions`);
   }
   const contractClassLogs = block.body.txEffects
     .flatMap((txEffect) => (txEffect ? [txEffect.contractClassLogs] : []))
@@ -203,19 +201,22 @@ export const deployContract = async <T extends Contract>({
   const feePayer = from ?? getAccounts().alice.address;
 
   logger.info(`📫 ${contractLoggingName} (Deploying contract)`);
-  const deployResult = await deployMethod.send({ from: feePayer });
+  const { receipt: deployResult } = await deployMethod.send({
+    from: feePayer,
+    wait: { returnReceipt: true },
+  });
 
   const { contract: deployedContract, instance } = deployResult;
   const addressString = deployedContract.address.toString();
   const newClassId = await getNewContractClassId(
     node,
-    deployResult.receipt.blockNumber,
+    deployResult.blockNumber,
   );
   const classIdString = newClassId
     ? `(🍏 also, a new contract class was added: ${newClassId})`
     : `(🍎 attached currentclassId: ${instance.currentContractClassId.toString()})`;
   logger.info(
-    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.receipt.blockNumber} ${classIdString}`,
+    `⛏  ${contractLoggingName} instance deployed at: ${addressString} block: ${deployResult.blockNumber} ${classIdString}`,
   );
   if (broadcastWithWallet) {
     await broadcastFunctions({
@@ -294,12 +295,12 @@ export const registerContractClassArtifact = async (
   contractLoggingName: string,
   artifactObj: { default: NoirCompiledContract } | NoirCompiledContract,
   contractClassId: string,
-  _instanceVersion: number,
+  version: number,
 ) => {
   const url = generateVerifyArtifactUrl(
     EXPLORER_API_URL,
     contractClassId,
-    AZTEC_CONTRACT_CLASS_VERSION,
+    version,
   );
   const postData = JSON.stringify(generateVerifyArtifactPayload(artifactObj));
   await callExplorerApi({
@@ -314,12 +315,12 @@ export const registerContractClassArtifact = async (
 export const registerStandardContractArtifact = async (
   contractLoggingName: string,
   contractClassId: string,
-  _instanceVersion: number,
+  version: number,
   standardName: string,
   standardVersion: string,
   options?: { throwOnError?: boolean },
 ) => {
-  const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${AZTEC_CONTRACT_CLASS_VERSION}/standard-artifact`;
+  const url = `${EXPLORER_API_URL}/l2/contract-classes/${contractClassId}/versions/${version}/standard-artifact`;
   const postData = JSON.stringify({
     name: standardName,
     version: standardVersion,

@@ -21,7 +21,6 @@ const CONTRACT_INSTANCE_DELUXE_DEFAULTS = {
   blockHeight: 0 as unknown as bigint,
   blockHash: UNKNOWN_FR,
   initializationHash: UNKNOWN_FR,
-  immutablesHash: UNKNOWN_FR,
   deployer: UNKNOWN_FR,
   publicKeys: {
     masterNullifierPublicKey: UNKNOWN_FR_POINT,

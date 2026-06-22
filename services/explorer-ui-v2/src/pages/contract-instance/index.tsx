@@ -294,9 +294,6 @@ export const ContractInstancePage: FC = () => {
           <DetailField label="Initialization hash" width="extra-wide">
             {instance.initializationHash}
           </DetailField>
-          <DetailField label="Immutables hash" width="extra-wide">
-            {instance.immutablesHash}
-          </DetailField>
           <DetailField label="Deployer" width="extra-wide">
             <L2AddressLink address={instance.deployer} truncate={false} />
           </DetailField>

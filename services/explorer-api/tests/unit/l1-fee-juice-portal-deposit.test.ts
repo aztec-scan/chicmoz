@@ -4,11 +4,6 @@ const mocks = vi.hoisted(() => {
   const state = {
     insertValues: [] as unknown[],
     selectRows: [] as unknown[][],
-    chainInfo: null as
-      | {
-          l1ContractAddresses: { feeJuicePortalAddress: string };
-        }
-      | null,
   };
 
   const onConflictDoNothing = vi.fn(() => Promise.resolve());
@@ -50,10 +45,6 @@ vi.mock("../../src/logger.js", () => ({
   logger: { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
 
-vi.mock("../../src/svcs/database/controllers/l2/index.js", () => ({
-  getL2ChainInfo: vi.fn(() => Promise.resolve(mocks.state.chainInfo)),
-}));
-
 const { store } = await import(
   "../../src/svcs/database/controllers/l1/fee-juice-portal-deposit/store.js"
 );
@@ -81,7 +72,6 @@ const baseDeposit = {
 beforeEach(() => {
   mocks.state.insertValues = [];
   mocks.state.selectRows = [];
-  mocks.state.chainInfo = null;
   vi.clearAllMocks();
 });
 
@@ -119,18 +109,5 @@ describe("fee-juice-portal-deposit getByL2Address", () => {
     expect(result[0].to).toBe(baseDeposit.to);
     expect(result[0].amount).toBe(baseDeposit.amount);
     expect(result[0].index).toBe(baseDeposit.index);
-  });
-
-  it("filters by current fee juice portal when chain info is available", async () => {
-    mocks.state.chainInfo = {
-      l1ContractAddresses: {
-        feeJuicePortalAddress: baseDeposit.l1ContractAddress,
-      },
-    };
-    mocks.state.selectRows = [[]];
-
-    await getByL2Address(baseDeposit.to);
-
-    expect(mocks.where).toHaveBeenCalledOnce();
   });
 });

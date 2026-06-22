@@ -1,11 +1,8 @@
 import { type FC, useMemo, useState } from "react";
 import { ConsoleHead, Shell } from "~/components/layout";
 import {
-  COMMISSION_FORUM_URL,
   DASHTEC_URL,
   INCIDENTS,
-  PAYOUT_AUDIT_URL,
-  PROVIDER,
   STAKE_URL,
   type Incident,
 } from "./incidents";
@@ -32,8 +29,10 @@ export const StakingPage: FC = () => {
 
       <div className="stake-hero">
         <div className="pitch">
+          <div className="eyebrow">Stake to Aztec-Scan</div>
           <h1>
-            Stake to Aztec-Scan
+            Support an <em>open-source</em> block explorer by delegating to our
+            sequencer.
           </h1>
           <p>
             We provide Aztec-Scan services free of charge and open source. Our
@@ -46,6 +45,12 @@ export const StakingPage: FC = () => {
             Sequencer. This helps us maintain and improve Aztec-Scan while
             contributing to the security and decentralization of the Aztec
             network.
+          </p>
+          <p style={{ color: "var(--ink-3)", fontSize: 13 }}>
+            We run our infrastructure with the highest industry standards.{" "}
+            <a href={DASHTEC_URL} target="_blank" rel="noreferrer">
+              View our performance on Dashtec →
+            </a>
           </p>
           <div className="pitch-cta">
             <a
@@ -66,46 +71,8 @@ export const StakingPage: FC = () => {
               Performance on Dashtec
             </a>
           </div>
-
-          <details className="commission-drop">
-            <summary>
-              <span>
-                Current commission: {(PROVIDER.feeBps / 100).toFixed(0)}%
-              </span>
-              <span className="summary-hint">off-chain audited payouts</span>
-            </summary>
-            <div className="commission-body">
-              <p>
-                As per 16/6 we have moved to off-chain payouts. Aztec staking
-                commissions are locked into each delegation when the stake is
-                created, while operator costs such as Ethereum base fees, blob
-                fees, signalling overhead, and infrastructure change over time.
-                We are moving our effective commission to the community baseline
-                of 25% so operating the aztec-scan sequencer remains
-                sustainable.
-              </p>
-              <p>
-                Rewards will be paid through the off-chain audited
-                payout flow described in the Aztec forum post. Rewards route to
-                an operator-controlled coinbase wallet, then we publish audit
-                artifacts so delegators can independently verify weekly payouts
-                against on-chain data.
-              </p>
-              <div className="commission-links">
-                <a
-                  href={COMMISSION_FORUM_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Read the commission proposal
-                </a>
-                <a href={PAYOUT_AUDIT_URL} target="_blank" rel="noreferrer">
-                  View our public payout audits
-                </a>
-              </div>
-            </div>
-          </details>
         </div>
+
       </div>
 
       <div className="inc-shell">

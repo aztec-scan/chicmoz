@@ -32,13 +32,8 @@ import {
 import { AztecNode, NodeInfo } from "@aztec/aztec.js/node";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { Fr } from "@aztec/aztec.js/fields";
-import { L2Block } from "@aztec/aztec.js/block";
 import { ProtocolContractAddress } from "@aztec/aztec.js/protocol";
 import { BlockNumber } from "@aztec/foundation/branded-types";
-
-type AwaitedNodeReturn<K extends keyof AztecNode> = Awaited<
-  ReturnType<AztecNode[K]>
->;
 
 const offlineCauses = ["Service Unavailable", "Unauthorized", "Bad Gateway"];
 
@@ -46,7 +41,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
   fnName: K,
   args?: Parameters<AztecNode[K]>,
   forceNode?: RpcNode,
-): Promise<AwaitedNodeReturn<K>> => {
+): Promise<ReturnType<AztecNode[K]>> => {
   let currentNode = forceNode ?? getRpcNode();
   const res = await backOff(
     async () => {
@@ -57,7 +52,7 @@ const callNodeFunction = async <K extends keyof AztecNode>(
       const result = (await (currentNode.instance[fnName] as Function).apply(
         currentNode.instance,
         args,
-      )) as AwaitedNodeReturn<K>;
+      )) as Promise<ReturnType<AztecNode[K]>>;
       void onL2RpcNodeAlive(currentNode.url, currentNode.name);
       return result;
     },
@@ -142,7 +137,6 @@ export const getFreshInfo = async (): Promise<{
         enr,
         l1ContractAddresses,
         protocolContractAddresses,
-        txsLimits,
       } = await callNodeFunction("getNodeInfo", undefined, node);
       const nodeInfo: NodeInfo = {
         nodeVersion,
@@ -152,7 +146,6 @@ export const getFreshInfo = async (): Promise<{
         l1ContractAddresses: l1ContractAddresses,
         protocolContractAddresses: protocolContractAddresses,
         realProofs: false,
-        txsLimits,
       };
       const cInfo = getChicmozChainInfoFromNodeInfo(L2_NETWORK_ID, nodeInfo);
       if (!chainInfo || chainInfo.rollupVersion < cInfo.rollupVersion) {
@@ -195,24 +188,8 @@ export const getFreshInfo = async (): Promise<{
   };
 };
 
-export const getBlock = async (height: number) => {
-  const block = await callNodeFunction("getBlock", [BlockNumber(height), {
-    includeTransactions: true,
-  }]);
-  if (!block) {
-    return undefined;
-  }
-  if (!block.body) {
-    throw new Error(`Block ${height} response did not include transactions`);
-  }
-  return new L2Block(
-    block.archive,
-    block.header,
-    block.body,
-    block.checkpointNumber,
-    block.indexWithinCheckpoint,
-  );
-};
+export const getBlock = async (height: number) =>
+  callNodeFunction("getBlock", [BlockNumber(height)]);
 
 export const getBlocks = async (fromHeight: number, toHeight: number) => {
   if (toHeight - fromHeight > MAX_BATCH_SIZE_FETCH_MISSED_BLOCKS) {
@@ -237,11 +214,11 @@ export const getLatestProposedHeight = async () => {
 };
 
 export const getLatestProvenHeight = async () => {
-  return await callNodeFunction("getBlockNumber", ["proven"]);
+  return await callNodeFunction("getProvenBlockNumber");
 };
 
 export const getL2Tips = async () => {
-  return await callNodeFunction("getChainTips");
+  return await callNodeFunction("getL2Tips");
 };
 
 export const getPendingTxs = async () => callNodeFunction("getPendingTxs");

@@ -17,7 +17,6 @@ import {
   StoredL2Tips,
 } from "../../schema/l2/tips.js";
 import { l2Block } from "../../schema/l2block/index.js";
-import { getCurrentRollupVersionNumber } from "./chain-info/rollup-version-cache.js";
 
 type TipBucket = "finalized" | "proven" | "checkpointed" | "proposed";
 
@@ -103,19 +102,11 @@ const flattenTips = (
   updatedAt: new Date(),
 });
 
-const getBoundaryBlock = async (height: number, rollupVersion: number | null) => {
-  const versionFilter =
-    rollupVersion !== null ? eq(l2Block.version, rollupVersion) : undefined;
+const getBoundaryBlock = async (height: number) => {
   const rows = await db()
     .select({ hash: l2Block.hash })
     .from(l2Block)
-    .where(
-      and(
-        eq(l2Block.height, BigInt(height)),
-        versionFilter,
-        isNull(l2Block.orphan_timestamp),
-      ),
-    )
+    .where(and(eq(l2Block.height, BigInt(height)), isNull(l2Block.orphan_timestamp)))
     .limit(1);
   return rows[0]?.hash;
 };
@@ -123,10 +114,9 @@ const getBoundaryBlock = async (height: number, rollupVersion: number | null) =>
 const validateBoundary = async (
   bucket: TipBucket,
   tips: ChicmozL2Tips,
-  rollupVersion: number | null,
 ): Promise<BoundaryValidationResult | null> => {
   const tip = bucket === "proposed" ? tips.proposed : tips[bucket].block;
-  const boundaryHash = await getBoundaryBlock(tip.number, rollupVersion);
+  const boundaryHash = await getBoundaryBlock(tip.number);
   if (!boundaryHash) {
     return {
       bucket,
@@ -201,11 +191,10 @@ const resolveBoundaryMismatches = async () => {
 
 export const upsertTips = async (event: L2TipsEvent) => {
   const tips = chicmozL2TipsSchema.parse(event.tips);
-  const rollupVersion = await getCurrentRollupVersionNumber();
   let degradedReason: string | null = null;
   let degradedMismatch: BoundaryValidationResult | null = null;
   for (const bucket of ["finalized", "proven", "checkpointed", "proposed"] as const) {
-    const mismatch = await validateBoundary(bucket, tips, rollupVersion);
+    const mismatch = await validateBoundary(bucket, tips);
     if (mismatch) {
       degradedReason = mismatch.reason;
       degradedMismatch = mismatch;

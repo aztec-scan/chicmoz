@@ -7,7 +7,7 @@ export const L2_NETWORK_ID: L2NetworkId = l2NetworkIdSchema.parse(
 
 export const COMPILER_IMAGE = z
   .string()
-  .default("contract-compiler:5.0.0-rc.1")
+  .default("contract-compiler:4.0.3")
   .parse(process.env.COMPILER_IMAGE);
 
 // COMPILER_IMAGE is the image repository/base reference. The orchestrator

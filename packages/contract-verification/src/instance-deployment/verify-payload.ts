@@ -15,7 +15,6 @@ export const verifyInstanceDeploymentPayload = async (
     instanceAddress: string;
     stringifiedArtifactJson: string;
     contractClassId: string;
-    immutablesHash: string;
   },
 ): Promise<boolean> => {
   const {
@@ -23,7 +22,6 @@ export const verifyInstanceDeploymentPayload = async (
     contractClassId,
     constructorArgs,
     deployer,
-    immutablesHash,
     salt,
     publicKeysString,
   } = payload;
@@ -40,7 +38,6 @@ export const verifyInstanceDeploymentPayload = async (
     initializationHash,
     salt: Fr.fromString(salt),
     deployer: AztecAddress.fromString(deployer),
-    immutablesHash: Fr.fromString(immutablesHash),
   });
   const computedAddress = await computeContractAddressFromInstance({
     originalContractClassId: Fr.fromString(contractClassId),

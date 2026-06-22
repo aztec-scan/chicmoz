@@ -19,7 +19,7 @@ pub contract ExplorerShowcase {
             functions::{external, initializer, only_self},
             storage::storage,
         },
-        messages::delivery::MessageDelivery,
+        messages::message_delivery::MessageDelivery,
         note::note_getter_options::NoteGetterOptions,
         protocol::address::{AztecAddress, EthAddress},
         state_vars::{Map, Owned, PrivateSet, PublicImmutable, PublicMutable},
@@ -121,7 +121,7 @@ pub contract ExplorerShowcase {
         let owner = self.msg_sender();
         let note = FieldNote { value: amount as Field };
         self.storage.private_balances.at(owner).insert(note).deliver(
-            MessageDelivery::onchain_constrained(),
+            MessageDelivery.ONCHAIN_CONSTRAINED,
         );
     }
 
@@ -142,11 +142,11 @@ pub contract ExplorerShowcase {
         if remainder > 0 {
             self.storage.private_balances.at(from).insert(
                 FieldNote { value: remainder as Field },
-            ).deliver(MessageDelivery::onchain_constrained());
+            ).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
         }
 
         self.storage.private_balances.at(to).insert(FieldNote { value: amount as Field }).deliver(
-            MessageDelivery::onchain_constrained(),
+            MessageDelivery.ONCHAIN_CONSTRAINED,
         );
     }
 
@@ -157,7 +157,7 @@ pub contract ExplorerShowcase {
 
         self.storage.private_balances.at(owner).insert(
             FieldNote { value: amount as Field },
-        ).deliver(MessageDelivery::onchain_constrained());
+        ).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 
         self.enqueue_self._debit_public(owner, amount);
     }
@@ -179,7 +179,7 @@ pub contract ExplorerShowcase {
         if remainder > 0 {
             self.storage.private_balances.at(owner).insert(
                 FieldNote { value: remainder as Field },
-            ).deliver(MessageDelivery::onchain_constrained());
+            ).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
         }
 
         self.enqueue_self._credit_public(owner, amount);

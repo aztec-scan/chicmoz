@@ -1,17 +1,12 @@
-ARG BASE_AZTEC_IMAGE=aztecprotocol/aztec:5.0.0-rc.1
-ARG NARGO_AZTEC_VERSION=v5.0.0-rc.1
+ARG BASE_AZTEC_IMAGE=aztecprotocol/aztec:4.2.0
+ARG NARGO_AZTEC_VERSION=v4.2.0
 
 FROM ${BASE_AZTEC_IMAGE}
 
-ARG NARGO_AZTEC_VERSION=v5.0.0-rc.1
+ARG NARGO_AZTEC_VERSION=v4.2.0
 
 # Put nargo and bb on PATH so `aztec compile` can find them
 ENV PATH="/usr/src/noir/noir-repo/target/release:/usr/src/barretenberg/ts/build/amd64-linux:${PATH}"
-
-# The v5 Aztec image contains the CLI entrypoint but does not put an `aztec`
-# binary on PATH. The compiler orchestrator invokes `aztec compile` directly.
-RUN printf '#!/bin/sh\nexec node /usr/src/yarn-project/aztec/dest/bin/index.js "$@"\n' > /usr/local/bin/aztec && \
-  chmod +x /usr/local/bin/aztec
 
 # Pre-fetch nargo dependencies so compiles don't need network access.
 # The aztec-nr dependency tag is distinct from the upstream aztec Docker image tag.
