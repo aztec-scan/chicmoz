@@ -32,9 +32,7 @@ export const StakingPage: FC = () => {
 
       <div className="stake-hero">
         <div className="pitch">
-          <h1>
-            Stake to Aztec-Scan
-          </h1>
+          <h1>Stake to Aztec-Scan</h1>
           <p>
             We provide Aztec-Scan services free of charge and open source. Our
             mission is to benefit the entire Aztec ecosystem by building tools
@@ -85,18 +83,14 @@ export const StakingPage: FC = () => {
                 sustainable.
               </p>
               <p>
-                Rewards will be paid through the off-chain audited
-                payout flow described in the Aztec forum post. Rewards route to
-                an operator-controlled coinbase wallet, then we publish audit
+                Rewards will be paid through the off-chain audited payout flow
+                described in the Aztec forum post. Rewards route to an
+                operator-controlled coinbase wallet, then we publish audit
                 artifacts so delegators can independently verify weekly payouts
                 against on-chain data.
               </p>
               <div className="commission-links">
-                <a
-                  href={COMMISSION_FORUM_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href={COMMISSION_FORUM_URL} target="_blank" rel="noreferrer">
                   Read the commission proposal
                 </a>
                 <a href={PAYOUT_AUDIT_URL} target="_blank" rel="noreferrer">
@@ -155,14 +149,16 @@ export const StakingPage: FC = () => {
               started {selected.startedAt}
               {selected.resolvedAt ? (
                 <>
-                  {" "}· resolved {selected.resolvedAt} ·{" "}
+                  {" "}
+                  · resolved {selected.resolvedAt} ·{" "}
                   <span style={{ color: "var(--ink-1)" }}>
                     {selected.durationLabel}
                   </span>
                 </>
               ) : (
                 <>
-                  {" "}· <span style={{ color: "#c99800" }}>ongoing</span>
+                  {" "}
+                  · <span style={{ color: "#c99800" }}>ongoing</span>
                 </>
               )}
             </div>
@@ -214,6 +210,17 @@ export const StakingPage: FC = () => {
                     </>
                   )}
                 </p>
+                {s.links && (
+                  <ul className="section-links">
+                    {s.links.map((link) => (
+                      <li key={link.href}>
+                        <a href={link.href} target="_blank" rel="noreferrer">
+                          <code className="hash">{link.label}</code>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
