@@ -110,8 +110,12 @@ export const PROVIDER = {
   region: "eu-west / infra-redundant",
   nodeVersion: "aztec-nargo 0.87.4",
   online: true,
-  feeBps: 750,
+  feeBps: 2500,
 } as const;
 
 export const STAKE_URL = "https://stake.aztec.network/providers/4";
 export const DASHTEC_URL = "https://dashtec.xyz/providers/4";
+export const COMMISSION_FORUM_URL =
+  "https://forum.aztec.network/t/operator-commission-adjustments/8588";
+export const PAYOUT_AUDIT_URL =
+  "https://github.com/aztec-scan/aztec-payout-audit";
