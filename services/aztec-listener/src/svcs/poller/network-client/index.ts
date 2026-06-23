@@ -237,10 +237,12 @@ export const getLatestProposedHeight = async () => {
 };
 
 export const getLatestProvenHeight = async () => {
+  // Aztec v5 exposes proven height via getBlockNumber("proven").
   return await callNodeFunction("getBlockNumber", ["proven"]);
 };
 
 export const getL2Tips = async () => {
+  // Aztec v5 renamed the node RPC method from getL2Tips to getChainTips.
   return await callNodeFunction("getChainTips");
 };
 
