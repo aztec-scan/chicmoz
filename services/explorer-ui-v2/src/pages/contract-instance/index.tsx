@@ -66,7 +66,7 @@ export const ContractInstancePage: FC = () => {
   const feeJuiceSymbol = getFeeJuiceSymbol(chainInfo?.feeJuiceSymbol);
   const feeJuiceAddress = chainInfo?.l1ContractAddresses?.feeJuiceAddress;
   const balanceValue =
-    balance == null || balance.balance == null
+    balance?.balance == null
       ? null
       : formatFees(balance.balance, feeJuiceDecimals);
 
@@ -458,14 +458,16 @@ export const ContractInstancePage: FC = () => {
         )}
         {tab === "history" && (
           <>
-            <div className="hist-head">
-              <div>Block</div>
-              <div>Balance</div>
-              <div>Paid/Received</div>
-              <div>Tx</div>
-              {fpcTx && fpcTx.asFeePayer.length > 0 && <div>Paid for</div>}
-              <div className="right">Timestamp</div>
-            </div>
+            {timeline.length > 0 && (
+              <div className="hist-head" style={fpcTx && fpcTx.asFeePayer.length > 0 ? { gridTemplateColumns: "80px 1fr 130px 120px 130px 100px" } : undefined}>
+                <div>Block</div>
+                <div>Balance</div>
+                <div>Paid/Received</div>
+                <div>Tx</div>
+                {fpcTx && fpcTx.asFeePayer.length > 0 && <div>Paid for</div>}
+                <div className="right">Timestamp</div>
+              </div>
+            )}
             {timeline.map((entry, i) => {
               const { balance: bal, sourceTxHash, feeRecipient, spent, ts, blockNumber } = entry;
 
@@ -560,7 +562,7 @@ export const ContractInstancePage: FC = () => {
             )}
             {timeline.length === 0 && fpcTx && fpcTx.asSponsored.length > 0 && (
               <>
-            <div className="hist-head" style={fpcTx && fpcTx.asFeePayer.length > 0 ? { gridTemplateColumns: "80px 1fr 130px 120px 130px 100px" } : undefined}>
+                <div className="hist-head">
                   <div>Block</div>
                   <div>Fee</div>
                   <div>Paid by</div>
