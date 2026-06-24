@@ -22,6 +22,8 @@ spec:
     matchLabels:
       app: aztec-listener
       network: devnet
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
