@@ -68,7 +68,8 @@ export const pollerService: MicroserviceBaseSvc = {
   svcId: "POLLER",
   getConfigStr,
   init,
-  // TODO: improve health check
+  // TODO: improve health check. Shutdown now exits the process instead of
+  // leaving initialized-but-stopped pollers alive.
   health: () => nodeInfo !== undefined,
   // eslint-disable-next-line @typescript-eslint/require-await
   shutdown: async () => {
