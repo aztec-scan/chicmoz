@@ -1,7 +1,12 @@
 import { type Logger } from "@chicmoz-pkg/logger-server";
-import { getMicroserviceState, getSvcState, setLogger, setSvcState } from "./health.js";
 import { conf, setConfig } from "./config.js";
-import { INSTANCE_NAME} from "./environment.js";
+import { INSTANCE_NAME } from "./environment.js";
+import {
+  getMicroserviceState,
+  getSvcState,
+  setLogger,
+  setSvcState,
+} from "./health.js";
 import { init } from "./init.js";
 import { start } from "./start.js";
 import { stop } from "./stop.js";
@@ -22,8 +27,27 @@ export {
 };
 
 let logger: Logger;
+let isShuttingDown = false;
+
+const getShutdownExitCode = (reason: string) => {
+  if (process.exitCode !== undefined) {
+    return Number(process.exitCode);
+  }
+
+  if (reason === "SIGINT" || reason === "SIGTERM") {
+    return 0;
+  }
+
+  return 1;
+};
 
 export const shutdownMicroservice = async (reason: string) => {
+  if (isShuttingDown) {
+    logger.warn(`Shutdown already in progress; ignoring ${reason}.`);
+    return;
+  }
+
+  isShuttingDown = true;
   await stop(logger, reason).catch((e) => {
     logger.error(
       `❗ unhandled error during shutdown of ${conf.serviceName}: ${
@@ -32,6 +56,7 @@ export const shutdownMicroservice = async (reason: string) => {
     );
     process.exit(1);
   });
+  process.exit(getShutdownExitCode(reason));
 };
 
 export const startMicroservice = (config: MicroserviceConfig) => {

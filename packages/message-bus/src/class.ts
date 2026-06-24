@@ -65,6 +65,10 @@ export class MessageBus {
   }
 
   private shouldCrash(error: Error): boolean {
+    if (this.isCoordinatorOrRebalanceError(error)) {
+      return false;
+    }
+
     const isNonRetriableError =
       error instanceof kafkaJS.KafkaJSNonRetriableError;
     const isNumberOfRetriesExceeded =
@@ -74,6 +78,40 @@ export class MessageBus {
 
     return (
       isNonRetriableError && !isNumberOfRetriesExceeded && !isCoordinatorError
+    );
+  }
+
+  private isCoordinatorOrRebalanceError(error: Error): boolean {
+    const kafkaErrorMetadata = error as Error & {
+      code?: number | string;
+      type?: string;
+    };
+    const kafkaErrorText = [
+      error.name,
+      error.message,
+      kafkaErrorMetadata.type,
+      kafkaErrorMetadata.code?.toString(),
+    ]
+      .filter((value): value is string => value !== undefined)
+      .join(" ")
+      .toLowerCase();
+
+    return [
+      "not the correct coordinator",
+      "not_coordinator_for_group",
+      "coordinator not available",
+      "coordinator_not_available",
+      "group coordinator",
+      "group is rebalancing",
+      "rebalance",
+      "rebalance_in_progress",
+      "rebalancing",
+      "illegal generation",
+      "illegal_generation",
+      "unknown member id",
+      "unknown_member_id",
+    ].some((transientConsumerError) =>
+      kafkaErrorText.includes(transientConsumerError),
     );
   }
 
@@ -142,6 +180,7 @@ export class MessageBus {
             payload.payload.error,
           )}`,
         );
+        process.exitCode = 1;
         process.kill(process.pid, "SIGTERM");
         return;
       }
