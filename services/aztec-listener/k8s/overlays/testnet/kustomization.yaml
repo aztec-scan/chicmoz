@@ -20,7 +20,16 @@ patches:
       metadata:
         name: aztec-listener
       spec:
+        selector:
+          matchLabels:
+            app: aztec-listener
+            app.kubernetes.io/instance: aztec-listener-testnet
+            network: testnet
         template:
+          metadata:
+            labels:
+              app.kubernetes.io/instance: aztec-listener-testnet
+              network: testnet
           spec:
             containers:
               - name: aztec-listener
