@@ -10,6 +10,7 @@ export const handleDuplicateBlockError = async (
   additionalInfo: string,
   deleteBlockCallback: () => Promise<void>,
   unOrphanCallback?: () => Promise<void>,
+  resolveDuplicateTxHashCallback?: () => Promise<void>,
 ): Promise<boolean> => {
   if ((e as PartialDbError).code === "23505") {
     const detail = (e as PartialDbError).detail;
@@ -26,10 +27,23 @@ export const handleDuplicateBlockError = async (
           `DB duplicate for "${additionalInfo}" skipping... [${detail}]`,
         );
       }
-    } else if (detail.includes("(tx_hash)") || detail.includes("(height)")) {
-      // tx_hash duplicate: a transaction from this block already exists (likely in an
-      // orphaned block). Delete all blocks at this height and retry so the new canonical
-      // block can be stored cleanly.
+    } else if (detail.includes("(tx_hash)")) {
+      // tx_hash duplicate: a transaction from this block already exists. Prefer
+      // resolving the actual owning block over deleting the incoming height.
+      if (resolveDuplicateTxHashCallback) {
+        logger.warn(
+          `DB duplicate tx_hash for "${additionalInfo}": resolving tx owner and retrying. [${detail}]`,
+        );
+        await resolveDuplicateTxHashCallback();
+        return true;
+      }
+
+      logger.warn(
+        `DB duplicate tx_hash for "${additionalInfo}": deleting block at height and retrying. [${detail}]`,
+      );
+      await deleteBlockCallback();
+      return true;
+    } else if (detail.includes("(height)")) {
       // height duplicate: same as before.
       logger.warn(
         `DB duplicate for "${additionalInfo}": deleting block at height and retrying. [${detail}]`,
