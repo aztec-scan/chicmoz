@@ -11,6 +11,7 @@ kind: Deployment
 metadata:
   labels:
     app: aztec-listener
+    app.kubernetes.io/instance: aztec-listener-testnet
     app.kubernetes.io/name: aztec-listener
     app.kubernetes.io/part-of: chicmoz-prod
     network: testnet
@@ -21,6 +22,7 @@ spec:
   selector:
     matchLabels:
       app: aztec-listener
+      app.kubernetes.io/instance: aztec-listener-testnet
       network: testnet
   strategy:
     type: Recreate
@@ -28,6 +30,7 @@ spec:
     metadata:
       labels:
         app: aztec-listener
+        app.kubernetes.io/instance: aztec-listener-testnet
         network: testnet
     spec:
       containers:
