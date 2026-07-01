@@ -5,5 +5,5 @@ authors = [""]
 compiler_version = ">=0.25.0"
 
 [dependencies]
-aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v5.0.0-rc.1", directory = "aztec" }
-field_note = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v5.0.0-rc.1", directory = "field-note" }
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v5.0.0-rc.2", directory = "aztec" }
+field_note = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v5.0.0-rc.2", directory = "field-note" }

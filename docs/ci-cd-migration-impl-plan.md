@@ -993,14 +993,14 @@ patches:
                   - name: L2_NETWORK_ID
                     value: "MAINNET"
                   - name: COMPILER_IMAGE
-                    value: "registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet:5.0.0-rc.1"
+                    value: "registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet:5.0.0-rc.2"
 ```
 
 **Current `COMPILER_IMAGE` values (hardcoded — update manually when Aztec version changes):**
 
-- mainnet: `registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet:5.0.0-rc.1`
-- testnet: `registry.digitalocean.com/aztlan-containers/contract-compiler-testnet:5.0.0-rc.1`
-- devnet: `registry.digitalocean.com/aztlan-containers/contract-compiler-devnet:5.0.0-rc.1`
+- mainnet: `registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet:5.0.0-rc.2`
+- testnet: `registry.digitalocean.com/aztlan-containers/contract-compiler-testnet:5.0.0-rc.2`
+- devnet: `registry.digitalocean.com/aztlan-containers/contract-compiler-devnet:5.0.0-rc.2`
 
 ---
 

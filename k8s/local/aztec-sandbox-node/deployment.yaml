@@ -19,7 +19,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-anvil
-          image: aztecprotocol/aztec:5.0.0-rc.1
+          image: aztecprotocol/aztec:5.0.0-rc.2
           command:
             [
               "sh",
@@ -27,7 +27,7 @@ spec:
               "until nc -z anvil-ethereum-node 8545; do echo waiting for anvil; sleep 2; done",
             ]
       containers:
-        - image: aztecprotocol/aztec:5.0.0-rc.1
+        - image: aztecprotocol/aztec:5.0.0-rc.2
           name: aztec-sandbox-node
           resources:
             requests:
