@@ -39,7 +39,7 @@ export const verifyInstanceDeploymentPayload = async (
   const saltedHash = await computeSaltedInitializationHash({
     initializationHash,
     salt: Fr.fromString(salt),
-    deployer: AztecAddress.fromString(deployer),
+    deployer: AztecAddress.fromStringUnsafe(deployer),
     immutablesHash: Fr.fromString(immutablesHash),
   });
   const computedAddress = await computeContractAddressFromInstance({

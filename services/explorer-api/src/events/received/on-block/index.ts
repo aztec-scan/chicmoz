@@ -14,7 +14,11 @@ import { SERVICE_NAME } from "../../../constants.js";
 import { L2_NETWORK_ID } from "../../../environment.js";
 import { logger } from "../../../logger.js";
 import { observeRollupVersion } from "../../../svcs/database/controllers/l2/chain-info/rollup-version-cache.js";
-import { deleteL2BlockByHeight } from "../../../svcs/database/controllers/l2block/delete.js";
+import {
+  deleteL2BlockByHash,
+  deleteL2BlockByHeight,
+  getTxEffectOwners,
+} from "../../../svcs/database/controllers/l2block/delete.js";
 import { unOrphanBlock } from "../../../svcs/database/controllers/l2block/orphan.js";
 import { controllers } from "../../../svcs/database/index.js";
 import { handleDuplicateBlockError } from "../utils.js";
@@ -122,12 +126,56 @@ const storeBlock = async (parsedBlock: ChicmozL2Block, haveRetried = false) => {
         // since the node is serving it as the canonical block.
         await unOrphanBlock(parsedBlock.hash);
       },
+      async () => pruneConflictingOrphanedTxOwners(parsedBlock),
     );
 
     if (shouldRetry) {
       return storeBlock(parsedBlock, true);
     }
   });
+};
+
+const pruneConflictingOrphanedTxOwners = async (
+  parsedBlock: ChicmozL2Block,
+): Promise<void> => {
+  const incomingTxHashes = parsedBlock.body.txEffects.map(
+    (txEffect) => txEffect.txHash,
+  );
+  const owners = await getTxEffectOwners(incomingTxHashes);
+
+  if (owners.length === 0) {
+    logger.error(
+      `Duplicate tx_hash while storing block ${parsedBlock.height}, but no existing tx owner was found`,
+    );
+    throw new Error(
+      `Duplicate tx_hash while storing block ${parsedBlock.height}, but no existing tx owner was found`,
+    );
+  }
+
+  const activeOwners = owners.filter((owner) => !owner.isOrphaned);
+  if (activeOwners.length > 0) {
+    const ownerSummary = activeOwners
+      .map(
+        (owner) =>
+          `${owner.txHash} in active block ${owner.blockHeight} (${owner.blockHash})`,
+      )
+      .join(", ");
+    logger.error(
+      `Hard duplicate tx_hash conflict while storing block ${parsedBlock.height}: ${ownerSummary}`,
+    );
+    throw new Error(
+      `Duplicate tx_hash conflict while storing block ${parsedBlock.height}: ${ownerSummary}`,
+    );
+  }
+
+  const orphanedOwnerHashes = [...new Set(owners.map((owner) => owner.blockHash))];
+  logger.warn(
+    `Pruning ${orphanedOwnerHashes.length} orphaned tx owner block(s) before retrying block ${parsedBlock.height}: ${orphanedOwnerHashes.join(", ")}`,
+  );
+
+  for (const blockHash of orphanedOwnerHashes) {
+    await deleteL2BlockByHash(blockHash);
+  }
 };
 
 const pendingTxsHook = async (txEffects: ChicmozL2TxEffect[]) => {

@@ -18,16 +18,16 @@ export const ExplorerShowcaseContractArtifact = loadContractArtifact(ExplorerSho
  * Type-safe interface for contract ExplorerShowcase;
  */
 export class ExplorerShowcaseContract extends ContractBase {
-
+  
   private constructor(
     address: AztecAddress,
     wallet: Wallet,
   ) {
     super(address, ExplorerShowcaseContractArtifact, wallet);
   }
+  
 
-
-
+  
   /**
    * Creates a contract instance.
    * @param address - The deployed contract's address.
@@ -41,7 +41,7 @@ export class ExplorerShowcaseContract extends ContractBase {
     return Contract.at(address, ExplorerShowcaseContract.artifact, wallet) as ExplorerShowcaseContract;
   }
 
-
+  
   /**
    * Creates a tx to deploy a new instance of this contract.
    * @param instantiation - Optional address-affecting parameters (salt, deployer / universalDeploy, publicKeys).
@@ -77,9 +77,9 @@ export class ExplorerShowcaseContract extends ContractBase {
       opts.instantiation,
     );
   }
+  
 
-
-
+  
   /**
    * Returns this contract's artifact.
    */
@@ -93,7 +93,7 @@ export class ExplorerShowcaseContract extends ContractBase {
   public static get artifactForPublic(): ContractArtifact {
     return loadContractArtifactForPublic(ExplorerShowcaseContractArtifactJson as NoirCompiledContract);
   }
-
+  
 
   public static get storage(): ContractStorageLayout<'admin' | 'public_counters' | 'private_balances'> {
       return {
@@ -108,11 +108,11 @@ private_balances: {
     }
       } as ContractStorageLayout<'admin' | 'public_counters' | 'private_balances'>;
     }
-
+    
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public declare methods: {
-
+    
     /** add_private_balance(amount: integer) */
     add_private_balance: ((amount: (bigint | number)) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 
@@ -153,5 +153,5 @@ private_balances: {
     unshield: ((amount: (bigint | number)) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
   };
 
-
+  
 }

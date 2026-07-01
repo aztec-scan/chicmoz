@@ -1,9 +1,9 @@
-ARG BASE_AZTEC_IMAGE=aztecprotocol/aztec:5.0.0-rc.1
-ARG NARGO_AZTEC_VERSION=v5.0.0-rc.1
+ARG BASE_AZTEC_IMAGE=aztecprotocol/aztec:5.0.0-rc.2
+ARG NARGO_AZTEC_VERSION=v5.0.0-rc.2
 
 FROM ${BASE_AZTEC_IMAGE}
 
-ARG NARGO_AZTEC_VERSION=v5.0.0-rc.1
+ARG NARGO_AZTEC_VERSION=v5.0.0-rc.2
 
 # Put nargo and bb on PATH so `aztec compile` can find them
 ENV PATH="/usr/src/noir/noir-repo/target/release:/usr/src/barretenberg/ts/build/amd64-linux:${PATH}"
