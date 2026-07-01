@@ -106,10 +106,10 @@ spec:
               mountPath: /etc/kafka/secrets
           resources:
             limits:
-              memory: "1Gi"
+              memory: "2Gi"
               cpu: "500m"
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "200m"
       volumes:
         - name: jaas-config
