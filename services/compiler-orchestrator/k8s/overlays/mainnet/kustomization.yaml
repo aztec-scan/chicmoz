@@ -29,4 +29,4 @@ patches:
                   - name: L2_NETWORK_ID
                     value: "MAINNET"
                   - name: COMPILER_IMAGE
-                    value: "registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet:5.0.0-rc.2"
+                    value: "registry.digitalocean.com/aztlan-containers/contract-compiler-mainnet:4.2.0"
