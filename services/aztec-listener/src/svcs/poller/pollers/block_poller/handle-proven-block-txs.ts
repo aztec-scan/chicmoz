@@ -62,7 +62,7 @@ const fetchBalances = async (
           try {
             const balance = await getBalanceOf(
               blockNumber,
-              AztecAddress.fromString(addr),
+              AztecAddress.fromStringUnsafe(addr),
             );
             results[currentIndex] = {
               status: "fulfilled",
