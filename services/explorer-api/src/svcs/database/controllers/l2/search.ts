@@ -13,6 +13,7 @@ import {
   droppedTx,
   globalVariables,
   header,
+  contractInstanceBalance,
   l2Block,
   l2ContractClassRegistered,
   l2ContractInstanceDeployed,
@@ -162,21 +163,46 @@ const matchValidator = async (
   return [{ validatorAddress: res[0].attester }];
 };
 
-const matchAccountByPublicCallRequestSender = async (
+const matchAccount = async (
   address: HexString,
 ): Promise<ChicmozSearchResults["results"]["accounts"]> => {
-  const res = await db()
-    .select({
-      address: l2TxPublicCallRequest.msgSender,
-    })
-    .from(l2TxPublicCallRequest)
-    .where(eq(l2TxPublicCallRequest.msgSender, address))
-    .limit(1)
-    .execute();
-  if (res.length === 0) {
+  const [publicCallRequestSender, txEffectParticipant, pendingTxParticipant, balance] =
+    await Promise.all([
+      db()
+        .select({ address: l2TxPublicCallRequest.msgSender })
+        .from(l2TxPublicCallRequest)
+        .where(eq(l2TxPublicCallRequest.msgSender, address))
+        .limit(1)
+        .execute(),
+      db()
+        .select({ hash: txEffect.txHash })
+        .from(txEffect)
+        .where(or(eq(txEffect.feePayer, address), eq(txEffect.initiator, address)))
+        .limit(1)
+        .execute(),
+      db()
+        .select({ hash: l2Tx.txHash })
+        .from(l2Tx)
+        .where(or(eq(l2Tx.feePayer, address), eq(l2Tx.initiator, address)))
+        .limit(1)
+        .execute(),
+      db()
+        .select({ address: contractInstanceBalance.contractAddress })
+        .from(contractInstanceBalance)
+        .where(eq(contractInstanceBalance.contractAddress, address))
+        .limit(1)
+        .execute(),
+    ]);
+
+  if (
+    publicCallRequestSender.length === 0 &&
+    txEffectParticipant.length === 0 &&
+    pendingTxParticipant.length === 0 &&
+    balance.length === 0
+  ) {
     return [];
   }
-  return [{ address: res[0].address }];
+  return [{ address }];
 };
 
 const matchContractClass = async (
@@ -285,7 +311,7 @@ export const search = async (
     matchContractClass(query),
     matchContractInstance(query),
     matchValidator(query),
-    matchAccountByPublicCallRequestSender(query),
+    matchAccount(query),
   ]);
 
   return chicmozSearchResultsSchema.parse({
