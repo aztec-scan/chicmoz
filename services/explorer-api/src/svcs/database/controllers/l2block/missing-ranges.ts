@@ -14,8 +14,9 @@ import {
 import { logger } from "../../../../logger.js";
 import { l2OpenGapTable } from "../../schema/l2/open-gap.js";
 import { l2Block } from "../../schema/l2block/index.js";
+import { getCurrentRollupVersionNumber } from "../l2/chain-info/rollup-version-cache.js";
 import { getTips } from "../l2/tips.js";
-import { getLatestHeight } from "./get-latest.js";
+import { getLatestBlockRollupVersion, getLatestHeight } from "./get-latest.js";
 
 const rangesFromHeights = (missingHeights: number[]) => {
   const ranges: Array<{ from: number; to: number; statusHint: "proposed" }> = [];
@@ -77,11 +78,17 @@ const upsertOpenGaps = async ({
   }
 };
 
-const getOpenGaps = async (maxBlocks: number) => {
+const getOpenGaps = async (maxBlocks: number, chainTip: number) => {
   const rows = await db()
     .select()
     .from(l2OpenGapTable)
-    .where(and(eq(l2OpenGapTable.l2NetworkId, L2_NETWORK_ID), eq(l2OpenGapTable.status, "open")))
+    .where(
+      and(
+        eq(l2OpenGapTable.l2NetworkId, L2_NETWORK_ID),
+        eq(l2OpenGapTable.status, "open"),
+        lte(l2OpenGapTable.fromHeight, chainTip),
+      ),
+    )
     .orderBy(asc(l2OpenGapTable.firstSeenAt))
     .limit(maxBlocks);
 
@@ -129,6 +136,13 @@ const markGapsRequested = async (
   }
 };
 
+const resolveReconciliationRollupVersion = async (): Promise<number | null> => {
+  return (
+    (await getCurrentRollupVersionNumber()) ??
+    getLatestBlockRollupVersion()
+  );
+};
+
 export const findMissingHeightsInWindow = async ({
   from,
   upperBound,
@@ -136,6 +150,11 @@ export const findMissingHeightsInWindow = async ({
   from: number;
   upperBound: number;
 }) => {
+  const effectiveVersion = await resolveReconciliationRollupVersion();
+  const versionFilter =
+    effectiveVersion === null
+      ? undefined
+      : eq(l2Block.version, effectiveVersion);
   const existingRows = await db()
     .select({ height: l2Block.height })
     .from(l2Block)
@@ -144,6 +163,7 @@ export const findMissingHeightsInWindow = async ({
         gte(l2Block.height, BigInt(from)),
         lte(l2Block.height, BigInt(upperBound)),
         isNull(l2Block.orphan_timestamp),
+        ...(versionFilter ? [versionFilter] : []),
       ),
     )
     .orderBy(asc(l2Block.height));
@@ -189,7 +209,7 @@ export const buildMissingBlockRangeRequest = async ({
     await upsertOpenGaps({ ranges, reason });
   }
 
-  const openGapRanges = await getOpenGaps(maxBlocks);
+  const openGapRanges = await getOpenGaps(maxBlocks, upperBound);
   if (openGapRanges.length === 0) {
     logger.info(`${reason} L2 block reconciliation found no missing blocks`);
     return null;
