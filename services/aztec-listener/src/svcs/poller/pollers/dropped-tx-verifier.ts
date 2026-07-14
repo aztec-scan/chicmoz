@@ -54,7 +54,7 @@ const verifyDroppedTransactions = async () => {
       `🔍 Verifying ${oldSuspectedTxs.length} old suspected dropped transactions`,
     );
 
-    const latestHeight = await getLatestProvenHeight();
+    const latestHeight = Number(await getLatestProvenHeight());
     const startHeight = Math.max(
       1,
       latestHeight - DROPPED_TX_BLOCK_LOOKBACK + 1,
