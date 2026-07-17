@@ -34,6 +34,7 @@ export const lastArchive = generateTreeTable(
   uuid("header_id")
     .notNull()
     .references(() => header.id, { onDelete: "cascade" }),
+  "last_archive_header_id_idx",
 );
 
 export const state = pgTable(
@@ -54,6 +55,7 @@ export const l1ToL2MessageTree = generateTreeTable(
   uuid("state_id")
     .notNull()
     .references(() => state.id, { onDelete: "cascade" }),
+  "l1_to_l2_message_tree_state_id_idx",
 );
 
 export const partial = pgTable(
@@ -74,6 +76,7 @@ export const noteHashTree = generateTreeTable(
   uuid("state_partial_id")
     .notNull()
     .references(() => partial.id, { onDelete: "cascade" }),
+  "note_hash_tree_state_partial_id_idx",
 );
 
 export const nullifierTree = generateTreeTable(
@@ -81,6 +84,7 @@ export const nullifierTree = generateTreeTable(
   uuid("state_partial_id")
     .notNull()
     .references(() => partial.id, { onDelete: "cascade" }),
+  "nullifier_tree_state_partial_id_idx",
 );
 
 export const publicDataTree = generateTreeTable(
@@ -88,6 +92,7 @@ export const publicDataTree = generateTreeTable(
   uuid("state_partial_id")
     .notNull()
     .references(() => partial.id, { onDelete: "cascade" }),
+  "public_data_tree_state_partial_id_idx",
 );
 
 export const globalVariables = pgTable(
