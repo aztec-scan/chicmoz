@@ -4,6 +4,7 @@ import {
   PgColumnBuilderBase,
   bigint,
   customType,
+  index,
   integer,
   numeric,
   pgTable,
@@ -37,13 +38,22 @@ export const generateTreeTable = (
     ColumnBuilderBaseConfig<ColumnDataType, string>,
     object
   >,
+  indexName?: string,
 ) =>
-  pgTable(name, {
-    id: uuid("id").primaryKey().defaultRandom(),
-    root: generateFrColumn("root"),
-    nextAvailableLeafIndex: integer("next_available_leaf_index").notNull(),
-    fk,
-  });
+  pgTable(
+    name,
+    {
+      id: uuid("id").primaryKey().defaultRandom(),
+      root: generateFrColumn("root"),
+      nextAvailableLeafIndex: integer("next_available_leaf_index").notNull(),
+      fk,
+    },
+    (table) => ({
+      ...(indexName
+        ? { fkIdx: index(indexName).on(table.fk) }
+        : {}),
+    }),
+  );
 
 export const bufferType = customType<{
   data: Buffer;

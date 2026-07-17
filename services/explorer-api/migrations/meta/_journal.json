@@ -253,6 +253,13 @@
       "when": 1779960000008,
       "tag": "0035_contract_instance_immutables_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1779960000009,
+      "tag": "0036_tree_table_fk_indexes",
+      "breakpoints": true
     }
   ]
 }
